@@ -3844,7 +3844,7 @@ return Plotly;
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v4-1',
+    name: 'v5-1',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · blue: 실제 LV10마다 B
@@ -3941,7 +3941,7 @@ return Plotly;
         choices: 2,
         auto: true,
         goldBonus: 1,
-        blue: 3,
+        blue: 2,
         fan: true,
         burst: true,
         bossSide: true,
@@ -3952,21 +3952,21 @@ return Plotly;
       extream: { from: 'hard', score: 500000 },
       super: { from: 'extream', time: 480 },
       ultra: { from: 'super', time: 600, score: 500000 },
-      insane: { from: 'ultra', time: 720, score: 1200000, level: 100 },
+      insane: { from: 'ultra', score: 2000000 },
     },
     // 기체: fire 발사 간격(초) · dash 대시 재충전(초) · start 출격 때 더하는 시작 스택(회복·XP 효과 없음)
     crafts: {
-      striker: { hp: 100, speed: 235, damage: 22, fire: 0.31, dash: 3.1, shield: 0, start: { magnet: 3 } },
+      striker: { hp: 100, speed: 235, damage: 22, fire: 0.31, dash: 5.6, shield: 0, start: { magnet: 3 } },
       specter: {
         hp: 80,
         speed: 270,
         damage: 24,
         fire: 0.32,
-        dash: 2.2,
+        dash: 4,
         shield: 0,
         start: { speed: 3, rapid: 3 },
       },
-      bulwark: { hp: 145, speed: 208, damage: 24, fire: 0.36, dash: 3.7, shield: 20, start: { multi: 3 } },
+      bulwark: { hp: 145, speed: 208, damage: 24, fire: 0.36, dash: 6.7, shield: 20, start: { multi: 3 } },
     },
     // 기체 공통: 충돌 반경 · 흡수 범위 · 치명타 · 피격 뒤 무적 · 보호막 재생(안 맞은 지 delay초 뒤 초당 regen + 재생 방벽 스택)
     // choiceHeal: 레벨업 때 스킬을 고르면 회복하는 HP
@@ -3984,12 +3984,12 @@ return Plotly;
     level: { base: 8, step: 6 },
     // 내 탄환: 속도 · 수명(초) · 여러 발일 때 사이 각도(라디안) · 기체 앞 출발 거리
     shot: { speed: 720, ttl: 1.3, spread: 0.115, muzzle: 18 },
-    // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초)
-    dash: { time: 0.19, invuln: 0.28, speed: 1000, min: 1.1 },
+    // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초). 재충전 = 기체 dash ÷ (1 + 벡터 드라이브 스택 × skills.speed.dash) → 바닥
+    dash: { time: 0.19, invuln: 0.28, speed: 1000, min: 1 },
     // 충격파 기본값: 피해 · 범위 · 재충전(초) · 맞은 적을 밀어내는 거리
     nova: { damage: 100, radius: 220, cooldown: 19, push: 30 },
     // 공전 칼날: 충돌과 렌더러가 같은 반경·회전 속도(라디안/초)를 쓴다. 칼날 피해 = damage + LV + 스택 × skills.orbit.step
-    orbit: { radius: 130, speed: 3.1, max: 6, damage: 24, hit: 14, hitCooldown: 0.25 },
+    orbit: { radius: 140, speed: 3.1, max: 7, damage: 24, hit: 14, hitCooldown: 0.25 },
     // 스킬 스택당 효과. 키 순서 = 레벨업 카드 뽑기 순서(바꾸면 같은 시드의 판이 달라진다).
     // overflow: 물리 상한에 닿은 뒤 스택마다 늘어나는 탄환 피해
     skills: {
@@ -4008,15 +4008,27 @@ return Plotly;
     // 방어 한도를 쓰는 스킬
     defense: ['vital', 'shield'],
     // Stage n: 1 + 값 × (n − 1). 적 속도는 speedMax에서 멈춘다.
-    stage: { hp: 0.15, damage: 0.08, density: 0.08, xp: 0.15, score: 0.2, speed: 0.02, speedMax: 1.55 },
+    // 자동 승격(R-022): Stage 최소값 = 1 + floor(실제 LV ÷ autoLevel). 지금 Stage가 낮으면 한 칸씩 올린다(보스 규칙 같음).
+    stage: {
+      hp: 0.15,
+      damage: 0.08,
+      density: 0.08,
+      xp: 0.15,
+      score: 0.2,
+      speed: 0.02,
+      speedMax: 1.55,
+      autoLevel: 10,
+    },
     // 보스: Stage를 every의 배수로 올릴 때 웨이브. 수 = base + floor(Stage ÷ per), 동시에 alive마리까지
     boss: { every: 3, base: 1, per: 10, alive: 4 },
-    // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ 모드 출현 배율, 기체에서 radius 거리.
+    // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ (모드 출현 배율 × rate), 기체에서 radius 거리.
+    // rate: 맵 넓이만큼 늘린 출현량(R-020, 3520×2640 ÷ 3200×2400 = 1.21). 동시 적 상한은 caps.enemies 그대로.
     // 나온 적은 born초 동안 움직이지 않고 맞지 않는다(예고 테두리).
     // mix: 종류 확률. 분열·사수 = base + min(max, (Stage − 1) × step), 돌격은 고정, 나머지는 추적
     spawn: {
       first: 0.5,
       interval: 0.85,
+      rate: 1.21,
       min: 0.24,
       radius: 700,
       born: 0.8,
@@ -4082,43 +4094,56 @@ return Plotly;
     caps: { enemies: 110, hostiles: 350, bullets: 400, gems: 220 },
     // Point: 처치 보너스 = min(comboMax, 콤보 × comboStep), 콤보는 comboWindow초 안에 처치가 이어질 때 쌓인다
     score: { comboWindow: 3, comboStep: 2, comboMax: 40 },
-    // 포위: 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서). 남은 동안 일반 출현을 멈추고
+    // 포위(R-021): 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서). 남은 동안 일반 출현을 멈추고
     // 적 상한 미만일 때 스텝마다 perStep마리. 사수 첫 사격 = shotDelay + 앞선 사수 수 × shotStep초. warn초 전 예고.
+    // n회차 포위 적의 이동 속도 = 기본 × min(speedMax, 1 + speedStep × (n − 1)). 포위가 겹치면 먼저 온 회차부터 나온다.
+    // pattern: 추적 11 · 돌격 7 · 사수 4 · 분열 3. 나오는 순서와 칸(7칸씩 건너뜀) 모두에서 종류가 고르게 섞이게 정했다.
     siege: {
-      interval: 600,
+      interval: 300,
       warn: 2,
       perStep: 4,
       sides: 4,
       shotDelay: 1.5,
       shotStep: 0.45,
+      speedStep: 0.1,
+      speedMax: 2,
       pattern: [
         'chaser',
         'runner',
-        'chaser',
         'shooter',
+        'runner',
+        'chaser',
         'chaser',
         'runner',
         'splitter',
         'chaser',
-        'runner',
-        'shooter',
         'chaser',
+        'shooter',
         'runner',
         'chaser',
         'splitter',
         'chaser',
+        'shooter',
         'runner',
+        'chaser',
+        'chaser',
+        'runner',
+        'chaser',
+        'runner',
+        'splitter',
         'shooter',
         'chaser',
       ],
     },
     // 맵 크기(시작 위치는 가운데)
-    map: { width: 3200, height: 2400 },
+    map: { width: 3520, height: 2640 },
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
     superLaunch: { stage: 29, level: 29, picks: 28 },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
     // 영구 스택 가격 = permaBase + floor(이미 산 수 ÷ permaStep). 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G.
     // bossGold: 보스 1마리 처치마다 G(R-002)
+    // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
+    // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 항상 코인.
     economy: {
       goldBase: 1,
       goldMax: 5,
@@ -4133,6 +4158,8 @@ return Plotly;
       noteMax: 15,
       permaStep: 3,
       bossGold: 3,
+      autoGoldPrice: 50,
+      autoGoldChance: 0.25,
       permaBase: {
         power: 2,
         rapid: 3,
@@ -4147,8 +4174,30 @@ return Plotly;
         shield: 4,
       },
     },
-    // 고양이 비행사(R-026, 1단계). 0단계는 저장 구조만 쓴다: 고양이별 레벨 0~maxLevel(0은 미해금)
-    cats: { maxLevel: 5, list: ['engineer', 'supply', 'pilot'] },
+    // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
+    // (패배 · 직접 종료, 중단 제외) 열린다. 해금(Lv1) 비용은 unlock(S), Lv n(2~5)으로 올리는 비용은 levelCost[n − 2]
+    // (S와 B를 함께 낸다). 효과: Lv n의 값 = effect[고양이][n − 1]. 동반 고양이와 Lv5 고양이가 적용되고(겹치면 한 번),
+    // 출격 순간 값으로 고정한다. engineer: 기체 시작 스킬마다 더하는 스택 · supply: 분당 G · pilot: 대시 재충전 감소 비율
+    cats: {
+      maxLevel: 5,
+      list: ['engineer', 'supply', 'pilot'],
+      hiddenFrom: 'insane',
+      unlock: { engineer: 1, supply: 2, pilot: 3 },
+      levelCost: [
+        { s: 2, b: 30 },
+        { s: 4, b: 80 },
+        { s: 8, b: 160 },
+        { s: 16, b: 300 },
+      ],
+      effect: {
+        engineer: [3, 4, 5, 6, 7],
+        supply: [5, 6, 7, 8, 10],
+        pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
+      },
+    },
+    // Insane 슈퍼코인(R-023): mode 판(일반 · S 출격)에서 전투 시계 every초마다 1개. 기체에서 near~far 거리의 무작위
+    // 방향, 맵 가장자리에서 margin 안쪽. 크기 r(기체 충돌 반경과 같음), 자석 없이 기체가 닿아야 1 S. 줍지 않으면 판 끝까지 남는다.
+    superCoin: { mode: 'insane', every: 300, near: 600, far: 1000, r: 13, margin: 40 },
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 100, logs: 10 },
@@ -4434,7 +4483,7 @@ return Plotly;
     );
   }
   // 스택 출처
-  const sources = { craft: '기체', perma: '영구', prep: '준비', earned: '획득' };
+  const sources = { craft: '기체', cat: '고양이', perma: '영구', prep: '준비', earned: '획득' };
   // 적. name: 화면 · short: 짧은 이름
   const enemies = {
     chaser: { name: '추적자', short: '추적' },
@@ -4447,10 +4496,16 @@ return Plotly;
   };
   const enemyName = kind => (enemies[kind] || enemies.unknown).name;
   // 고양이 비행사(1단계 R-026에서 화면에 나온다. 이름은 임시, 3단계에서 확정)
+  // 고양이 비행사(R-026). 이름 · 그림은 임시(3단계에서 확정). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
+  const pctOf = v => Math.round(v * 100);
   const cats = {
-    engineer: { name: '정비사' },
-    supply: { name: '보급관' },
-    pilot: { name: '조종사' },
+    engineer: { name: '정비사', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
+    supply: { name: '보급관', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
+    pilot: {
+      name: '조종사',
+      effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
+      value: v => '−' + pctOf(v) + '%',
+    },
   };
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
@@ -4480,6 +4535,26 @@ return Plotly;
   const firstMode = key => Object.keys(B().modes).find(id => B().modes[id][key]);
   const autoFrom = () => modeName(firstMode('auto'));
   const goldBonusFrom = () => modeName(firstMode('goldBonus'));
+  // Easy와 B가 다른 모드를 같은 값끼리 묶는다. 마지막 모드까지 이어지면 'Ultra 이상 2' + unit
+  const blueExtra = unit => {
+    const m = B().modes,
+      ids = Object.keys(m),
+      groups = [];
+    for (const id of ids) {
+      if (m[id].blue === m.easy.blue) continue;
+      const last = groups[groups.length - 1];
+      if (last && last.blue === m[id].blue && ids.indexOf(id) === ids.indexOf(last.ids.at(-1)) + 1)
+        last.ids.push(id);
+      else groups.push({ blue: m[id].blue, ids: [id] });
+    }
+    return groups.map(g => {
+      const name =
+        g.ids.length > 1 && g.ids.at(-1) === ids.at(-1)
+          ? modeName(g.ids[0]) + ' 이상'
+          : g.ids.map(modeName).join(' · ');
+      return name + ' ' + g.blue + unit;
+    });
+  };
 
   // ── 전투 알림(알림 줄). sec: 보이는 시간(초) ──
   const alerts = {
@@ -4499,8 +4574,9 @@ return Plotly;
     bossStage: { sec: 2, text: s => stageLabel(s) + ' · 보스 등장' },
     bossWave: { sec: 1.2, text: () => '보스 웨이브 격파' },
     bossGold: { sec: 1.6, text: n => '보스 격파 +' + n + ' ' + G },
-    siegeWarn: { sec: 2.2, text: () => '⚠ 포위 접근 · ' + B().siege.sides + '방향' },
-    siege: { sec: 1.6, text: n => '포위 · ' + B().siege.sides + '방향에서 ' + n + '기' },
+    // 1단계 알림은 2단계(R-030)의 짧은 형식으로 쓴다: 설명 숫자 없이, 보상 수만
+    siegeWarn: { sec: 2, text: () => '⚠ 포위 접근' },
+    siege: { sec: 2, text: wave => '⚠ 포위 ' + wave + '회차' },
     stage: {
       sec: 1.3,
       text: (s, hp, xp, score) =>
@@ -4517,14 +4593,31 @@ return Plotly;
         score +
         '×',
     },
+    // AUTO 결과: n = 고른 스킬 수, gold = 자동 G 습득으로 받은 G(R-025)
     auto: {
       sec: 1.1,
-      text: (n, id) =>
-        n === 1
-          ? auto.name + ' · ' + skillName(id) + ' +1'
-          : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
+      text: (n, id, gold = 0) =>
+        !n
+          ? '자동 ' + G + ' 습득 +' + gold + ' ' + G
+          : gold
+            ? auto.name + ' ' + n + '개 · +' + gold + ' ' + G
+            : n === 1
+              ? auto.name + ' · ' + skillName(id) + ' +1'
+              : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
     },
-    unlock: { sec: 2, text: id => modeName(id) + ' 해금 · 다음 도전에서 선택하세요.' },
+    // 판 도중 해금(R-024): 4초 강조
+    unlock: { sec: 4, strong: true, text: id => modeName(id) + ' 해금' },
+    // Stage 자동 승격(R-022): boss = 'now'(이 Stage가 보스) · 'next'(다음이 보스) · ''
+    stageAuto: {
+      sec: 2,
+      text: (s, boss) =>
+        stageLabel(s) +
+        ' 자동 상승' +
+        (boss === 'now' ? ' · 보스 등장' : boss === 'next' ? ' · 다음 보스' : ''),
+    },
+    // Insane S 코인(R-023)
+    sCoin: { sec: 3, text: () => SC + ' 코인 등장' },
+    sPick: { sec: 2, text: n => '+' + n + ' ' + SC },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -4563,9 +4656,7 @@ return Plotly;
       blueNote: () => {
         const m = B().modes,
           every = E().blueEvery,
-          extra = Object.keys(m)
-            .filter(id => m[id].blue !== m.easy.blue)
-            .map(id => modeName(id) + ' ' + m[id].blue + BL);
+          extra = blueExtra(BL);
         return (
           coins.b.ko + ': 실제 ' + levelShort(every) + '마다 ' + m.easy.blue + BL + ' · ' + extra.join(' · ')
         );
@@ -4727,19 +4818,33 @@ return Plotly;
       point: point.upper,
       kills: '처치',
     },
-    resultCoins: (choices, gold, blue, boss) =>
-      '코인 선택 ' +
-      choices +
-      '회' +
-      (boss ? ' · 보스 격파 +' + num(boss) + ' ' + G : '') +
-      ' · 잔액 ' +
-      num(gold) +
-      ' ' +
-      G +
-      ' · ' +
-      num(blue) +
-      ' ' +
-      BL,
+    // 결과 재화 줄: G 내역(있을 때) + 잔액
+    resultCoins: (parts, gold, blue) => {
+      const detail = msg.resultGold(parts);
+      return (
+        (detail ? G + ' 내역 ' + detail + ' · ' : '') +
+        '잔액 ' +
+        num(gold) +
+        ' ' +
+        G +
+        ' · ' +
+        num(blue) +
+        ' ' +
+        BL
+      );
+    },
+    // 결과 G 내역(분 · 보스 · 코인(자동 G) · 고양이). 0인 항목은 뺀다.
+    resultGold: ({ minute, boss, coin, autoGold, cat }) =>
+      [
+        minute ? '분당 ' + num(minute) : '',
+        boss ? '보스 ' + num(boss) : '',
+        coin ? '코인 ' + num(coin) + (autoGold ? '(자동 ' + G + ' ' + num(autoGold) + ')' : '') : '',
+        cat ? '고양이 ' + num(cat) : '',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    resultUnlock: ids => '새 모드 해금 · ' + ids.map(modeName).join(' · '),
+    resultHidden: '히든 탭 해금 · 성장 탭 맨 아래',
     resultKicker: defeated => (defeated ? 'SIGNAL LOST · RUN RECORDED' : 'RUN SAVED · SIGNAL ON HOLD'),
     resultAnnounce: (score, lv) => '도전 기록. ' + num(score) + '점, 레벨 ' + lv,
     newBest: 'NEW BEST · TOP 1',
@@ -4778,6 +4883,14 @@ return Plotly;
       income: tier => '시간 코인 ' + tier + '단계 · 다음 판부터 분당 적립이 늘어납니다',
       craftSC: coins.s.ko + ' 1개를 만들었습니다',
       perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용 · 다음 출격부터 적용',
+      needs_auto: auto.name + '를 먼저 사야 합니다.',
+      sc_reserved: SC + ' 출격 준비에 예약된 ' + SC + '는 쓸 수 없습니다.',
+      hidden_locked: '히든 탭이 아직 열리지 않았습니다.',
+      locked: '먼저 해금해야 합니다.',
+      autoGold: () => '자동 ' + G + ' 습득을 구매했습니다 · 상점에서 켜고 끌 수 있습니다',
+      catUnlock: id => cats[id].name + ' 해금 · 동반으로 고르면 다음 출격부터 적용',
+      catLevel: (id, lv) => cats[id].name + ' Lv' + lv + ' · 다음 출격부터 적용',
+      companion: id => (id ? cats[id].name + ' 동반 · 다음 출격부터 적용' : '동반 해제'),
     },
     prep: {
       insufficient: SC + ' 없음',
@@ -4845,11 +4958,13 @@ return Plotly;
     rec: {
       confirm: n => '선택한 기록 ' + n + '개를 지웁니다. 상세 로그도 함께 지워지고 되돌릴 수 없습니다.',
       removed: n => '기록 ' + n + '개를 지웠습니다.',
-      protected: '보호된 기록(TOP3·별표)이 섞여 있어 지우지 않았습니다.',
+      protected: '보호된 기록(일반 · S 출격 TOP3 · 별표)이 섞여 있어 지우지 않았습니다.',
       failed: '지우지 못했습니다. 기록은 그대로입니다.',
       starFailed: '별표를 저장하지 못했습니다.',
       summaryOnly: () =>
-        '요약만 남은 기록 · 상세 로그는 최근 ' + B().records.logs + '판과 TOP3·별표 기록만 보관합니다',
+        '요약만 남은 기록 · 상세 로그는 최근 ' +
+        B().records.logs +
+        '판과 TOP3(일반 · S 출격) · 별표 기록만 보관합니다',
     },
     // 터치 진단 상자(?touch, R-016)
     touch: {
@@ -4888,8 +5003,9 @@ return Plotly;
       selected: n => n + '개 선택됨',
       cancel: '취소',
       remove: '삭제',
-      info: '🔒 TOP3와 ★ 별표 기록은 선택·자동 정리에서 빠집니다 · 삭제는 확인 창 1번 뒤 되돌릴 수 없음',
-      locked: '보호된 기록(TOP3·별표)',
+      // 보호 = 일반 TOP3 + S 출격 TOP3 + 별표(R-035, data.js protectedIds)
+      info: '🔒 TOP3(일반 · S 출격)와 ★ 기록은 선택·자동 정리에서 빠집니다 · 삭제는 확인 창 1번 뒤 되돌릴 수 없음',
+      locked: '보호된 기록(일반 · S 출격 TOP3 · 별표)',
       check: '선택',
       star: '별표',
       top: 'TOP3',
@@ -4929,12 +5045,68 @@ return Plotly;
         levelShort(B().superLaunch.level) +
         ' 특수 출격 · 출격 전 강화 ' +
         B().superLaunch.picks +
-        '회 직접 배분',
+        '회 직접 배분 · ' +
+        modeName(B().superCoin.mode) +
+        '에서는 ' +
+        B().superCoin.every / 60 +
+        '분마다 맵에 등장',
       scCraft: SC + ' 제작',
       auto: auto.name,
       autoNote: () => '레벨업 때 추천 스킬을 자동 선택 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
       owned: '✓ 보유 중',
       buyAuto: () => E().autoPrice + ' ' + G + ' · 한 번 구매',
+      // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님)
+      autoGold: '자동 ' + G + ' 습득',
+      autoGoldNew: 'NEW',
+      autoGoldNote: () =>
+        auto.short +
+        '가 레벨업을 고를 때 ' +
+        pctOf(E().autoGoldChance) +
+        '% 확률로 스킬 대신 ' +
+        E().coinChoice +
+        ' ' +
+        G +
+        ' · 고를 스킬이 모두 최대면 항상 ' +
+        E().coinChoice +
+        ' ' +
+        G,
+      buyAutoGold: () => E().autoGoldPrice + ' ' + G + ' · 한 번 구매',
+      needAuto: () => auto.name + ' 보유 필요',
+      on: '켜짐',
+      off: '꺼짐',
+      toggleLabel: on => '자동 ' + G + ' 습득 ' + (on ? '켜짐' : '꺼짐'),
+    },
+    // 히든 탭 · 고양이 비행사(R-026). 입구는 성장 탭 맨 아래 칸(2단계에서도 같은 자리)
+    hidden: {
+      entry: '히든',
+      entryLocked: () => modeName(B().cats.hiddenFrom) + ' mode 플레이 시 해제',
+      entryOpen: '고양이 비행사',
+      title: '히든 탭 · 고양이 비행사',
+      sub: () => modeName(B().cats.hiddenFrom) + ' 한 판으로 열림 · 효과는 다음 출격부터',
+      back: '성장으로 돌아가기',
+      applied: '적용 중',
+      appliedNone: '없음 · 해금한 고양이를 동반으로 고르세요',
+      appliedItem: (id, lv, always) => cats[id].name + ' Lv' + lv + ' ' + (always ? '항상' : '동반'),
+      always: '항상 적용',
+      companion: '동반 중',
+      locked: '미해금',
+      level: lv => 'Lv' + lv,
+      levelsLabel: (lv, max) => '레벨 ' + lv + ' / ' + max,
+      // v1: Lv1 효과 값, vMax: 최대 레벨 효과 값
+      effectLocked: (id, v1, vMax, max) =>
+        '해금하면 ' + cats[id].effect(v1) + ' · Lv' + max + ' ' + cats[id].value(vMax),
+      effectMax: '최대',
+      unlockBtn: n => n + ' ' + SC + '로 해금',
+      levelBtn: (sc, b) => sc + ' ' + SC + ' + ' + b + ' ' + BL,
+      levelTo: lv => 'Lv' + lv + '로 육성',
+      have: n => '보유 ' + SC + ' ' + n,
+      pick: '동반',
+      picked: '동반 중',
+      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 해제' : ' 동반으로 고르기'),
+      note: () =>
+        '동반은 1마리, 메뉴에서만 바꿀 수 있습니다 · Lv' +
+        B().cats.maxLevel +
+        ' 고양이는 동반과 관계없이 항상 적용 · 효과는 출격하는 순간 고정 · 이름 · 그림은 임시',
     },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
@@ -4981,7 +5153,7 @@ return Plotly;
       interrupted: '중단 기록',
       retired: '도전의 기록',
       skills: '스킬 내역 ',
-      earned: (gold, blue, boss) =>
+      earned: (gold, blue, boss, sup) =>
         '획득 +' +
         num(gold) +
         ' ' +
@@ -4991,6 +5163,7 @@ return Plotly;
         num(blue) +
         ' ' +
         BL +
+        (sup ? ' · +' + num(sup) + ' ' + SC : '') +
         ' · ',
       coins: n => '코인 선택 ' + n + '회',
     },
@@ -5011,10 +5184,7 @@ return Plotly;
     const b = B(),
       e = b.economy,
       m = b.modes,
-      blueModes = Object.keys(m)
-        .filter(id => m[id].blue !== m.easy.blue)
-        .map(id => modeName(id) + ' ' + m[id].blue + '개')
-        .join(', ');
+      blueModes = blueExtra('개').join(', ');
     return [
       {
         title: '코인',
@@ -5054,8 +5224,12 @@ return Plotly;
               e.scBlue +
               ro(e.scBlue) +
               ' 만든다. ' +
+              modeName(b.superCoin.mode) +
+              '에서는 ' +
+              b.superCoin.every / 60 +
+              '분마다 맵에 하나씩 나타나 기체가 닿으면 얻는다. ' +
               launches.super +
-              ' 한 번에 1개를 쓴다.',
+              ' 한 번에 1개를 쓰고, 고양이 비행사 해금 · 육성에도 쓴다.',
           ],
         ],
       },
@@ -5142,18 +5316,24 @@ return Plotly;
             desc:
               "하단 '" +
               stage.upper +
-              "' 버튼으로 직접 올리는 난이도. 올릴수록 적이 강해지고 점수 · XP가 커진다.",
+              "' 버튼으로 직접 올리는 난이도. 올릴수록 적이 강해지고 점수 · XP가 커진다. 실제 " +
+              level.short +
+              ' ' +
+              b.stage.autoLevel +
+              '마다 최소 ' +
+              stage.name +
+              '가 1씩 오르고, 그보다 낮으면 자동으로 오른다.',
           },
           {
             term: '보스',
             desc: stage.name + '를 ' + [1, 2, 3].map(k => k * b.boss.every).join(', ') + '…로 올리면 나온다.',
           },
           {
-            term: b.siege.interval / 60 + '분 포위',
+            term: '포위',
             desc:
               '전투 ' +
               b.siege.interval / 60 +
-              '분마다 네 방향에서 한꺼번에 몰려온다. ' +
+              '분마다 네 방향에서 한꺼번에 몰려오고, 회차마다 조금씩 빨라진다. ' +
               b.siege.warn +
               '초 전에 화면 가장자리에 붉은 표시가 뜬다.',
           },
@@ -5181,6 +5361,24 @@ return Plotly;
               '로 한 번 사고, ' +
               autoFrom() +
               ' 이상에서 켤 수 있다.',
+          },
+          {
+            term: '자동 ' + G + ' 습득',
+            desc:
+              auto.short +
+              '가 레벨업을 고를 때 ' +
+              pctOf(e.autoGoldChance) +
+              '% 확률로 스킬 대신 ' +
+              G +
+              ' ' +
+              e.coinChoice +
+              '개를 받는다. 상점에서 ' +
+              e.autoGoldPrice +
+              ' ' +
+              G +
+              '로 한 번 사고(' +
+              auto.name +
+              ' 먼저), 상점에서 켜고 끈다.',
           },
         ],
       },
@@ -5222,6 +5420,34 @@ return Plotly;
               ' · ' +
               levelShort(b.superLaunch.level) +
               '에서 시작한다.',
+          },
+          {
+            term: '히든 탭',
+            desc:
+              modeName(b.cats.hiddenFrom) +
+              ' 한 판을 끝내면(패배 · 직접 종료) 성장 탭 맨 아래에서 열린다. 고양이 비행사를 해금 · 육성한다.',
+          },
+          {
+            term: '고양이 비행사',
+            desc:
+              Object.values(cats)
+                .map(c => c.name)
+                .join(' · ') +
+              '. ' +
+              coins.s.name +
+              '로 해금하고 ' +
+              coins.s.name +
+              ' + ' +
+              BL +
+              '로 Lv' +
+              b.cats.maxLevel +
+              '까지 키운다. 동반 1마리와 Lv' +
+              b.cats.maxLevel +
+              ' 고양이의 효과가 출격 순간 적용된다(정비사: 기체 시작 스킬 스택, 보급관: 분당 ' +
+              G +
+              ', 조종사: ' +
+              abilities.dash +
+              ' 재충전).',
           },
         ],
       },
@@ -5307,6 +5533,7 @@ return Plotly;
   //   - kills: [t(묶음의 마지막 처치), from(첫 처치), counts(dict.kinds 순서 개수), other?(목록 밖 종류 객체)]
   //     kill 이벤트를 log.killBatch초 동안 모아 한 번에 쓴다. 판 끝 · 내보내기 때 남은 것도 쓴다.
   //   - 반올림: t · from · at 소수 1자리, x · y · r 정수, 피해 · hp · wait 소수 1자리, stage의 rules 소수 3자리.
+  //   - stage · coin_choice의 auto(자동 승격 R-022 · 자동 G 습득 R-025)는 참일 때만 쓴다. s_spawn · s_pick은 Insane S 코인(R-023).
   // events: 열 목록에 없는 종류만 v3처럼 객체로 둔다(context · postContext는 뺀다).
   // 이벤트로 쓰지 않고 summary에서만 세는 것:
   //   summary.attempts[능력] = 시도(받아들인 누름 ability_attempt + 거절 ability_rejected, R-003 엔진 기준).
@@ -5440,10 +5667,16 @@ return Plotly;
       );
   }
   // ── 기록 보관(R-018): 순수 함수. 저장 계층은 한 트랜잭션 안에서 이 함수들을 부르기만 한다. ──
-  // 보호 기록: rank() 순 앞 3개(TOP3)와 별표 기록. 자동 정리·선택 삭제 모두 지우지 않는다.
+  // 보호 기록(R-035): Ranking 일반 TOP3 + S 출격 TOP3(각각 rank() 순 앞 3개)와 별표 기록.
+  // 자동 정리·선택 삭제 모두 지우지 않는다. 화면의 TOP3 표시는 2단계(R-032)에서 둘로 나눈다.
+  const isSuperLaunch = r => r.launch?.type === 'super';
   function protectedIds(records) {
     const list = rank(records || []),
-      ids = new Set(list.slice(0, 3).map(r => r.id));
+      ids = new Set(
+        [...list.filter(r => !isSuperLaunch(r)).slice(0, 3), ...list.filter(isSuperLaunch).slice(0, 3)].map(
+          r => r.id,
+        ),
+      );
     for (const r of list) if (r.starred) ids.add(r.id);
     return ids;
   }
@@ -5868,6 +6101,7 @@ return Plotly;
     FRAME_COLUMNS = Object.freeze(['time', 'frameMs', 'enemies', 'bullets', 'hostiles']);
   // v4 이벤트 행의 열(조각.ev[종류] = [[...열], ...]). 바꾸면 내보낸 파일의 columns.events도 같이 바뀐다.
   // upgrade·coin_choice의 offered는 같은 level 이벤트에 있으므로 쓰지 않고 readLog가 되살린다.
+  // 열은 끝에만 더한다(옛 로그도 읽히게). auto(자동 승격 · 자동 G 습득)는 참일 때만 쓴다.
   const EVENT_COLUMNS = Object.freeze({
     kills: ['t', 'from', 'counts', 'other'],
     dash: ['t', 'x', 'y', 'source'],
@@ -5887,8 +6121,8 @@ return Plotly;
     ],
     level: ['t', 'level', 'offered'],
     upgrade: ['t', 'source', 'id', 'count', 'level', 'wait'],
-    coin_choice: ['t', 'level', 'wait', 'amount'],
-    stage: ['t', 'to', 'hp', 'level', 'rules', 'skills'],
+    coin_choice: ['t', 'level', 'wait', 'amount', 'auto'],
+    stage: ['t', 'to', 'hp', 'level', 'rules', 'skills', 'auto'],
     boss: ['t', 'enemyStage', 'id'],
     bossdown: ['t', 'enemyStage', 'waveId'],
     boss_wave_complete: ['t', 'waveId', 'originStage', 'total', 'cleared'],
@@ -5900,6 +6134,8 @@ return Plotly;
     resume: ['t'],
     settings: ['t', 'view', 'quality', 'viewport'],
     viewport: ['t', 'width', 'height', 'view'],
+    s_spawn: ['t', 'id', 'x', 'y'],
+    s_pick: ['t', 'id', 'x', 'y'],
   });
   for (const cols of Object.values(EVENT_COLUMNS)) Object.freeze(cols);
   // 짧게 적는 열(내보낸 파일의 columns.dict · columns.codecs):
@@ -6186,9 +6422,19 @@ return Plotly;
         s.chosen[e.id] = (s.chosen[e.id] || 0) + 1;
         if (e.source === 'auto') s.autoChoices++;
       }
-      if (type === 'coin_choice') s.coinChoices++;
+      // 자동 G 습득(R-025)의 코인은 AUTO 선택으로 센다
+      if (type === 'coin_choice') {
+        if (e.auto) s.autoChoices++;
+        else s.coinChoices++;
+      }
       if (type === 'stage') {
-        s.stageChanges.push({ t: e.t, to: e.to, hp: e.hp, level: e.level });
+        s.stageChanges.push({
+          t: e.t,
+          to: e.to,
+          hp: e.hp,
+          level: e.level,
+          ...(e.auto ? { auto: true } : {}),
+        });
         if (s.stageChanges.length > 500) s.stageChanges = s.stageChanges.slice(-500);
       }
       this.push(e);
