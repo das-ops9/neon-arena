@@ -3836,27 +3836,1507 @@ return Plotly;
     <script>
       (function (root) {
   'use strict';
-  const MODE_IDS = ['easy', 'hard', 'extream', 'super', 'ultra', 'insane'];
+  // 판 결과에 영향을 주는 수치의 단일 원본(R-013). 이름·표기·화면 문구는 terms.js에 있다.
+  // 값을 바꾸면: npm run docs(정본 문서 표 다시 만들기) → node tests/replay.test.cjs --update(기준 재생 다시 만들기,
+  // 바뀐 항목을 커밋 메시지에 적는다). 화면 효과(흔들림·입자)와 기록 분석용 정의는 각 모듈에 둔다.
+  const deepFreeze = o => {
+    for (const v of Object.values(o)) if (v && typeof v === 'object') deepFreeze(v);
+    return Object.freeze(o);
+  };
+  const BALANCE = deepFreeze({
+    name: 'v4-1',
+    // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
+    // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
+    // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · blue: 실제 LV10마다 B
+    // fan·burst: 사수 부채꼴·연속 사격 · bossSide: 보스 조준 탄 양옆 2발
+    modes: {
+      easy: {
+        spawn: 1,
+        hp: 1,
+        damage: 1,
+        fire: 1,
+        bulletSpeed: 1,
+        xp: 1,
+        defenseCap: Infinity,
+        choices: 3,
+        auto: false,
+        goldBonus: 0,
+        blue: 1,
+        fan: false,
+        burst: false,
+        bossSide: false,
+      },
+      hard: {
+        spawn: 1.3,
+        hp: 1.25,
+        damage: 1.15,
+        fire: 1.2,
+        bulletSpeed: 1.05,
+        xp: 0.95,
+        defenseCap: 24,
+        choices: 3,
+        auto: false,
+        goldBonus: 0,
+        blue: 1,
+        fan: false,
+        burst: false,
+        bossSide: false,
+      },
+      extream: {
+        spawn: 1.65,
+        hp: 1.6,
+        damage: 1.3,
+        fire: 1.5,
+        bulletSpeed: 1.1,
+        xp: 0.85,
+        defenseCap: 16,
+        choices: 3,
+        auto: true,
+        goldBonus: 0,
+        blue: 1,
+        fan: true,
+        burst: false,
+        bossSide: false,
+      },
+      super: {
+        spawn: 2.05,
+        hp: 2,
+        damage: 1.5,
+        fire: 1.85,
+        bulletSpeed: 1.15,
+        xp: 0.75,
+        defenseCap: 10,
+        choices: 3,
+        auto: true,
+        goldBonus: 1,
+        blue: 1,
+        fan: true,
+        burst: false,
+        bossSide: false,
+      },
+      ultra: {
+        spawn: 2.5,
+        hp: 2.5,
+        damage: 1.75,
+        fire: 2.3,
+        bulletSpeed: 1.2,
+        xp: 0.65,
+        defenseCap: 6,
+        choices: 2,
+        auto: true,
+        goldBonus: 1,
+        blue: 2,
+        fan: true,
+        burst: true,
+        bossSide: false,
+      },
+      insane: {
+        spawn: 3,
+        hp: 3.2,
+        damage: 2,
+        fire: 2.85,
+        bulletSpeed: 1.25,
+        xp: 0.55,
+        defenseCap: 3,
+        choices: 2,
+        auto: true,
+        goldBonus: 1,
+        blue: 3,
+        fan: true,
+        burst: true,
+        bossSide: true,
+      },
+    },
+    // 해금: from 모드의 한 판이 조건을 모두 채우면 열린다(time 초 · score Point · level LV). Easy·Hard는 처음부터.
+    unlock: {
+      extream: { from: 'hard', score: 500000 },
+      super: { from: 'extream', time: 480 },
+      ultra: { from: 'super', time: 600, score: 500000 },
+      insane: { from: 'ultra', time: 720, score: 1200000, level: 100 },
+    },
+    // 기체: fire 발사 간격(초) · dash 대시 재충전(초) · start 출격 때 더하는 시작 스택(회복·XP 효과 없음)
+    crafts: {
+      striker: { hp: 100, speed: 235, damage: 22, fire: 0.31, dash: 3.1, shield: 0, start: { magnet: 3 } },
+      specter: {
+        hp: 80,
+        speed: 270,
+        damage: 24,
+        fire: 0.32,
+        dash: 2.2,
+        shield: 0,
+        start: { speed: 3, rapid: 3 },
+      },
+      bulwark: { hp: 145, speed: 208, damage: 24, fire: 0.36, dash: 3.7, shield: 20, start: { multi: 3 } },
+    },
+    // 기체 공통: 충돌 반경 · 흡수 범위 · 치명타 · 피격 뒤 무적 · 보호막 재생(안 맞은 지 delay초 뒤 초당 regen + 재생 방벽 스택)
+    // choiceHeal: 레벨업 때 스킬을 고르면 회복하는 HP
+    player: {
+      r: 13,
+      magnet: 160,
+      crit: 0.08,
+      critScale: 2,
+      hurtInvuln: 0.72,
+      shieldDelay: 4,
+      shieldRegen: 6,
+      choiceHeal: 5,
+    },
+    // 다음 레벨 XP = base + (LV − 1) × step
+    level: { base: 8, step: 6 },
+    // 내 탄환: 속도 · 수명(초) · 여러 발일 때 사이 각도(라디안) · 기체 앞 출발 거리
+    shot: { speed: 720, ttl: 1.3, spread: 0.115, muzzle: 18 },
+    // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초)
+    dash: { time: 0.19, invuln: 0.28, speed: 1000, min: 1.1 },
+    // 충격파 기본값: 피해 · 범위 · 재충전(초) · 맞은 적을 밀어내는 거리
+    nova: { damage: 100, radius: 220, cooldown: 19, push: 30 },
+    // 공전 칼날: 충돌과 렌더러가 같은 반경·회전 속도(라디안/초)를 쓴다. 칼날 피해 = damage + LV + 스택 × skills.orbit.step
+    orbit: { radius: 130, speed: 3.1, max: 6, damage: 24, hit: 14, hitCooldown: 0.25 },
+    // 스킬 스택당 효과. 키 순서 = 레벨업 카드 뽑기 순서(바꾸면 같은 시드의 판이 달라진다).
+    // overflow: 물리 상한에 닿은 뒤 스택마다 늘어나는 탄환 피해
+    skills: {
+      power: { damage: 0.22 },
+      rapid: { rate: 0.14, minFire: 0.07, overflow: 0.03 },
+      multi: { max: 7, overflow: 0.045 },
+      pierce: { max: 6, overflow: 0.025 },
+      speed: { step: 12, max: 360, dash: 0.07, overflow: 0.025 },
+      magnet: { step: 35, max: 520, xp: 5, overflow: 0.035 },
+      orbit: { step: 7 },
+      vital: { hp: 20, heal: 38 },
+      nova: { damage: 40, radius: 25, radiusMax: 460, cooldown: 1, cooldownMin: 8 },
+      crit: { step: 0.07, max: 0.8, overflow: 0.035 },
+      shield: { amount: 16, regen: 1 },
+    },
+    // 방어 한도를 쓰는 스킬
+    defense: ['vital', 'shield'],
+    // Stage n: 1 + 값 × (n − 1). 적 속도는 speedMax에서 멈춘다.
+    stage: { hp: 0.15, damage: 0.08, density: 0.08, xp: 0.15, score: 0.2, speed: 0.02, speedMax: 1.55 },
+    // 보스: Stage를 every의 배수로 올릴 때 웨이브. 수 = base + floor(Stage ÷ per), 동시에 alive마리까지
+    boss: { every: 3, base: 1, per: 10, alive: 4 },
+    // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ 모드 출현 배율, 기체에서 radius 거리.
+    // 나온 적은 born초 동안 움직이지 않고 맞지 않는다(예고 테두리).
+    // mix: 종류 확률. 분열·사수 = base + min(max, (Stage − 1) × step), 돌격은 고정, 나머지는 추적
+    spawn: {
+      first: 0.5,
+      interval: 0.85,
+      min: 0.24,
+      radius: 700,
+      born: 0.8,
+      mix: {
+        splitter: { base: 0.03, step: 0.025, max: 0.16 },
+        shooter: { base: 0.09, step: 0.025, max: 0.18 },
+        runner: 0.2,
+      },
+    },
+    // 바닥 위험: fromStage부터, 간격 = max(min, interval − Stage × step)초, 동시에 max개, 기체에서 offset 거리
+    hazard: {
+      fromStage: 2,
+      first: 9,
+      interval: 11,
+      step: 0.55,
+      min: 4,
+      max: 8,
+      offset: 100,
+      r: 85,
+      delay: 1.65,
+      damage: 25,
+    },
+    // 적 기본값. split: 죽을 때 나오는 돌격 수
+    enemies: {
+      chaser: { r: 15, hp: 30, speed: 80, damage: 13, xp: 4, score: 90 },
+      runner: { r: 12, hp: 23, speed: 137, damage: 11, xp: 4, score: 110 },
+      shooter: { r: 18, hp: 60, speed: 60, damage: 12, xp: 7, score: 170 },
+      splitter: { r: 24, hp: 110, speed: 56, damage: 20, xp: 9, score: 240, split: 3 },
+      boss: { r: 62, hp: 1800, speed: 55, damage: 25, xp: 40, score: 4200 },
+    },
+    // 사수: near~far 거리를 유지, 재사격 = max(reloadMin, reload ÷ (1 + reloadStage × (Stage − 1))) ÷ 모드 사격
+    // 부채꼴(fan 모드): id가 fanEvery의 배수인 사수가 ±fanAngle 두 발 · 연속(burst 모드): burstEvery의 배수가 burstDelay 뒤 한 발 더
+    shooter: {
+      near: 240,
+      far: 360,
+      reload: 2.7,
+      reloadStage: 0.03,
+      reloadMin: 1.3,
+      shotSpeed: 185,
+      fanEvery: 3,
+      fanAngle: 0.1,
+      burstEvery: 4,
+      burstDelay: 0.16,
+    },
+    // 보스 공격: near보다 멀면 다가온다. 체력이 hurt 비율 아래면 더 자주·더 많이 쏜다(원형 탄 ring + 조준 탄 1발)
+    // bossSide 모드는 id가 sideEvery의 배수인 보스가 조준 탄 양옆 ±sideAngle로 2발 더
+    bossAttack: {
+      near: 240,
+      hurt: 0.5,
+      reload: 2.1,
+      reloadHurt: 1.4,
+      ring: 12,
+      ringHurt: 16,
+      ringSpeed: 150,
+      ringSpin: 0.3,
+      aimSpeed: 220,
+      sideEvery: 2,
+      sideAngle: 0.13,
+    },
+    // 적 탄환: 피해 = 적 피해 × damage, 수명(초). 사수·보스의 첫 사격은 등장 뒤 firstShot + 0~1초
+    hostile: { damage: 0.85, ttl: 6, firstShot: 1.5 },
+    // 동시에 있을 수 있는 수
+    caps: { enemies: 110, hostiles: 350, bullets: 400, gems: 220 },
+    // Point: 처치 보너스 = min(comboMax, 콤보 × comboStep), 콤보는 comboWindow초 안에 처치가 이어질 때 쌓인다
+    score: { comboWindow: 3, comboStep: 2, comboMax: 40 },
+    // 포위: 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서). 남은 동안 일반 출현을 멈추고
+    // 적 상한 미만일 때 스텝마다 perStep마리. 사수 첫 사격 = shotDelay + 앞선 사수 수 × shotStep초. warn초 전 예고.
+    siege: {
+      interval: 600,
+      warn: 2,
+      perStep: 4,
+      sides: 4,
+      shotDelay: 1.5,
+      shotStep: 0.45,
+      pattern: [
+        'chaser',
+        'runner',
+        'chaser',
+        'shooter',
+        'chaser',
+        'runner',
+        'splitter',
+        'chaser',
+        'runner',
+        'shooter',
+        'chaser',
+        'runner',
+        'chaser',
+        'splitter',
+        'chaser',
+        'runner',
+        'shooter',
+        'chaser',
+      ],
+    },
+    // 맵 크기(시작 위치는 가운데)
+    map: { width: 3200, height: 2400 },
+    // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
+    superLaunch: { stage: 29, level: 29, picks: 28 },
+    // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
+    // 영구 스택 가격 = permaBase + floor(이미 산 수 ÷ permaStep). 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G.
+    // bossGold: 보스 1마리 처치마다 G(R-002)
+    economy: {
+      goldBase: 1,
+      goldMax: 5,
+      blueEvery: 10,
+      coinChoice: 1,
+      incomePrice: 100,
+      incomeMax: 4,
+      autoPrice: 100,
+      scGold: 100,
+      scBlue: 10,
+      notePerChar: 10,
+      noteMax: 15,
+      permaStep: 3,
+      bossGold: 3,
+      permaBase: {
+        power: 2,
+        rapid: 3,
+        multi: 4,
+        pierce: 3,
+        speed: 2,
+        magnet: 2,
+        orbit: 4,
+        vital: 3,
+        nova: 3,
+        crit: 3,
+        shield: 4,
+      },
+    },
+    // 고양이 비행사(R-026, 1단계). 0단계는 저장 구조만 쓴다: 고양이별 레벨 0~maxLevel(0은 미해금)
+    cats: { maxLevel: 5, list: ['engineer', 'supply', 'pilot'] },
+    // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
+    // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
+    records: { keep: 100, logs: 10 },
+    // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
+    // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
+    log: {
+      input: 0.5,
+      inputLarge: 2,
+      state: 0.99,
+      stateLarge: 2.99,
+      largeBytes: 50000,
+      killBatch: 5,
+      tail: 0.095,
+      tailWindow: 20,
+      frame: 4.9,
+      flush: 15,
+      checkpoint: 30,
+    },
+  });
+
+  root.NeonBalance = BALANCE;
+  if (typeof module !== 'undefined') module.exports = BALANCE;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+    </script>
+    <script>
+      (function (root) {
+  'use strict';
+  // 이름·표기·화면 문구의 단일 원본(R-013). 숫자는 balance.js에서 읽는다.
+  // 게임 화면(app.js·view.js·badges.js), 정적 화면(shell.html의 {{경로}} 자리, 빌드 때 채움), 분석 페이지,
+  // 정본 문서(docs/spec/TERMS.md 전체, npm run docs)가 모두 이 파일을 쓴다. 3단계 Help도 이 파일이 원본이다.
+  // 값을 바꾸면 npm run docs로 문서를 다시 만든다(어긋나면 npm test가 실패한다).
+  const B = () => root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
+
+  // ── 표기 ──
+  const numberFormat = new Intl.NumberFormat('ko-KR');
+  const num = n => numberFormat.format(Math.floor(Number(n) || 0));
+  // 0.22 → '22%', 0.045 → '4.5%'
+  const pct = v => +(v * 100).toFixed(2) + '%';
+  // 숫자 뒤 조사 '으로/로': 끝자리가 0·3·6이면 받침이 있어 '으로'(영·십·백·삼·육), 그 밖은 '로'(ㄹ 받침·받침 없음)
+  const ro = n => ([0, 3, 6].includes(Math.abs(Math.floor(Number(n) || 0)) % 10) ? '으로' : '로');
+  // 글 뒤 '으로/로': 숫자로 끝나면 ro, 한글이면 받침(ㄹ 받침은 '로'), 그 밖(영문)은 '로'
+  function roAfter(text) {
+    const s = String(text),
+      c = s.charCodeAt(s.length - 1);
+    if (/\d$/.test(s)) return ro(s.match(/\d+$/)[0]);
+    if (c >= 0xac00 && c <= 0xd7a3) {
+      const jong = (c - 0xac00) % 28;
+      return jong === 0 || jong === 8 ? '로' : '으로';
+    }
+    return '로';
+  }
+  function timeString(t) {
+    const n = Math.max(0, Math.floor(Number(t) || 0)),
+      h = Math.floor(n / 3600);
+    return (
+      (h ? String(h) + ':' : '') +
+      String(Math.floor(n / 60) % 60).padStart(2, '0') +
+      ':' +
+      String(n % 60).padStart(2, '0')
+    );
+  }
+
+  // ── 이름 ──
+  // short: 화면 표기 · name: 정식 이름 · title: 메뉴 재화 아이콘 설명 · ko: 한국어 이름
+  const coins = {
+    g: { short: 'G', name: 'Gold Coin', title: 'Gold' },
+    b: { short: 'B', name: 'Blue Coin', title: 'Blue', ko: '블루코인' },
+    s: { short: 'S', name: 'Super Coin', title: 'Super Coin', ko: '슈퍼코인' },
+  };
+  const G = coins.g.short,
+    BL = coins.b.short,
+    SC = coins.s.short;
+  // note: 열린 모드 카드의 한 줄(없으면 해금 조건)
+  const modes = {
+    easy: { name: 'Easy', note: '기본 아레나' },
+    hard: { name: 'Hard', note: '바로 선택 가능' },
+    extream: { name: 'Extream' },
+    super: { name: 'Super' },
+    ultra: { name: 'Ultra' },
+    insane: { name: 'Insane' },
+  };
+  const modeName = id => (modes[id] || modes.easy).name;
+  // 배지 읽기 이름(예: 'Easy 모드')
+  const modeLabel = id => modeName(id) + ' 모드';
+  // shape: 기체 모양(22×22 칸, 위쪽이 앞). 메뉴 아이콘과 전투 기체(WebGL·기본 그래픽)가 같은 원본을 쓴다(R-017).
+  // body: 바깥 다각형 · inner: 안쪽 다각형 · line: 안쪽 선. 숫자 뒤 Stroke는 메뉴 아이콘 선 굵기
+  const crafts = {
+    striker: {
+      name: 'STRIKER',
+      role: '균형형',
+      shape: {
+        body: [
+          [11, 2],
+          [18, 19],
+          [11, 15],
+          [4, 19],
+        ],
+        bodyStroke: 1.6,
+      },
+    },
+    specter: {
+      name: 'SPECTER',
+      role: '기동형',
+      shape: {
+        body: [
+          [11, 1.5],
+          [14, 12.5],
+          [20, 20],
+          [11, 16.5],
+          [2, 20],
+          [8, 12.5],
+        ],
+        bodyStroke: 1.5,
+        line: [
+          [11, 6],
+          [11, 14],
+        ],
+        lineStroke: 1.2,
+      },
+    },
+    bulwark: {
+      name: 'BULWARK',
+      role: '중장갑',
+      shape: {
+        body: [
+          [11, 2],
+          [19, 8],
+          [19, 17],
+          [11, 20],
+          [3, 17],
+          [3, 8],
+        ],
+        bodyStroke: 1.6,
+        inner: [
+          [11, 6],
+          [15.5, 9.4],
+          [15.5, 14.8],
+          [11, 16.5],
+          [6.5, 14.8],
+          [6.5, 9.4],
+        ],
+        innerStroke: 1.1,
+      },
+    },
+  };
+  const craftName = id => crafts[id]?.name || '';
+  // 스킬. tag·icon·color: 카드 표기 · effect: 성장 탭·S 출격 준비의 한 줄 효과 · abbr: 분석 페이지 축약
+  // startLabel: 기체 카드의 시작 스택 축약(시작 스택이 있는 스킬만)
+  const skills = {
+    power: { name: '과충전 코어', tag: 'DAMAGE', icon: '✦', color: '#50f3d6', abbr: '과충전' },
+    rapid: {
+      name: '펄스 가속기',
+      tag: 'FIRE RATE',
+      icon: '≋',
+      color: '#50f3d6',
+      abbr: '연사',
+      startLabel: '연사',
+    },
+    multi: {
+      name: '분광 탄환',
+      tag: 'MULTISHOT',
+      icon: '⋔',
+      color: '#f4ce72',
+      abbr: '분광',
+      startLabel: '다중',
+    },
+    pierce: { name: '위상 관통', tag: 'PIERCE', icon: '⟐', color: '#af9bff', abbr: '관통' },
+    speed: {
+      name: '벡터 드라이브',
+      tag: 'MOBILITY',
+      icon: '»',
+      color: '#50f3d6',
+      abbr: '기동',
+      startLabel: '이동',
+    },
+    magnet: {
+      name: '중력 수집기',
+      tag: 'PICKUP',
+      icon: '◎',
+      color: '#f4ce72',
+      abbr: '흡수',
+      startLabel: '수집',
+    },
+    orbit: { name: '공전 칼날', tag: 'ORBITAL', icon: '◈', color: '#af9bff', abbr: '공전' },
+    vital: { name: '응급 재구성', tag: 'SURVIVAL', icon: '+', color: '#8ce8a2', abbr: '체력' },
+    nova: { name: '충격파 증폭', tag: 'NOVA', icon: '⊕', color: '#af9bff', abbr: '충격파' },
+    crit: { name: '프리즘 조준', tag: 'CRITICAL', icon: '⌖', color: '#f4ce72', abbr: '치명타' },
+    shield: { name: '재생 방벽', tag: 'SHIELD', icon: '⬡', color: '#50b6ff', abbr: '방벽' },
+  };
+  const skillName = id => skills[id]?.name || id;
+  // 스킬 나열 순서(성장 탭 묶음)
+  const skillGroups = [
+    ['공격', ['power', 'rapid', 'multi', 'pierce', 'crit']],
+    ['생존 · 기동', ['vital', 'shield', 'speed', 'magnet']],
+    ['특수', ['orbit', 'nova']],
+  ];
+  // 모든 화면의 스킬 목록은 이 순서로 보여 준다(R-015). 엔진의 카드 뽑기 순서와는 따로다.
+  const skillOrder = skillGroups.flatMap(([, ids]) => ids);
+  const sortSkills = (list, id = x => x?.id ?? x) =>
+    [...list].sort((a, b) => skillOrder.indexOf(id(a)) - skillOrder.indexOf(id(b)));
+  // 성장 탭·S 출격 준비의 스택당 효과 한 줄
+  function skillEffect(id) {
+    const S = B().skills;
+    return (
+      {
+        power: '탄환 피해 +' + pct(S.power.damage),
+        rapid: '연사 +' + pct(S.rapid.rate),
+        multi: '동시 탄환 +1',
+        pierce: '관통 +1',
+        crit: '치명타 확률 +' + pct(S.crit.step),
+        vital: '최대 체력 +' + S.vital.hp,
+        shield: '보호막 +' + S.shield.amount + ' · 재생',
+        speed: '이동 속도 +' + S.speed.step,
+        magnet: '흡수 범위 +' + S.magnet.step,
+        orbit: '칼날 +1 · 피해 강화',
+        nova: '충격파 피해 +' + S.nova.damage,
+      }[id] || ''
+    );
+  }
+  // 레벨업 카드 설명: 지금 능력치(g.p)에 따라 상한에 닿으면 넘친 스택 효과를 보여 준다.
+  function skillChoice(g, id) {
+    const b = B(),
+      S = b.skills,
+      p = g.p,
+      xpBonus = Number((S.magnet.xp * (g.profile?.xp || 1)).toFixed(2));
+    return (
+      {
+        power: '기본 탄환 피해 +' + pct(S.power.damage),
+        rapid:
+          p.fire > S.rapid.minFire + 0.001
+            ? '발사 간격 단축 · 연사 강화'
+            : '탄환 피해 +' + pct(S.rapid.overflow) + ' · 최대 연사 유지',
+        multi:
+          p.multi < S.multi.max
+            ? '동시 탄환 +1'
+            : '탄환 피해 +' + pct(S.multi.overflow) + ' · ' + S.multi.max + '발 유지',
+        pierce:
+          p.pierce < S.pierce.max
+            ? '추가 관통 +1'
+            : '탄환 피해 +' + pct(S.pierce.overflow) + ' · 관통 ' + S.pierce.max + ' 유지',
+        speed:
+          p.speed < S.speed.max
+            ? '이동 속도 +' + Math.min(S.speed.step, S.speed.max - p.speed) + ' · 대시 재충전 개선'
+            : '탄환 피해 +' +
+              pct(S.speed.overflow) +
+              (p.dashMax > b.dash.min + 0.0001 ? ' · 대시 재충전 개선' : ''),
+        magnet:
+          p.magnet < S.magnet.max
+            ? '흡수 범위 +' + Math.min(S.magnet.step, S.magnet.max - p.magnet) + ' · XP +' + xpBonus
+            : '탄환 피해 +' + pct(S.magnet.overflow) + ' · XP +' + xpBonus,
+        orbit:
+          p.orbits < b.orbit.max
+            ? '공전 칼날 +1 · 칼날 피해 강화'
+            : '칼날 피해 +' + S.orbit.step + ' · ' + b.orbit.max + '개 유지',
+        vital: '최대 체력 +' + S.vital.hp + ' · 최대 ' + S.vital.heal + ' 회복',
+        nova:
+          '충격파 피해 +' +
+          S.nova.damage +
+          (p.novaRadius < S.nova.radiusMax
+            ? ' · 범위 +' + Math.min(S.nova.radius, S.nova.radiusMax - p.novaRadius)
+            : '') +
+          (p.novaMax > S.nova.cooldownMin ? ' · 재충전 −' + S.nova.cooldown + '초' : ''),
+        crit:
+          p.crit < S.crit.max
+            ? '치명타 확률 +' + Math.round((Math.min(S.crit.max, p.crit + S.crit.step) - p.crit) * 100) + '%'
+            : '치명타 피해 배율 +' + S.crit.overflow,
+        shield: '보호막 +' + S.shield.amount + ' · 재생 속도 강화',
+      }[id] || ''
+    );
+  }
+  // 기체 카드의 시작 스택 한 줄(예: '이동·연사 +3', '다중 +3 (4발)')
+  function craftStart(id) {
+    const start = B().crafts[id]?.start || {},
+      ids = Object.keys(start);
+    if (!ids.length) return '';
+    const n = start[ids[0]];
+    return (
+      ids.map(k => skills[k].startLabel).join('·') +
+      ' +' +
+      n +
+      (start.multi ? ' (' + (1 + start.multi) + '발)' : '')
+    );
+  }
+  // 스택 출처
+  const sources = { craft: '기체', perma: '영구', prep: '준비', earned: '획득' };
+  // 적. name: 화면 · short: 짧은 이름
+  const enemies = {
+    chaser: { name: '추적자', short: '추적' },
+    runner: { name: '돌격자', short: '돌격' },
+    shooter: { name: '사수', short: '사수' },
+    splitter: { name: '분열체', short: '분열' },
+    boss: { name: '보스', short: '보스' },
+    hazard: { name: '바닥 위험', short: '바닥 위험' },
+    unknown: { name: '미상', short: '미상' },
+  };
+  const enemyName = kind => (enemies[kind] || enemies.unknown).name;
+  // 고양이 비행사(1단계 R-026에서 화면에 나온다. 이름은 임시, 3단계에서 확정)
+  const cats = {
+    engineer: { name: '정비사' },
+    supply: { name: '보급관' },
+    pilot: { name: '조종사' },
+  };
+  const abilities = { dash: '대시', nova: '충격파' };
+  const stage = { name: 'Stage', upper: 'STAGE' };
+  const level = { short: 'LV' };
+  const point = { name: 'Point', upper: 'POINT' };
+  const stageLabel = n => stage.upper + ' ' + n;
+  const levelShort = n => level.short + n;
+  const launches = {
+    normal: '일반 출격',
+    super: SC + ' 출격',
+    superLong: SC + ' 특수 출격',
+    superPrep: '슈퍼 출격 준비',
+  };
+  const auto = { name: '자동 강화', short: 'AUTO' };
+
+  // 해금 조건 한 줄(예: 'Super 10분 + 500,000 Point')
+  function unlockGate(id) {
+    const u = B().unlock[id];
+    if (!u) return '';
+    const parts = [];
+    if (u.time) parts.push(u.time / 60 + '분' + (u.score || u.level ? '' : ' 생존'));
+    if (u.score) parts.push(num(u.score) + ' ' + point.name);
+    if (u.level) parts.push(levelShort(u.level));
+    return modeName(u.from) + ' ' + parts.join(' + ');
+  }
+  // 자동 강화를 켤 수 있는 가장 낮은 모드
+  const firstMode = key => Object.keys(B().modes).find(id => B().modes[id][key]);
+  const autoFrom = () => modeName(firstMode('auto'));
+  const goldBonusFrom = () => modeName(firstMode('goldBonus'));
+
+  // ── 전투 알림(알림 줄). sec: 보이는 시간(초) ──
+  const alerts = {
+    start: { sec: 2.5 },
+    startLimited: {
+      sec: 2.5,
+      text: () => '재화 저장이 제한되어 이번 판의 ' + G + '·' + BL + '는 저장되지 않습니다.',
+    },
+    startSuper: {
+      sec: 2.5,
+      text: (s, lv) => launches.superLong + ' · ' + stageLabel(s) + ' · ' + levelShort(lv) + '부터',
+    },
+    startNormal: { sec: 2.5, text: mode => modeName(mode) + ' · 원하는 때 ' + stage.name + '를 올리세요.' },
+    blue: { sec: 1.6, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
+    boss: { sec: 1.3, text: () => '보스 접근 · 이동할 공간을 확보하세요.' },
+    bossNext: { sec: 2, text: s => '다음 ' + stageLabel(s) + ' · 보스 등장' },
+    bossStage: { sec: 2, text: s => stageLabel(s) + ' · 보스 등장' },
+    bossWave: { sec: 1.2, text: () => '보스 웨이브 격파' },
+    bossGold: { sec: 1.6, text: n => '보스 격파 +' + n + ' ' + G },
+    siegeWarn: { sec: 2.2, text: () => '⚠ 포위 접근 · ' + B().siege.sides + '방향' },
+    siege: { sec: 1.6, text: n => '포위 · ' + B().siege.sides + '방향에서 ' + n + '기' },
+    stage: {
+      sec: 1.3,
+      text: (s, hp, xp, score) =>
+        stage.upper +
+        ' ' +
+        s +
+        ' · 적 체력 ' +
+        hp +
+        '× · XP ' +
+        xp +
+        '× · ' +
+        point.upper +
+        ' ' +
+        score +
+        '×',
+    },
+    auto: {
+      sec: 1.1,
+      text: (n, id) =>
+        n === 1
+          ? auto.name + ' · ' + skillName(id) + ' +1'
+          : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
+    },
+    unlock: { sec: 2, text: id => modeName(id) + ' 해금 · 다음 도전에서 선택하세요.' },
+  };
+
+  // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
+  const E = () => B().economy;
+  const ui = {
+    meta: {
+      title: 'NEON ARENA · ENDLESS',
+      description:
+        '끝없는 생존, 직접 올리는 ' +
+        stage.name +
+        ', ' +
+        point.name +
+        ' TOP 3. 설치 없이 즐기는 네온 아레나.',
+      arena:
+        '전투 아레나. WASD 또는 방향키 이동, Space ' +
+        abilities.dash +
+        ', E ' +
+        abilities.nova +
+        ', U ' +
+        stage.name +
+        ' 상승, Esc 일시정지.',
+    },
+    menu: { label: '메뉴', wallet: '보유 재화', settings: '설정', tabs: '메뉴 탭' },
+    tabs: { play: '플레이', grow: '성장', shop: '상점', rec: '기록' },
+    home: {
+      top3: point.name + ' TOP 3',
+      top3Note: '· 전체 모드',
+      allRecords: '전체 기록 ›',
+      modeChange: '변경 ›',
+      crafts: '기체',
+      craftsLabel: '기체 선택',
+    },
+    grow: {
+      title: '공통 스킬트리',
+      note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 다음 출격부터 적용',
+      blueNote: () => {
+        const m = B().modes,
+          every = E().blueEvery,
+          extra = Object.keys(m)
+            .filter(id => m[id].blue !== m.easy.blue)
+            .map(id => modeName(id) + ' ' + m[id].blue + BL);
+        return (
+          coins.b.ko + ': 실제 ' + levelShort(every) + '마다 ' + m.easy.blue + BL + ' · ' + extra.join(' · ')
+        );
+      },
+    },
+    shop: { title: '상점', note: '재화는 이 기기 브라우저에 저장됩니다 · 백업은 기록 탭' },
+    rec: {
+      title: '기록',
+      note: () =>
+        '전체 모드 · ' +
+        point.name +
+        ' 순 · 최근 ' +
+        B().records.keep +
+        '판 보관, 상세 로그는 최근 ' +
+        B().records.logs +
+        '판',
+      data: '데이터 관리',
+      dataNote: '기록과 재화를 파일 하나로 백업하거나, 다른 기기·이전 버전에서 가져옵니다.',
+      export: '백업 내보내기',
+      import: '백업 가져오기',
+    },
+    launch: { normal: launches.normal, super: launches.super, owned: '보유 0' },
+    prep: {
+      back: '준비 취소',
+      title: launches.superPrep,
+      start: '시작',
+      startValue: () => stage.upper + ' ' + B().superLaunch.stage + ' · ' + levelShort(B().superLaunch.level),
+      left: '남은 강화',
+      picks: () => B().superLaunch.picks,
+      picksOf: () => '/ ' + B().superLaunch.picks,
+      allocLabel: '강화 배분',
+      cancel: '준비 취소',
+      launch: '출격 · ' + SC + ' 1 사용',
+      note: () =>
+        B().superLaunch.picks +
+        '회를 모두 배분하면 출격할 수 있습니다 · 취소는 무비용 · ' +
+        SC +
+        '는 출격할 때만 사용',
+    },
+    mode: { title: '모드 선택', close: '닫기', group: '모드', done: '선택 완료' },
+    hud: {
+      status: '기체 상태',
+      hp: 'HP',
+      pause: '일시정지',
+      level: () => levelShort(1),
+      auto: auto.short,
+      dash: abilities.dash,
+      nova: abilities.nova,
+      ready: '준비',
+      stageTitle: 'U: ' + stage.name + ' 올리기',
+      stageLabel: stage.name + ' 올리기',
+      stagePrefix: stage.upper + ' ',
+      exp: 'EXP',
+      xp: () => '0 / ' + B().level.base,
+    },
+    upgrade: {
+      kicker: 'LEVEL UP',
+      title: '강화 하나를 고르세요',
+      coin: () => '대신 코인 +' + E().coinChoice + ' ' + G + ' 받기',
+      sub: '1 · 2 · 3 키로 선택 · 선택 중에는 전투가 멈춥니다',
+    },
+    pause: {
+      kicker: 'PAUSED',
+      title: '잠시 숨을 고르세요',
+      resume: '전투 계속',
+      retire: '기록을 남기고 종료',
+      settings: '화면 · 소리 설정',
+    },
+    result: {
+      kicker: 'RUN RECORDED',
+      super: launches.superLong,
+      title: '결과',
+      best: 'NEW BEST',
+      replay: '다시 도전',
+      menu: '기록 · 기체 선택',
+      skills: '스킬 내역',
+      noteLabel: '기록 한 줄 저장',
+      note: '한 줄 남기기',
+      noteHint: () => '선택 · 최대 ' + E().noteMax + '자 · 글자당 ' + E().notePerChar + ' ' + G,
+      notePlaceholder: '이번 판의 한마디',
+      noteCost: () => '0자 · 0 ' + G,
+      noteSave: '한 줄 남기기',
+      noteSkip: '건너뛰기',
+      exportLog: '분석 로그 저장',
+      analysis: '상세 분석',
+    },
+    settings: {
+      kicker: 'SETTINGS',
+      title: '화면 · 소리 설정',
+      view: '시야',
+      viewWide: '넓게 · 기본',
+      viewStandard: '표준',
+      effects: '이펙트',
+      effectsAuto: '자동',
+      effectsHigh: '풍부하게',
+      effectsLow: '가볍게',
+      sound: '효과음',
+      motion: '화면 흔들림',
+      numbers: '치명타 숫자',
+      fullscreen: '전체 화면',
+      help: '조작법',
+      done: '설정 완료',
+    },
+    detail: { exportLog: '분석 로그 저장', analysis: '상세 분석', back: '돌아가기' },
+    del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
+    import: {
+      kicker: 'IMPORT',
+      title: '백업 가져오기',
+      profile: '잔액·해금도 이 파일 값으로 바꾸기',
+      cancel: '취소',
+      confirm: '가져오기',
+    },
+    help: {
+      kicker: 'PILOT BRIEFING',
+      title: '성장하고, 다음 ' + stage.name + '를 선택하세요',
+      move: '이동 · 방향키도 가능',
+      dash: '짧은 무적 ' + abilities.dash,
+      nova: abilities.nova + ' · 근처 적 탄환 제거',
+      stage: stage.name + ' 즉시 올리기',
+      pause: '일시정지',
+      p1: () =>
+        '공격은 자동입니다. 마우스를 누르면 커서 방향으로 조준합니다. 황금 XP 조각을 모아 레벨업마다 강화 하나를 선택하세요. ' +
+        stage.name +
+        '는 원하는 때 올릴 수 있고, ' +
+        B().boss.every +
+        '의 배수 ' +
+        stage.name +
+        '에서 보스가 나타납니다.',
+      p2:
+        '휴대폰: 버튼을 뺀 빈 공간 어디서든 끌어 이동하세요. 다른 손가락으로 ' +
+        abilities.dash +
+        '·' +
+        abilities.nova +
+        '를 누를 수 있습니다. 일시정지 화면에서 기록을 남기고 종료할 수 있습니다.',
+      p3: '게임 기록과 로그는 이 브라우저에 저장됩니다. 기록 탭의 백업으로 다른 기기에 옮길 수 있고, 내보낸 분석 로그는 상세 분석 화면에서 다시 열 수 있습니다.',
+      done: '준비 완료',
+    },
+  };
+
+  // ── 화면 메시지(app.js·view.js가 상황에 따라 쓰는 문구) ──
+  const msg = {
+    legacy: n => '이전 버전 최고점 ' + num(n) + ' · 상세 기록 없음',
+    storageFull: '저장 공간 부족 · 기록을 파일로 남기세요',
+    storageLimited: '이 브라우저의 저장 기능이 제한되어 있습니다.',
+    renderNote: (v, fallback) => 'v' + v + (fallback ? ' · 기본 그래픽' : ''),
+    bootFail: '화면을 준비하지 못했습니다. 새로고침해 주세요.',
+    landscape: '화면을 가로로 돌려 넓게 플레이할 수 있습니다.',
+    upgradeKicker: lv => 'LEVEL UP · ' + level.short + ' ' + lv,
+    upgradeKickerBlue: (lv, n) => 'LEVEL UP · ' + level.short + ' ' + lv + ' · +' + n + ' ' + BL + ' 획득',
+    upgradeAnnounce: lv => '레벨 ' + lv + '. 스킬 또는 코인을 선택하세요.',
+    blueAnnounce: n => coins.b.ko + ' ' + n + '개 획득',
+    coinFail: '코인을 저장하지 못했습니다. 스킬을 선택하거나 다시 시도하세요.',
+    coinRetry: '코인은 지급되었습니다. 같은 선택을 다시 누르면 중복 지급 없이 선택을 마칩니다.',
+    pauseSummary: {
+      mode: '모드',
+      stage: stage.upper,
+      level: level.short,
+      time: '시간',
+      point: point.upper,
+      kills: '처치',
+    },
+    resultCoins: (choices, gold, blue, boss) =>
+      '코인 선택 ' +
+      choices +
+      '회' +
+      (boss ? ' · 보스 격파 +' + num(boss) + ' ' + G : '') +
+      ' · 잔액 ' +
+      num(gold) +
+      ' ' +
+      G +
+      ' · ' +
+      num(blue) +
+      ' ' +
+      BL,
+    resultKicker: defeated => (defeated ? 'SIGNAL LOST · RUN RECORDED' : 'RUN SAVED · SIGNAL ON HOLD'),
+    resultAnnounce: (score, lv) => '도전 기록. ' + num(score) + '점, 레벨 ' + lv,
+    newBest: 'NEW BEST · TOP 1',
+    recordSaving: '기록 저장 중…',
+    recordSaved: '이 기기에 기록을 저장했습니다.',
+    recordSaveFail: '기록 저장에 실패했습니다. 분석 로그를 파일로 남겨주세요.',
+    jsonReady: 'JSON 파일 받기',
+    fileReady: name => '파일 받기: ' + name,
+    shield: (v, max) => 'S ' + num(v) + '/' + num(max),
+    abilityReady: '준비',
+    abilityLabel: (id, ready) => abilities[id] + (ready ? ' 준비됨' : ' 재충전 중'),
+    boss: (alive, total, s, hp) =>
+      'BOSS ' + alive + ' / ' + total + ' · ' + stage.upper + ' ' + s + ' · ' + num(hp) + ' HP',
+    combo: n => n + ' CHAIN',
+    autoStatus: owned =>
+      owned
+        ? auto.name + ' 보유 중 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF'
+        : auto.name +
+          '는 상점에서 ' +
+          E().autoPrice +
+          ' ' +
+          G +
+          '로 한 번 구매 · ' +
+          autoFrom() +
+          ' 이상에서 사용',
+    superNote: n => '보유 ' + num(n) + ' · ' + stageLabel(B().superLaunch.stage),
+    purchase: {
+      insufficient: '재화가 부족합니다.',
+      stale: '가격이나 단계가 바뀌어 화면을 새로 고쳤습니다. 다시 확인해 주세요.',
+      max: '이미 최대 단계입니다.',
+      storage: '저장하지 못했습니다. 재화는 그대로입니다.',
+      invalid: '구매 정보를 확인할 수 없습니다.',
+      duplicate: '이미 처리된 구매입니다.',
+      failed: '구매하지 못했습니다.',
+      auto: () => auto.name + '를 구매했습니다 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
+      income: tier => '시간 코인 ' + tier + '단계 · 다음 판부터 분당 적립이 늘어납니다',
+      craftSC: coins.s.ko + ' 1개를 만들었습니다',
+      perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용 · 다음 출격부터 적용',
+    },
+    prep: {
+      insufficient: SC + ' 없음',
+      held_elsewhere: '다른 창에서 준비 중',
+      not_held: '준비 예약이 풀렸습니다. 준비 취소 후 다시 시작하세요.',
+      storage: '저장하지 못했습니다. ' + SC + '는 그대로입니다.',
+      failed: '준비 실패',
+      launchFailed: '출격하지 못했습니다. ' + SC + '는 그대로입니다.',
+      start: (s, lv) => stage.upper + ' ' + s + ' · ' + levelShort(lv),
+      craft: (id, hp) => craftName(id) + ' · 시작 HP ' + num(hp),
+    },
+    backup: {
+      exported: n => '기록 ' + n + '개와 재화·해금을 백업했습니다.',
+      nothing: '새로 가져올 기록이 없습니다.',
+      summary: (add, skipped, bad) =>
+        (add
+          ? '기록 ' + add + '개를 추가하고 기록에 맞는 모드 해금을 반영합니다'
+          : '새로 추가할 기록은 없습니다') +
+        (skipped ? ' (이미 있는 ' + skipped + '개 제외)' : '') +
+        (bad ? ' · 읽지 못한 파일 ' + bad + '개' : '') +
+        '.',
+      profileNote: down =>
+        (down ? '↓ 항목은 바꾸면 줄어들어 기본으로 체크하지 않았습니다. ' : '') +
+        '바꾸기 전 지금 값은 따로 보관합니다.',
+      done: (added, restored) =>
+        (added >= 0 ? '기록 ' + added + '개를 추가했습니다' : '기록을 저장하지 못했습니다') +
+        (restored ? (restored.ok ? ' · 잔액·해금을 바꿨습니다.' : ' · 잔액·해금은 바꾸지 못했습니다.') : '.'),
+      reasons: {
+        not_json: 'JSON 파일이 아닙니다.',
+        unknown_format: 'NEON ARENA 백업이나 분석 로그 파일이 아닙니다.',
+        unsupported_schema: '이 버전에서 읽을 수 없는 백업 형식입니다.',
+        broken_record: '기록 정보가 손상된 로그입니다.',
+      },
+      // 가져오기 비교표 줄 이름
+      rows: {
+        gold: G,
+        blue: BL,
+        sc: SC,
+        tier: '분당 단계',
+        modes: '해금 모드',
+        perma: '영구 스택',
+        auto: auto.name,
+        cats: '고양이',
+        hidden: '히든 탭',
+        autoGold: '자동 ' + G + ' 습득',
+      },
+      compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
+    },
+    note: {
+      saved: '한 줄 저장 완료',
+      quote: (count, cost, rest) =>
+        count + ' / ' + E().noteMax + '글자 · ' + cost + ' ' + G + ' · 저장 후 ' + num(rest) + ' ' + G,
+      save: (count, cost) => (count ? cost + ' ' + G + '로 남기기' : '한 줄 남기기'),
+      tooLong: () => E().noteMax + '글자까지 입력할 수 있습니다.',
+      short: (count, cost) => count + ' / ' + E().noteMax + '글자 · ' + cost + ' ' + G + ' · 잔액 부족',
+      limited: '이 브라우저에서는 유료 한 줄 저장을 사용할 수 없습니다. ' + G + '는 차감하지 않습니다.',
+      done: cost => '한 줄 저장 · ' + cost + ' ' + G + ' 사용',
+      insufficient: G + '가 부족합니다.',
+      note_confirmed: '이미 한 줄을 남긴 기록입니다.',
+      invalid_note: () => '1~' + E().noteMax + '글자로 입력해 주세요.',
+      storage_unavailable: '브라우저 저장소가 지원되지 않아 ' + G + '를 차감하지 않았습니다.',
+      failed: '저장하지 못했습니다. ' + G + '는 차감하지 않았습니다.',
+    },
+    // 기록 탭(R-018)
+    rec: {
+      confirm: n => '선택한 기록 ' + n + '개를 지웁니다. 상세 로그도 함께 지워지고 되돌릴 수 없습니다.',
+      removed: n => '기록 ' + n + '개를 지웠습니다.',
+      protected: '보호된 기록(TOP3·별표)이 섞여 있어 지우지 않았습니다.',
+      failed: '지우지 못했습니다. 기록은 그대로입니다.',
+      starFailed: '별표를 저장하지 못했습니다.',
+      summaryOnly: () =>
+        '요약만 남은 기록 · 상세 로그는 최근 ' + B().records.logs + '판과 TOP3·별표 기록만 보관합니다',
+    },
+    // 터치 진단 상자(?touch, R-016)
+    touch: {
+      ready: '터치 진단 켜짐 · 버튼을 눌러 보세요',
+      down: '누름',
+      click: '눌림',
+      top: '위에',
+      modal: '모달 밖',
+      disabled: '비활성',
+      noTouch: '터치 막힘',
+      sinceFs: '전환 뒤',
+      fullscreen: '전체화면',
+      on: '켜짐',
+      off: '꺼짐',
+      size: '크기',
+    },
+    storage: {
+      profileRead: '프로필 저장소를 읽지 못했습니다. 재화를 지급하거나 사용할 수 없습니다.',
+      needDB: '한 줄 남기기에는 거래를 지원하는 브라우저 저장소가 필요합니다.',
+      none: '저장소를 사용할 수 없습니다. 재화를 지급하거나 사용할 수 없습니다.',
+      // DB 버전을 올릴 때 다른 탭의 이전 버전이 저장소를 붙잡고 있으면
+      waitOldTab: '다른 탭에 열린 이전 버전을 닫아 주세요. 닫으면 바로 이어집니다.',
+      // 다른 탭에서 새 버전이 열려 이 탭의 저장소 연결이 끊겼을 때
+      closed: '다른 탭에서 새 버전이 열려 이 탭은 저장을 멈췄습니다. 새로고침해 주세요.',
+    },
+  };
+
+  // ── view.js 화면 조각 문구 ──
+  const view = {
+    top3Empty: '첫 기록을 기다립니다.<br>새로운 최고점에 도전하세요.',
+    recordsEmpty: '아직 저장된 기록이 없습니다.',
+    // 기록 탭 별표 · 선택 삭제(R-018)
+    rec: {
+      count: (n, stars) => '기록 ' + n + '판' + (stars ? ' · ★ ' + stars : ''),
+      select: '선택',
+      selected: n => n + '개 선택됨',
+      cancel: '취소',
+      remove: '삭제',
+      info: '🔒 TOP3와 ★ 별표 기록은 선택·자동 정리에서 빠집니다 · 삭제는 확인 창 1번 뒤 되돌릴 수 없음',
+      locked: '보호된 기록(TOP3·별표)',
+      check: '선택',
+      star: '별표',
+      top: 'TOP3',
+      summaryOnly: '요약만',
+    },
+    prev: '이전',
+    next: '다음',
+    interrupted: '중단 기록',
+    perma: '영구',
+    modeHp: v => '적 체력 ' + v + '×',
+    modeDamage: v => '공격 ' + v + '×',
+    modeAuto: auto.name + ' 가능',
+    modeBase: '기본 아레나',
+    unlockBy: id => unlockGate(id) + roAfter(unlockGate(id)) + ' 해금',
+    locked: id => '🔒 ' + unlockGate(id),
+    shop: {
+      income: '시간 코인',
+      perMinute: rate => '분당 <b>' + rate + '</b> ' + G,
+      incomeNote: mode =>
+        modeName(mode) +
+        ' 기준 · 실제 전투 1분마다 적립 · ' +
+        goldBonusFrom() +
+        ' 이상 모드는 +' +
+        B().modes[firstMode('goldBonus')].goldBonus +
+        ' ' +
+        G,
+      tierLabel: (tier, max) => '구매 단계 ' + tier + ' / ' + max,
+      buyIncome: (tier, max) =>
+        tier < max ? E().incomePrice + ' ' + G + ' · 분당 +1 구매 (' + tier + '/' + max + ')' : '최대 단계',
+      sc: coins.s.ko,
+      scRecipe: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL + ' → 1 ' + SC,
+      scNote: () =>
+        SC +
+        ' 1개로 ' +
+        stageLabel(B().superLaunch.stage) +
+        ' · ' +
+        levelShort(B().superLaunch.level) +
+        ' 특수 출격 · 출격 전 강화 ' +
+        B().superLaunch.picks +
+        '회 직접 배분',
+      scCraft: SC + ' 제작',
+      auto: auto.name,
+      autoNote: () => '레벨업 때 추천 스킬을 자동 선택 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
+      owned: '✓ 보유 중',
+      buyAuto: () => E().autoPrice + ' ' + G + ' · 한 번 구매',
+    },
+    defense: (used, cap) => '방어 ' + used + '/' + cap,
+    owned: (have, next) => '보유 ' + have + ' → ' + next,
+    noSkills: '스킬이 없습니다.',
+    stackCount: (total, kinds) => '· 총 ' + total + '스택 · ' + kinds + '종',
+    prep: {
+      craft: n => sources.craft + ' ' + n,
+      perma: n => sources.perma + ' ' + n,
+      cap: (n, cap) => '방어 한도 ' + n + ' / ' + cap,
+      full: '상한 도달 · 이후 피해',
+      near: n => '상한까지 ' + n,
+      less: name => name + ' 줄이기',
+      more: name => name + ' 늘리기',
+    },
+    analysis: {
+      dash: n => abilities.dash + ' ' + n + '회',
+      nova: n => abilities.nova + ' ' + n + '회',
+      boss: n => '보스 ' + n + '회 격파',
+      topDamage: kind => '주요 피격: ' + enemyName(kind),
+      none: '상세 스킬 활용: 미기록',
+      title: abilities.dash + ' · ' + abilities.nova + ' 활용',
+      dashReady: (ready, chance) => abilities.dash + ' 준비 ' + ready + ' · 위험 기회 ' + chance,
+      dashUse: (n, rejects) => '발동 ' + n + ' · 대기 중 입력 ' + rejects,
+      dashEffect: abilities.dash + ' 이동 / 위협 감소(추정)',
+      dashEffectValue: (d, n) => d + ' / ' + n + '회',
+      novaReady: (ready, chance) => abilities.nova + ' 준비 ' + ready + ' · 위험 기회 ' + chance,
+      novaUse: n => '발동 ' + n,
+      novaEffect: abilities.nova + ' 실제 효과',
+      novaEffectValue: (kills, cleared) => '처치 ' + kills + ' · 탄환 제거 ' + cleared,
+      fps: fps => '평균 ' + (fps || '미기록') + ' FPS · 저장한 로그로 사용 효과를 확인할 수 있습니다.',
+    },
+    stats: {
+      time: '생존',
+      level: level.short,
+      stage: stage.upper,
+      kills: '처치',
+      boss: '보스',
+      siege: '포위',
+      times: n => n + '회',
+    },
+    detail: {
+      kicker: craft => 'GAME RECORD · ' + craftName(craft),
+      defeated: '게임오버 기록',
+      interrupted: '중단 기록',
+      retired: '도전의 기록',
+      skills: '스킬 내역 ',
+      earned: (gold, blue, boss) =>
+        '획득 +' +
+        num(gold) +
+        ' ' +
+        G +
+        (boss ? '(보스 +' + num(boss) + ')' : '') +
+        ' · +' +
+        num(blue) +
+        ' ' +
+        BL +
+        ' · ',
+      coins: n => '코인 선택 ' + n + '회',
+    },
+  };
+
+  // ── 분석 페이지(analysis.html) 이름 ──
+  const analysis = {
+    attacks: { contact: '접촉', projectile: '탄환', floor: '바닥', other: '기타' },
+    // 분석 페이지의 위험 이름(게임 화면은 enemies.hazard)
+    hazard: '바닥 공격',
+    nova: '노바',
+    title: mode => modeName(mode) + ' · 런 기록',
+  };
+
+  // ── 용어집: docs/spec/TERMS.md 전체를 이 표에서 만든다(npm run docs). 3단계 Help의 원본. ──
+  // 항목: { term, desc } → '- **term**: desc'. 표: { head, rows }.
+  const glossary = () => {
+    const b = B(),
+      e = b.economy,
+      m = b.modes,
+      blueModes = Object.keys(m)
+        .filter(id => m[id].blue !== m.easy.blue)
+        .map(id => modeName(id) + ' ' + m[id].blue + '개')
+        .join(', ');
+    return [
+      {
+        title: '코인',
+        head: ['표기', '이름', '설명'],
+        rows: [
+          [
+            G,
+            coins.g.name,
+            '전투 1분마다, 보스를 처치할 때마다(' +
+              e.bossGold +
+              ' ' +
+              G +
+              "), 레벨업 때 '코인' 선택으로 얻는다. 시간 코인 단계 · 자동 강화 · 한 줄 남기기 · " +
+              coins.s.name +
+              ' 제작에 쓴다.',
+          ],
+          [
+            BL,
+            coins.b.name,
+            '레벨 ' +
+              e.blueEvery +
+              '마다 얻는다(' +
+              blueModes +
+              '). 성장 화면의 영구 스킬과 ' +
+              coins.s.name +
+              ' 제작에 쓴다.',
+          ],
+          [
+            'S',
+            coins.s.name,
+            G +
+              ' ' +
+              e.scGold +
+              ' + ' +
+              BL +
+              ' ' +
+              e.scBlue +
+              ro(e.scBlue) +
+              ' 만든다. ' +
+              launches.super +
+              ' 한 번에 1개를 쓴다.',
+          ],
+        ],
+      },
+      {
+        title: '모드',
+        items: [
+          {
+            term: modeName('easy') + ' · ' + modeName('hard'),
+            desc:
+              '처음부터 열려 있다. ' + modeName('hard') + '는 적이 조금 더 강하고 방어 스킬 한도가 생긴다.',
+          },
+          {
+            term: ['extream', 'super', 'ultra', 'insane'].map(modeName).join(' · '),
+            desc:
+              '갈수록 적이 많고 강하며 빨라진다. 대신 ' +
+              goldBonusFrom() +
+              ' 이상은 분당 ' +
+              G +
+              '가 1 더 많고, ' +
+              Object.keys(m)
+                .filter(id => m[id].blue !== m.easy.blue)
+                .map(modeName)
+                .join(' · ') +
+              '은 ' +
+              BL +
+              '를 더 준다. ' +
+              Object.keys(m)
+                .filter(id => m[id].choices < 3)
+                .map(modeName)
+                .join(' · ') +
+              '은 레벨업 선택지가 2장이다.',
+          },
+          {
+            term: '방어 한도',
+            desc:
+              skillName('vital') +
+              ' · ' +
+              skillName('shield') +
+              '을 고를 수 있는 횟수. 높은 모드일수록 적다.',
+          },
+          {
+            term: '해금',
+            desc: '아래 모드에서 조건을 채우면 다음 모드가 열린다(조건은 모드 선택창에 표시).',
+          },
+        ],
+      },
+      {
+        title: '기체',
+        items: [
+          {
+            term: craftName('striker'),
+            desc:
+              crafts.striker.role +
+              '. 수집 범위 +' +
+              b.crafts.striker.start.magnet +
+              ro(b.crafts.striker.start.magnet) +
+              ' 시작.',
+          },
+          {
+            term: craftName('specter'),
+            desc:
+              crafts.specter.role +
+              '. 이동 · 연사 +' +
+              b.crafts.specter.start.speed +
+              ro(b.crafts.specter.start.speed) +
+              ' 시작, HP가 가장 낮다.',
+          },
+          {
+            term: craftName('bulwark'),
+            desc:
+              crafts.bulwark.role +
+              '. 탄환 ' +
+              (1 + b.crafts.bulwark.start.multi) +
+              '발로 시작, HP · 보호막이 가장 높다.',
+          },
+        ],
+      },
+      {
+        title: '전투',
+        items: [
+          { term: point.name, desc: '점수. 높은 ' + stage.name + '에서 처치할수록 많이 오른다.' },
+          {
+            term: stage.name,
+            desc:
+              "하단 '" +
+              stage.upper +
+              "' 버튼으로 직접 올리는 난이도. 올릴수록 적이 강해지고 점수 · XP가 커진다.",
+          },
+          {
+            term: '보스',
+            desc: stage.name + '를 ' + [1, 2, 3].map(k => k * b.boss.every).join(', ') + '…로 올리면 나온다.',
+          },
+          {
+            term: b.siege.interval / 60 + '분 포위',
+            desc:
+              '전투 ' +
+              b.siege.interval / 60 +
+              '분마다 네 방향에서 한꺼번에 몰려온다. ' +
+              b.siege.warn +
+              '초 전에 화면 가장자리에 붉은 표시가 뜬다.',
+          },
+          { term: '바닥 위험', desc: '보라색 원이 차오르면 그 자리에 피해가 터진다.' },
+          {
+            term: level.short + ' · XP',
+            desc:
+              '처치한 적이 남긴 보석을 모아 레벨을 올린다. 레벨업 때 스킬 하나 또는 코인 ' +
+              e.coinChoice +
+              ' ' +
+              G +
+              '를 고른다.',
+          },
+          { term: 'CHAIN', desc: '연속 처치 수. 이어질수록 점수 보너스가 붙는다.' },
+          { term: abilities.dash, desc: '짧게 돌진하며 잠깐 무적이 된다.' },
+          { term: abilities.nova, desc: '주변 적을 밀어내고 피해를 주며 가까운 적 탄환을 지운다.' },
+          { term: skillName('orbit'), desc: '기체 주위를 도는 흰 칼날. 빨강 · 주황 둥근 탄은 적 탄환이다.' },
+          {
+            term: auto.short + '(' + auto.name + ')',
+            desc:
+              '레벨업 때 스킬을 자동으로 고른다. 상점에서 ' +
+              e.autoPrice +
+              ' ' +
+              G +
+              '로 한 번 사고, ' +
+              autoFrom() +
+              ' 이상에서 켤 수 있다.',
+          },
+        ],
+      },
+      {
+        title: '성장 · 출격',
+        items: [
+          {
+            term: '스택',
+            desc: '같은 스킬을 몇 번 가졌는지. 출처는 기체(시작) · 영구(성장에서 구매) · 준비(S 출격 배분) · 획득(레벨업)의 네 가지다.',
+          },
+          {
+            term: '영구 스택',
+            desc: '성장 화면에서 ' + BL + '로 사는 스킬. 모든 기체의 다음 출격부터 적용된다.',
+          },
+          {
+            term: '시간 코인 단계',
+            desc:
+              '상점에서 ' +
+              e.incomePrice +
+              ' ' +
+              G +
+              '씩 사서 분당 ' +
+              G +
+              '를 늘린다(' +
+              e.incomeMax +
+              '단계까지).',
+          },
+          { term: '일반 출격', desc: stage.name + ' 1 · ' + levelShort(1) + '에서 시작한다.' },
+          {
+            term: launches.super,
+            desc:
+              coins.s.name +
+              ' 1개로 강화 ' +
+              b.superLaunch.picks +
+              '회를 직접 나눈 뒤 ' +
+              stage.name +
+              ' ' +
+              b.superLaunch.stage +
+              ' · ' +
+              levelShort(b.superLaunch.level) +
+              '에서 시작한다.',
+          },
+        ],
+      },
+      {
+        title: '기록',
+        items: [
+          { term: 'TOP3', desc: '모든 모드와 S 출격을 합친 ' + point.name + ' 상위 3판.' },
+          { term: '이전 버전 최고점', desc: 'v2 시절 점수. 순위에는 넣지 않는다.' },
+          {
+            term: '한 줄 남기기',
+            desc: '판마다 ' + e.noteMax + '자까지 메모를 남긴다(글자당 ' + e.notePerChar + ' ' + G + ').',
+          },
+          { term: '분석 로그', desc: '한 판의 상세 기록 파일. 상세 분석 화면에서 다시 볼 수 있다.' },
+          { term: '백업', desc: '기록과 재화를 파일 하나로 내보내고 다른 기기에서 가져온다.' },
+          { term: '중단 기록', desc: '앱이 꺼졌을 때 마지막 저장 시점까지 남는 기록.' },
+        ],
+      },
+    ];
+  };
+
+  const api = {
+    num,
+    pct,
+    timeString,
+    coins,
+    modes,
+    modeName,
+    modeLabel,
+    crafts,
+    craftName,
+    craftStart,
+    skills,
+    skillName,
+    skillGroups,
+    skillOrder,
+    sortSkills,
+    skillEffect,
+    skillChoice,
+    sources,
+    enemies,
+    enemyName,
+    cats,
+    abilities,
+    stage,
+    level,
+    point,
+    stageLabel,
+    levelShort,
+    ro,
+    roAfter,
+    launches,
+    auto,
+    unlockGate,
+    alerts,
+    ui,
+    msg,
+    view,
+    analysis,
+    glossary,
+  };
+  root.NeonTerms = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+    </script>
+    <script>
+      (function (root) {
+  'use strict';
+  // 기록·상세 로그 저장(docs/spec/DATA.md). 모드·스킬·기체 목록, 기록 한도, 로그 간격은 balance.js에서 읽는다.
+  //
+  // ── 경량 로그 v4 (telemetryVersion 4, R-019) ─────────────────────────────────────────────
+  // 조각(chunk) 하나: { t0?, ev?, events?, inputs?, states?, frames?, tail? } — 빈 칸은 쓰지 않는다. tail은 판 끝 조각에만.
+  // 내보낸 파일(exportLog): { format: 'neon-arena-log', schema: 2, record, meta(telemetryVersion), partial,
+  //   columns: { states, inputs, frames, events?, dict?, codecs? }, tail, chunks: [{ seq, ...조각 }] }
+  //   - tail은 맨 위 tail 하나로 모은다(조각 안의 tail은 지운다). v3 기록을 내보낼 때도 같다.
+  //   - columns.events · dict · codecs는 telemetryVersion 4 이상일 때만 있다.
+  // ev: { 종류: [[...열], ...] } — 종류별 열 이름은 EVENT_COLUMNS(= columns.events[종류]). 끝의 빈 값은 생략.
+  //   - 시각 열 t·from은 조각의 t0(정수 초)을 뺀 값(소수 1자리). 읽을 때 t0을 더한다.
+  //   - 열 이름의 점은 중첩 값이다(source.kind → { source: { kind } }).
+  //   - 짧게 적는 열은 columns.codecs['종류.열'] → 부호(아래 DICT · CODECS 설명), 사전은 columns.dict.
+  //   - 이벤트 순간의 현재 Stage 열은 쓰지 않는다. readLog가 stage 이벤트로 되살린다(siege의 stage는 포위 Stage).
+  //   - upgrade · coin_choice의 offered는 쓰지 않는다. readLog가 같은 level 이벤트에서 되살린다.
+  //   - kills: [t(묶음의 마지막 처치), from(첫 처치), counts(dict.kinds 순서 개수), other?(목록 밖 종류 객체)]
+  //     kill 이벤트를 log.killBatch초 동안 모아 한 번에 쓴다. 판 끝 · 내보내기 때 남은 것도 쓴다.
+  //   - 반올림: t · from · at 소수 1자리, x · y · r 정수, 피해 · hp · wait 소수 1자리, stage의 rules 소수 3자리.
+  // events: 열 목록에 없는 종류만 v3처럼 객체로 둔다(context · postContext는 뺀다).
+  // 이벤트로 쓰지 않고 summary에서만 세는 것:
+  //   summary.attempts[능력] = 시도(받아들인 누름 ability_attempt + 거절 ability_rejected, R-003 엔진 기준).
+  //     판 끝(finish)에 g.abilityUsage[능력].attempts가 있으면 그 값으로 맞춘다.
+  //   summary.rejected[능력] = 거절(ability_rejected),
+  //   hazard → summary.hazards, warning → summary.warnings, kill → summary.kills[종류](v3과 같음).
+  // inputs: [t, moveX, moveY] — aim이 있을 때만 [t, moveX, moveY, aimX, aimY]. 간격 log.input.
+  // states·tail: v3과 같은 15열(STATE_COLUMNS). 위치·보호막은 반올림 정수, HP는 올림 정수(살아 있으면 1 이상),
+  //   xp·재충전은 소수 1자리, t는 2자리. 간격 log.state, tail은 log.tail(마지막 log.tailWindow초).
+  // frames: [t, frameMs, enemies, bullets, hostiles]. 간격 log.frame.
+  // 로그가 커지면: flush 때 쓴 조각의 JSON 길이 합이 log.largeBytes를 넘으면
+  //   그 뒤로 inputs·states 간격을 log.inputLarge·log.stateLarge로 바꾼다.
+  // ──────────────────────────────────────────────────────────────────────────────────────
+  const BAL = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null),
+    LOG = BAL.log,
+    KEEP = BAL.records,
+    CATS = BAL.cats;
+  const MODE_IDS = Object.keys(BAL.modes);
   // 저장소 이름 접미사: 시험 경로 빌드(build.cjs --ns=-test)는 실제 기록과 다른 이름을 쓴다.
+  // DB 버전 3(R-014): 구조는 버전 2와 같다. 버전을 올려 다른 탭에 남은 v4.0.0 화면이 연결을 끊고 쓰지 못하게 한다.
   const NS = typeof root.NEON_NS === 'string' ? root.NEON_NS : '',
     DB_NAME = 'neon-arena-endless-v2' + NS,
-    RECORDS_KEY = 'neon-endless-records-v2' + NS;
+    DB_VERSION = 3,
+    RECORDS_KEY = 'neon-endless-records-v2' + NS,
+    TELEMETRY = 4;
   const difficultyId = id =>
     MODE_IDS.includes(String(id || '').toLowerCase()) ? String(id).toLowerCase() : 'easy';
   const finiteCount = v => (Number.isFinite(Number(v)) ? Math.max(0, Math.floor(Number(v))) : 0);
-  const IDS = [
-    'power',
-    'rapid',
-    'multi',
-    'pierce',
-    'speed',
-    'magnet',
-    'orbit',
-    'vital',
-    'nova',
-    'crit',
-    'shield',
-  ];
+  const IDS = Object.keys(BAL.skills),
+    CRAFT_IDS = Object.keys(BAL.crafts);
   function safeSkills(obj) {
     const out = {};
     for (const id of IDS) {
@@ -3865,7 +5345,7 @@ return Plotly;
     }
     return out;
   }
-  // v4 기록 필드(docs/DATA_CONTRACT.md 8절). 없는 값은 기본값으로 읽어 v3 기록도 그대로 열린다.
+  // v4·v5 기록 필드(docs/spec/DATA.md 8절). 없는 값은 기본값으로 읽어 v3 기록도 그대로 열린다.
   function safeLaunch(l) {
     return {
       type: l?.type === 'super' ? 'super' : 'normal',
@@ -3875,7 +5355,28 @@ return Plotly;
     };
   }
   function safeStacks(s) {
-    return { craft: safeSkills(s?.craft), perma: safeSkills(s?.perma), prep: safeSkills(s?.prep) };
+    return {
+      craft: safeSkills(s?.craft),
+      perma: safeSkills(s?.perma),
+      prep: safeSkills(s?.prep),
+      cat: safeSkills(s?.cat),
+    };
+  }
+  function safeEarned(e) {
+    return {
+      gold: finiteCount(e?.gold),
+      blue: finiteCount(e?.blue),
+      boss: finiteCount(e?.boss),
+      super: finiteCount(e?.super),
+      cat: finiteCount(e?.cat),
+      autoGold: finiteCount(e?.autoGold),
+    };
+  }
+  // 출격 순간 고양이 레벨: 고양이마다 0~maxLevel 정수(0은 미해금)
+  function safeCats(c) {
+    const out = {};
+    for (const id of CATS.list) out[id] = Math.min(CATS.maxLevel, finiteCount(c?.[id]));
+    return out;
   }
   function normalizeRecord(raw) {
     if (!raw || typeof raw.id !== 'string') return null;
@@ -3883,7 +5384,7 @@ return Plotly;
       id: raw.id.slice(0, 100),
       version: String(raw.version || '2.2.0').slice(0, 40),
       balance: String(raw.balance || 'endless-1').slice(0, 40),
-      craft: ['striker', 'specter', 'bulwark'].includes(raw.craft) ? raw.craft : 'striker',
+      craft: CRAFT_IDS.includes(raw.craft) ? raw.craft : CRAFT_IDS[0],
       date: Number(raw.date) || Date.now(),
       reason: ['defeated', 'interrupted'].includes(raw.reason) ? raw.reason : 'retired',
       skills: safeSkills(raw.skills),
@@ -3901,8 +5402,11 @@ return Plotly;
       noteCost: finiteCount(raw.noteCost),
       launch: safeLaunch(raw.launch),
       stacks: safeStacks(raw.stacks),
-      earned: { gold: finiteCount(raw.earned?.gold), blue: finiteCount(raw.earned?.blue) },
+      earned: safeEarned(raw.earned),
       siegeWaves: finiteCount(raw.siegeWaves),
+      starred: raw.starred === true,
+      log: raw.log === 'none' ? 'none' : 'full',
+      cats: safeCats(raw.cats),
       abilityUsage:
         raw.abilityUsage && typeof raw.abilityUsage === 'object'
           ? raw.abilityUsage
@@ -3935,8 +5439,59 @@ return Plotly;
           b.score - a.score || b.time - a.time || b.stage - a.stage || b.level - a.level || a.date - b.date,
       );
   }
+  // ── 기록 보관(R-018): 순수 함수. 저장 계층은 한 트랜잭션 안에서 이 함수들을 부르기만 한다. ──
+  // 보호 기록: rank() 순 앞 3개(TOP3)와 별표 기록. 자동 정리·선택 삭제 모두 지우지 않는다.
+  function protectedIds(records) {
+    const list = rank(records || []),
+      ids = new Set(list.slice(0, 3).map(r => r.id));
+    for (const r of list) if (r.starred) ids.add(r.id);
+    return ids;
+  }
+  const oldestFirst = (a, b) => a.date - b.date || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  // 자동 정리 계획: keep판을 넘으면 보호되지 않은 기록을 오래된 것부터 지운다(지울 것이 없으면 멈춘다).
+  // 남는 기록 중 최신 logs판 밖이고 보호되지 않은 상세 로그('full')는 조각을 지우고 요약만 남긴다.
+  function prunePlan(records, opts = {}) {
+    const keep = finiteCount(opts.keep ?? KEEP.keep),
+      logs = finiteCount(opts.logs ?? KEEP.logs),
+      list = (records || []).map(normalizeRecord).filter(Boolean),
+      safe = protectedIds(list),
+      remove = [];
+    let left = list.length;
+    for (const r of [...list].sort(oldestFirst)) {
+      if (left <= keep) break;
+      if (safe.has(r.id)) continue;
+      remove.push(r.id);
+      left--;
+    }
+    const gone = new Set(remove),
+      kept = list.filter(r => !gone.has(r.id)).sort((a, b) => oldestFirst(b, a)),
+      recent = new Set(kept.slice(0, logs).map(r => r.id)),
+      dropLogs = kept.filter(r => !recent.has(r.id) && !safe.has(r.id) && r.log === 'full').map(r => r.id);
+    return { remove, dropLogs };
+  }
+  // 선택 삭제 계획: 보호 기록이 하나라도 있으면 아무것도 지우지 않는다.
+  function removePlan(records, ids) {
+    const want = [...new Set((Array.isArray(ids) ? ids : [ids]).filter(id => typeof id === 'string'))],
+      safe = protectedIds(records),
+      blocked = want.filter(id => safe.has(id));
+    if (blocked.length) return { ok: false, reason: 'protected', ids: blocked };
+    const have = new Set((records || []).map(r => r?.id));
+    return { ok: true, remove: want.filter(id => have.has(id)) };
+  }
+  const chunkRange = id => IDBKeyRange.bound([id, 0], [id, Number.MAX_SAFE_INTEGER]);
+  const signal = (fn, ...args) => {
+    try {
+      if (typeof fn === 'function') fn(...args);
+    } catch {
+      /* 화면 쪽 오류가 저장을 막지 않게 한다 */
+    }
+  };
   class RunStore {
-    constructor() {
+    // opts.onWait(true|false): 다른 탭의 이전 버전이 DB를 붙잡아 기다리는 중인지
+    // opts.onClosed(): 다른 탭에서 새 버전이 열려 이 탭의 연결을 닫았을 때
+    constructor(opts = {}) {
+      this.onWait = opts?.onWait;
+      this.onClosed = opts?.onClosed;
       this.db = null;
       this.memory = new Map();
       this.memoryChunks = new Map();
@@ -3957,9 +5512,9 @@ return Plotly;
       if (typeof indexedDB === 'undefined') return Promise.resolve(null);
       return new Promise(resolve => {
         let req,
-          blocked = false;
+          waiting = false;
         try {
-          req = indexedDB.open(DB_NAME, 2);
+          req = indexedDB.open(DB_NAME, DB_VERSION);
         } catch {
           resolve(null);
           return;
@@ -3972,21 +5527,35 @@ return Plotly;
           if (!d.objectStoreNames.contains('profiles')) d.createObjectStore('profiles', { keyPath: 'id' });
         };
         req.onsuccess = () => {
-          if (blocked) {
-            req.result.close();
-            return;
-          }
-          this.db = req.result;
-          this.db.onversionchange = () => {
-            this.db.close();
-            this.db = null;
+          const db = req.result;
+          this.db = db;
+          db.onversionchange = () => {
+            try {
+              db.close();
+            } catch {
+              /* 이미 닫힘 */
+            }
+            if (this.db === db) this.db = null;
+            signal(this.onClosed);
           };
-          resolve(this.db);
+          if (waiting) {
+            waiting = false;
+            signal(this.onWait, false);
+          }
+          resolve(db);
         };
-        req.onerror = () => resolve(null);
-        req.onblocked = () => {
-          blocked = true;
+        req.onerror = () => {
+          if (waiting) {
+            waiting = false;
+            signal(this.onWait, false);
+          }
           resolve(null);
+        };
+        // 다른 탭의 이전 버전이 연결을 붙잡고 있다: 끝내지 않고 기다린다(그 탭이 닫히면 onsuccess).
+        req.onblocked = () => {
+          if (waiting) return;
+          waiting = true;
+          signal(this.onWait, true);
         };
       });
     }
@@ -4021,12 +5590,15 @@ return Plotly;
       let r = normalizeRecord(record);
       if (!r) return false;
       await this.ready;
-      const preserveNote = old => {
+      // 같은 id로 다시 저장해도 한 줄 메모·별표·지워진 상세 로그 표시는 지킨다(별표 끄기는 setStar로만)
+      const preserve = old => {
         if (old?.noteConfirmed || old?.note) {
           r.note = old.note;
           r.noteConfirmed = true;
           r.noteCost = old.noteCost || 0;
         }
+        if (old?.starred === true) r.starred = true;
+        if (old?.log === 'none') r.log = 'none';
       };
       if (this.db) {
         const ok = await new Promise(resolve => {
@@ -4035,7 +5607,7 @@ return Plotly;
               s = tx.objectStore('records'),
               req = s.get(r.id);
             req.onsuccess = () => {
-              preserveNote(req.result);
+              preserve(req.result);
               s.put(r);
             };
             tx.oncomplete = () => resolve(true);
@@ -4049,7 +5621,7 @@ return Plotly;
         this.cache();
         return true;
       }
-      preserveNote(this.memory.get(r.id));
+      preserve(this.memory.get(r.id));
       const next = new Map(this.memory);
       next.set(r.id, r);
       try {
@@ -4063,8 +5635,12 @@ return Plotly;
       }
     }
     // 백업 가져오기용: id가 없는 기록만 추가하고 추가한 수를 돌려준다(같은 파일을 여러 번 가져와도 중복 없음).
+    // 백업에는 상세 로그가 없으므로 log는 'none'으로 저장한다.
     async addMissing(list) {
-      const items = list.map(normalizeRecord).filter(Boolean);
+      const items = list
+        .map(normalizeRecord)
+        .filter(Boolean)
+        .map(r => ({ ...r, log: 'none' }));
       await this.ready;
       if (!this.db) {
         const next = new Map(this.memory);
@@ -4107,14 +5683,132 @@ return Plotly;
       if (added > 0) this.cache();
       return added;
     }
+    // DB가 열려 있으면 목록은 DB 기록만으로 다시 만든다. localStorage 캐시는 DB를 쓸 수 없을 때만 쓴다
+    // (연결이 끊긴 다른 탭의 옛 화면이 캐시에 쓴 기록이 목록 · 백업 · 정리에 섞이지 않게, 이관 리허설에서 확인).
     async all() {
       const list = await this.operation('records', 'readonly', s => s.getAll());
-      if (Array.isArray(list))
-        list.forEach(r => {
-          r = normalizeRecord(r);
-          if (r) this.memory.set(r.id, r);
-        });
+      if (Array.isArray(list)) {
+        const next = new Map();
+        for (const raw of list) {
+          const r = normalizeRecord(raw);
+          if (r) next.set(r.id, r);
+        }
+        this.memory = next;
+        this.cache();
+      }
       return rank([...this.memory.values()]);
+    }
+    // 기록·상세 로그 조각을 한 트랜잭션(['records','chunks'])에서 고친다.
+    // plan(기록 목록) → { ok, remove: [id], dropLogs: [id], put: [기록], result }. ok가 아니면 아무것도 쓰지 않는다.
+    // 기록 목록은 DB 기록이다(DB가 없을 때만 memory·캐시 기준).
+    // memory·localStorage 캐시는 트랜잭션이 끝난 뒤에만 고친다. DB가 없으면 memory·캐시 기준으로 같은 결과.
+    async mutate(plan) {
+      await this.ready;
+      const fail = { ok: false, reason: 'storage' };
+      if (!this.db) {
+        let out;
+        try {
+          out = plan([...this.memory.values()]);
+        } catch {
+          return fail;
+        }
+        if (!out.ok) return out.result;
+        const next = new Map(this.memory);
+        for (const id of out.remove || []) next.delete(id);
+        for (const r of out.put || []) next.set(r.id, r);
+        try {
+          localStorage.setItem(RECORDS_KEY, JSON.stringify(rank([...next.values()])));
+        } catch {
+          this.storageOK = false;
+          return fail;
+        }
+        this.memory = next;
+        this.storageOK = true;
+        for (const id of [...(out.remove || []), ...(out.dropLogs || [])]) this.memoryChunks.delete(id);
+        return out.result;
+      }
+      return new Promise(resolve => {
+        let out = null,
+          byId = null;
+        try {
+          const tx = this.db.transaction(['records', 'chunks'], 'readwrite'),
+            rs = tx.objectStore('records'),
+            cs = tx.objectStore('chunks'),
+            req = rs.getAll();
+          req.onsuccess = () => {
+            byId = new Map();
+            for (const raw of req.result || []) {
+              const r = normalizeRecord(raw);
+              if (r) byId.set(r.id, r);
+            }
+            try {
+              out = plan([...byId.values()]);
+            } catch {
+              out = null;
+              tx.abort();
+              return;
+            }
+            if (!out.ok) return;
+            for (const id of out.remove || []) {
+              rs.delete(id);
+              cs.delete(chunkRange(id));
+            }
+            for (const id of out.dropLogs || []) cs.delete(chunkRange(id));
+            for (const r of out.put || []) rs.put(r);
+          };
+          tx.oncomplete = () => {
+            if (!out) return resolve(fail);
+            if (out.ok) {
+              // 커밋된 DB 상태로 memory를 맞춘다(DB 기록 + 이번 변경)
+              for (const id of out.remove || []) {
+                byId.delete(id);
+                this.memoryChunks.delete(id);
+              }
+              for (const id of out.dropLogs || []) this.memoryChunks.delete(id);
+              for (const r of out.put || []) byId.set(r.id, normalizeRecord(r) || r);
+              this.memory = byId;
+              this.cache();
+            }
+            resolve(out.result);
+          };
+          tx.onerror = tx.onabort = () => resolve(fail);
+        } catch {
+          resolve(fail);
+        }
+      });
+    }
+    // 자동 정리(R-018): 판이 정상으로 끝나 저장한 직후에만 부른다(중간 저장 때는 부르지 않는다).
+    // → { ok, removed: [지운 기록 id], dropped: [상세 로그만 지운 기록 id] }
+    prune(opts) {
+      return this.mutate(list => {
+        const plan = prunePlan(list, opts),
+          byId = new Map(list.map(r => [r.id, r]));
+        return {
+          ok: true,
+          remove: plan.remove,
+          dropLogs: plan.dropLogs,
+          put: plan.dropLogs.map(id => ({ ...byId.get(id), log: 'none' })),
+          result: { ok: true, removed: plan.remove, dropped: plan.dropLogs },
+        };
+      });
+    }
+    // 선택 삭제: 보호 기록이 섞여 있으면 { ok: false, reason: 'protected', ids }로 아무것도 지우지 않는다.
+    // → { ok: true, removed: [지운 기록 id] }
+    remove(ids) {
+      return this.mutate(list => {
+        const plan = removePlan(list, ids);
+        if (!plan.ok) return { ok: false, result: plan };
+        return { ok: true, remove: plan.remove, result: { ok: true, removed: plan.remove } };
+      });
+    }
+    // 별표 켜기/끄기 → { ok, starred } · 없는 기록이면 { ok: false, reason: 'missing' }
+    setStar(id, on) {
+      const starred = on === true;
+      return this.mutate(list => {
+        const r = list.find(x => x.id === id);
+        if (!r) return { ok: false, result: { ok: false, reason: 'missing' } };
+        return { ok: true, put: [{ ...r, starred }], result: { ok: true, starred } };
+      });
     }
     async writeChunk(run, seq, data) {
       const ok = await this.operation('chunks', 'readwrite', s => s.put({ run, seq, data }));
@@ -4133,8 +5827,7 @@ return Plotly;
           const arr = [];
           try {
             const tx = this.db.transaction('chunks', 'readonly'),
-              range = IDBKeyRange.bound([run, 0], [run, Number.MAX_SAFE_INTEGER]),
-              req = tx.objectStore('chunks').openCursor(range);
+              req = tx.objectStore('chunks').openCursor(chunkRange(run));
             req.onsuccess = () => {
               const c = req.result;
               if (c) {
@@ -4153,14 +5846,278 @@ return Plotly;
       return [...(all || []), ...fallback].sort((a, b) => a.seq - b.seq);
     }
   }
+  // ── 로그 형식 ──
+  const STATE_COLUMNS = Object.freeze([
+    'time',
+    'x',
+    'y',
+    'hp',
+    'shield',
+    'xp',
+    'level',
+    'stage',
+    'score',
+    'kills',
+    'enemies',
+    'dashCD',
+    'novaCD',
+    'nearEnemies',
+    'nearProjectiles',
+  ]);
+  const INPUT_COLUMNS = Object.freeze(['time', 'moveX', 'moveY', 'aimX', 'aimY']),
+    FRAME_COLUMNS = Object.freeze(['time', 'frameMs', 'enemies', 'bullets', 'hostiles']);
+  // v4 이벤트 행의 열(조각.ev[종류] = [[...열], ...]). 바꾸면 내보낸 파일의 columns.events도 같이 바뀐다.
+  // upgrade·coin_choice의 offered는 같은 level 이벤트에 있으므로 쓰지 않고 readLog가 되살린다.
+  const EVENT_COLUMNS = Object.freeze({
+    kills: ['t', 'from', 'counts', 'other'],
+    dash: ['t', 'x', 'y', 'source'],
+    nova: ['t', 'x', 'y', 'r', 'source'],
+    ability_effect: ['t', 'ability', 'source'],
+    hurt: [
+      't',
+      'x',
+      'y',
+      'value',
+      'healthDamage',
+      'absorbed',
+      'hp',
+      'source.kind',
+      'source.attack',
+      'source.stage',
+    ],
+    level: ['t', 'level', 'offered'],
+    upgrade: ['t', 'source', 'id', 'count', 'level', 'wait'],
+    coin_choice: ['t', 'level', 'wait', 'amount'],
+    stage: ['t', 'to', 'hp', 'level', 'rules', 'skills'],
+    boss: ['t', 'enemyStage', 'id'],
+    bossdown: ['t', 'enemyStage', 'waveId'],
+    boss_wave_complete: ['t', 'waveId', 'originStage', 'total', 'cleared'],
+    siege_warn: ['t', 'at', 'wave'],
+    siege: ['t', 'wave', 'stage', 'total'],
+    minute: ['t', 'minute'],
+    end: ['t', 'reason'],
+    pause: ['t'],
+    resume: ['t'],
+    settings: ['t', 'view', 'quality', 'viewport'],
+    viewport: ['t', 'width', 'height', 'view'],
+  });
+  for (const cols of Object.values(EVENT_COLUMNS)) Object.freeze(cols);
+  // 짧게 적는 열(내보낸 파일의 columns.dict · columns.codecs):
+  //   counts — 적 종류(dict.kinds) 순서의 개수 배열. 목록에 없는 종류는 other 열 객체.
+  //   skill — 스킬 id 대신 dict.skills 번호(목록에 없으면 id 글자 그대로). skillList — 번호 배열.
+  //   skillCounts — dict.skills 순서의 스택 수 배열(끝의 0은 생략). rules — dict.rules 순서의 값 배열.
+  //   pick:이름 — dict[이름]의 번호(목록에 없으면 글자 그대로).
+  const DICT = Object.freeze({
+    kinds: Object.freeze(Object.keys(BAL.enemies)),
+    skills: Object.freeze(Object.keys(BAL.skills)),
+    rules: Object.freeze(['hp', 'damage', 'density', 'xp', 'score', 'speed']),
+    abilities: Object.freeze(['dash', 'nova']),
+    sources: Object.freeze(['touch', 'mouse', 'keyboard', 'accessibility', 'manual', 'auto']),
+    attacks: Object.freeze(['contact', 'projectile', 'floor', 'unknown']),
+  });
+  const CODECS = Object.freeze({
+    'kills.counts': 'counts',
+    'level.offered': 'skillList',
+    'upgrade.id': 'skill',
+    'stage.skills': 'skillCounts',
+    'stage.rules': 'rules',
+    'dash.source': 'pick:sources',
+    'nova.source': 'pick:sources',
+    'ability_effect.source': 'pick:sources',
+    'ability_effect.ability': 'pick:abilities',
+    'upgrade.source': 'pick:sources',
+    'hurt.source.kind': 'pick:kinds',
+    'hurt.source.attack': 'pick:attacks',
+  });
+  const DIGITS = {
+    t: 1,
+    from: 1,
+    at: 1,
+    x: 0,
+    y: 0,
+    r: 0,
+    hp: 1,
+    value: 1,
+    healthDamage: 1,
+    absorbed: 1,
+    wait: 1,
+  };
+  const round = (v, d) => {
+    const m = 10 ** d;
+    return Math.round(v * m) / m;
+  };
+  const r1 = v => round(Number(v) || 0, 1),
+    r2 = v => round(Number(v) || 0, 2);
+  const getPath = (o, key) => key.split('.').reduce((v, k) => (v == null ? undefined : v[k]), o);
+  const trimZeros = a => {
+    let n = a.length;
+    while (n && !a[n - 1]) n--;
+    return a.slice(0, n);
+  };
+  function encodeValue(codec, v) {
+    const skill = id => {
+      const i = DICT.skills.indexOf(id);
+      return i < 0 ? id : i;
+    };
+    if (codec === 'skill') return skill(v);
+    if (codec.startsWith('pick:')) {
+      const i = DICT[codec.slice(5)].indexOf(v);
+      return i < 0 ? v : i;
+    }
+    if (!v || typeof v !== 'object') return v;
+    if (codec === 'skillList') return Array.isArray(v) ? v.map(skill) : v;
+    if (codec === 'counts') return DICT.kinds.map(k => Number(v[k]) || 0);
+    if (codec === 'skillCounts') return trimZeros(DICT.skills.map(k => Number(v[k]) || 0));
+    if (codec === 'rules') return DICT.rules.map(k => round(Number(v[k]) || 0, 3));
+    return v;
+  }
+  function decodeValue(codec, v, dict) {
+    const skill = i => (typeof i === 'number' ? (dict.skills?.[i] ?? i) : i),
+      toObject = (list, keys, all) => {
+        const o = {};
+        list.forEach((n, i) => {
+          if (all || n) o[keys?.[i] ?? 'unknown' + i] = n;
+        });
+        return o;
+      };
+    if (codec === 'skill') return skill(v);
+    if (codec.startsWith('pick:')) return typeof v === 'number' ? (dict[codec.slice(5)]?.[v] ?? v) : v;
+    if (!Array.isArray(v)) return v;
+    if (codec === 'skillList') return v.map(skill);
+    if (codec === 'counts') return toObject(v, dict.kinds, false);
+    if (codec === 'skillCounts') return toObject(v, dict.skills, false);
+    if (codec === 'rules') return toObject(v, dict.rules, true);
+    return v;
+  }
+  // 시각 열 t·from은 조각의 기준 시각 t0(정수 초)을 뺀 값이다. 읽을 때 t0을 더한다.
+  const RELATIVE = new Set(['t', 'from']);
+  // 이벤트 → v4 행([...열], 종류는 조각.ev의 키, 끝의 빈 값은 생략). 열 목록에 없는 종류면 null.
+  function encodeEvent(e, t0 = 0) {
+    const cols = EVENT_COLUMNS[e.type];
+    if (!cols) return null;
+    const row = [];
+    for (const c of cols) {
+      let v = c.includes('.') ? getPath(e, c) : e[c];
+      const codec = CODECS[e.type + '.' + c];
+      if (codec) v = encodeValue(codec, v);
+      else if (typeof v === 'number' && c in DIGITS) v = round(RELATIVE.has(c) ? v - t0 : v, DIGITS[c]);
+      row.push(v === undefined ? null : v);
+    }
+    while (row.length && row[row.length - 1] === null) row.pop();
+    return row;
+  }
+  // v4 행 → v3 모양 객체(null 값은 뺀다). columns는 내보낸 파일의 columns(없으면 지금 형식).
+  function decodeEvent(type, row, columns, t0 = 0) {
+    const evCols = columns?.events,
+      cols = (evCols && Array.isArray(evCols[type]) && evCols[type]) || EVENT_COLUMNS[type] || [],
+      dict = columns?.dict || DICT,
+      codecs = columns?.codecs || CODECS,
+      e = { type };
+    if (!Array.isArray(row)) return e;
+    cols.forEach((c, i) => {
+      let v = row[i];
+      if (v === undefined || v === null) return;
+      const codec = codecs[type + '.' + c];
+      if (codec) v = decodeValue(codec, v, dict);
+      else if (RELATIVE.has(c) && typeof v === 'number') v = round(v + (Number(t0) || 0), 2);
+      const keys = c.split('.');
+      let o = e;
+      for (const k of keys.slice(0, -1)) o = o[k] && typeof o[k] === 'object' ? o[k] : (o[k] = {});
+      o[keys[keys.length - 1]] = v;
+    });
+    if (type === 'kills' && e.other && typeof e.other === 'object') {
+      e.counts = e.counts || {};
+      for (const [k, n] of Object.entries(e.other)) e.counts[k] = (e.counts[k] || 0) + n;
+      delete e.other;
+    }
+    return e;
+  }
+  // 내보내기 파일 하나를 만든다(지금 판·지난 기록 모두). chunks는 store.chunks()의 { run, seq, data } 또는 { seq, ... }.
+  // extra: { meta, partial, tail } — 기록기가 들고 있는 값. 없으면 기록 값으로 채운다.
+  function exportLog(record, chunks, extra = {}) {
+    const r = record || {},
+      meta = { ...(r.meta || {}), ...(extra.meta || {}) };
+    meta.difficultyId = difficultyId(r.difficultyId || meta.difficultyId);
+    meta.telemetryVersion = Number(meta.telemetryVersion) || 3;
+    const list = (Array.isArray(chunks) ? chunks : [])
+      .filter(c => c && typeof c === 'object')
+      .map(c => (c.data && typeof c.data === 'object' ? { seq: c.seq, ...c.data } : { ...c }))
+      .sort((a, b) => (Number(a.seq) || 0) - (Number(b.seq) || 0));
+    let tail = null;
+    for (const c of list) {
+      if (Array.isArray(c.tail) && c.tail.length) tail = c.tail;
+      delete c.tail;
+    }
+    if (!tail) tail = Array.isArray(extra.tail) ? extra.tail : [];
+    const columns = { states: STATE_COLUMNS, inputs: INPUT_COLUMNS, frames: FRAME_COLUMNS };
+    if (meta.telemetryVersion >= 4) {
+      columns.events = EVENT_COLUMNS;
+      columns.dict = DICT;
+      columns.codecs = CODECS;
+    }
+    return {
+      format: 'neon-arena-log',
+      schema: 2,
+      record: r,
+      meta,
+      partial: typeof extra.partial === 'boolean' ? extra.partial : r.partial === true || !list.length,
+      columns,
+      tail,
+      chunks: list,
+    };
+  }
+  // 내보낸 로그(v3·v4)를 같은 모양으로 읽는다: 이벤트는 v3 모양 객체(시간 순, 현재 stage 채움),
+  // 표 행은 그대로(inputs 행은 3열 또는 5열). 형식이 다르면 null.
+  function readLog(payload) {
+    if (!payload || payload.format !== 'neon-arena-log') return null;
+    const chunks = (Array.isArray(payload.chunks) ? payload.chunks : []).filter(
+        c => c && typeof c === 'object',
+      ),
+      pick = k => chunks.flatMap(c => (Array.isArray(c[k]) ? c[k] : [])),
+      rows = chunks.flatMap(c =>
+        c.ev && typeof c.ev === 'object'
+          ? Object.entries(c.ev).flatMap(([type, list]) =>
+              Array.isArray(list) ? list.map(row => decodeEvent(type, row, payload.columns, c.t0)) : [],
+            )
+          : [],
+      ),
+      events = [...pick('events'), ...rows]
+        .filter(e => e && typeof e === 'object' && typeof e.type === 'string')
+        .map((e, i) => [e, i])
+        .sort((a, b) => (Number(a[0].t) || 0) - (Number(b[0].t) || 0) || a[1] - b[1])
+        .map(x => x[0]);
+    let stage = finiteCount(payload.record?.launch?.startStage) || 1;
+    const offered = new Map();
+    for (const e of events) {
+      if (e.type === 'stage' && Number.isFinite(e.to)) stage = e.to;
+      if (e.stage === undefined) e.stage = stage;
+      if (e.type === 'level' && Array.isArray(e.offered)) offered.set(e.level, e.offered);
+      if ((e.type === 'upgrade' || e.type === 'coin_choice') && !e.offered && offered.has(e.level))
+        e.offered = offered.get(e.level);
+    }
+    const tail = Array.isArray(payload.tail) && payload.tail.length ? payload.tail : pick('tail');
+    return {
+      version: Number(payload.meta?.telemetryVersion) || 3,
+      record: payload.record || null,
+      meta: payload.meta || {},
+      partial: payload.partial === true,
+      events,
+      states: pick('states'),
+      inputs: pick('inputs'),
+      frames: pick('frames'),
+      tail,
+    };
+  }
   class Recorder {
     constructor(id, meta, writer) {
       this.id = id;
-      this.meta = { ...meta };
+      this.meta = { ...meta, telemetryVersion: TELEMETRY };
       this.writer = writer;
       this.seq = 0;
       this.pending = new Set();
-      this.buffers = { events: [], inputs: [], states: [], frames: [] };
+      this.buffers = { ev: {}, events: [], inputs: [], states: [], frames: [] };
+      this.evCount = 0;
+      this.t0 = 0; // 지금 조각의 기준 시각(이벤트 t는 이 값을 뺀다)
       this.tail = [];
       this.lastInput = -1;
       this.lastState = -1;
@@ -4169,6 +6126,9 @@ return Plotly;
       this.lastFlush = 0;
       this.activeTime = 0;
       this.partial = false;
+      this.killBatch = null;
+      this.bytes = 0;
+      this.large = false;
       this.summary = {
         damage: {},
         healthDamage: {},
@@ -4179,7 +6139,10 @@ return Plotly;
         abilities: { dash: 0, nova: 0 },
         autoChoices: 0,
         coinChoices: 0,
+        attempts: { dash: 0, nova: 0 },
         rejected: { dash: 0, nova: 0 },
+        hazards: 0,
+        warnings: 0,
         stageChanges: [],
         frames: 0,
         slowFrames: 0,
@@ -4188,31 +6151,78 @@ return Plotly;
       };
     }
     event(e) {
-      const type = e.type;
-      if (type === 'kill') this.summary.kills[e.kind] = (this.summary.kills[e.kind] || 0) + 1;
+      const type = e.type,
+        s = this.summary;
+      // 개수만 세는 이벤트(R-019)
+      if (type === 'kill') {
+        const kind = typeof e.kind === 'string' ? e.kind : 'unknown';
+        s.kills[kind] = (s.kills[kind] || 0) + 1;
+        this.addKill(kind, Number(e.t) || 0);
+        return;
+      }
+      // R-003 엔진: 받아들인 누름은 ability_attempt, 거절된 누름은 ability_rejected 하나만 보낸다.
+      if (type === 'ability_attempt' || type === 'ability_rejected') {
+        if (e.ability in s.attempts) s.attempts[e.ability]++;
+        if (type === 'ability_rejected' && e.ability in s.rejected) s.rejected[e.ability]++;
+        return;
+      }
+      if (type === 'hazard') {
+        s.hazards++;
+        return;
+      }
+      if (type === 'warning') {
+        s.warnings++;
+        return;
+      }
       if (type === 'hurt') {
         const key = (e.source?.kind || 'unknown') + '/' + (e.source?.attack || 'unknown');
-        this.summary.damage[key] =
-          (this.summary.damage[key] || 0) + (e.healthDamage || 0) + (e.absorbed || 0);
-        this.summary.healthDamage[key] = (this.summary.healthDamage[key] || 0) + (e.healthDamage || 0);
-        this.summary.absorbed[key] = (this.summary.absorbed[key] || 0) + (e.absorbed || 0);
+        s.damage[key] = (s.damage[key] || 0) + (e.healthDamage || 0) + (e.absorbed || 0);
+        s.healthDamage[key] = (s.healthDamage[key] || 0) + (e.healthDamage || 0);
+        s.absorbed[key] = (s.absorbed[key] || 0) + (e.absorbed || 0);
       }
-      if (type === 'dash' || type === 'nova') this.summary.abilities[type]++;
-      if (type === 'ability_rejected') this.summary.rejected[e.ability]++;
-      if (type === 'level')
-        for (const id of e.offered || []) this.summary.offered[id] = (this.summary.offered[id] || 0) + 1;
+      if (type === 'dash' || type === 'nova') s.abilities[type]++;
+      if (type === 'level') for (const id of e.offered || []) s.offered[id] = (s.offered[id] || 0) + 1;
       if (type === 'upgrade') {
-        this.summary.chosen[e.id] = (this.summary.chosen[e.id] || 0) + 1;
-        if (e.source === 'auto') this.summary.autoChoices++;
+        s.chosen[e.id] = (s.chosen[e.id] || 0) + 1;
+        if (e.source === 'auto') s.autoChoices++;
       }
-      if (type === 'coin_choice') this.summary.coinChoices++;
+      if (type === 'coin_choice') s.coinChoices++;
       if (type === 'stage') {
-        this.summary.stageChanges.push({ t: e.t, to: e.to, hp: e.hp, level: e.level });
-        if (this.summary.stageChanges.length > 500)
-          this.summary.stageChanges = this.summary.stageChanges.slice(-500);
+        s.stageChanges.push({ t: e.t, to: e.to, hp: e.hp, level: e.level });
+        if (s.stageChanges.length > 500) s.stageChanges = s.stageChanges.slice(-500);
       }
-      this.buffers.events.push(e);
-      if (this.buffers.events.length > 240) this.flush(e.t);
+      this.push(e);
+      if (this.evCount > 240) this.flush(e.t);
+    }
+    push(e) {
+      const row = encodeEvent(e, this.t0);
+      if (row) (this.buffers.ev[e.type] ||= []).push(row);
+      else {
+        const { context, postContext, ...rest } = e;
+        this.buffers.events.push(rest);
+      }
+      this.evCount++;
+    }
+    addKill(kind, t) {
+      if (this.killBatch && t - this.killBatch.from >= LOG.killBatch) this.pushKills();
+      if (!this.killBatch) this.killBatch = { from: t, t, counts: {} };
+      const b = this.killBatch;
+      b.t = t;
+      b.counts[kind] = (b.counts[kind] || 0) + 1;
+    }
+    pushKills() {
+      const b = this.killBatch;
+      if (!b) return;
+      this.killBatch = null;
+      const other = {};
+      for (const [k, n] of Object.entries(b.counts)) if (!DICT.kinds.includes(k)) other[k] = n;
+      this.push({
+        type: 'kills',
+        t: b.t,
+        from: b.from,
+        counts: b.counts,
+        other: Object.keys(other).length ? other : undefined,
+      });
     }
     sample(g, input, frameMs) {
       const t = g.time,
@@ -4221,8 +6231,9 @@ return Plotly;
       this.summary.frameMs += frameMs;
       this.summary.maxFrameMs = Math.max(this.summary.maxFrameMs, frameMs);
       if (frameMs > 33.4) this.summary.slowFrames++;
-      const stateDue = t - this.lastState >= 0.99,
-        tailDue = t - this.lastTail >= 0.095;
+      if (this.killBatch && t - this.killBatch.from >= LOG.killBatch) this.pushKills();
+      const stateDue = t - this.lastState >= (this.large ? LOG.stateLarge : LOG.state),
+        tailDue = t - this.lastTail >= LOG.tail;
       let nearEnemies = 0,
         nearProjectiles = 0;
       if (stateDue || tailDue) {
@@ -4238,31 +6249,29 @@ return Plotly;
         }
       }
       const position = () => [
-        +t.toFixed(2),
-        +p.x.toFixed(1),
-        +p.y.toFixed(1),
-        +p.hp.toFixed(1),
-        +p.shield.toFixed(1),
-        +p.xp.toFixed(1),
+        r2(t),
+        Math.round(p.x),
+        Math.round(p.y),
+        Math.ceil(p.hp),
+        Math.round(p.shield),
+        r1(p.xp),
         p.level,
         g.stage,
         g.score,
         g.kills,
         g.enemies.length,
-        +p.dashCD.toFixed(2),
-        +p.novaCD.toFixed(2),
+        r1(p.dashCD),
+        r1(p.novaCD),
         nearEnemies,
         nearProjectiles,
       ];
-      if (t - this.lastInput >= 0.19) {
+      if (t - this.lastInput >= (this.large ? LOG.inputLarge : LOG.input)) {
         this.lastInput = t;
-        this.buffers.inputs.push([
-          +t.toFixed(2),
-          +(input.x || 0).toFixed(2),
-          +(input.y || 0).toFixed(2),
-          input.aim ? Math.round(input.aim.x) : null,
-          input.aim ? Math.round(input.aim.y) : null,
-        ]);
+        const x = r1(input.x),
+          y = r1(input.y);
+        this.buffers.inputs.push(
+          input.aim ? [r2(t), x, y, Math.round(input.aim.x), Math.round(input.aim.y)] : [r2(t), x, y],
+        );
       }
       if (stateDue) {
         this.lastState = t;
@@ -4271,25 +6280,33 @@ return Plotly;
       if (tailDue) {
         this.lastTail = t;
         this.tail.push(position());
-        while (this.tail.length && (this.tail[0][0] < t - 20 || this.tail.length > 205)) this.tail.shift();
+        while (this.tail.length && (this.tail[0][0] < t - LOG.tailWindow || this.tail.length > 205))
+          this.tail.shift();
       }
-      if (t - this.lastFrame >= 4.9) {
+      if (t - this.lastFrame >= LOG.frame) {
         this.lastFrame = t;
-        this.buffers.frames.push([
-          +t.toFixed(2),
-          +frameMs.toFixed(2),
-          g.enemies.length,
-          g.bullets.length,
-          g.hostiles.length,
-        ]);
+        this.buffers.frames.push([r2(t), r2(frameMs), g.enemies.length, g.bullets.length, g.hostiles.length]);
       }
-      if (t - this.lastFlush >= 15) this.flush(t);
+      if (t - this.lastFlush >= LOG.flush) this.flush(t);
     }
     flush(t = 0) {
-      const data = this.buffers;
-      if (!Object.values(data).some(a => a.length)) return;
-      this.buffers = { events: [], inputs: [], states: [], frames: [] };
+      const buf = this.buffers;
+      if (!this.evCount && !Object.values(buf).some(a => a.length)) return;
+      // 빈 칸은 쓰지 않는다
+      const data = {};
+      if (this.evCount) data.t0 = this.t0;
+      for (const [k, v] of Object.entries(buf)) if (k === 'ev' ? this.evCount : v.length) data[k] = v;
+      this.buffers = { ev: {}, events: [], inputs: [], states: [], frames: [] };
+      this.evCount = 0;
       this.lastFlush = t;
+      this.t0 = Math.max(0, Math.floor(Number(t) || 0));
+      // 로그 크기: 쓴 조각의 JSON 길이 합. largeBytes를 넘으면 입력·상태 간격을 늘린다.
+      try {
+        this.bytes += JSON.stringify(data).length;
+      } catch {
+        /* 크기를 못 재도 저장은 한다 */
+      }
+      if (this.bytes > LOG.largeBytes) this.large = true;
       const seq = this.seq++;
       const job = Promise.resolve()
         .then(() => this.writer(this.id, seq, data))
@@ -4306,6 +6323,12 @@ return Plotly;
       this.summary.difficultyId = difficultyId(g.difficultyId || this.meta.difficultyId);
       this.summary.simulationTime = g.time;
       if (g.abilityUsage) this.summary.abilityUsage = JSON.parse(JSON.stringify(g.abilityUsage));
+      // 시도 수는 엔진 누적값이 정확하다(이벤트를 놓친 경우까지)
+      for (const a of Object.keys(this.summary.attempts)) {
+        const n = Number(g.abilityUsage?.[a]?.attempts);
+        if (Number.isFinite(n) && n >= 0) this.summary.attempts[a] = Math.floor(n);
+      }
+      this.pushKills();
       this.buffers.tail = [...this.tail];
       this.flush(g.time);
       await Promise.all([...this.pending]);
@@ -4319,75 +6342,50 @@ return Plotly;
       };
     }
     async export(record, store) {
+      this.pushKills();
       this.flush(record.simulationTime);
       await Promise.all([...this.pending]);
       const chunks = await store.chunks(this.id);
-      return {
-        format: 'neon-arena-log',
-        schema: 2,
-        record,
-        meta: {
-          ...this.meta,
-          difficultyId: difficultyId(record.difficultyId || this.meta.difficultyId),
-          telemetryVersion: this.meta.telemetryVersion ?? 3,
-        },
+      return exportLog(record, chunks, {
+        meta: this.meta,
         partial: this.partial || chunks.length < this.seq,
-        columns: {
-          states: [
-            'time',
-            'x',
-            'y',
-            'hp',
-            'shield',
-            'xp',
-            'level',
-            'stage',
-            'score',
-            'kills',
-            'enemies',
-            'dashCD',
-            'novaCD',
-            'nearEnemies',
-            'nearProjectiles',
-          ],
-          inputs: ['time', 'moveX', 'moveY', 'aimX', 'aimY'],
-          frames: ['time', 'frameMs', 'enemies', 'bullets', 'hostiles'],
-        },
         tail: this.tail,
-        chunks: chunks.map(c => ({ seq: c.seq, ...c.data })),
-      };
+      });
     }
   }
-  root.NeonData = { RunStore, Recorder, rank, normalizeRecord, safeSkills, difficultyId };
+  root.NeonData = {
+    RunStore,
+    Recorder,
+    rank,
+    normalizeRecord,
+    safeSkills,
+    difficultyId,
+    protectedIds,
+    prunePlan,
+    removePlan,
+    exportLog,
+    readLog,
+    decodeEvent,
+    EVENT_COLUMNS,
+    STATE_COLUMNS,
+    TELEMETRY_VERSION: TELEMETRY,
+    DB_VERSION,
+  };
   if (typeof module !== 'undefined') module.exports = root.NeonData;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
     </script>
     <script>
       const store = new NeonData.RunStore(),
-        $ = id => document.getElementById(id);
-      const skillNames = {
-          power: '과충전',
-          rapid: '연사',
-          multi: '분광',
-          pierce: '관통',
-          speed: '기동',
-          magnet: '흡수',
-          orbit: '공전',
-          vital: '체력',
-          nova: '충격파',
-          crit: '치명타',
-          shield: '방벽',
-        },
+        $ = id => document.getElementById(id),
+        T = NeonTerms;
+      // 이름은 terms.js(분석 페이지의 위험 이름은 analysis.hazard), 맵 크기는 balance.js
+      const skillNames = Object.fromEntries(Object.entries(T.skills).map(([id, s]) => [id, s.abbr])),
         enemyNames = {
-          chaser: '추적자',
-          runner: '돌격자',
-          shooter: '사수',
-          splitter: '분열체',
-          boss: '보스',
-          hazard: '바닥 공격',
-          unknown: '미상',
-        };
+          ...Object.fromEntries(Object.entries(T.enemies).map(([kind, e]) => [kind, e.name])),
+          hazard: T.analysis.hazard,
+        },
+        abilityName = id => (id === 'dash' ? T.abilities.dash : T.analysis.nova);
       const layout = (title, extra = {}) => ({
         title: { text: title, font: { size: 15, color: '#bfd8e1' } },
         paper_bgcolor: '#0e1a25',
@@ -4421,17 +6419,15 @@ return Plotly;
       function loadLog(payload) {
         if (!payload || payload.format !== 'neon-arena-log' || ![1, 2].includes(payload.schema))
           throw Error('NEON ARENA 분석 로그를 선택하세요.');
-        const r = NeonData.normalizeRecord(payload.record);
+        // v3 · v4(경량) 로그를 같은 모양으로 읽는다(NeonData.readLog)
+        const log = NeonData.readLog(payload),
+          r = NeonData.normalizeRecord(log?.record);
         if (!r) throw Error('게임 기록 형식이 올바르지 않습니다.');
-        const chunks = Array.isArray(payload.chunks) ? payload.chunks : [],
-          states = chunks
-            .flatMap(c => (Array.isArray(c.states) ? c.states : []))
+        const states = log.states
             .filter(a => Array.isArray(a) && a.length >= 13 && a.slice(0, 13).every(Number.isFinite))
             .sort((a, b) => a[0] - b[0]),
-          frames = chunks
-            .flatMap(c => (Array.isArray(c.frames) ? c.frames : []))
-            .filter(a => Array.isArray(a) && a.length >= 2 && a.every(Number.isFinite)),
-          events = chunks.flatMap(c => (Array.isArray(c.events) ? c.events : [])),
+          frames = log.frames.filter(a => Array.isArray(a) && a.length >= 2 && a.every(Number.isFinite)),
+          events = log.events,
           hurts = events.filter(e => e.type === 'hurt' && Number.isFinite(e.x) && Number.isFinite(e.y));
         renderCompactSummary(r);
         $('empty').hidden = true;
@@ -4511,9 +6507,9 @@ return Plotly;
               type: 'bar',
               x: damage.map(
                 ([k]) =>
-                  (enemyNames[k.split('/')[0]] || '미상') +
+                  (enemyNames[k.split('/')[0]] || enemyNames.unknown) +
                   ' / ' +
-                  ({ contact: '접촉', projectile: '탄환', floor: '바닥' }[k.split('/')[1]] || '기타'),
+                  (T.analysis.attacks[k.split('/')[1]] || T.analysis.attacks.other),
               ),
               y: damage.map(([, v]) => v),
               marker: { color: '#ff6e9d' },
@@ -4570,13 +6566,20 @@ return Plotly;
               x: hurts.map(e => e.x),
               y: hurts.map(e => e.y),
               marker: { color: '#ff4e8e', size: 9 },
-              text: hurts.map(e => (enemyNames[e.source?.kind] || '미상') + ' / ' + Math.round(e.value)),
+              text: hurts.map(
+                e => (enemyNames[e.source?.kind] || enemyNames.unknown) + ' / ' + Math.round(e.value),
+              ),
             },
           ],
           '이동 경로와 피격 위치',
           {
-            xaxis: { range: [0, 3200], gridcolor: '#233a46', constrain: 'domain' },
-            yaxis: { range: [2400, 0], gridcolor: '#233a46', scaleanchor: 'x', constrain: 'domain' },
+            xaxis: { range: [0, NeonBalance.map.width], gridcolor: '#233a46', constrain: 'domain' },
+            yaxis: {
+              range: [NeonBalance.map.height, 0],
+              gridcolor: '#233a46',
+              scaleanchor: 'x',
+              constrain: 'domain',
+            },
           },
         );
         chart(
@@ -4599,11 +6602,9 @@ return Plotly;
             },
           },
         );
-        const tail = (
-          Array.isArray(payload.tail)
-            ? payload.tail
-            : chunks.flatMap(c => (Array.isArray(c.tail) ? c.tail : []))
-        ).filter(a => Array.isArray(a) && a.length >= 13 && a.slice(0, 13).every(Number.isFinite));
+        const tail = log.tail.filter(
+          a => Array.isArray(a) && a.length >= 13 && a.slice(0, 13).every(Number.isFinite),
+        );
         chart(
           'tail-chart',
           [
@@ -4656,7 +6657,7 @@ return Plotly;
               '회 격파.',
             top
               ? '가장 큰 누적 피해 원인은 ' +
-                (enemyNames[top[0].split('/')[0]] || '미상') +
+                (enemyNames[top[0].split('/')[0]] || enemyNames.unknown) +
                 '입니다. 발생 Stage와 능력 사용 시점을 함께 확인하세요.'
               : '피격 원인 기록이 없습니다.',
             '실제 활동 시간 ' +
@@ -4679,23 +6680,15 @@ return Plotly;
           ' / BALANCE ' +
           r.balance +
           ' / ' +
-          r.craft.toUpperCase() +
+          (T.craftName(r.craft) || r.craft.toUpperCase()) +
           ' / ' +
           new Date(r.date).toLocaleString('ko-KR');
       }
       function renderCompactSummary(r) {
-        const modeNames = {
-            easy: 'Easy',
-            hard: 'Hard',
-            extream: 'Extream',
-            super: 'Super',
-            ultra: 'Ultra',
-            insane: 'Insane',
-          },
-          section = $('run-summary');
+        const section = $('run-summary');
         section.replaceChildren();
         const title = document.createElement('h2');
-        title.textContent = (modeNames[r.difficultyId] || 'Easy') + ' · 런 기록';
+        title.textContent = T.analysis.title(r.difficultyId);
         section.append(title);
         const summary = document.createElement('p');
         summary.textContent =
@@ -4718,7 +6711,7 @@ return Plotly;
           const row = document.createElement('p'),
             u = usage?.[id];
           if (!u) {
-            row.textContent = (id === 'dash' ? '대시' : '노바') + ': 상세 사용 지표 미기록';
+            row.textContent = abilityName(id) + ': 상세 사용 지표 미기록';
             box.append(row);
             continue;
           }
@@ -4729,7 +6722,7 @@ return Plotly;
                 ? Number(effect(key)).toFixed(key === 'distanceMoved' ? 1 : 0)
                 : '미기록';
           row.textContent =
-            (id === 'dash' ? '대시' : '노바') +
+            abilityName(id) +
             ' · 발동 ' +
             value('activations') +
             ' / 시도 ' +
@@ -4791,14 +6784,7 @@ return Plotly;
             '이 브라우저에서 해당 기록을 찾지 못했습니다. 내보낸 JSON 파일을 선택하세요.';
           return;
         }
-        const chunks = await store.chunks(id);
-        loadLog({
-          format: 'neon-arena-log',
-          schema: 1,
-          record: r,
-          partial: r.partial || !chunks.length,
-          chunks: chunks.map(c => c.data),
-        });
+        loadLog(NeonData.exportLog(r, await store.chunks(id)));
       }
       boot().catch(e => {
         $('message').textContent = e.message;
