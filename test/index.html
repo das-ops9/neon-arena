@@ -874,6 +874,238 @@ ul {
   font-weight: 800;
   font-size: var(--fs-sm);
 }
+.shop-card .gate {
+  color: var(--muted);
+}
+/* 자동 G 습득 카드(R-025): 보유하면 켜기/끄기 스위치 */
+.shop-card--autogold {
+  border-color: #50f3d655;
+}
+.tag-new {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cyan);
+  color: #04201c;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  vertical-align: 2px;
+}
+.shop-own {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tap);
+  padding: 0 6px 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+}
+.switch i {
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: 13px;
+  background: var(--surface-3);
+}
+.switch i::after {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s;
+}
+.switch[aria-checked='true'] {
+  border-color: var(--cyan);
+  background: var(--cyan-deep);
+  color: var(--cyan);
+}
+.switch[aria-checked='true'] i {
+  background: var(--cyan);
+}
+.switch[aria-checked='true'] i::after {
+  transform: translateX(18px);
+  background: #04201c;
+}
+
+/* 히든 탭 입구: 성장 탭 맨 아래 칸(R-026). 2단계 성장 탭(R-033)에서도 같은 자리 */
+.hidden-entry {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 64px;
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  border: 1px dashed #c4a3ff77;
+  background: #2b1f4855;
+  color: var(--violet);
+  text-align: center;
+}
+.hidden-entry strong {
+  font-size: var(--fs-md);
+  font-weight: 800;
+}
+.hidden-entry small {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+.hidden-entry.is-open {
+  border-style: solid;
+  border-color: var(--violet);
+  background: var(--violet-deep);
+}
+.page-head--back {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-2);
+}
+.back-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--r-md);
+  color: var(--ink-2);
+  font-size: var(--fs-xl);
+}
+
+/* 히든 탭 · 고양이 비행사(R-026). 색: Lv5(항상 적용) 금색 · 동반 시안 · 그 밖 보라 · 미해금 회색 */
+.cat-applied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--line-strong);
+  font-size: var(--fs-sm);
+}
+.cat-applied > span,
+.cat-applied small {
+  color: var(--muted);
+}
+.cat-applied small {
+  font-size: var(--fs-xs);
+}
+.cat-card {
+  --cat-c: var(--violet);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.cat-card--max {
+  --cat-c: var(--gold);
+  border-color: #f4ce7299;
+}
+.cat-card--pick {
+  --cat-c: var(--cyan);
+  border-color: var(--cyan);
+}
+.cat-card--locked {
+  --cat-c: var(--muted);
+}
+.cat-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--cat-c);
+  color: var(--cat-c);
+  background: #ffffff08;
+}
+.cat-icon svg {
+  width: 34px;
+  height: 34px;
+}
+.cat-main {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  align-content: center;
+}
+.cat-main h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: var(--fs-md);
+  font-weight: 800;
+}
+.cat-main h3 small {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+.cat-main p {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.cat-main p b {
+  color: var(--ink);
+}
+.cat-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cat-c);
+  color: var(--cat-c);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+}
+.cat-pips {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 22px;
+  justify-content: start;
+  gap: 4px;
+}
+.cat-pips i {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-3);
+}
+.cat-pips i.on {
+  background: var(--cat-c);
+}
+.cat-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--sp-2);
+}
+.cat-buy {
+  flex-direction: column;
+  gap: 0;
+  padding: 4px var(--sp-2);
+}
+.cat-pick[aria-pressed='true'] {
+  border-color: var(--cyan);
+  background: var(--cyan-deep);
+  color: var(--cyan);
+  font-weight: 800;
+}
+p.cat-note {
+  text-align: left;
+}
 
 /* 기록 */
 .record-list {
@@ -1310,6 +1542,10 @@ ul {
 .hud-point .hud-sub {
   font-size: min(var(--fs-2xs), 12cqi);
 }
+/* Insane 판은 S까지 세 묶음이라 좁은 칸에서 더 줄인다(R-023) */
+.hud-point .hud-sub.has-s {
+  font-size: min(var(--fs-2xs), 8cqi);
+}
 .hud-sub i {
   font-style: normal;
   font-weight: 800;
@@ -1320,6 +1556,9 @@ ul {
 }
 .hud-sub .b {
   color: var(--c-blue);
+}
+.hud-sub .s {
+  color: var(--c-sc);
 }
 .hud-auto {
   min-width: 50px;
@@ -1421,6 +1660,13 @@ ul {
 .notice--siege {
   border-color: var(--danger);
   color: #ffd0d5;
+}
+/* 강조 알림(판 도중 해금 R-024) */
+.notice--strong {
+  border-color: var(--gold);
+  color: var(--gold);
+  font-size: var(--fs-sm);
+  box-shadow: 0 0 18px #f4ce7233;
 }
 .notice--combo {
   border: 0;
@@ -1734,6 +1980,13 @@ body[data-mode='menu'] .vignette {
 .notice--best {
   border-color: var(--gold);
   color: var(--gold);
+}
+/* 결과: 이 판에서 열린 모드 · 히든 탭(R-024 · R-026) */
+.result-unlock {
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--gold);
+  text-align: center;
 }
 .result-analysis {
   display: grid;
@@ -2058,7 +2311,19 @@ kbd {
           </div>
           <p class="overlay-note" id="grow-status" role="status"></p>
           <div id="growth-list" class="page"></div>
-          <p class="legacy-note">블루코인: 실제 LV10마다 1B · Ultra 2B · Insane 3B</p>
+          <p class="legacy-note">블루코인: 실제 LV10마다 1B · Ultra 이상 2B</p>
+          <div id="hidden-entry"></div>
+        </section>
+        <section class="page page--hidden" id="page-hidden" aria-label="히든 탭 · 고양이 비행사" hidden>
+          <div class="page-head page-head--back">
+            <button class="back-btn" id="hidden-back" aria-label="성장으로 돌아가기">‹</button>
+            <div>
+              <h2>히든 탭 · 고양이 비행사</h2>
+              <p>Insane 한 판으로 열림 · 효과는 다음 출격부터</p>
+            </div>
+          </div>
+          <p class="overlay-note" id="hidden-status" role="status"></p>
+          <div id="hidden-view" class="page"></div>
         </section>
         <section class="page page--shop" id="page-shop" aria-label="상점" hidden>
           <div class="page-head">
@@ -2194,7 +2459,10 @@ kbd {
             <b class="num" id="score">0</b
             ><span class="hud-sub num"
               ><i class="g">G</i><span id="hud-g">0</span><i class="b">B</i
-              ><span id="hud-b">0</span></span
+              ><span id="hud-b">0</span
+              ><span id="hud-s-wrap" hidden
+                ><i class="s">S</i><span id="hud-s">0</span></span
+              ></span
             >
           </div>
           <button class="hud-cell hud-auto" id="auto-toggle" aria-pressed="false" hidden>
@@ -2278,6 +2546,7 @@ kbd {
         </div>
         <div class="summary-grid" id="result-stats"></div>
         <div class="reward-row" id="result-coins"></div>
+        <p class="result-unlock" id="result-unlock" role="status" hidden></p>
         <div class="overlay-actions">
           <button class="btn btn--primary" id="replay">다시 도전</button
           ><button class="btn" id="result-menu">기록 · 기체 선택</button>
@@ -9170,7 +9439,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v4-1',
+    name: 'v5-1',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · blue: 실제 LV10마다 B
@@ -9267,7 +9536,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 2,
         auto: true,
         goldBonus: 1,
-        blue: 3,
+        blue: 2,
         fan: true,
         burst: true,
         bossSide: true,
@@ -9278,21 +9547,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       extream: { from: 'hard', score: 500000 },
       super: { from: 'extream', time: 480 },
       ultra: { from: 'super', time: 600, score: 500000 },
-      insane: { from: 'ultra', time: 720, score: 1200000, level: 100 },
+      insane: { from: 'ultra', score: 2000000 },
     },
     // 기체: fire 발사 간격(초) · dash 대시 재충전(초) · start 출격 때 더하는 시작 스택(회복·XP 효과 없음)
     crafts: {
-      striker: { hp: 100, speed: 235, damage: 22, fire: 0.31, dash: 3.1, shield: 0, start: { magnet: 3 } },
+      striker: { hp: 100, speed: 235, damage: 22, fire: 0.31, dash: 5.6, shield: 0, start: { magnet: 3 } },
       specter: {
         hp: 80,
         speed: 270,
         damage: 24,
         fire: 0.32,
-        dash: 2.2,
+        dash: 4,
         shield: 0,
         start: { speed: 3, rapid: 3 },
       },
-      bulwark: { hp: 145, speed: 208, damage: 24, fire: 0.36, dash: 3.7, shield: 20, start: { multi: 3 } },
+      bulwark: { hp: 145, speed: 208, damage: 24, fire: 0.36, dash: 6.7, shield: 20, start: { multi: 3 } },
     },
     // 기체 공통: 충돌 반경 · 흡수 범위 · 치명타 · 피격 뒤 무적 · 보호막 재생(안 맞은 지 delay초 뒤 초당 regen + 재생 방벽 스택)
     // choiceHeal: 레벨업 때 스킬을 고르면 회복하는 HP
@@ -9310,12 +9579,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     level: { base: 8, step: 6 },
     // 내 탄환: 속도 · 수명(초) · 여러 발일 때 사이 각도(라디안) · 기체 앞 출발 거리
     shot: { speed: 720, ttl: 1.3, spread: 0.115, muzzle: 18 },
-    // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초)
-    dash: { time: 0.19, invuln: 0.28, speed: 1000, min: 1.1 },
+    // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초). 재충전 = 기체 dash ÷ (1 + 벡터 드라이브 스택 × skills.speed.dash) → 바닥
+    dash: { time: 0.19, invuln: 0.28, speed: 1000, min: 1 },
     // 충격파 기본값: 피해 · 범위 · 재충전(초) · 맞은 적을 밀어내는 거리
     nova: { damage: 100, radius: 220, cooldown: 19, push: 30 },
     // 공전 칼날: 충돌과 렌더러가 같은 반경·회전 속도(라디안/초)를 쓴다. 칼날 피해 = damage + LV + 스택 × skills.orbit.step
-    orbit: { radius: 130, speed: 3.1, max: 6, damage: 24, hit: 14, hitCooldown: 0.25 },
+    orbit: { radius: 140, speed: 3.1, max: 7, damage: 24, hit: 14, hitCooldown: 0.25 },
     // 스킬 스택당 효과. 키 순서 = 레벨업 카드 뽑기 순서(바꾸면 같은 시드의 판이 달라진다).
     // overflow: 물리 상한에 닿은 뒤 스택마다 늘어나는 탄환 피해
     skills: {
@@ -9334,15 +9603,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 방어 한도를 쓰는 스킬
     defense: ['vital', 'shield'],
     // Stage n: 1 + 값 × (n − 1). 적 속도는 speedMax에서 멈춘다.
-    stage: { hp: 0.15, damage: 0.08, density: 0.08, xp: 0.15, score: 0.2, speed: 0.02, speedMax: 1.55 },
+    // 자동 승격(R-022): Stage 최소값 = 1 + floor(실제 LV ÷ autoLevel). 지금 Stage가 낮으면 한 칸씩 올린다(보스 규칙 같음).
+    stage: {
+      hp: 0.15,
+      damage: 0.08,
+      density: 0.08,
+      xp: 0.15,
+      score: 0.2,
+      speed: 0.02,
+      speedMax: 1.55,
+      autoLevel: 10,
+    },
     // 보스: Stage를 every의 배수로 올릴 때 웨이브. 수 = base + floor(Stage ÷ per), 동시에 alive마리까지
     boss: { every: 3, base: 1, per: 10, alive: 4 },
-    // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ 모드 출현 배율, 기체에서 radius 거리.
+    // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ (모드 출현 배율 × rate), 기체에서 radius 거리.
+    // rate: 맵 넓이만큼 늘린 출현량(R-020, 3520×2640 ÷ 3200×2400 = 1.21). 동시 적 상한은 caps.enemies 그대로.
     // 나온 적은 born초 동안 움직이지 않고 맞지 않는다(예고 테두리).
     // mix: 종류 확률. 분열·사수 = base + min(max, (Stage − 1) × step), 돌격은 고정, 나머지는 추적
     spawn: {
       first: 0.5,
       interval: 0.85,
+      rate: 1.21,
       min: 0.24,
       radius: 700,
       born: 0.8,
@@ -9408,43 +9689,56 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     caps: { enemies: 110, hostiles: 350, bullets: 400, gems: 220 },
     // Point: 처치 보너스 = min(comboMax, 콤보 × comboStep), 콤보는 comboWindow초 안에 처치가 이어질 때 쌓인다
     score: { comboWindow: 3, comboStep: 2, comboMax: 40 },
-    // 포위: 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서). 남은 동안 일반 출현을 멈추고
+    // 포위(R-021): 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서). 남은 동안 일반 출현을 멈추고
     // 적 상한 미만일 때 스텝마다 perStep마리. 사수 첫 사격 = shotDelay + 앞선 사수 수 × shotStep초. warn초 전 예고.
+    // n회차 포위 적의 이동 속도 = 기본 × min(speedMax, 1 + speedStep × (n − 1)). 포위가 겹치면 먼저 온 회차부터 나온다.
+    // pattern: 추적 11 · 돌격 7 · 사수 4 · 분열 3. 나오는 순서와 칸(7칸씩 건너뜀) 모두에서 종류가 고르게 섞이게 정했다.
     siege: {
-      interval: 600,
+      interval: 300,
       warn: 2,
       perStep: 4,
       sides: 4,
       shotDelay: 1.5,
       shotStep: 0.45,
+      speedStep: 0.1,
+      speedMax: 2,
       pattern: [
         'chaser',
         'runner',
-        'chaser',
         'shooter',
+        'runner',
+        'chaser',
         'chaser',
         'runner',
         'splitter',
         'chaser',
-        'runner',
-        'shooter',
         'chaser',
+        'shooter',
         'runner',
         'chaser',
         'splitter',
         'chaser',
+        'shooter',
         'runner',
+        'chaser',
+        'chaser',
+        'runner',
+        'chaser',
+        'runner',
+        'splitter',
         'shooter',
         'chaser',
       ],
     },
     // 맵 크기(시작 위치는 가운데)
-    map: { width: 3200, height: 2400 },
+    map: { width: 3520, height: 2640 },
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
     superLaunch: { stage: 29, level: 29, picks: 28 },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
     // 영구 스택 가격 = permaBase + floor(이미 산 수 ÷ permaStep). 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G.
     // bossGold: 보스 1마리 처치마다 G(R-002)
+    // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
+    // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 항상 코인.
     economy: {
       goldBase: 1,
       goldMax: 5,
@@ -9459,6 +9753,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       noteMax: 15,
       permaStep: 3,
       bossGold: 3,
+      autoGoldPrice: 50,
+      autoGoldChance: 0.25,
       permaBase: {
         power: 2,
         rapid: 3,
@@ -9473,8 +9769,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         shield: 4,
       },
     },
-    // 고양이 비행사(R-026, 1단계). 0단계는 저장 구조만 쓴다: 고양이별 레벨 0~maxLevel(0은 미해금)
-    cats: { maxLevel: 5, list: ['engineer', 'supply', 'pilot'] },
+    // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
+    // (패배 · 직접 종료, 중단 제외) 열린다. 해금(Lv1) 비용은 unlock(S), Lv n(2~5)으로 올리는 비용은 levelCost[n − 2]
+    // (S와 B를 함께 낸다). 효과: Lv n의 값 = effect[고양이][n − 1]. 동반 고양이와 Lv5 고양이가 적용되고(겹치면 한 번),
+    // 출격 순간 값으로 고정한다. engineer: 기체 시작 스킬마다 더하는 스택 · supply: 분당 G · pilot: 대시 재충전 감소 비율
+    cats: {
+      maxLevel: 5,
+      list: ['engineer', 'supply', 'pilot'],
+      hiddenFrom: 'insane',
+      unlock: { engineer: 1, supply: 2, pilot: 3 },
+      levelCost: [
+        { s: 2, b: 30 },
+        { s: 4, b: 80 },
+        { s: 8, b: 160 },
+        { s: 16, b: 300 },
+      ],
+      effect: {
+        engineer: [3, 4, 5, 6, 7],
+        supply: [5, 6, 7, 8, 10],
+        pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
+      },
+    },
+    // Insane 슈퍼코인(R-023): mode 판(일반 · S 출격)에서 전투 시계 every초마다 1개. 기체에서 near~far 거리의 무작위
+    // 방향, 맵 가장자리에서 margin 안쪽. 크기 r(기체 충돌 반경과 같음), 자석 없이 기체가 닿아야 1 S. 줍지 않으면 판 끝까지 남는다.
+    superCoin: { mode: 'insane', every: 300, near: 600, far: 1000, r: 13, margin: 40 },
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 100, logs: 10 },
@@ -9760,7 +10078,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     );
   }
   // 스택 출처
-  const sources = { craft: '기체', perma: '영구', prep: '준비', earned: '획득' };
+  const sources = { craft: '기체', cat: '고양이', perma: '영구', prep: '준비', earned: '획득' };
   // 적. name: 화면 · short: 짧은 이름
   const enemies = {
     chaser: { name: '추적자', short: '추적' },
@@ -9773,10 +10091,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   };
   const enemyName = kind => (enemies[kind] || enemies.unknown).name;
   // 고양이 비행사(1단계 R-026에서 화면에 나온다. 이름은 임시, 3단계에서 확정)
+  // 고양이 비행사(R-026). 이름 · 그림은 임시(3단계에서 확정). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
+  const pctOf = v => Math.round(v * 100);
   const cats = {
-    engineer: { name: '정비사' },
-    supply: { name: '보급관' },
-    pilot: { name: '조종사' },
+    engineer: { name: '정비사', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
+    supply: { name: '보급관', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
+    pilot: {
+      name: '조종사',
+      effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
+      value: v => '−' + pctOf(v) + '%',
+    },
   };
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
@@ -9806,6 +10130,26 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const firstMode = key => Object.keys(B().modes).find(id => B().modes[id][key]);
   const autoFrom = () => modeName(firstMode('auto'));
   const goldBonusFrom = () => modeName(firstMode('goldBonus'));
+  // Easy와 B가 다른 모드를 같은 값끼리 묶는다. 마지막 모드까지 이어지면 'Ultra 이상 2' + unit
+  const blueExtra = unit => {
+    const m = B().modes,
+      ids = Object.keys(m),
+      groups = [];
+    for (const id of ids) {
+      if (m[id].blue === m.easy.blue) continue;
+      const last = groups[groups.length - 1];
+      if (last && last.blue === m[id].blue && ids.indexOf(id) === ids.indexOf(last.ids.at(-1)) + 1)
+        last.ids.push(id);
+      else groups.push({ blue: m[id].blue, ids: [id] });
+    }
+    return groups.map(g => {
+      const name =
+        g.ids.length > 1 && g.ids.at(-1) === ids.at(-1)
+          ? modeName(g.ids[0]) + ' 이상'
+          : g.ids.map(modeName).join(' · ');
+      return name + ' ' + g.blue + unit;
+    });
+  };
 
   // ── 전투 알림(알림 줄). sec: 보이는 시간(초) ──
   const alerts = {
@@ -9825,8 +10169,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     bossStage: { sec: 2, text: s => stageLabel(s) + ' · 보스 등장' },
     bossWave: { sec: 1.2, text: () => '보스 웨이브 격파' },
     bossGold: { sec: 1.6, text: n => '보스 격파 +' + n + ' ' + G },
-    siegeWarn: { sec: 2.2, text: () => '⚠ 포위 접근 · ' + B().siege.sides + '방향' },
-    siege: { sec: 1.6, text: n => '포위 · ' + B().siege.sides + '방향에서 ' + n + '기' },
+    // 1단계 알림은 2단계(R-030)의 짧은 형식으로 쓴다: 설명 숫자 없이, 보상 수만
+    siegeWarn: { sec: 2, text: () => '⚠ 포위 접근' },
+    siege: { sec: 2, text: wave => '⚠ 포위 ' + wave + '회차' },
     stage: {
       sec: 1.3,
       text: (s, hp, xp, score) =>
@@ -9843,14 +10188,31 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         score +
         '×',
     },
+    // AUTO 결과: n = 고른 스킬 수, gold = 자동 G 습득으로 받은 G(R-025)
     auto: {
       sec: 1.1,
-      text: (n, id) =>
-        n === 1
-          ? auto.name + ' · ' + skillName(id) + ' +1'
-          : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
+      text: (n, id, gold = 0) =>
+        !n
+          ? '자동 ' + G + ' 습득 +' + gold + ' ' + G
+          : gold
+            ? auto.name + ' ' + n + '개 · +' + gold + ' ' + G
+            : n === 1
+              ? auto.name + ' · ' + skillName(id) + ' +1'
+              : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
     },
-    unlock: { sec: 2, text: id => modeName(id) + ' 해금 · 다음 도전에서 선택하세요.' },
+    // 판 도중 해금(R-024): 4초 강조
+    unlock: { sec: 4, strong: true, text: id => modeName(id) + ' 해금' },
+    // Stage 자동 승격(R-022): boss = 'now'(이 Stage가 보스) · 'next'(다음이 보스) · ''
+    stageAuto: {
+      sec: 2,
+      text: (s, boss) =>
+        stageLabel(s) +
+        ' 자동 상승' +
+        (boss === 'now' ? ' · 보스 등장' : boss === 'next' ? ' · 다음 보스' : ''),
+    },
+    // Insane S 코인(R-023)
+    sCoin: { sec: 3, text: () => SC + ' 코인 등장' },
+    sPick: { sec: 2, text: n => '+' + n + ' ' + SC },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -9889,9 +10251,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       blueNote: () => {
         const m = B().modes,
           every = E().blueEvery,
-          extra = Object.keys(m)
-            .filter(id => m[id].blue !== m.easy.blue)
-            .map(id => modeName(id) + ' ' + m[id].blue + BL);
+          extra = blueExtra(BL);
         return (
           coins.b.ko + ': 실제 ' + levelShort(every) + '마다 ' + m.easy.blue + BL + ' · ' + extra.join(' · ')
         );
@@ -10053,19 +10413,33 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       point: point.upper,
       kills: '처치',
     },
-    resultCoins: (choices, gold, blue, boss) =>
-      '코인 선택 ' +
-      choices +
-      '회' +
-      (boss ? ' · 보스 격파 +' + num(boss) + ' ' + G : '') +
-      ' · 잔액 ' +
-      num(gold) +
-      ' ' +
-      G +
-      ' · ' +
-      num(blue) +
-      ' ' +
-      BL,
+    // 결과 재화 줄: G 내역(있을 때) + 잔액
+    resultCoins: (parts, gold, blue) => {
+      const detail = msg.resultGold(parts);
+      return (
+        (detail ? G + ' 내역 ' + detail + ' · ' : '') +
+        '잔액 ' +
+        num(gold) +
+        ' ' +
+        G +
+        ' · ' +
+        num(blue) +
+        ' ' +
+        BL
+      );
+    },
+    // 결과 G 내역(분 · 보스 · 코인(자동 G) · 고양이). 0인 항목은 뺀다.
+    resultGold: ({ minute, boss, coin, autoGold, cat }) =>
+      [
+        minute ? '분당 ' + num(minute) : '',
+        boss ? '보스 ' + num(boss) : '',
+        coin ? '코인 ' + num(coin) + (autoGold ? '(자동 ' + G + ' ' + num(autoGold) + ')' : '') : '',
+        cat ? '고양이 ' + num(cat) : '',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    resultUnlock: ids => '새 모드 해금 · ' + ids.map(modeName).join(' · '),
+    resultHidden: '히든 탭 해금 · 성장 탭 맨 아래',
     resultKicker: defeated => (defeated ? 'SIGNAL LOST · RUN RECORDED' : 'RUN SAVED · SIGNAL ON HOLD'),
     resultAnnounce: (score, lv) => '도전 기록. ' + num(score) + '점, 레벨 ' + lv,
     newBest: 'NEW BEST · TOP 1',
@@ -10104,6 +10478,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       income: tier => '시간 코인 ' + tier + '단계 · 다음 판부터 분당 적립이 늘어납니다',
       craftSC: coins.s.ko + ' 1개를 만들었습니다',
       perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용 · 다음 출격부터 적용',
+      needs_auto: auto.name + '를 먼저 사야 합니다.',
+      sc_reserved: SC + ' 출격 준비에 예약된 ' + SC + '는 쓸 수 없습니다.',
+      hidden_locked: '히든 탭이 아직 열리지 않았습니다.',
+      locked: '먼저 해금해야 합니다.',
+      autoGold: () => '자동 ' + G + ' 습득을 구매했습니다 · 상점에서 켜고 끌 수 있습니다',
+      catUnlock: id => cats[id].name + ' 해금 · 동반으로 고르면 다음 출격부터 적용',
+      catLevel: (id, lv) => cats[id].name + ' Lv' + lv + ' · 다음 출격부터 적용',
+      companion: id => (id ? cats[id].name + ' 동반 · 다음 출격부터 적용' : '동반 해제'),
     },
     prep: {
       insufficient: SC + ' 없음',
@@ -10171,11 +10553,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     rec: {
       confirm: n => '선택한 기록 ' + n + '개를 지웁니다. 상세 로그도 함께 지워지고 되돌릴 수 없습니다.',
       removed: n => '기록 ' + n + '개를 지웠습니다.',
-      protected: '보호된 기록(TOP3·별표)이 섞여 있어 지우지 않았습니다.',
+      protected: '보호된 기록(일반 · S 출격 TOP3 · 별표)이 섞여 있어 지우지 않았습니다.',
       failed: '지우지 못했습니다. 기록은 그대로입니다.',
       starFailed: '별표를 저장하지 못했습니다.',
       summaryOnly: () =>
-        '요약만 남은 기록 · 상세 로그는 최근 ' + B().records.logs + '판과 TOP3·별표 기록만 보관합니다',
+        '요약만 남은 기록 · 상세 로그는 최근 ' +
+        B().records.logs +
+        '판과 TOP3(일반 · S 출격) · 별표 기록만 보관합니다',
     },
     // 터치 진단 상자(?touch, R-016)
     touch: {
@@ -10214,8 +10598,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       selected: n => n + '개 선택됨',
       cancel: '취소',
       remove: '삭제',
-      info: '🔒 TOP3와 ★ 별표 기록은 선택·자동 정리에서 빠집니다 · 삭제는 확인 창 1번 뒤 되돌릴 수 없음',
-      locked: '보호된 기록(TOP3·별표)',
+      // 보호 = 일반 TOP3 + S 출격 TOP3 + 별표(R-035, data.js protectedIds)
+      info: '🔒 TOP3(일반 · S 출격)와 ★ 기록은 선택·자동 정리에서 빠집니다 · 삭제는 확인 창 1번 뒤 되돌릴 수 없음',
+      locked: '보호된 기록(일반 · S 출격 TOP3 · 별표)',
       check: '선택',
       star: '별표',
       top: 'TOP3',
@@ -10255,12 +10640,68 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         levelShort(B().superLaunch.level) +
         ' 특수 출격 · 출격 전 강화 ' +
         B().superLaunch.picks +
-        '회 직접 배분',
+        '회 직접 배분 · ' +
+        modeName(B().superCoin.mode) +
+        '에서는 ' +
+        B().superCoin.every / 60 +
+        '분마다 맵에 등장',
       scCraft: SC + ' 제작',
       auto: auto.name,
       autoNote: () => '레벨업 때 추천 스킬을 자동 선택 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
       owned: '✓ 보유 중',
       buyAuto: () => E().autoPrice + ' ' + G + ' · 한 번 구매',
+      // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님)
+      autoGold: '자동 ' + G + ' 습득',
+      autoGoldNew: 'NEW',
+      autoGoldNote: () =>
+        auto.short +
+        '가 레벨업을 고를 때 ' +
+        pctOf(E().autoGoldChance) +
+        '% 확률로 스킬 대신 ' +
+        E().coinChoice +
+        ' ' +
+        G +
+        ' · 고를 스킬이 모두 최대면 항상 ' +
+        E().coinChoice +
+        ' ' +
+        G,
+      buyAutoGold: () => E().autoGoldPrice + ' ' + G + ' · 한 번 구매',
+      needAuto: () => auto.name + ' 보유 필요',
+      on: '켜짐',
+      off: '꺼짐',
+      toggleLabel: on => '자동 ' + G + ' 습득 ' + (on ? '켜짐' : '꺼짐'),
+    },
+    // 히든 탭 · 고양이 비행사(R-026). 입구는 성장 탭 맨 아래 칸(2단계에서도 같은 자리)
+    hidden: {
+      entry: '히든',
+      entryLocked: () => modeName(B().cats.hiddenFrom) + ' mode 플레이 시 해제',
+      entryOpen: '고양이 비행사',
+      title: '히든 탭 · 고양이 비행사',
+      sub: () => modeName(B().cats.hiddenFrom) + ' 한 판으로 열림 · 효과는 다음 출격부터',
+      back: '성장으로 돌아가기',
+      applied: '적용 중',
+      appliedNone: '없음 · 해금한 고양이를 동반으로 고르세요',
+      appliedItem: (id, lv, always) => cats[id].name + ' Lv' + lv + ' ' + (always ? '항상' : '동반'),
+      always: '항상 적용',
+      companion: '동반 중',
+      locked: '미해금',
+      level: lv => 'Lv' + lv,
+      levelsLabel: (lv, max) => '레벨 ' + lv + ' / ' + max,
+      // v1: Lv1 효과 값, vMax: 최대 레벨 효과 값
+      effectLocked: (id, v1, vMax, max) =>
+        '해금하면 ' + cats[id].effect(v1) + ' · Lv' + max + ' ' + cats[id].value(vMax),
+      effectMax: '최대',
+      unlockBtn: n => n + ' ' + SC + '로 해금',
+      levelBtn: (sc, b) => sc + ' ' + SC + ' + ' + b + ' ' + BL,
+      levelTo: lv => 'Lv' + lv + '로 육성',
+      have: n => '보유 ' + SC + ' ' + n,
+      pick: '동반',
+      picked: '동반 중',
+      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 해제' : ' 동반으로 고르기'),
+      note: () =>
+        '동반은 1마리, 메뉴에서만 바꿀 수 있습니다 · Lv' +
+        B().cats.maxLevel +
+        ' 고양이는 동반과 관계없이 항상 적용 · 효과는 출격하는 순간 고정 · 이름 · 그림은 임시',
     },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
@@ -10307,7 +10748,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       interrupted: '중단 기록',
       retired: '도전의 기록',
       skills: '스킬 내역 ',
-      earned: (gold, blue, boss) =>
+      earned: (gold, blue, boss, sup) =>
         '획득 +' +
         num(gold) +
         ' ' +
@@ -10317,6 +10758,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         num(blue) +
         ' ' +
         BL +
+        (sup ? ' · +' + num(sup) + ' ' + SC : '') +
         ' · ',
       coins: n => '코인 선택 ' + n + '회',
     },
@@ -10337,10 +10779,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     const b = B(),
       e = b.economy,
       m = b.modes,
-      blueModes = Object.keys(m)
-        .filter(id => m[id].blue !== m.easy.blue)
-        .map(id => modeName(id) + ' ' + m[id].blue + '개')
-        .join(', ');
+      blueModes = blueExtra('개').join(', ');
     return [
       {
         title: '코인',
@@ -10380,8 +10819,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               e.scBlue +
               ro(e.scBlue) +
               ' 만든다. ' +
+              modeName(b.superCoin.mode) +
+              '에서는 ' +
+              b.superCoin.every / 60 +
+              '분마다 맵에 하나씩 나타나 기체가 닿으면 얻는다. ' +
               launches.super +
-              ' 한 번에 1개를 쓴다.',
+              ' 한 번에 1개를 쓰고, 고양이 비행사 해금 · 육성에도 쓴다.',
           ],
         ],
       },
@@ -10468,18 +10911,24 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             desc:
               "하단 '" +
               stage.upper +
-              "' 버튼으로 직접 올리는 난이도. 올릴수록 적이 강해지고 점수 · XP가 커진다.",
+              "' 버튼으로 직접 올리는 난이도. 올릴수록 적이 강해지고 점수 · XP가 커진다. 실제 " +
+              level.short +
+              ' ' +
+              b.stage.autoLevel +
+              '마다 최소 ' +
+              stage.name +
+              '가 1씩 오르고, 그보다 낮으면 자동으로 오른다.',
           },
           {
             term: '보스',
             desc: stage.name + '를 ' + [1, 2, 3].map(k => k * b.boss.every).join(', ') + '…로 올리면 나온다.',
           },
           {
-            term: b.siege.interval / 60 + '분 포위',
+            term: '포위',
             desc:
               '전투 ' +
               b.siege.interval / 60 +
-              '분마다 네 방향에서 한꺼번에 몰려온다. ' +
+              '분마다 네 방향에서 한꺼번에 몰려오고, 회차마다 조금씩 빨라진다. ' +
               b.siege.warn +
               '초 전에 화면 가장자리에 붉은 표시가 뜬다.',
           },
@@ -10507,6 +10956,24 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               '로 한 번 사고, ' +
               autoFrom() +
               ' 이상에서 켤 수 있다.',
+          },
+          {
+            term: '자동 ' + G + ' 습득',
+            desc:
+              auto.short +
+              '가 레벨업을 고를 때 ' +
+              pctOf(e.autoGoldChance) +
+              '% 확률로 스킬 대신 ' +
+              G +
+              ' ' +
+              e.coinChoice +
+              '개를 받는다. 상점에서 ' +
+              e.autoGoldPrice +
+              ' ' +
+              G +
+              '로 한 번 사고(' +
+              auto.name +
+              ' 먼저), 상점에서 켜고 끈다.',
           },
         ],
       },
@@ -10548,6 +11015,34 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               ' · ' +
               levelShort(b.superLaunch.level) +
               '에서 시작한다.',
+          },
+          {
+            term: '히든 탭',
+            desc:
+              modeName(b.cats.hiddenFrom) +
+              ' 한 판을 끝내면(패배 · 직접 종료) 성장 탭 맨 아래에서 열린다. 고양이 비행사를 해금 · 육성한다.',
+          },
+          {
+            term: '고양이 비행사',
+            desc:
+              Object.values(cats)
+                .map(c => c.name)
+                .join(' · ') +
+              '. ' +
+              coins.s.name +
+              '로 해금하고 ' +
+              coins.s.name +
+              ' + ' +
+              BL +
+              '로 Lv' +
+              b.cats.maxLevel +
+              '까지 키운다. 동반 1마리와 Lv' +
+              b.cats.maxLevel +
+              ' 고양이의 효과가 출격 순간 적용된다(정비사: 기체 시작 스킬 스택, 보급관: 분당 ' +
+              G +
+              ', 조종사: ' +
+              abilities.dash +
+              ' 재충전).',
           },
         ],
       },
@@ -10617,7 +11112,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       (function (root) {
   'use strict';
   // 포위 대기열. 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서)만큼 나온다(수치는 balance.js siege).
-  // 횟수에 따른 강화는 없고, 능력치는 발동 순간의 Stage로 고정한다. 대기열에는 수만 저장한다.
+  // 능력치는 발동 순간의 Stage로 고정하고, n회차 포위 적만 이동 속도 × speedOf(n)(1 + speedStep × (n − 1), 최대 speedMax).
+  // 대기열에는 수만 저장한다.
   // 적 상한 미만일 때 스텝마다 perStep마리씩 꺼내고, 남은 동안 엔진은 일반 출현을 멈춘다.
   // 발동 warn초 전 경고를 보내고, 시계가 경계를 건너뛰어도 지난 포위는 소환하지 않는다(한 번에 1회).
   // 사수의 첫 사격 시점은 흩뜨린다. 순수 함수만 두고 출현·경고 표시는 engine/app이 맡는다.
@@ -10626,7 +11122,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     WARN_LEAD = B.siege.warn,
     ENEMY_CAP = B.caps.enemies,
     MAX_PER_STEP = B.siege.perStep,
-    SIDES = B.siege.sides;
+    SIDES = B.siege.sides,
+    SPEED_STEP = B.siege.speedStep,
+    SPEED_MAX = B.siege.speedMax;
   // 한 방향의 종류 순서와 종류별 수
   const PATTERN = B.siege.pattern;
   const PER_SIDE = Object.freeze(
@@ -10722,6 +11220,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return orders;
   }
 
+  // n회차 포위 적의 이동 속도 배율. 1 이상 정수가 아니면 1, 소수 셋째 자리로 반올림한다.
+  function speedOf(wave) {
+    if (!Number.isInteger(wave) || wave < 1) return 1;
+    return Math.round(Math.min(SPEED_MAX, 1 + SPEED_STEP * (wave - 1)) * 1000) / 1000;
+  }
+
   // 방향(0 위·1 오른쪽·2 아래·3 왼쪽)과 칸(0..1)으로 가장자리 좌표. 월드 경계 보정은 엔진이 한다.
   function edgePoint(side, lane, cx, cy, radius) {
     const along = (lane - 0.5) * 1.2 * radius;
@@ -10740,12 +11244,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     SIDES,
     WAVE_SIZE,
     PATTERN,
+    SPEED_STEP,
+    SPEED_MAX,
     create,
     update,
     pending,
     take,
     slot,
     shotDelay,
+    speedOf,
     edgePoint,
   };
   root.NeonSiege = api;
@@ -10758,7 +11265,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.1.0',
+  const VERSION = '4.2.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -10802,6 +11309,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const orbitAngle = (time, i, n) => time * ORBIT_SPEED + (i * TAU) / n;
   // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작한다.
   const SC_LAUNCH = B.superLaunch;
+  // Insane 슈퍼코인(R-023): 맵 위에 생기고 기체가 닿아야 줍는다.
+  const S_COIN = B.superCoin;
   const Siege = () => root.NeonSiege || (typeof require === 'function' ? require('./siege.js') : null);
   function cleanStacks(raw) {
     const out = {};
@@ -10954,12 +11463,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         startStage: sc ? SC_LAUNCH.stage : 1,
         startLevel: sc ? SC_LAUNCH.level : 1,
       };
-      // 출처별 스택: 기체·영구·준비는 출격 때 고정(판 도중 영구 구매는 다음 출격부터), 획득은 upgrades.
+      // 고양이 효과(R-026): 출격 순간 값(NeonProgress.catEffects)으로 고정한다.
+      // 정비사 = 기체 시작 스킬마다 더하는 스택(출처 '고양이'), 조종사 = 대시 재충전 감소 비율.
+      const engineer = Math.max(0, Math.floor(Number(launch?.cats?.engineer) || 0)),
+        pilot = Math.min(0.95, Math.max(0, Number(launch?.cats?.pilot) || 0));
+      this.cats = { engineer, pilot };
+      // 출처별 스택: 기체·고양이·영구·준비는 출격 때 고정(판 도중 영구 구매는 다음 출격부터), 획득은 upgrades.
       this.stacks = {
         craft: { ...CRAFT_START[this.craft] },
+        cat: engineer
+          ? Object.fromEntries(Object.keys(CRAFT_START[this.craft]).map(id => [id, engineer]))
+          : {},
         perma: cleanStacks(launch?.perma),
         prep: sc ? cleanStacks(launch?.prep) : {},
       };
+      this.sCoins = [];
+      this.sCoinSerial = 0;
+      this.sCoinNext = this.difficultyId === S_COIN.mode ? S_COIN.every : Infinity;
       this.siege = Siege()?.create(0) || null;
       this.siegeWaves = 0;
       this.p = {
@@ -11006,10 +11526,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.shield = p.maxShield;
       return this;
     }
-    // 스킬 스택 합계(기체·영구·준비·획득). 능력치와 상한은 합계로 계산한다.
+    // 스킬 스택 합계(기체·고양이·영구·준비·획득). 능력치와 상한은 합계로 계산한다.
     stack(id) {
       const s = this.stacks;
-      return (s.craft[id] || 0) + (s.perma[id] || 0) + (s.prep[id] || 0) + (this.upgrades[id] || 0);
+      return (
+        (s.craft[id] || 0) +
+        (s.cat[id] || 0) +
+        (s.perma[id] || 0) +
+        (s.prep[id] || 0) +
+        (this.upgrades[id] || 0)
+      );
+    }
+    // 물리 상한에 닿은 스킬(넘친 스택만 남음). 상한이 없는 스킬은 false.
+    isCapped(id) {
+      const cap = skillCaps(this.craft)[id];
+      return cap !== undefined && this.stack(id) >= cap;
     }
     // 방어 한도는 준비+획득만 센다.
     defenseUsed(id) {
@@ -11039,6 +11570,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }
     stageUp() {
       if (this.mode !== 'playing') return false;
+      this.raiseStage(false);
+      return true;
+    }
+    // Stage를 한 칸 올린다(버튼 · 자동 승격 공통). 보스 Stage면 수동과 똑같이 보스 웨이브를 만든다.
+    raiseStage(auto) {
       this.stage++;
       if (this.stage % B.boss.every === 0) {
         const total = B.boss.base + Math.floor(this.stage / B.boss.per);
@@ -11057,8 +11593,31 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         hp: this.p.hp,
         level: this.p.level,
         skills: { ...this.upgrades },
+        ...(auto ? { auto: true } : {}),
       });
-      return true;
+    }
+    // Insane 슈퍼코인 하나: 기체에서 near~far 거리의 무작위 방향, 맵 가장자리 margin 안(벗어나면 방향을 다시 뽑는다).
+    spawnSCoin() {
+      const p = this.p,
+        C = S_COIN,
+        inside = (x, y) => x >= C.margin && x <= W - C.margin && y >= C.margin && y <= H - C.margin;
+      let x = p.x,
+        y = p.y;
+      for (let i = 0; i < 8; i++) {
+        const a = this.rng() * TAU,
+          d = C.near + this.rng() * (C.far - C.near);
+        x = p.x + Math.cos(a) * d;
+        y = p.y + Math.sin(a) * d;
+        if (inside(x, y)) break;
+      }
+      const coin = {
+        id: ++this.sCoinSerial,
+        x: clamp(x, C.margin, W - C.margin),
+        y: clamp(y, C.margin, H - C.margin),
+        r: C.r,
+      };
+      this.sCoins.push(coin);
+      this.emit('s_spawn', { id: coin.id, x: coin.x, y: coin.y });
     }
     spawn(kind, x, y, originStage = this.stage) {
       if (this.enemies.length >= B.caps.enemies) {
@@ -11421,7 +11980,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.multi = Math.min(S.multi.max, 1 + u('multi'));
       p.pierce = Math.min(S.pierce.max, u('pierce'));
       p.speed = Math.min(S.speed.max, c.speed + S.speed.step * u('speed'));
-      p.dashMax = Math.max(B.dash.min, c.dash / (1 + S.speed.dash * u('speed')));
+      p.dashMax = Math.max(B.dash.min, (c.dash / (1 + S.speed.dash * u('speed'))) * (1 - this.cats.pilot));
       p.magnet = Math.min(S.magnet.max, B.player.magnet + S.magnet.step * u('magnet'));
       p.orbits = Math.min(B.orbit.max, u('orbit'));
       p.orbitDamage = B.orbit.damage + p.level + S.orbit.step * u('orbit');
@@ -11482,6 +12041,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         wait,
         amount: B.economy.coinChoice,
         offered: this.choices.map(u => u.id),
+      });
+      this.mode = 'playing';
+      this.choices = [];
+      this.checkLevel();
+      return true;
+    }
+    // 자동 G 습득(R-025): AUTO가 고를 때만 부른다. 제시된 카드가 모두 상한이거나 엔진 난수가 autoGoldChance 미만이면
+    // 스킬 대신 레벨업 코인을 받고 choose처럼 전투로 돌아간다(같은 시드면 같은 결과). 아니면 false.
+    chooseAutoGold(wait = 0) {
+      if (this.mode !== 'upgrade' || !this.choices.length) return false;
+      const capped = this.choices.every(u => this.isCapped(u.id));
+      if (!capped && this.rng() >= B.economy.autoGoldChance) return false;
+      this.autoChoices++;
+      this.autoUsed = true;
+      this.coinsEarned++;
+      this.emit('coin_choice', {
+        level: this.p.level,
+        wait,
+        amount: B.economy.coinChoice,
+        offered: this.choices.map(u => u.id),
+        auto: true,
       });
       this.mode = 'playing';
       this.choices = [];
@@ -11567,6 +12147,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (this.mode !== 'playing' || !Number.isFinite(dt) || dt <= 0) return;
       dt = Math.min(dt, 0.05);
       this.time += dt;
+      // Stage 자동 승격(R-022): 실제 LV autoLevel마다 Stage 최소값 +1. 낮으면 한 스텝에 한 칸씩 올린다.
+      if (this.stage < 1 + Math.floor(this.p.level / B.stage.autoLevel)) this.raiseStage(true);
+      if (this.time >= this.sCoinNext) {
+        this.sCoinNext = (Math.floor(this.time / S_COIN.every) + 1) * S_COIN.every;
+        this.spawnSCoin();
+      }
       // 전투 시계(일시정지·선택 중에는 멈춤)로 1분마다 알린다. 시간 보상과 포위 발동이 같은 시계를 쓴다.
       const minute = Math.floor(this.time / 60);
       if (minute > this.minute) {
@@ -11654,13 +12240,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         for (const o of SG.take(this.siege, this.enemies.length)) {
           const at = SG.edgePoint(o.side, o.lane, p.x, p.y, this.spawnRadius),
             e = this.spawn(o.kind, clamp(at.x, 40, W - 40), clamp(at.y, 40, H - 40), o.stage);
-          if (e && o.shotDelay !== null) e.shot = o.shotDelay;
+          if (!e) continue;
+          // n회차 포위 적만 빨라진다(R-021). 분열 적이 남기는 돌격은 일반 적과 같다.
+          e.speed *= SG.speedOf(o.wave);
+          if (o.shotDelay !== null) e.shot = o.shotDelay;
         }
       } else {
         this.spawnClock -= dt;
         if (this.spawnClock <= 0) {
           const mix = B.spawn.mix;
-          this.spawnClock = Math.max(B.spawn.min, B.spawn.interval / rules.density) / this.profile.spawn;
+          this.spawnClock =
+            Math.max(B.spawn.min, B.spawn.interval / rules.density) / (this.profile.spawn * B.spawn.rate);
           const r = this.rng(),
             split = mix.splitter.base + Math.min(mix.splitter.max, (this.stage - 1) * mix.splitter.step),
             shoot = mix.shooter.base + Math.min(mix.shooter.max, (this.stage - 1) * mix.shooter.step);
@@ -11820,6 +12410,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           this.emit('pickup');
         }
       }
+      // S 코인: 자석 없이 닿아야 줍는다. 줍지 않은 코인은 판 끝까지 남는다.
+      let picked = false;
+      for (const c of this.sCoins)
+        if (!c.taken && dist(c, p) < c.r + p.r) {
+          c.taken = picked = true;
+          this.emit('s_pick', { id: c.id, x: c.x, y: c.y });
+        }
+      if (picked) this.sCoins = this.sCoins.filter(c => !c.taken);
       this.enemies = this.enemies.filter(e => !e.dead);
       this.bullets = this.bullets.filter(
         b => b.ttl > 0 && b.x > -40 && b.x < W + 40 && b.y > -40 && b.y < H + 40,
@@ -11874,6 +12472,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         bullets: this.bullets.length,
         hostiles: this.hostiles.length,
         gems: this.gems.length,
+        sCoins: this.sCoins.length,
       };
     }
   }
@@ -11922,6 +12521,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   //   - kills: [t(묶음의 마지막 처치), from(첫 처치), counts(dict.kinds 순서 개수), other?(목록 밖 종류 객체)]
   //     kill 이벤트를 log.killBatch초 동안 모아 한 번에 쓴다. 판 끝 · 내보내기 때 남은 것도 쓴다.
   //   - 반올림: t · from · at 소수 1자리, x · y · r 정수, 피해 · hp · wait 소수 1자리, stage의 rules 소수 3자리.
+  //   - stage · coin_choice의 auto(자동 승격 R-022 · 자동 G 습득 R-025)는 참일 때만 쓴다. s_spawn · s_pick은 Insane S 코인(R-023).
   // events: 열 목록에 없는 종류만 v3처럼 객체로 둔다(context · postContext는 뺀다).
   // 이벤트로 쓰지 않고 summary에서만 세는 것:
   //   summary.attempts[능력] = 시도(받아들인 누름 ability_attempt + 거절 ability_rejected, R-003 엔진 기준).
@@ -12055,10 +12655,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       );
   }
   // ── 기록 보관(R-018): 순수 함수. 저장 계층은 한 트랜잭션 안에서 이 함수들을 부르기만 한다. ──
-  // 보호 기록: rank() 순 앞 3개(TOP3)와 별표 기록. 자동 정리·선택 삭제 모두 지우지 않는다.
+  // 보호 기록(R-035): Ranking 일반 TOP3 + S 출격 TOP3(각각 rank() 순 앞 3개)와 별표 기록.
+  // 자동 정리·선택 삭제 모두 지우지 않는다. 화면의 TOP3 표시는 2단계(R-032)에서 둘로 나눈다.
+  const isSuperLaunch = r => r.launch?.type === 'super';
   function protectedIds(records) {
     const list = rank(records || []),
-      ids = new Set(list.slice(0, 3).map(r => r.id));
+      ids = new Set(
+        [...list.filter(r => !isSuperLaunch(r)).slice(0, 3), ...list.filter(isSuperLaunch).slice(0, 3)].map(
+          r => r.id,
+        ),
+      );
     for (const r of list) if (r.starred) ids.add(r.id);
     return ids;
   }
@@ -12483,6 +13089,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     FRAME_COLUMNS = Object.freeze(['time', 'frameMs', 'enemies', 'bullets', 'hostiles']);
   // v4 이벤트 행의 열(조각.ev[종류] = [[...열], ...]). 바꾸면 내보낸 파일의 columns.events도 같이 바뀐다.
   // upgrade·coin_choice의 offered는 같은 level 이벤트에 있으므로 쓰지 않고 readLog가 되살린다.
+  // 열은 끝에만 더한다(옛 로그도 읽히게). auto(자동 승격 · 자동 G 습득)는 참일 때만 쓴다.
   const EVENT_COLUMNS = Object.freeze({
     kills: ['t', 'from', 'counts', 'other'],
     dash: ['t', 'x', 'y', 'source'],
@@ -12502,8 +13109,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     ],
     level: ['t', 'level', 'offered'],
     upgrade: ['t', 'source', 'id', 'count', 'level', 'wait'],
-    coin_choice: ['t', 'level', 'wait', 'amount'],
-    stage: ['t', 'to', 'hp', 'level', 'rules', 'skills'],
+    coin_choice: ['t', 'level', 'wait', 'amount', 'auto'],
+    stage: ['t', 'to', 'hp', 'level', 'rules', 'skills', 'auto'],
     boss: ['t', 'enemyStage', 'id'],
     bossdown: ['t', 'enemyStage', 'waveId'],
     boss_wave_complete: ['t', 'waveId', 'originStage', 'total', 'cleared'],
@@ -12515,6 +13122,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     resume: ['t'],
     settings: ['t', 'view', 'quality', 'viewport'],
     viewport: ['t', 'width', 'height', 'view'],
+    s_spawn: ['t', 'id', 'x', 'y'],
+    s_pick: ['t', 'id', 'x', 'y'],
   });
   for (const cols of Object.values(EVENT_COLUMNS)) Object.freeze(cols);
   // 짧게 적는 열(내보낸 파일의 columns.dict · columns.codecs):
@@ -12801,9 +13410,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         s.chosen[e.id] = (s.chosen[e.id] || 0) + 1;
         if (e.source === 'auto') s.autoChoices++;
       }
-      if (type === 'coin_choice') s.coinChoices++;
+      // 자동 G 습득(R-025)의 코인은 AUTO 선택으로 센다
+      if (type === 'coin_choice') {
+        if (e.auto) s.autoChoices++;
+        else s.coinChoices++;
+      }
       if (type === 'stage') {
-        s.stageChanges.push({ t: e.t, to: e.to, hp: e.hp, level: e.level });
+        s.stageChanges.push({
+          t: e.t,
+          to: e.to,
+          hp: e.hp,
+          level: e.level,
+          ...(e.auto ? { auto: true } : {}),
+        });
         if (s.stageChanges.length > 500) s.stageChanges = s.stageChanges.slice(-500);
       }
       this.push(e);
@@ -13149,13 +13768,40 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   const fail = reason => ({ ok: false, reason });
   const dup = extra => ({ ok: true, duplicate: true, ...extra });
+  // 고양이 레벨은 0~maxLevel 정수만 믿는다(이상한 값은 0).
+  const catLevel = v => (Number.isSafeInteger(v) && v >= 0 && v <= B.cats.maxLevel ? v : 0);
+  // 고양이 효과(R-026): Lv5 고양이 전부 + 동반 고양이(Lv1 이상). 겹치면 한 번. 프로필을 바꾸지 않는다.
+  // engineer: 기체 시작 스킬마다 더할 스택 · supply: 분당 G · pilot: 대시 재충전 감소 비율. 적용되지 않으면 0.
+  function catEffects(profile) {
+    const levels = {},
+      out = { levels };
+    for (const id of CATS) {
+      const lv = catLevel(profile?.cats?.[id]),
+        on = lv >= 1 && (lv === B.cats.maxLevel || profile?.companion === id);
+      levels[id] = on ? lv : 0;
+      out[id] = on ? B.cats.effect[id][lv - 1] : 0;
+    }
+    return out;
+  }
+  // S 출격 준비에 예약된 S(30분 안의 예약 1개)는 쓸 수 없다. 시각을 모르면 예약을 지킨다.
+  function spendableSC(p, now) {
+    const held = p.scHold && (!Number.isFinite(now) || now - p.scHold.at < HOLD_STALE_MS) ? 1 : 0;
+    return p.superCoins - held;
+  }
+  // S가 모자란 이유: 예약 때문이면 sc_reserved, 아니면 insufficient. 충분하면 null.
+  function scShort(p, now, cost) {
+    if (spendableSC(p, now) >= cost) return null;
+    return p.superCoins >= cost ? 'sc_reserved' : 'insufficient';
+  }
 
   // 순수 규칙: p(프로필 사본)를 바꾸고 결과를 돌려준다.
   const rules = {
     startRun(p, { runId, mode, launch, now }) {
       if (!validId(runId)) return fail('invalid');
-      if (p.runs[runId]) return dup();
+      const cats = catEffects(p);
+      if (p.runs[runId]) return dup({ cats });
       const startLevel = count(launch?.startLevel) || 1;
+      // 고양이 분당 G(보급관)는 출격 순간 값으로 고정한다.
       p.runs[runId] = {
         mode: modeId(mode),
         m: 0,
@@ -13163,19 +13809,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c: [],
         b: [],
         s: [],
-        cg: 0,
+        cg: cats.supply,
         t: Number(now) || 0,
       };
-      return { ok: true };
+      return { ok: true, cats };
     },
+    // 분마다 분당 G + 이 판의 고양이 분당 G(cg). cat은 그중 고양이 몫.
     awardMinute(p, { runId, minute }) {
       const r = p.runs[runId];
       if (!r) return fail('run_unknown');
-      if (!Number.isSafeInteger(minute) || minute <= r.m) return dup({ gold: 0 });
-      const gold = (minute - r.m) * goldPerMinute(p.incomeTier, r.mode);
+      if (!Number.isSafeInteger(minute) || minute <= r.m) return dup({ gold: 0, cat: 0 });
+      const minutes = minute - r.m,
+        cat = minutes * count(r.cg),
+        gold = minutes * goldPerMinute(p.incomeTier, r.mode) + cat;
       p.gold += gold;
       r.m = minute;
-      return { ok: true, gold };
+      return { ok: true, gold, cat };
     },
     awardLevel(p, { runId, level }) {
       const r = p.runs[runId];
@@ -13208,6 +13857,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (r.b.length > 400) r.b.splice(0, r.b.length - 400);
       p.gold += ECONOMY.bossGold;
       return { ok: true, gold: ECONOMY.bossGold };
+    },
+    // Insane S 코인(R-023): superCoin.mode 판에서 판 안 S 코인 번호로 한 번만 1 S.
+    awardSuper(p, { runId, coinId }) {
+      const r = p.runs[runId];
+      if (!r) return fail('run_unknown');
+      if (!Number.isSafeInteger(coinId) || coinId < 1) return fail('invalid');
+      if (r.mode !== B.superCoin.mode) return fail('invalid');
+      if (r.s.includes(coinId)) return dup({ super: 0 });
+      r.s.push(coinId);
+      if (r.s.length > 400) r.s.splice(0, r.s.length - 400);
+      p.superCoins += 1;
+      return { ok: true, super: 1 };
     },
     finishRun(p, { runId }) {
       if (!p.runs[runId]) return dup();
@@ -13257,6 +13918,73 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.gold -= ECONOMY.autoPrice;
       p.ownedAuto = true;
       return { ok: true, price: ECONOMY.autoPrice };
+    },
+    // 자동 G 습득(R-025): 자동 강화를 먼저 사야 하고 한 번만 산다. 켜기/끄기는 브라우저 설정이라 여기 없다.
+    buyAutoGold(p, { txId }) {
+      if (!validId(txId)) return fail('invalid');
+      if (p.tx.includes(txId) || p.ownedAutoGold) return dup();
+      if (!p.ownedAuto) return fail('needs_auto');
+      const price = ECONOMY.autoGoldPrice;
+      if (p.gold < price) return fail('insufficient');
+      p.gold -= price;
+      p.ownedAutoGold = true;
+      remember(p, txId);
+      return { ok: true, price };
+    },
+    // 고양이 해금(R-026, Lv0 → Lv1): S만 낸다. 예약된 S는 쓰지 않는다.
+    unlockCat(p, { txId, cat, now }) {
+      if (!validId(txId) || !CATS.includes(cat)) return fail('invalid');
+      if (p.tx.includes(txId)) return dup();
+      if (!p.hidden) return fail('hidden_locked');
+      if (p.cats[cat] !== 0) return fail('stale');
+      const s = B.cats.unlock[cat],
+        short = scShort(p, now, s);
+      if (short) return fail(short);
+      p.superCoins -= s;
+      p.cats[cat] = 1;
+      remember(p, txId);
+      return { ok: true, price: { s }, level: 1 };
+    },
+    // 고양이 육성(R-026, Lv n → n+1): S와 B를 함께 낸다. 하나라도 모자라면 아무것도 바꾸지 않는다.
+    levelCat(p, { txId, cat, expectedLevel, now }) {
+      if (!validId(txId) || !CATS.includes(cat)) return fail('invalid');
+      if (p.tx.includes(txId)) return dup();
+      if (!p.hidden) return fail('hidden_locked');
+      if (p.cats[cat] !== expectedLevel) return fail('stale');
+      if (expectedLevel < 1) return fail('locked');
+      if (expectedLevel >= B.cats.maxLevel) return fail('max');
+      const { s, b } = B.cats.levelCost[expectedLevel - 1],
+        short = scShort(p, now, s);
+      if (short) return fail(short);
+      if (p.blue < b) return fail('insufficient');
+      p.superCoins -= s;
+      p.blue -= b;
+      p.cats[cat] = expectedLevel + 1;
+      remember(p, txId);
+      return { ok: true, price: { s, b }, level: expectedLevel + 1 };
+    },
+    // 동반 고양이: 해금된(Lv1 이상) 고양이 하나 또는 null. 판 도중 변경은 화면이 막는다.
+    setCompanion(p, { cat }) {
+      if (cat === null) {
+        if (p.companion === null) return dup();
+        p.companion = null;
+        return { ok: true };
+      }
+      if (!CATS.includes(cat)) return fail('invalid');
+      if (!p.hidden) return fail('hidden_locked');
+      if (!(p.cats[cat] >= 1)) return fail('locked');
+      if (p.companion === cat) return dup();
+      p.companion = cat;
+      return { ok: true };
+    },
+    // 히든 탭 해금: hiddenFrom 모드 판이 패배 · 직접 종료로 끝났을 때만(중단 제외). 옛 기록으로 소급하지 않도록
+    // evaluateRun(백업 가져오기에서도 불림)에는 넣지 않고, 화면이 실제 판이 끝날 때만 부른다.
+    unlockHidden(p, { difficultyId, reason }) {
+      if (p.hidden) return dup({ unlocked: false });
+      if (modeId(difficultyId) !== B.cats.hiddenFrom || (reason !== 'defeated' && reason !== 'retired'))
+        return dup({ unlocked: false });
+      p.hidden = true;
+      return { ok: true, unlocked: true };
     },
     craftSC(p, { txId }) {
       if (!validId(txId)) return fail('invalid');
@@ -13507,6 +14235,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     awardBoss(runId, bossId) {
       return this.mutate(p => rules.awardBoss(p, { runId, bossId }));
     }
+    awardSuper(runId, coinId) {
+      return this.mutate(p => rules.awardSuper(p, { runId, coinId }));
+    }
     finishRun(runId) {
       return this.mutate(p => rules.finishRun(p, { runId }));
     }
@@ -13518,6 +14249,26 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }
     buyAuto() {
       return this.mutate(p => rules.buyAuto(p));
+    }
+    buyAutoGold(txId) {
+      return this.mutate(p => rules.buyAutoGold(p, { txId }));
+    }
+    unlockCat(txId, cat) {
+      const now = this.now();
+      return this.mutate(p => rules.unlockCat(p, { txId, cat, now }));
+    }
+    levelCat(txId, cat, expectedLevel) {
+      const now = this.now();
+      return this.mutate(p => rules.levelCat(p, { txId, cat, expectedLevel, now }));
+    }
+    setCompanion(cat) {
+      return this.mutate(p => rules.setCompanion(p, { cat }));
+    }
+    // 화면이 실제 판이 끝날 때만 부른다(evaluateRun과 따로).
+    unlockHidden(run) {
+      return this.mutate(p =>
+        rules.unlockHidden(p, { difficultyId: run?.difficultyId, reason: run?.reason }),
+      );
     }
     craftSC(txId) {
       return this.mutate(p => rules.craftSC(p, { txId }));
@@ -13572,6 +14323,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     modeId,
     goldPerMinute,
     permaPrice,
+    catEffects,
     migrate,
     blank,
     rules,
@@ -13891,6 +14643,26 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           .stroke({ color: 0x50f3d6, width: 1.6, join: 'round' }),
       );
       make('spark', g => g.circle(0, 0, 1.7).fill(0xffffff));
+      // Insane S 코인(R-023): 보라 원 + S, 기체만 한 크기. 줍기 판정 반경은 balance.js superCoin.r.
+      // 화면 밖에 있어도 방향 표시를 그리지 않는다(탐색해서 줍는 것이 핵심, 편집장 2026-10-02).
+      const coin = new PIXI.Container(),
+        letter = new PIXI.Text({
+          text: root.NeonTerms.coins.s.short,
+          style: { fontFamily: 'system-ui, sans-serif', fontSize: 20, fontWeight: '800', fill: 0xeee2ff },
+        });
+      letter.anchor.set(0.5);
+      coin.addChild(
+        new PIXI.Graphics()
+          .circle(0, 0, 24)
+          .fill({ color: 0xc4a3ff, alpha: 0.08 })
+          .stroke({ color: 0xc4a3ff, width: 1.5, alpha: 0.45 })
+          .circle(0, 0, 17)
+          .fill(0x2b1f48)
+          .stroke({ color: 0xc4a3ff, width: 2.4 }),
+        letter,
+      );
+      this.textures.scoin = this.app.renderer.generateTexture({ target: coin, resolution: 2 });
+      coin.destroy({ children: true });
     }
     sprite(key) {
       const s = new PIXI.Sprite(this.textures[key]);
@@ -14069,6 +14841,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       this.hideAfter('gems', j);
       j = 0;
+      for (const c of g.sCoins || []) {
+        const s = this.pool('scoins', j++, 'scoin');
+        s.position.set(c.x, c.y);
+        s.scale.set(1 + Math.sin(this.time * 3) * 0.06);
+      }
+      this.hideAfter('scoins', j);
+      j = 0;
       // 충돌과 같은 반경·각도(Neon.ORBIT_RADIUS, Neon.orbitAngle)로 그린다
       if (p.orbits)
         this.fx.circle(p.x, p.y, Neon.ORBIT_RADIUS).stroke({ color: 0x50f3d6, width: 1, alpha: 0.12 });
@@ -14230,6 +15009,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c.arc(h.x, h.y, h.r, 0, Math.PI * 2);
         c.stroke();
       }
+      // Insane S 코인(기본 그래픽): 보라 원 + S
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.font = '800 20px system-ui, sans-serif';
+      for (const coin of g.sCoins || []) {
+        c.fillStyle = '#2b1f48';
+        c.strokeStyle = '#c4a3ff';
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.arc(coin.x, coin.y, 17, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.fillStyle = '#eee2ff';
+        c.fillText(root.NeonTerms.coins.s.short, coin.x, coin.y + 1);
+      }
+      c.lineWidth = 0.6;
       c.translate(g.p.x, g.p.y);
       c.rotate(g.p.aim);
       c.strokeStyle = '#50f3d6';
@@ -15192,7 +15987,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       list = records.slice(p * perPage, p * perPage + perPage),
       RV = TV.rec,
       top = new Set(records.slice(0, 3).map(r => r.id)),
-      safe = new Set([...top, ...records.filter(r => r.starred).map(r => r.id)]),
+      // 자물쇠는 저장소의 보호 규칙과 같은 함수(일반 · S 출격 TOP3 + 별표, R-035)
+      safe = root.NeonData.protectedIds(records),
       stars = records.filter(r => r.starred).length,
       tools = !records.length
         ? ''
@@ -15275,7 +16071,39 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     ).join('');
   }
 
-  // profile: { gold, incomeTier, ownedAuto, ready, rate(modeId), canCraftSC }
+  // 자동 G 습득 카드(R-025): 미보유면 구매 버튼(자동 강화가 먼저), 보유하면 켜기/끄기 스위치(이 기기 설정)
+  function autoGoldCard(profile) {
+    const S = TV.shop,
+      price = BAL.economy.autoGoldPrice,
+      on = !!profile.autoGoldOn;
+    return (
+      '<article class="shop-card shop-card--autogold"><h3>' +
+      S.autoGold +
+      (profile.ownedAutoGold ? '' : ' <span class="tag-new">' + S.autoGoldNew + '</span>') +
+      '</h3><small>' +
+      esc(S.autoGoldNote()) +
+      '</small>' +
+      (profile.ownedAutoGold
+        ? '<div class="shop-own"><span class="owned">' +
+          S.owned +
+          '</span><button class="switch" id="auto-gold-toggle" role="switch" aria-checked="' +
+          on +
+          '" aria-label="' +
+          esc(S.toggleLabel(on)) +
+          '"><span>' +
+          (on ? S.on : S.off) +
+          '</span><i aria-hidden="true"></i></button></div>'
+        : '<button class="btn" id="auto-gold-buy"' +
+          (profile.ready && profile.ownedAuto && profile.gold >= price ? '' : ' disabled') +
+          '>' +
+          S.buyAutoGold() +
+          '</button>' +
+          (profile.ownedAuto ? '' : '<small class="gate">' + esc(S.needAuto()) + '</small>')) +
+      '</article>'
+    );
+  }
+
+  // profile: { gold, incomeTier, ownedAuto, ownedAutoGold, autoGoldOn, ready, rate(modeId), canCraftSC }
   function shopList(profile, mode) {
     const E = BAL.economy,
       S = TV.shop,
@@ -15327,7 +16155,124 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '>' +
           S.buyAuto() +
           '</button>') +
-      '</article>'
+      '</article>' +
+      autoGoldCard(profile)
+    );
+  }
+
+  // ── 히든 탭 · 고양이 비행사(R-026) ──
+  // 성장 탭 맨 아래 입구 칸. 잠겨 있으면 해제 조건만 보인다(2단계 성장 탭에서도 같은 자리).
+  function hiddenEntry(open) {
+    const H = TV.hidden;
+    return open
+      ? '<button class="hidden-entry is-open" id="hidden-open"><strong>' +
+          H.entry +
+          '</strong><small>' +
+          H.entryOpen +
+          ' ›</small></button>'
+      : '<div class="hidden-entry"><strong><span aria-hidden="true">🔒</span> ' +
+          H.entry +
+          '</strong><small>' +
+          esc(H.entryLocked()) +
+          '</small></div>';
+  }
+  // 고양이 얼굴(임시 그림, 3단계에서 확정)
+  const catIcon = () =>
+    '<span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 9.5 6 4l4 3h4l4-3 1 5.5V14a7 7 0 0 1-14 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9.4" cy="12.6" r="1.1" fill="currentColor"/><circle cx="14.6" cy="12.6" r="1.1" fill="currentColor"/><path d="M11 15.6h2l-1 1.1z" fill="currentColor"/></svg></span>';
+  // info = { cats: { id: 레벨 }, companion, sc, blue, ready, effects(NeonProgress.catEffects 결과) }
+  function hiddenPage(info) {
+    const H = TV.hidden,
+      C = BAL.cats,
+      max = C.maxLevel,
+      applied = C.list
+        .filter(id => info.effects.levels[id] > 0)
+        .map(
+          id =>
+            '<b>' + esc(H.appliedItem(id, info.effects.levels[id], info.effects.levels[id] >= max)) + '</b>',
+        );
+    const card = id => {
+      const lv = info.cats[id] || 0,
+        cat = T.cats[id],
+        values = C.effect[id],
+        always = lv >= max,
+        picked = !always && lv >= 1 && info.companion === id,
+        state = lv < 1 ? 'locked' : always ? 'max' : picked ? 'pick' : 'open',
+        tag =
+          state === 'locked'
+            ? '<span class="cat-tag cat-tag--locked"><span aria-hidden="true">🔒</span> ' +
+              H.locked +
+              '</span>'
+            : state === 'max'
+              ? '<span class="cat-tag cat-tag--max">' + H.always + '</span>'
+              : state === 'pick'
+                ? '<span class="cat-tag cat-tag--pick">' + H.companion + '</span>'
+                : '',
+        pips = Array.from({ length: max }, (_, i) => '<i' + (i < lv ? ' class="on"' : '') + '></i>').join(''),
+        effect =
+          lv < 1
+            ? esc(H.effectLocked(id, values[0], values[max - 1], max))
+            : '<b>' +
+              esc(cat.effect(values[lv - 1])) +
+              '</b>' +
+              (always ? ' · ' + H.effectMax : ' → ' + H.level(lv + 1) + ' ' + esc(cat.value(values[lv]))),
+        cost = lv < 1 ? { s: C.unlock[id], b: 0 } : always ? null : C.levelCost[lv - 1],
+        canPay = cost && info.ready && info.sc >= cost.s && info.blue >= cost.b,
+        buy = !cost
+          ? ''
+          : '<button class="btn btn--sc cat-buy" data-cat="' +
+            id +
+            '" data-cat-level="' +
+            lv +
+            '"' +
+            (canPay ? '' : ' disabled') +
+            '>' +
+            (lv < 1 ? H.unlockBtn(cost.s) : H.levelBtn(cost.s, cost.b)) +
+            '<small>' +
+            (lv < 1 ? H.have(info.sc) : H.levelTo(lv + 1)) +
+            '</small></button>',
+        pick = always
+          ? ''
+          : '<button class="btn cat-pick" data-cat-pick="' +
+            id +
+            '" aria-pressed="' +
+            picked +
+            '" aria-label="' +
+            esc(H.pickLabel(id, picked)) +
+            '"' +
+            (lv >= 1 && info.ready ? '' : ' disabled') +
+            '>' +
+            (picked ? H.picked : H.pick) +
+            '</button>';
+      return (
+        '<article class="cat-card cat-card--' +
+        state +
+        '">' +
+        catIcon() +
+        '<div class="cat-main"><h3>' +
+        cat.name +
+        (lv >= 1 ? ' <small>' + H.level(lv) + '</small>' : '') +
+        tag +
+        '</h3><div class="cat-pips" role="img" aria-label="' +
+        H.levelsLabel(lv, max) +
+        '">' +
+        pips +
+        '</div><p>' +
+        effect +
+        '</p></div>' +
+        (buy || pick ? '<div class="cat-actions">' + buy + pick + '</div>' : '') +
+        '</article>'
+      );
+    };
+    return (
+      '<div class="cat-applied"><span>' +
+      H.applied +
+      '</span>' +
+      (applied.length ? applied.join('') : '<small>' + H.appliedNone + '</small>') +
+      '</div>' +
+      C.list.map(card).join('') +
+      '<p class="overlay-note cat-note">' +
+      esc(H.note()) +
+      '</p>'
     );
   }
 
@@ -15581,7 +16526,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '</ul></details>' +
       '<p class="overlay-note">' +
       // 획득 G·B는 v4 기록부터 있다(이전 기록에는 없어 표시하지 않음)
-      (r.profileVersion >= 3 ? D.earned(r.earned?.gold, r.earned?.blue, r.earned?.boss) : '') +
+      (r.profileVersion >= 3
+        ? D.earned(r.earned?.gold, r.earned?.blue, r.earned?.boss, r.earned?.super)
+        : '') +
       D.coins(r.coinChoices || 0) +
       '</p>' +
       '<div class="result-analysis">' +
@@ -15607,6 +16554,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     choice,
     summaryGrid,
     stackList,
+    hiddenEntry,
+    hiddenPage,
     stackCount,
     prepRows,
     analysisSummary,
@@ -15670,7 +16619,9 @@ let canvas = $('arena'),
   starting = false,
   automaticBudget = 4,
   frozen = false,
-  runEarned = { gold: 0, blue: 0, boss: 0 },
+  runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0 },
+  runUnlocked = [],
+  runHidden = false,
   rewards = Promise.resolve(),
   lastCheckpoint = 0,
   checkpointPromise = Promise.resolve(),
@@ -15690,6 +16641,7 @@ let prefs = {
     motion: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     numbers: true,
     auto: false,
+    autoGold: false,
     craft: 'striker',
     mode: 'easy',
   },
@@ -15703,6 +16655,7 @@ try {
     prefs.motion = p.motion === true && !matchMedia('(prefers-reduced-motion: reduce)').matches;
     prefs.numbers = p.numbers !== false;
     prefs.auto = p.auto === true;
+    prefs.autoGold = p.autoGold === true;
     if (Neon.CRAFTS[p.craft]) prefs.craft = p.craft;
     if (Neon.DIFFICULTIES[p.mode]) prefs.mode = p.mode;
   }
@@ -15739,8 +16692,9 @@ function show(id, on) {
 function clearInput() {
   controls?.clear();
 }
-function callout(message, seconds = 2.5) {
+function callout(message, seconds = 2.5, strong = false) {
   text('callout', message);
+  $('callout').classList.toggle('notice--strong', strong);
   calloutUntil = visualTime + seconds;
   text('announcer', message);
 }
@@ -15754,7 +16708,11 @@ function wallet() {
     sc: p.superCoins ?? 0,
     incomeTier: p.incomeTier ?? 0,
     ownedAuto: p.ownedAuto === true,
+    ownedAutoGold: p.ownedAutoGold === true,
     perma: p.perma || {},
+    cats: p.cats || {},
+    companion: p.companion ?? null,
+    hidden: p.hidden === true,
   };
 }
 
@@ -15764,12 +16722,14 @@ function showPage(name) {
   for (const [id, key] of [
     ['page-play', 'play'],
     ['page-grow', 'grow'],
+    ['page-hidden', 'hidden'],
     ['page-shop', 'shop'],
     ['page-rec', 'rec'],
   ])
     $(id).hidden = key !== name;
+  const tab = name === 'hidden' ? 'grow' : name;
   for (const t of document.querySelectorAll('.tab'))
-    if (t.dataset.tab === name) t.setAttribute('aria-current', 'page');
+    if (t.dataset.tab === tab) t.setAttribute('aria-current', 'page');
     else t.removeAttribute('aria-current');
   $('launch-bar').hidden = name !== 'play';
   if (name !== 'rec') recSelect = null;
@@ -15868,16 +16828,21 @@ async function begin(launch = {}) {
         type: sc ? 'super' : 'normal',
         startLevel: sc ? Neon.SC_LAUNCH.level : 1,
       });
-    // 영구 스택은 출격 순간 값으로 고정한다(판 도중 구매는 다음 출격부터).
-    g.reset(selected, seed, selectedDifficulty, { ...launch, perma: profile.snapshot().perma });
+    // 영구 스택과 고양이 효과(R-026)는 출격 순간 값으로 고정한다(판 도중 구매 · 동반 변경은 다음 출격부터).
+    // 저장소가 막혀 startRun이 실패해도 같은 규칙(catEffects)으로 엔진을 채운다.
+    const cats = started.cats || NeonProgress.catEffects(profile.snapshot());
+    g.reset(selected, seed, selectedDifficulty, { ...launch, perma: profile.snapshot().perma, cats });
     siegeUntil = siegeEdgeUntil = 0;
     resize();
     renderer.clear();
     renderer.cam.x = g.p.x;
     renderer.cam.y = g.p.y;
     runId = nextRunId;
-    runEarned = { gold: 0, blue: 0, boss: 0 };
-    runCats = { ...(profile.snapshot().cats || {}) };
+    runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0 };
+    // 기록의 cats는 이 판에 적용된 고양이의 레벨(적용되지 않은 고양이는 0)
+    runCats = { ...cats.levels };
+    runUnlocked = [];
+    runHidden = false;
     lastCheckpoint = 0;
     recorder = new NeonData.Recorder(
       runId,
@@ -15903,6 +16868,9 @@ async function begin(launch = {}) {
     unlockClock = 0;
     unlockBusy = false;
     $('hud-badge').innerHTML = V.badge(g.difficultyId, 'compact');
+    // Insane 판은 HUD 재화 줄에 S도 보인다(R-023)
+    $('hud-s-wrap').hidden = g.difficultyId !== BAL.superCoin.mode;
+    $('hud-s-wrap').parentElement.classList.toggle('has-s', !$('hud-s-wrap').hidden);
     text('craft-label', T.craftName(g.craft));
     clearInput();
     oldMode = '';
@@ -16026,7 +16994,12 @@ function makeRecord() {
     autoChoices: g.autoChoices || 0,
     profileVersion: 3,
     launch: { ...g.launch },
-    stacks: { craft: { ...g.stacks.craft }, perma: { ...g.stacks.perma }, prep: { ...g.stacks.prep } },
+    stacks: {
+      craft: { ...g.stacks.craft },
+      cat: { ...g.stacks.cat },
+      perma: { ...g.stacks.perma },
+      prep: { ...g.stacks.prep },
+    },
     cats: { ...runCats },
     earned: { ...runEarned },
     siegeWaves: g.siegeWaves || 0,
@@ -16039,13 +17012,36 @@ function makeRecord() {
 function renderResultCoins() {
   const r = lastResult;
   if (!r) return;
-  const w = wallet();
+  const w = wallet(),
+    e = r.earned || {},
+    gold = e.gold || 0,
+    boss = e.boss || 0,
+    autoGold = e.autoGold || 0,
+    cat = e.cat || 0,
+    coin = (r.coinChoices || 0) * BAL.economy.coinChoice + autoGold,
+    // S는 Insane 판(또는 S를 받은 판)에만 보인다
+    showS = (e.super || 0) > 0 || r.difficultyId === BAL.superCoin.mode;
   $('result-coins').innerHTML =
-    V.coin('g', '+' + num(r.earned?.gold || 0)) +
-    V.coin('b', '+' + num(r.earned?.blue || 0)) +
+    V.coin('g', '+' + num(gold)) +
+    V.coin('b', '+' + num(e.blue || 0)) +
+    (showS ? V.coin('sc', '+' + num(e.super || 0)) : '') +
     '<span class="overlay-note">' +
-    V.esc(T.msg.resultCoins(r.coinChoices || 0, w.gold, w.blue, r.earned?.boss || 0)) +
+    V.esc(
+      T.msg.resultCoins(
+        { minute: Math.max(0, gold - boss - coin - cat), boss, coin, autoGold, cat },
+        w.gold,
+        w.blue,
+      ),
+    ) +
     '</span>';
+}
+// 결과: 이 판에서 열린 모드(R-024)와 히든 탭(R-026)
+function renderResultUnlock() {
+  const lines = [];
+  if (runUnlocked.length) lines.push(T.msg.resultUnlock(runUnlocked));
+  if (runHidden) lines.push(T.msg.resultHidden);
+  $('result-unlock').hidden = !lines.length;
+  $('result-unlock').innerHTML = lines.map(V.esc).join('<br>');
 }
 function showResult() {
   clearInput();
@@ -16066,12 +17062,16 @@ function showResult() {
       // 기록 보관(R-018): 판이 정상으로 끝나 저장된 뒤에만 정리한다(100판 · 상세 로그 10판, TOP3·별표 보호)
       if (ok) await store.prune();
       await profile.finishRun(r.id);
-      await profile.evaluateRun({
+      const evaluated = await profile.evaluateRun({
         difficultyId: r.difficultyId,
         time: r.time,
         score: r.score,
         level: r.level,
       });
+      for (const id of evaluated.newlyUnlocked || []) if (!runUnlocked.includes(id)) runUnlocked.push(id);
+      // 히든 탭(R-026): 실제로 끝난 판(패배 · 직접 종료)만. 백업 가져오기의 기록 평가에서는 열지 않는다.
+      const hidden = await profile.unlockHidden({ difficultyId: r.difficultyId, reason: r.reason });
+      runHidden = hidden.ok && hidden.unlocked === true;
       await refreshRecords();
       refreshProfileUI();
       if (lastResult === r) {
@@ -16080,12 +17080,14 @@ function showResult() {
         const best = records[0]?.id === r.id;
         $('new-record').hidden = !best;
         if (best) text('new-record', T.msg.newBest);
+        renderResultUnlock();
         updateNoteQuote();
       }
       return r;
     })();
   }
   const r = lastResult;
+  renderResultUnlock();
   text('result-kicker', T.msg.resultKicker(r.reason === 'defeated'));
   $('result-badge').innerHTML = V.badge(r.difficultyId);
   $('result-sc').hidden = r.launch?.type !== 'super';
@@ -16294,7 +17296,10 @@ function queueReward(work) {
 function awardMinute(id, minute) {
   return queueReward(async () => {
     const r = await profile.awardMinute(id, minute);
-    if (r.ok && r.gold && id === runId) runEarned.gold += r.gold;
+    if (r.ok && r.gold && id === runId) {
+      runEarned.gold += r.gold;
+      runEarned.cat += r.cat || 0;
+    }
     if (r.ok && r.gold) refreshProfileUI();
   });
 }
@@ -16313,6 +17318,28 @@ function awardLevel(id, level) {
       }
     }
     if (r.ok && r.blue) refreshProfileUI();
+  });
+}
+// Insane S 코인(R-023): 판 안 코인 번호로 한 번만 1 S
+function awardSuper(id, coinId) {
+  return queueReward(async () => {
+    const r = await profile.awardSuper(id, coinId);
+    if (r.ok && r.super && id === runId) {
+      runEarned.super += r.super;
+      callout(T.alerts.sPick.text(r.super), T.alerts.sPick.sec);
+    }
+    if (r.ok && r.super) refreshProfileUI();
+  });
+}
+// 자동 G 습득(R-025): 레벨업 코인과 같은 지급 길(레벨당 한 번)
+function awardAutoGold(id, level) {
+  return queueReward(async () => {
+    const r = await profile.awardCoin(id, level);
+    if (r.ok && r.gold && id === runId) {
+      runEarned.gold += r.gold;
+      runEarned.autoGold += r.gold;
+    }
+    if (r.ok && r.gold) refreshProfileUI();
   });
 }
 // 보스 처치 G(R-002): 보스 번호로 판마다 한 번만 지급한다(같은 보스가 두 번 와도 중복 없음).
@@ -16350,16 +17377,18 @@ function events() {
     }
     if (e.type === 'boss_wave_complete') callout(a.bossWave.text(), a.bossWave.sec);
     if (e.type === 'bossdown' && Number.isSafeInteger(e.id)) awardBoss(runId, e.id);
-    // 포위: 발동 전 네 가장자리 표시와 짧은 문구, 시작하면 수를 알린다(전투는 멈추지 않는다)
+    // 포위: 발동 전 네 가장자리 표시와 짧은 문구, 시작하면 회차를 알린다(전투는 멈추지 않는다)
     if (e.type === 'siege_warn') {
       text('siege-notice', a.siegeWarn.text());
       siegeUntil = siegeEdgeUntil = visualTime + a.siegeWarn.sec;
       tone('boss');
     }
     if (e.type === 'siege') {
-      text('siege-notice', a.siege.text(e.total));
+      text('siege-notice', a.siege.text(e.wave));
       siegeUntil = visualTime + a.siege.sec;
     }
+    if (e.type === 's_spawn') callout(a.sCoin.text(), a.sCoin.sec);
+    if (e.type === 's_pick' && Number.isSafeInteger(e.id)) awardSuper(runId, e.id);
     if (e.type === 'minute') awardMinute(runId, e.minute);
     if (e.type === 'level') awardLevel(runId, e.level);
     if (e.type === 'stage') {
@@ -16371,12 +17400,17 @@ function events() {
       );
       stageToastUntil = visualTime + a.stage.sec;
       $('stage-toast').hidden = false;
-      // 보스 예고(R-004): 다음 Stage가 보스 Stage면 예고, 보스 Stage에 들어서면 등장 알림
-      const every = BAL.boss.every;
-      if (e.to % every === 0) {
+      // 보스 예고(R-004): 다음 Stage가 보스 Stage면 예고, 보스 Stage에 들어서면 등장 알림.
+      // 자동 승격(R-022)은 한 줄에 붙인다: 'STAGE 3 자동 상승 · 보스 등장'
+      const every = BAL.boss.every,
+        boss = e.to % every === 0 ? 'now' : (e.to + 1) % every === 0 ? 'next' : '';
+      if (e.auto) {
+        callout(a.stageAuto.text(e.to, boss), a.stageAuto.sec);
+        if (boss === 'now') bossNoticeUntil = visualTime + a.stageAuto.sec;
+      } else if (boss === 'now') {
         callout(a.bossStage.text(e.to), a.bossStage.sec);
         bossNoticeUntil = visualTime + a.bossStage.sec;
-      } else if ((e.to + 1) % every === 0) callout(a.bossNext.text(e.to + 1), a.bossNext.sec);
+      } else if (boss === 'next') callout(a.bossNext.text(e.to + 1), a.bossNext.sec);
     }
   }
 }
@@ -16519,6 +17553,19 @@ function bind() {
       renderRecordsPage();
     }
     if (b.id === 'auto-buy') buyAuto();
+    if (b.id === 'auto-gold-buy') buyAutoGold();
+    if (b.id === 'auto-gold-toggle') toggleAutoGold();
+    if (b.id === 'hidden-open' && wallet().hidden) {
+      showPage('hidden');
+      $('hidden-back').focus();
+    }
+    if (b.id === 'hidden-back') {
+      showPage('grow');
+      $('menu-body').scrollTop = $('menu-body').scrollHeight;
+      $('hidden-open')?.focus();
+    }
+    if (b.dataset.cat) buyCat(b.dataset.cat, Number(b.dataset.catLevel));
+    if (b.dataset.catPick) pickCat(b.dataset.catPick);
     if (b.id === 'buy-income') buyIncome();
     if (b.id === 'craft-sc') craftSC();
     if (b.dataset.perma) buyPerma(b.dataset.perma);
@@ -16789,6 +17836,7 @@ function refreshProfileUI() {
   text('wallet-sc', num(w.sc));
   text('hud-g', num(w.gold));
   text('hud-b', num(w.blue));
+  text('hud-s', num(w.sc));
   const autoOk = w.ownedAuto && NeonProgress.canAuto(g.difficultyId);
   $('auto-toggle').hidden = !autoOk;
   $('auto-toggle').setAttribute('aria-pressed', String(autoEnabled()));
@@ -16808,11 +17856,21 @@ function refreshProfileUI() {
   text('sc-start-note', scNote || T.msg.superNote(w.sc));
   $('sc-start').disabled = w.sc < 1 || !!prep;
   text('legacy-note', legacyBest() ? T.msg.legacy(legacyBest()) : '');
-  if (page === 'grow')
+  if (page === 'grow') {
     $('growth-list').innerHTML = V.growthList({
       ...w,
       ready: !buyBusy,
       priceOf: id => NeonProgress.permaPrice(id, w.perma[id] || 0),
+    });
+    $('hidden-entry').innerHTML = V.hiddenEntry(w.hidden);
+  }
+  // 히든 탭이 닫혀 있으면(예: 백업으로 바꿈) 성장 탭으로 돌아간다
+  if (page === 'hidden' && !w.hidden) showPage('grow');
+  else if (page === 'hidden')
+    $('hidden-view').innerHTML = V.hiddenPage({
+      ...w,
+      ready: !buyBusy,
+      effects: NeonProgress.catEffects(profile.snapshot()),
     });
   if (page === 'shop')
     $('shop-list').innerHTML = V.shopList(
@@ -16820,6 +17878,7 @@ function refreshProfileUI() {
         ...w,
         ready: !buyBusy,
         rate: id => NeonProgress.goldPerMinute(w.incomeTier, id),
+        autoGoldOn: prefs.autoGold,
         canCraftSC: w.gold >= NeonProgress.ECONOMY.scGold && w.blue >= NeonProgress.ECONOMY.scBlue,
       },
       selectedDifficulty,
@@ -16876,6 +17935,47 @@ async function purchase(statusId, run, okText) {
 }
 function buyAuto() {
   return purchase('shop-status', () => profile.buyAuto(), T.msg.purchase.auto);
+}
+// 자동 G 습득(R-025): 산 직후에는 켜 둔다(상점 스위치로 끈다, 이 기기 설정)
+function buyAutoGold() {
+  return purchase(
+    'shop-status',
+    async () => {
+      const r = await profile.buyAutoGold(uid());
+      if (r.ok && !r.duplicate) {
+        prefs.autoGold = true;
+        savePrefs();
+      }
+      return r;
+    },
+    T.msg.purchase.autoGold,
+  );
+}
+function toggleAutoGold() {
+  if (!wallet().ownedAutoGold) return;
+  prefs.autoGold = !prefs.autoGold;
+  savePrefs();
+  refreshProfileUI();
+  $('auto-gold-toggle')?.focus();
+}
+// 고양이 비행사(R-026): 해금(Lv0)은 S, 육성은 S + B. 화면이 본 레벨을 기대값으로 보낸다.
+function buyCat(cat, level) {
+  if (!Number.isSafeInteger(level)) return;
+  return purchase(
+    'hidden-status',
+    () => (level < 1 ? profile.unlockCat(uid(), cat) : profile.levelCat(uid(), cat, level)),
+    r => (level < 1 ? T.msg.purchase.catUnlock(cat) : T.msg.purchase.catLevel(cat, r.level)),
+  );
+}
+// 동반: 같은 고양이를 다시 누르면 해제. 판 도중에는 바꾸지 않는다(메뉴에서만).
+function pickCat(cat) {
+  if (g.mode !== 'menu') return;
+  const next = wallet().companion === cat ? null : cat;
+  return purchase(
+    'hidden-status',
+    () => profile.setCompanion(next),
+    () => T.msg.purchase.companion(next),
+  );
 }
 function buyIncome() {
   const tier = wallet().incomeTier;
@@ -17088,19 +18188,31 @@ function toggleAuto() {
 function resolveAutomatic() {
   if (!autoEnabled() || choiceBusy || g.mode !== 'upgrade') return false;
   let n = 0,
-    lastId = null;
+    lastId = null,
+    gold = 0;
   while (g.mode === 'upgrade' && automaticBudget > 0) {
+    // 자동 G 습득(R-025): 엔진 난수 25%(또는 제시 카드가 모두 상한)면 스킬 대신 레벨업 코인
+    const level = g.p.level;
+    if (autoGoldEnabled() && g.chooseAutoGold()) {
+      automaticBudget--;
+      gold += BAL.economy.coinChoice;
+      awardAutoGold(runId, level);
+      continue;
+    }
     const id = g.recommendUpgrade();
     if (!id || !g.choose(id, 0, 'auto')) break;
     automaticBudget--;
     lastId = id;
     n++;
   }
-  if (n) {
-    callout(T.alerts.auto.text(n, lastId), T.alerts.auto.sec);
+  if (n || gold) {
+    callout(T.alerts.auto.text(n, lastId, gold), T.alerts.auto.sec);
     return true;
   }
   return false;
+}
+function autoGoldEnabled() {
+  return prefs.autoGold && profile.snapshot().ownedAutoGold === true;
 }
 // 판 도중 해금: 판 끝 평가와 같은 규칙(NeonProgress.unlockTarget, 조건은 balance.js unlock)
 async function maybeUnlock() {
@@ -17112,8 +18224,9 @@ async function maybeUnlock() {
   try {
     const result = await profile.evaluateRun(r);
     if (result.newlyUnlocked?.length) {
+      for (const id of result.newlyUnlocked) if (!runUnlocked.includes(id)) runUnlocked.push(id);
       refreshProfileUI();
-      callout(T.alerts.unlock.text(target), T.alerts.unlock.sec);
+      callout(T.alerts.unlock.text(target), T.alerts.unlock.sec, T.alerts.unlock.strong);
     }
   } finally {
     unlockBusy = false;
