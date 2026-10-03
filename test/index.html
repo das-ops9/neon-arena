@@ -404,6 +404,45 @@ ul {
   pointer-events: none;
   z-index: 2147483647;
 }
+/* 화면 지도 라벨(?labels, R-028): 영역 점선 테두리와 ID. 터치를 가로채지 않고 열린 창 위에 뜬다(popover) */
+#area-labels {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2147483646;
+}
+#area-labels::backdrop {
+  background: none;
+}
+.area-box,
+.area-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.area-box {
+  border: 1px dashed #ffe45ca6;
+  border-radius: 4px;
+}
+.area-tag {
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid #ffe45c;
+  background: #000000e0;
+  color: #ffe45c;
+  font:
+    700 10px/1.25 ui-monospace,
+    Consolas,
+    monospace;
+  white-space: nowrap;
+}
 
 /* ── 메뉴 셸: 상단 · 본문(스크롤) · 출격 줄 · 탭. 출격 줄은 본문을 덮지 않는 별도 행이다. ── */
 .menu {
@@ -1398,85 +1437,124 @@ p.cat-note {
   text-align: center;
 }
 
-/* ── 전투 HUD: 상단 칸 · 보스 · 알림 · 빈 플레이 영역 · 하단 행동 줄 (이름 붙인 행으로 배치) ── */
+/* ── 전투 HUD: 위 한 덩어리 · 알림 · 빈 플레이 영역 · 아래 행동 줄 (이름 붙인 행으로 배치) ── */
 .hud {
   position: fixed;
   inset: 0;
   z-index: var(--z-hud);
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-  grid-template-areas: 'top' 'boss' 'notice' 'play' 'bottom';
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: 'top' 'notice' 'play' 'bottom';
   gap: 6px;
   height: var(--vh-full);
-  padding: calc(6px + var(--safe-t)) calc(8px + var(--safe-r)) calc(6px + var(--safe-b))
+  /* 화면 맨 위 · 맨 아래에 여백을 조금 둔다(R-029) */
+  padding: calc(10px + var(--safe-t)) calc(8px + var(--safe-r)) calc(12px + var(--safe-b))
     calc(8px + var(--safe-l));
   pointer-events: none;
 }
 .hud button {
   pointer-events: auto;
 }
+/* 위 한 덩어리(R-029). 세로: 1줄 STAGE | 막대 3개 | 시간 | 일시정지, 2줄 배지 · LV · 재화 · Point · AUTO,
+   덩어리 바로 아래 보스 줄 · CHAIN. 판 배경(.hud-panel)은 1~2줄 칸을 덮는 빈 칸이고 글자 칸은 그 위에 놓인다.
+   글자 크기는 칸 폭(컨테이너 단위)에 맞춰 줄어 줄바꿈 없이 들어간다(보완 1). 고정 좌표는 쓰지 않는다. */
 .hud-top {
   grid-area: top;
   display: grid;
-  gap: 4px;
-  padding: 6px 8px 6px 10px;
+  grid-template-columns: 50px minmax(0, 1fr) auto var(--tap);
+  grid-template-areas:
+    'stage bars time pause'
+    'info info info info';
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  padding: 6px 8px;
+  container-type: inline-size;
+}
+.hud-panel {
+  grid-row: 1 / 3;
+  grid-column: 1 / -1;
+  align-self: stretch;
+  margin: -6px -8px;
   border-radius: 12px;
   border: 1px solid #20364a99;
   background: linear-gradient(#070b13eb, #070b13c4);
-  --nb-cw: 64px;
-}
-/* 세로: 두 줄을 각각 독립 그리드로. 숫자는 칸 폭에 맞춰 줄어들고 이웃 칸을 넘지 않는다. */
-.hud-row {
-  display: grid;
-  align-items: center;
-  column-gap: 10px;
-}
-.hud-row--1 {
-  grid-template-columns: minmax(0, 1fr) auto var(--tap);
-}
-.hud-row--2 {
-  grid-template-columns: auto minmax(0, 1fr) auto;
 }
 .hud-cell {
   min-width: 0;
 }
-.hud-hp {
+/* STAGE: 한 번 탭으로 즉시 오른다. 금색 테두리 · ↑로 다른 버튼과 구분한다 */
+.hud-stage {
+  grid-area: stage;
+  align-self: stretch;
   display: grid;
-  gap: 3px;
-  container-type: inline-size;
+  justify-items: center;
+  align-content: center;
+  min-height: 50px;
+  padding: 3px 0;
+  border-radius: 10px;
+  border: 1.5px solid var(--gold);
+  background: #1d170ae0;
+  color: var(--gold);
+  line-height: 1;
 }
-.hud-line {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 0;
-  white-space: nowrap;
-}
-.hud-k {
-  flex: none;
-  font-size: var(--fs-2xs);
+.hud-stage small {
+  font-size: min(0.5625rem, 10px);
   font-weight: 800;
-  color: var(--muted);
   letter-spacing: 0.06em;
 }
-.hud-v {
-  font-size: min(var(--fs-sm), 10cqi);
-  font-weight: 800;
+.hud-stage b {
+  margin: 2px 0 1px;
+  font-size: min(1.375rem, 24px);
+  font-weight: 900;
+  color: var(--ink);
 }
-.hud-v span {
+.hud-stage i {
+  font-style: normal;
+  font-size: min(0.875rem, 15px);
+  font-weight: 900;
+}
+.hud-stage:disabled {
+  opacity: 0.55;
+}
+/* 막대 3개: 이름 | 막대 | 수치. 수치는 칸 폭에 맞춰 줄고, 막대가 남은 폭을 쓴다 */
+.hud-bars {
+  grid-area: bars;
+  display: grid;
+  grid-template-columns: auto minmax(16px, 1fr) auto;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 2px;
+  container-type: inline-size;
+}
+.hud-k {
+  min-width: 1rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.hud-k--icon {
+  display: grid;
+  color: var(--blue);
+}
+.hud-k--icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.hud-v {
+  justify-self: end;
+  font-size: clamp(9px, 8.5cqi, 0.75rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+.hud-v .of {
   color: var(--muted);
   font-weight: 600;
 }
-.hud-craft {
-  display: none;
-  font-size: var(--fs-2xs);
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .bar {
-  height: 5px;
+  height: 6px;
   border-radius: 3px;
   background: #1b2a38;
   overflow: hidden;
@@ -1490,21 +1568,29 @@ p.cat-note {
   transform-origin: left center;
   transform: scaleX(var(--p, 1));
 }
-.bar--shield {
-  height: 3px;
-}
 .bar--shield i {
   background: var(--blue);
+}
+.bar--xp i {
+  background: var(--gold);
 }
 .bar--hp.low i {
   background: var(--pink);
 }
 .hud-time {
-  font-size: var(--fs-xl);
+  grid-area: time;
+  font-size: clamp(1.25rem, 9.5cqi, 2.125rem);
   font-weight: 800;
+  line-height: 1;
   text-align: center;
 }
+/* 1시간이 넘으면 '1:02:47'로 길어져 작게 */
+.hud-time.is-long {
+  font-size: clamp(1rem, 6.4cqi, 1.5rem);
+}
 .hud-pause {
+  grid-area: pause;
+  align-self: start;
   width: var(--tap);
   height: var(--tap);
   display: grid;
@@ -1512,44 +1598,56 @@ p.cat-note {
   border-radius: var(--r-md);
   border: 1px solid var(--line-strong);
   color: var(--ink-2);
-  font-size: var(--fs-md);
-  font-weight: 800;
 }
-.hud-mode {
-  display: flex;
+.hud-pause svg {
+  width: 20px;
+  height: 20px;
+}
+/* 2줄: 정보 칸 | AUTO. AUTO는 보이는 알약은 작고, 누르는 상자는 44px(위아래로 덩어리 여백까지 넓힌다) */
+.hud-row--2 {
+  grid-area: info;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  column-gap: 8px;
+  min-height: 26px;
+}
+/* 정보 칸: 배지 · LV · 재화(남은 폭) · Point. LV · Point는 칸 폭, 재화는 자기 폭에 맞춰 글자가 준다(최소 9px).
+   LV999 · G 99,999 · B 9,999 · S 99 · 999,999,999도 줄바꿈 없이 들어가 AUTO · 일시정지를 밀지 않는다. */
+.hud-info {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 6px;
+  container-type: inline-size;
+  --nb-cw: clamp(46px, 18cqi, 64px);
 }
 .hud-lv {
-  font-size: var(--fs-sm);
+  font-size: clamp(9px, 3.6cqi, 0.8125rem);
   font-weight: 800;
   color: var(--ink-2);
-}
-.hud-point {
-  display: grid;
-  justify-items: end;
-  container-type: inline-size;
-}
-.hud-point b {
-  font-size: min(var(--fs-lg), 16cqi);
-  font-weight: 800;
-  color: var(--gold);
 }
 .hud-sub {
-  font-size: var(--fs-2xs);
+  container-type: inline-size;
+  overflow: hidden;
+  white-space: nowrap;
   color: var(--ink-2);
+  /* 가장 긴 재화 글자 'G 99,999 B 9,999 S 99'의 폭(em). Insane 판만 S가 붙는다 */
+  --w: 7.4;
 }
-.hud-point .hud-sub {
-  font-size: min(var(--fs-2xs), 12cqi);
+.hud-info:has(#hud-s-wrap:not([hidden])) .hud-sub {
+  --w: 9.8;
 }
-/* Insane 판은 S까지 세 묶음이라 좁은 칸에서 더 줄인다(R-023) */
-.hud-point .hud-sub.has-s {
-  font-size: min(var(--fs-2xs), 8cqi);
+.hud-sub > * {
+  font-size: clamp(9px, calc((100cqi - 20px) / var(--w)), 0.8125rem);
 }
 .hud-sub i {
   font-style: normal;
   font-weight: 800;
   margin: 0 2px 0 6px;
+}
+.hud-sub > i:first-child {
+  margin-left: 0;
 }
 .hud-sub .g {
   color: var(--c-gold);
@@ -1560,34 +1658,82 @@ p.cat-note {
 .hud-sub .s {
   color: var(--c-sc);
 }
+.hud-point {
+  justify-self: end;
+  font-size: clamp(11px, 4.4cqi, 1.0625rem);
+  font-weight: 800;
+  color: var(--gold);
+}
 .hud-auto {
-  min-width: 50px;
+  width: var(--tap);
   height: var(--tap);
-  padding: 0 8px;
+  margin-block: -9px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.hud-auto span {
+  padding: 3px 5px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
-  color: var(--muted);
-  font-size: 0.625rem;
+  font-size: min(0.625rem, 10.5px);
   font-weight: 900;
-  letter-spacing: 0.06em;
+  line-height: 1;
+  letter-spacing: 0.05em;
 }
 .hud-auto[aria-pressed='true'] {
-  border-color: var(--cyan);
   color: var(--cyan);
+}
+.hud-auto[aria-pressed='true'] span {
+  border-color: var(--cyan);
   background: var(--cyan-deep);
 }
+/* 보스 줄 · CHAIN(보완 3): 세로 화면은 덩어리 바로 아래 한 줄(보스 왼쪽 · CHAIN 오른쪽).
+   CHAIN 칸은 미리 잡아 두어 CHAIN이 나타나도 보스 상자 폭이 그대로다. 둘 다 없으면 줄을 접는다. */
+.hud-bossline {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(5.5em, auto);
+  align-items: center;
+  column-gap: 10px;
+  margin: 8px -8px 0;
+  font-size: 0.875rem;
+}
+@media not all and (orientation: landscape) and (max-height: 520px) {
+  .hud-bossline:not(:has(> :not([hidden]))) {
+    display: none;
+  }
+}
 .hud-boss {
-  grid-area: boss;
+  grid-column: 1;
   display: grid;
   gap: 3px;
-  padding: 4px 10px;
+  padding: 4px 10px 5px;
   border-radius: 10px;
+  border: 1px solid #f4ce7266;
   background: #070b13cc;
-  font-size: var(--fs-2xs);
+}
+.boss-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.6875rem;
+  font-weight: 800;
   color: var(--gold);
+}
+.hud-boss .bar {
+  height: 5px;
 }
 .hud-boss .bar i {
   background: var(--gold);
+}
+.hud-chain {
+  grid-column: 2;
+  justify-self: end;
+  padding-right: 4px;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--pink);
 }
 .hud-notice {
   grid-area: notice;
@@ -1668,13 +1814,6 @@ p.cat-note {
   font-size: var(--fs-sm);
   box-shadow: 0 0 18px #f4ce7233;
 }
-.notice--combo {
-  border: 0;
-  background: none;
-  color: var(--pink);
-  font-style: italic;
-  font-size: var(--fs-md);
-}
 .hud-bottom {
   grid-area: bottom;
   display: grid;
@@ -1728,35 +1867,6 @@ p.cat-note {
 .action--nova strong {
   color: var(--ink);
 }
-/* Stage: 한 번 탭으로 즉시 오른다. 간격을 넓히고 금색 테두리·↑로 모양을 구분해 오작동을 줄인다. */
-.action--stage {
-  margin-left: 8px;
-  color: var(--gold);
-  border: 1.5px solid var(--gold);
-  background: #1d170ae0;
-}
-.action--stage b {
-  font-size: var(--fs-lg);
-  line-height: 1;
-}
-.action .st {
-  white-space: nowrap;
-}
-.xp {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--fs-2xs);
-  color: var(--gold);
-}
-.bar--xp {
-  height: 4px;
-}
-.bar--xp i {
-  background: var(--gold);
-}
-
 /* ── 전투 위 오버레이: 레벨업 · 일시정지 · 결과 (backdrop-filter 없이 불투명 배경) ── */
 .overlay {
   position: fixed;
@@ -2211,36 +2321,96 @@ kbd {
   .mode-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  /* 가로 HUD(보완 2): 위 덩어리를 한 줄로. 막대는 얇게 · 수치는 숨기고, 정보 칸은 두 줄
+     (위: 배지 · LV · 재화 · Point, 아래: 보스 줄 · CHAIN). 두 줄이 STAGE 높이 안에 들어가고,
+     아래 줄 자리는 보스가 없어도 비워 둬 보스가 나올 때 덩어리 높이가 그대로다. */
   .hud-top {
-    grid-template-columns: minmax(0, 1.25fr) auto auto minmax(0, 1fr) auto var(--tap);
-    grid-template-areas: 'hp time mode point auto pause';
-    align-items: center;
+    grid-template-columns: 50px minmax(0, 0.8fr) auto minmax(0, 2.2fr) auto var(--tap);
+    grid-template-areas:
+      'stage bars time info tog pause'
+      'stage bars time boss tog pause';
     column-gap: 10px;
-    padding-block: 4px;
+    row-gap: 2px;
+    padding: 5px 8px;
+  }
+  .hud-panel {
+    grid-row: 1 / -1;
+    margin: -5px -8px;
+  }
+  .hud-stage {
+    min-height: var(--tap);
+    padding: 2px 0;
+  }
+  .hud-stage small {
+    font-size: min(0.5rem, 9px);
+  }
+  .hud-stage b {
+    margin: 1px 0 0;
+    font-size: min(1.125rem, 20px);
+  }
+  .hud-stage i {
+    font-size: min(0.75rem, 13px);
+  }
+  .hud-bars {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .hud-k {
+    font-size: min(0.5625rem, 10px);
+  }
+  .hud-k--icon svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+  .hud-v {
+    display: none;
+  }
+  .bar {
+    height: 4px;
+  }
+  .hud-time {
+    font-size: clamp(1.125rem, 3cqi, 1.5rem);
+  }
+  .hud-time.is-long {
+    font-size: clamp(1rem, 2.4cqi, 1.25rem);
+  }
+  .hud-pause {
+    align-self: center;
   }
   .hud-row {
     display: contents;
   }
-  .hud-hp {
-    grid-area: hp;
+  .hud-info {
+    grid-area: info;
   }
-  .hud-time {
-    grid-area: time;
-  }
-  .hud-pause {
-    grid-area: pause;
-  }
-  .hud-mode {
-    grid-area: mode;
-  }
-  .hud-point {
-    grid-area: point;
-  }
+  /* 영역 이름 auto는 예약어라 tog로 쓴다 */
   .hud-auto {
-    grid-area: auto;
+    grid-area: tog;
+    margin: 0;
   }
-  .hud-craft {
-    display: inline;
+  .hud-bossline {
+    grid-area: boss;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 14px;
+    margin: 0;
+    font-size: min(0.625rem, 11px);
+  }
+  .hud-boss {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+  .boss-text {
+    font-size: inherit;
+  }
+  .boss-stage {
+    display: none;
+  }
+  .hud-boss .bar {
+    height: 4px;
   }
   .choice-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2258,11 +2428,11 @@ kbd {
     <div class="vignette" aria-hidden="true"></div>
 
     <section id="menu" class="menu" data-page="play" aria-label="메뉴">
-      <header class="menu-top">
+      <header class="menu-top" data-area="M-HEAD">
         <div class="brand">
           <span class="brand-mark">N<span>/</span>A</span><span class="brand-name">NEON ARENA</span>
         </div>
-        <div class="wallet" aria-label="보유 재화">
+        <div class="wallet" data-area="M-WALLET" aria-label="보유 재화">
           <span class="coin coin--g" title="Gold"
             ><i aria-hidden="true"></i><b id="wallet-g">0</b></span
           >
@@ -2291,8 +2461,8 @@ kbd {
             <h2>Point TOP 3 <small>· 전체 모드</small></h2>
             <button class="link-btn" id="all-records">전체 기록 ›</button>
           </div>
-          <ol class="top3" id="top3"></ol>
-          <div class="mode-line" id="mode-line">
+          <ol class="top3" id="top3" data-area="P-RANK"></ol>
+          <div class="mode-line" id="mode-line" data-area="P-MODE">
             <span id="mode-badge"></span>
             <span class="mode-line-text"
               ><strong id="mode-name">Easy</strong><small id="mode-desc"></small
@@ -2302,7 +2472,13 @@ kbd {
           <div class="section-head home-crafthead">
             <h2>기체</h2>
           </div>
-          <div class="crafts" id="crafts" role="group" aria-label="기체 선택"></div>
+          <div
+            class="crafts"
+            id="crafts"
+            data-area="P-CRAFT"
+            role="group"
+            aria-label="기체 선택"
+          ></div>
         </section>
         <section class="page page--growth" id="page-grow" aria-label="성장" hidden>
           <div class="page-head">
@@ -2310,9 +2486,9 @@ kbd {
             <p>모든 기체 공통 · 구매 1회 = 영구 1스택 · 다음 출격부터 적용</p>
           </div>
           <p class="overlay-note" id="grow-status" role="status"></p>
-          <div id="growth-list" class="page"></div>
+          <div id="growth-list" class="page" data-area="G-LIST"></div>
           <p class="legacy-note">블루코인: 실제 LV10마다 1B · Ultra 이상 2B</p>
-          <div id="hidden-entry"></div>
+          <div id="hidden-entry" data-area="G-HIDDEN"></div>
         </section>
         <section class="page page--hidden" id="page-hidden" aria-label="히든 탭 · 고양이 비행사" hidden>
           <div class="page-head page-head--back">
@@ -2340,7 +2516,7 @@ kbd {
           </div>
           <p class="overlay-note" id="rec-status" role="status"></p>
           <div id="record-list"></div>
-          <section class="data-box" aria-label="데이터 관리">
+          <section class="data-box" data-area="K-DATA" aria-label="데이터 관리">
             <h3>데이터 관리</h3>
             <p>기록과 재화를 파일 하나로 백업하거나, 다른 기기·이전 버전에서 가져옵니다.</p>
             <div class="btn-row">
@@ -2354,13 +2530,13 @@ kbd {
           </section>
         </section>
       </main>
-      <div class="launch-bar" id="launch-bar">
+      <div class="launch-bar" id="launch-bar" data-area="P-LAUNCH">
         <button class="btn btn--primary btn--launch" id="start" disabled>일반 출격</button
         ><button class="btn btn--sc" id="sc-start" disabled>
           S 출격<small id="sc-start-note">보유 0</small>
         </button>
       </div>
-      <nav class="tabbar" aria-label="메뉴 탭">
+      <nav class="tabbar" data-area="M-TABS" aria-label="메뉴 탭">
         <button class="tab" data-tab="play" aria-current="page">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4l10 6-10 6z" fill="currentColor" /></svg
           ><span>플레이</span></button
@@ -2435,83 +2611,107 @@ kbd {
     </div>
 
     <div id="hud" class="hud" hidden>
+      <!-- 위 한 덩어리(R-029): 1줄 STAGE | 막대 3개 | 시간 | 일시정지, 2줄 배지 · LV · 재화 · Point · AUTO,
+           그 아래 보스 줄 · CHAIN(가로 화면은 덩어리 안 아래 줄). 판(.hud-panel)은 배경만 그리는 칸이다. -->
       <header class="hud-top">
-        <div class="hud-row hud-row--1">
-          <div class="hud-cell hud-hp" aria-label="기체 상태">
-            <div class="hud-line">
-              <span class="hud-k">HP</span
-              ><b class="hud-v num"
-                ><span id="hp-cur">100</span><span>/<span id="hp-max">100</span></span></b
-              ><span class="hud-craft" id="craft-label"></span>
-            </div>
-            <div class="bar bar--hp" id="hp-bar"><i id="health-fill"></i></div>
-            <div class="bar bar--shield"><i id="shield-fill"></i></div>
-            <span class="hud-sub num" id="shield-text"></span>
-          </div>
-          <div class="hud-cell hud-time num" id="timer">00:00</div>
-          <button class="hud-cell hud-pause" id="pause-button" aria-label="일시정지">Ⅱ</button>
+        <i class="hud-panel" aria-hidden="true"></i>
+        <button
+          class="hud-cell hud-stage"
+          id="stage-button"
+          data-area="H-STAGE"
+          title="U: Stage 올리기"
+          aria-label="Stage 올리기"
+        >
+          <small>STAGE</small><b class="num" id="stage-text">1</b><i aria-hidden="true">↑</i>
+        </button>
+        <div class="hud-cell hud-bars" data-area="H-BARS" role="group" aria-label="기체 상태">
+          <span class="hud-k">HP</span>
+          <div class="bar bar--hp" id="hp-bar"><i id="health-fill"></i></div>
+          <b class="hud-v num"
+            ><span id="hp-cur">100</span><span class="of">/<span id="hp-max">100</span></span></b
+          >
+          <span class="hud-k hud-k--icon" role="img" aria-label="보호막"
+            ><svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M8 1.6 13.4 3.7v3.9c0 3.2-2.2 5.6-5.4 6.8-3.2-1.2-5.4-3.6-5.4-6.8V3.7z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"
+              /></svg
+          ></span>
+          <div class="bar bar--shield"><i id="shield-fill"></i></div>
+          <b class="hud-v num"
+            ><span id="shield-cur">0</span
+            ><span class="of" id="shield-of">/<span id="shield-max">0</span></span></b
+          >
+          <span class="hud-k">XP</span>
+          <div class="bar bar--xp"><i id="xp-fill"></i></div>
+          <b class="hud-v num"
+            ><span id="xp-cur">0</span><span class="of">/<span id="xp-max">8</span></span></b
+          >
         </div>
-        <div class="hud-row hud-row--2">
-          <div class="hud-cell hud-mode">
-            <span id="hud-badge"></span><span class="hud-lv num" id="level-label">LV1</span>
-          </div>
-          <div class="hud-cell hud-point">
-            <b class="num" id="score">0</b
+        <div class="hud-cell hud-time num" id="timer" data-area="H-TIME">00:00</div>
+        <button
+          class="hud-cell hud-pause"
+          id="pause-button"
+          data-area="H-PAUSE"
+          aria-label="일시정지"
+        >
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <rect x="5" y="4" width="3.4" height="12" rx="1.2" fill="currentColor" />
+            <rect x="11.6" y="4" width="3.4" height="12" rx="1.2" fill="currentColor" />
+          </svg>
+        </button>
+        <div class="hud-row hud-row--2" data-area="H-INFO">
+          <div class="hud-cell hud-info">
+            <span id="hud-badge"></span><span class="hud-lv num" id="level-label">LV1</span
             ><span class="hud-sub num"
               ><i class="g">G</i><span id="hud-g">0</span><i class="b">B</i
               ><span id="hud-b">0</span
               ><span id="hud-s-wrap" hidden
                 ><i class="s">S</i><span id="hud-s">0</span></span
               ></span
-            >
+            ><b class="hud-point num" id="score">0</b>
           </div>
           <button class="hud-cell hud-auto" id="auto-toggle" aria-pressed="false" hidden>
-            AUTO
+            <span>AUTO</span>
           </button>
         </div>
+        <div class="hud-bossline">
+          <div class="hud-cell hud-boss" id="boss-hud" data-area="H-BOSS" hidden>
+            <span class="boss-text num"
+              ><span id="boss-value"></span><span class="boss-stage" id="boss-stage"></span
+            ></span>
+            <div class="bar"><i id="boss-fill"></i></div>
+          </div>
+          <span class="hud-cell hud-chain num" id="combo" data-area="H-CHAIN" hidden></span>
+        </div>
       </header>
-      <div class="hud-boss" id="boss-hud" hidden>
-        <span id="boss-value"></span>
-        <div class="bar"><i id="boss-fill"></i></div>
-      </div>
-      <div class="hud-notice">
+      <div class="hud-notice" data-area="H-ALERT">
         <span class="notice" id="callout" role="status" hidden></span>
         <span class="notice" id="stage-toast" hidden></span>
         <span class="notice notice--siege" id="siege-notice" hidden></span>
-        <span class="notice notice--combo" id="combo" hidden></span>
       </div>
       <div class="hud-play"></div>
       <div class="siege-edges" id="siege-edges" hidden aria-hidden="true">
         <i class="se se--n"></i><i class="se se--e"></i><i class="se se--s"></i><i class="se se--w"></i>
       </div>
       <footer class="hud-bottom">
-        <div class="action-row">
+        <div class="action-row" data-area="H-PAD">
           <button class="action action--dash" id="dash-button">
             <strong>대시</strong><small id="dash-cd">준비</small
             ><i class="cd" id="dash-fill"></i></button
           ><button class="action action--nova" id="nova-button">
             <strong>충격파</strong><small id="nova-cd">준비</small
-            ><i class="cd" id="nova-fill"></i></button
-          ><button
-            class="action action--stage"
-            id="stage-button"
-            title="U: Stage 올리기"
-            aria-label="Stage 올리기"
-          >
-            <span class="st">STAGE <span id="stage-text">1</span></span
-            ><b aria-hidden="true">↑</b>
+            ><i class="cd" id="nova-fill"></i>
           </button>
-        </div>
-        <div class="xp">
-          <span>EXP</span>
-          <div class="bar bar--xp"><i id="xp-fill"></i></div>
-          <span class="num" id="xp-text">0 / 8</span>
         </div>
       </footer>
     </div>
 
     <section id="upgrade" class="overlay" hidden aria-labelledby="upgrade-title">
-      <div class="overlay-panel">
+      <div class="overlay-panel" data-area="O-LEVEL">
         <div class="eyebrow" id="upgrade-kicker">LEVEL UP</div>
         <h2 id="upgrade-title">강화 하나를 고르세요</h2>
         <div class="choice-list" id="upgrade-cards"></div>
@@ -2521,7 +2721,7 @@ kbd {
     </section>
 
     <section id="paused" class="overlay" hidden aria-labelledby="pause-title">
-      <div class="overlay-panel">
+      <div class="overlay-panel" data-area="O-PAUSE">
         <div class="eyebrow">PAUSED</div>
         <h2 id="pause-title">잠시 숨을 고르세요</h2>
         <div class="summary-grid" id="pause-summary"></div>
@@ -2535,7 +2735,7 @@ kbd {
     </section>
 
     <section id="result" class="overlay" hidden aria-labelledby="result-title">
-      <div class="overlay-panel">
+      <div class="overlay-panel" data-area="O-RESULT">
         <div class="result-head">
           <div class="eyebrow" id="result-kicker">RUN RECORDED</div>
           <span id="result-badge"></span>
@@ -2581,7 +2781,7 @@ kbd {
       </div>
     </section>
 
-    <dialog id="settings-dialog" class="dialog" aria-labelledby="settings-title">
+    <dialog id="settings-dialog" class="dialog" data-area="O-SETTINGS" aria-labelledby="settings-title">
       <div class="eyebrow">SETTINGS</div>
       <h2 id="settings-title">화면 · 소리 설정</h2>
       <label class="setting-row" for="view-setting"
@@ -10303,9 +10503,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ready: '준비',
       stageTitle: 'U: ' + stage.name + ' 올리기',
       stageLabel: stage.name + ' 올리기',
-      stagePrefix: stage.upper + ' ',
-      exp: 'EXP',
-      xp: () => '0 / ' + B().level.base,
+      stageKey: stage.upper,
+      // 위 덩어리 막대 3개(R-029): HP · 보호막(방패 그림, 읽기 이름만) · XP
+      shield: '보호막',
+      xpKey: 'XP',
+      xpMax: () => B().level.base,
     },
     upgrade: {
       kicker: 'LEVEL UP',
@@ -10448,11 +10650,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     recordSaveFail: '기록 저장에 실패했습니다. 분석 로그를 파일로 남겨주세요.',
     jsonReady: 'JSON 파일 받기',
     fileReady: name => '파일 받기: ' + name,
-    shield: (v, max) => 'S ' + num(v) + '/' + num(max),
     abilityReady: '준비',
     abilityLabel: (id, ready) => abilities[id] + (ready ? ' 준비됨' : ' 재충전 중'),
-    boss: (alive, total, s, hp) =>
-      'BOSS ' + alive + ' / ' + total + ' · ' + stage.upper + ' ' + s + ' · ' + num(hp) + ' HP',
+    // 보스 줄(R-029): 'BOSS 2 / 4' + (세로 화면만) ' · STAGE 12'. 남은 체력은 막대로만 보인다.
+    bossCount: (alive, total) => 'BOSS ' + alive + ' / ' + total,
+    bossStage: s => ' · ' + stageLabel(s),
     combo: n => n + ' CHAIN',
     autoStatus: owned =>
       owned
@@ -15993,7 +16195,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       tools = !records.length
         ? ''
         : select
-          ? '<div class="rec-tools"><span>' +
+          ? '<div class="rec-tools" data-area="K-TOOLS"><span>' +
             RV.selected(select.size) +
             '</span><button class="btn btn--sm btn--ghost" data-rec="cancel">' +
             RV.cancel +
@@ -16004,7 +16206,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             '</button></div><p class="rec-auto">' +
             esc(RV.info) +
             '</p>'
-          : '<div class="rec-tools"><span>' +
+          : '<div class="rec-tools" data-area="K-TOOLS"><span>' +
             RV.count(records.length, stars) +
             '</span><button class="btn btn--sm btn--ghost" data-rec="select">' +
             RV.select +
@@ -16012,8 +16214,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return (
       tools +
       (list.length
-        ? '<ol class="record-list">' + list.map(r => recordRow(r, { top, safe, select })).join('') + '</ol>'
-        : '<p class="record-empty">' + TV.recordsEmpty + '</p>') +
+        ? '<ol class="record-list" data-area="K-LIST">' +
+          list.map(r => recordRow(r, { top, safe, select })).join('') +
+          '</ol>'
+        : '<p class="record-empty" data-area="K-LIST">' + TV.recordsEmpty + '</p>') +
       '<div class="pager"><button class="btn btn--sm" data-page="-1"' +
       (p ? '' : ' disabled') +
       '>' +
@@ -16077,7 +16281,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       price = BAL.economy.autoGoldPrice,
       on = !!profile.autoGoldOn;
     return (
-      '<article class="shop-card shop-card--autogold"><h3>' +
+      '<article class="shop-card shop-card--autogold" data-area="S-AUTOG"><h3>' +
       S.autoGold +
       (profile.ownedAutoGold ? '' : ' <span class="tag-new">' + S.autoGoldNew + '</span>') +
       '</h3><small>' +
@@ -16112,7 +16316,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       pips = Array.from({ length: max }, (_, i) => '<i' + (i < tier ? ' class="on"' : '') + '></i>').join(''),
       rate = profile.rate ? profile.rate(mode) : 1;
     return (
-      '<article class="shop-card shop-card--income"><h3>' +
+      '<article class="shop-card shop-card--income" data-area="S-TIME"><h3>' +
       S.income +
       '</h3><p class="big">' +
       S.perMinute(rate) +
@@ -16130,7 +16334,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '>' +
       S.buyIncome(tier, max) +
       '</button></article>' +
-      '<article class="shop-card shop-card--sc"><h3>' +
+      '<article class="shop-card shop-card--sc" data-area="S-SUPER"><h3>' +
       S.sc +
       '</h3><p class="big" style="color:var(--violet)">' +
       S.scRecipe() +
@@ -16143,7 +16347,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '>' +
       S.scCraft +
       '</button></article>' +
-      '<article class="shop-card"><h3>' +
+      '<article class="shop-card" data-area="S-AUTO"><h3>' +
       S.auto +
       '</h3><small>' +
       S.autoNote() +
@@ -16870,8 +17074,6 @@ async function begin(launch = {}) {
     $('hud-badge').innerHTML = V.badge(g.difficultyId, 'compact');
     // Insane 판은 HUD 재화 줄에 S도 보인다(R-023)
     $('hud-s-wrap').hidden = g.difficultyId !== BAL.superCoin.mode;
-    $('hud-s-wrap').parentElement.classList.toggle('has-s', !$('hud-s-wrap').hidden);
-    text('craft-label', T.craftName(g.craft));
     clearInput();
     oldMode = '';
     syncMode();
@@ -17216,14 +17418,21 @@ function updateHUD() {
   text('hp-max', num(p.maxHp));
   setP($('health-fill'), p.hp / p.maxHp);
   $('hp-bar').classList.toggle('low', p.hp / p.maxHp < 0.3);
+  // 보호막 없는 기체는 막대를 비우고 '0'만 보인다(줄 자리는 그대로, 보완 14)
   setP($('shield-fill'), p.maxShield ? p.shield / p.maxShield : 0);
-  text('shield-text', p.maxShield ? T.msg.shield(Math.ceil(p.shield), p.maxShield) : '');
+  text('shield-cur', num(Math.ceil(p.shield)));
+  text('shield-max', num(p.maxShield));
+  show('shield-of', p.maxShield > 0);
   text('timer', timeString(g.time));
+  // 1시간이 넘으면 '1:02:47'로 길어져 시간 글자를 줄인다(값이 바뀔 때만 class를 쓴다)
+  const longTime = g.time >= 3600;
+  if ($('timer').classList.contains('is-long') !== longTime) $('timer').classList.toggle('is-long', longTime);
   text('stage-text', g.stage);
   text('score', num(g.score));
   text('level-label', T.levelShort(p.level));
   setP($('xp-fill'), p.xp / p.nextXP);
-  text('xp-text', Math.floor(p.xp) + ' / ' + p.nextXP);
+  text('xp-cur', num(Math.floor(p.xp)));
+  text('xp-max', num(p.nextXP));
   for (const [id, v, max] of [
     ['dash', p.dashCD, p.dashMax],
     ['nova', p.novaCD, p.novaMax],
@@ -17240,7 +17449,8 @@ function updateHUD() {
   show('boss-hud', boss.alive > 0);
   if (boss.alive) {
     setP($('boss-fill'), boss.maxHp ? boss.hp / boss.maxHp : 0);
-    text('boss-value', T.msg.boss(boss.alive, boss.total, boss.originStage, Math.ceil(boss.hp)));
+    text('boss-value', T.msg.bossCount(boss.alive, boss.total));
+    text('boss-stage', T.msg.bossStage(boss.originStage));
   }
   show('combo', g.combo >= 5);
   if (g.combo >= 5) text('combo', T.msg.combo(g.combo));
@@ -17825,6 +18035,132 @@ function touchDiagnostics() {
   });
   log(L.ready);
 }
+// 화면 지도 라벨(R-028, 주소 끝 ?labels): data-area가 달린 영역마다 점선 테두리와 ID를 화면 위에 띄운다.
+// 라벨 층은 터치를 가로채지 않고 열린 창보다 위에 뜬다. 게임 화면의 배치는 바꾸지 않는다.
+// 라벨끼리는 겹치지 않게 영역 안 네 모서리 → 영역 바로 위·아래 → 아래로 밀기 순으로 빈자리를 찾는다.
+function areaLabels() {
+  const layer = document.createElement('div'),
+    items = new Map();
+  let modal = null,
+    queued = false;
+  layer.id = 'area-labels';
+  layer.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(layer);
+  const raise = () => {
+    if (!layer.showPopover) return;
+    layer.popover = 'manual';
+    if (layer.matches(':popover-open')) layer.hidePopover();
+    layer.showPopover();
+  };
+  // display: contents인 줄(가로 화면 HUD)은 자기 상자가 없어 보이는 자식 상자를 합친다
+  const boxOf = el => {
+    const r = el.getBoundingClientRect();
+    if (r.width || r.height || getComputedStyle(el).display !== 'contents') return r;
+    let l = Infinity,
+      t = Infinity,
+      rr = -Infinity,
+      b = -Infinity;
+    for (const c of el.children) {
+      const q = boxOf(c);
+      if (!q.width && !q.height) continue;
+      l = Math.min(l, q.left);
+      t = Math.min(t, q.top);
+      rr = Math.max(rr, q.right);
+      b = Math.max(b, q.bottom);
+    }
+    return l < rr ? { left: l, top: t, right: rr, bottom: b, width: rr - l, height: b - t } : r;
+  };
+  const hit = (a, list) =>
+    list.some(b => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h);
+  const move = (el, x, y) => {
+    const v = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+    if (el.style.transform !== v) el.style.transform = v;
+  };
+  const update = () => {
+    queued = false;
+    const top = [...document.querySelectorAll('dialog[open]')].pop() || null;
+    if (top !== modal) {
+      modal = top;
+      raise();
+    }
+    // 맨 앞 층(열린 창 → 레벨업 · 일시정지 · 결과 · 모드 시트 · S 출격 준비)이 있으면 그 안의 영역만 단다
+    const front =
+        top ||
+        [
+          ...document.querySelectorAll('.overlay:not([hidden]), .sheet:not([hidden]), .prep:not([hidden])'),
+        ].pop(),
+      W = innerWidth,
+      H = innerHeight,
+      placed = [],
+      live = new Set();
+    for (const el of document.querySelectorAll('[data-area]')) {
+      if (front && !front.contains(el)) continue;
+      // 스크롤 영역 안의 영역은 보이는 부분만(목록이 탭 줄 아래로 이어져도 라벨은 보이는 곳에)
+      let r = boxOf(el);
+      const view = el.parentElement?.closest('.menu-body, .overlay, .sheet-panel, dialog');
+      if (view) {
+        const v = view.getBoundingClientRect(),
+          left = Math.max(r.left, v.left),
+          top = Math.max(r.top, v.top),
+          right = Math.min(r.right, v.right),
+          bottom = Math.min(r.bottom, v.bottom);
+        r = { left, top, right, bottom, width: right - left, height: bottom - top };
+      }
+      if (r.width < 1 || r.height < 1 || r.bottom < 0 || r.top > H || r.right < 0 || r.left > W) continue;
+      let it = items.get(el);
+      if (!it) {
+        it = { box: document.createElement('i'), tag: document.createElement('b') };
+        it.box.className = 'area-box';
+        it.tag.className = 'area-tag';
+        it.tag.textContent = it.tag.dataset.for = el.dataset.area;
+        layer.append(it.box, it.tag);
+        it.w = it.tag.offsetWidth;
+        it.h = it.tag.offsetHeight;
+        items.set(el, it);
+      }
+      live.add(el);
+      move(it.box, r.left, r.top);
+      const bw = Math.round(r.width) + 'px',
+        bh = Math.round(r.height) + 'px';
+      if (it.box.style.width !== bw) it.box.style.width = bw;
+      if (it.box.style.height !== bh) it.box.style.height = bh;
+      const { w, h } = it,
+        fit = (x, y) => ({ x: Math.max(0, Math.min(W - w, x)), y: Math.max(0, Math.min(H - h, y)), w, h });
+      let spot = [
+        [r.left, r.top],
+        [r.right - w, r.top],
+        [r.left, r.bottom - h],
+        [r.right - w, r.bottom - h],
+        [r.left, r.top - h],
+        [r.left, r.bottom],
+      ]
+        .map(([x, y]) => fit(x, y))
+        .find(s => !hit(s, placed));
+      for (let y = r.top; !spot && y < H; y += h + 1) {
+        const s = fit(r.left, y);
+        if (!hit(s, placed)) spot = s;
+      }
+      spot ||= fit(r.left, r.top);
+      placed.push(spot);
+      move(it.tag, spot.x, spot.y);
+    }
+    for (const [el, it] of items)
+      if (!live.has(el)) {
+        it.box.remove();
+        it.tag.remove();
+        items.delete(el);
+      }
+  };
+  const queue = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  };
+  addEventListener('scroll', queue, { capture: true, passive: true });
+  addEventListener('resize', queue);
+  setInterval(queue, 250);
+  queue();
+}
 
 function autoEnabled() {
   return prefs.auto && profile.snapshot().ownedAuto && NeonProgress.canAuto(g.difficultyId);
@@ -18296,6 +18632,7 @@ async function boot() {
   bind();
   registerTools();
   if (/[?&]touch\b/.test(location.search)) touchDiagnostics();
+  if (/[?&]labels\b/.test(location.search)) areaLabels();
   $('start').disabled = false;
   g.mode = 'menu';
   syncMode();

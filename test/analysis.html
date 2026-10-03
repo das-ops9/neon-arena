@@ -4708,9 +4708,11 @@ return Plotly;
       ready: '준비',
       stageTitle: 'U: ' + stage.name + ' 올리기',
       stageLabel: stage.name + ' 올리기',
-      stagePrefix: stage.upper + ' ',
-      exp: 'EXP',
-      xp: () => '0 / ' + B().level.base,
+      stageKey: stage.upper,
+      // 위 덩어리 막대 3개(R-029): HP · 보호막(방패 그림, 읽기 이름만) · XP
+      shield: '보호막',
+      xpKey: 'XP',
+      xpMax: () => B().level.base,
     },
     upgrade: {
       kicker: 'LEVEL UP',
@@ -4853,11 +4855,11 @@ return Plotly;
     recordSaveFail: '기록 저장에 실패했습니다. 분석 로그를 파일로 남겨주세요.',
     jsonReady: 'JSON 파일 받기',
     fileReady: name => '파일 받기: ' + name,
-    shield: (v, max) => 'S ' + num(v) + '/' + num(max),
     abilityReady: '준비',
     abilityLabel: (id, ready) => abilities[id] + (ready ? ' 준비됨' : ' 재충전 중'),
-    boss: (alive, total, s, hp) =>
-      'BOSS ' + alive + ' / ' + total + ' · ' + stage.upper + ' ' + s + ' · ' + num(hp) + ' HP',
+    // 보스 줄(R-029): 'BOSS 2 / 4' + (세로 화면만) ' · STAGE 12'. 남은 체력은 막대로만 보인다.
+    bossCount: (alive, total) => 'BOSS ' + alive + ' / ' + total,
+    bossStage: s => ' · ' + stageLabel(s),
     combo: n => n + ' CHAIN',
     autoStatus: owned =>
       owned
