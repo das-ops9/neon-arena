@@ -2686,8 +2686,10 @@ kbd {
   body[data-pad='left'] .hud-skills {
     justify-content: end;
   }
+  /* 카드 수(모드마다 2~4장)만큼 한 줄로 */
   .choice-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
   }
   .choice {
     grid-template-columns: minmax(0, 1fr);
@@ -2939,7 +2941,7 @@ kbd {
           <span class="hud-k">XP</span>
           <div class="bar bar--xp"><i id="xp-fill"></i></div>
           <b class="hud-v num"
-            ><span id="xp-cur">0</span><span class="of">/<span id="xp-max">8</span></span></b
+            ><span id="xp-cur">0</span><span class="of">/<span id="xp-max">6</span></span></b
           >
         </div>
         <div class="hud-cell hud-time num" id="timer" data-area="H-TIME">00:00</div>
@@ -9939,11 +9941,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-1',
+    name: 'v5-2',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · blue: 실제 LV10마다 B
     // fan·burst: 사수 부채꼴·연속 사격 · bossSide: 보스 조준 탄 양옆 2발
+    // score: 처치 Point 배율(적 Point × STAGE 배율에 곱한다. 콤보 보너스는 그대로)
     modes: {
       easy: {
         spawn: 1,
@@ -9952,8 +9955,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fire: 1,
         bulletSpeed: 1,
         xp: 1,
-        defenseCap: Infinity,
-        choices: 3,
+        score: 1,
+        defenseCap: 30,
+        choices: 4,
         auto: false,
         goldBonus: 0,
         blue: 1,
@@ -9962,14 +9966,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         bossSide: false,
       },
       hard: {
-        spawn: 1.3,
-        hp: 1.25,
-        damage: 1.15,
-        fire: 1.2,
-        bulletSpeed: 1.05,
-        xp: 0.95,
+        spawn: 1.5,
+        hp: 1.32,
+        damage: 1.25,
+        fire: 1.25,
+        bulletSpeed: 1.15,
+        xp: 0.8,
+        score: 1,
         defenseCap: 24,
-        choices: 3,
+        choices: 4,
         auto: false,
         goldBonus: 0,
         blue: 1,
@@ -9978,12 +9983,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         bossSide: false,
       },
       extream: {
-        spawn: 1.65,
-        hp: 1.6,
-        damage: 1.3,
-        fire: 1.5,
-        bulletSpeed: 1.1,
-        xp: 0.85,
+        spawn: 2.25,
+        hp: 1.74,
+        damage: 1.55,
+        fire: 1.55,
+        bulletSpeed: 1.32,
+        xp: 0.7,
+        score: 1,
         defenseCap: 16,
         choices: 3,
         auto: true,
@@ -9994,12 +10000,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         bossSide: false,
       },
       super: {
-        spawn: 2.05,
-        hp: 2,
-        damage: 1.5,
-        fire: 1.85,
-        bulletSpeed: 1.15,
-        xp: 0.75,
+        spawn: 3,
+        hp: 2.3,
+        damage: 1.93,
+        fire: 1.93,
+        bulletSpeed: 1.52,
+        xp: 0.6,
+        score: 1,
         defenseCap: 10,
         choices: 3,
         auto: true,
@@ -10010,14 +10017,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         bossSide: false,
       },
       ultra: {
-        spawn: 2.5,
-        hp: 2.5,
-        damage: 1.75,
-        fire: 2.3,
-        bulletSpeed: 1.2,
-        xp: 0.65,
+        spawn: 3.5,
+        hp: 3.03,
+        damage: 2.41,
+        fire: 2.41,
+        bulletSpeed: 1.74,
+        xp: 0.5,
+        score: 1,
         defenseCap: 6,
-        choices: 2,
+        choices: 3,
         auto: true,
         goldBonus: 1,
         blue: 2,
@@ -10026,12 +10034,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         bossSide: false,
       },
       insane: {
-        spawn: 3,
-        hp: 3.2,
-        damage: 2,
-        fire: 2.85,
-        bulletSpeed: 1.25,
-        xp: 0.55,
+        spawn: 4,
+        hp: 4,
+        damage: 3,
+        fire: 3,
+        bulletSpeed: 2,
+        xp: 0.4,
+        score: 1,
         defenseCap: 3,
         choices: 2,
         auto: true,
@@ -10046,22 +10055,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     unlock: {
       extream: { from: 'hard', score: 500000 },
       super: { from: 'extream', time: 480 },
-      ultra: { from: 'super', time: 600, score: 500000 },
+      ultra: { from: 'super', time: 600, score: 1000000 },
       insane: { from: 'ultra', score: 2000000 },
     },
     // 기체: fire 발사 간격(초) · dash 대시 재충전(초) · start 출격 때 더하는 시작 스택(회복·XP 효과 없음)
     crafts: {
-      striker: { hp: 100, speed: 235, damage: 22, fire: 0.31, dash: 5.6, shield: 0, start: { magnet: 3 } },
+      striker: { hp: 120, speed: 250, damage: 20, fire: 0.3, dash: 6, shield: 0, start: { magnet: 3 } },
       specter: {
         hp: 80,
-        speed: 270,
-        damage: 24,
-        fire: 0.32,
+        speed: 300,
+        damage: 23,
+        fire: 0.35,
         dash: 4,
         shield: 0,
         start: { speed: 3, rapid: 3 },
       },
-      bulwark: { hp: 145, speed: 208, damage: 24, fire: 0.36, dash: 6.7, shield: 20, start: { multi: 3 } },
+      bulwark: { hp: 150, speed: 200, damage: 25, fire: 0.4, dash: 7, shield: 20, start: { multi: 3 } },
     },
     // 기체 공통: 충돌 반경 · 흡수 범위 · 치명타 · 피격 뒤 무적 · 보호막 재생(안 맞은 지 delay초 뒤 초당 regen + 재생 방벽 스택)
     // choiceHeal: 레벨업 때 스킬을 고르면 회복하는 HP
@@ -10076,7 +10085,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       choiceHeal: 5,
     },
     // 다음 레벨 XP = base + (LV − 1) × step
-    level: { base: 8, step: 6 },
+    level: { base: 6, step: 12 },
     // 내 탄환: 속도 · 수명(초) · 여러 발일 때 사이 각도(라디안) · 기체 앞 출발 거리
     shot: { speed: 720, ttl: 1.3, spread: 0.115, muzzle: 18 },
     // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초). 재충전 = 기체 dash ÷ (1 + 벡터 드라이브 스택 × skills.speed.dash) → 바닥
@@ -10090,13 +10099,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     skills: {
       power: { damage: 0.22 },
       rapid: { rate: 0.14, minFire: 0.07, overflow: 0.03 },
-      multi: { max: 7, overflow: 0.045 },
+      multi: { max: 6, overflow: 0.045 },
       pierce: { max: 6, overflow: 0.025 },
       speed: { step: 12, max: 360, dash: 0.07, overflow: 0.025 },
       magnet: { step: 35, max: 520, xp: 5, overflow: 0.035 },
       orbit: { step: 7 },
       vital: { hp: 20, heal: 38 },
-      nova: { damage: 40, radius: 25, radiusMax: 460, cooldown: 1, cooldownMin: 8 },
+      nova: { damage: 40, radius: 25, radiusMax: 800, cooldown: 1, cooldownMin: 8 },
       crit: { step: 0.07, max: 0.8, overflow: 0.035 },
       shield: { amount: 16, regen: 1 },
     },
@@ -10105,17 +10114,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // Stage n: 1 + 값 × (n − 1). 적 속도는 speedMax에서 멈춘다.
     // 자동 승격(R-022): Stage 최소값 = 1 + floor(실제 LV ÷ autoLevel). 지금 Stage가 낮으면 한 칸씩 올린다(보스 규칙 같음).
     stage: {
-      hp: 0.15,
-      damage: 0.08,
-      density: 0.08,
-      xp: 0.15,
-      score: 0.2,
-      speed: 0.02,
-      speedMax: 1.55,
-      autoLevel: 10,
+      hp: 0.2,
+      damage: 0.1,
+      density: 0.12,
+      xp: 0.1,
+      score: 0.15,
+      speed: 0.03,
+      speedMax: 2,
+      autoLevel: 5,
     },
     // 보스: Stage를 every의 배수로 올릴 때 웨이브. 수 = base + floor(Stage ÷ per), 동시에 alive마리까지
-    boss: { every: 3, base: 1, per: 10, alive: 4 },
+    boss: { every: 3, base: 1, per: 10, alive: 8 },
     // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ (모드 출현 배율 × rate), 기체에서 radius 거리.
     // rate: 맵 넓이만큼 늘린 출현량(R-020, 3520×2640 ÷ 3200×2400 = 1.21). 동시 적 상한은 caps.enemies 그대로.
     // 나온 적은 born초 동안 움직이지 않고 맞지 않는다(예고 테두리).
@@ -10159,9 +10168,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     shooter: {
       near: 240,
       far: 360,
-      reload: 2.7,
-      reloadStage: 0.03,
-      reloadMin: 1.3,
+      reload: 2.5,
+      reloadStage: 0.05,
+      reloadMin: 1.2,
       shotSpeed: 185,
       fanEvery: 3,
       fanAngle: 0.1,
@@ -10252,7 +10261,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       notePerChar: 10,
       noteMax: 15,
       permaStep: 3,
-      bossGold: 3,
+      bossGold: 2,
       autoGoldPrice: 50,
       autoGoldChance: 0.25,
       autoGoldCapped: 1,
@@ -11320,6 +11329,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fire: '사격',
         bulletSpeed: '탄속',
         xp: 'XP',
+        score: 'Point',
         defenseCap: '방어 한도',
         choices: '카드 수',
         auto: auto.short,
@@ -11550,12 +11560,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           shotsPerSec: '사수 1마리 초당 사격',
           bulletSpeed: '적 탄속 배율',
           xp: '처치 XP 배율',
+          point: '처치 Point 배율',
         },
         speed: (a, b) => '적 이동 속도(모든 모드 같음) ×' + a + (a === b ? '' : ' → ×' + b),
         method: '계산 방법',
         formulas: [
           'n = Stage − 1',
-          '적 HP = 모드 HP × (1 + Stage마다 적 HP+ × n). 피해 · XP도 같은 꼴',
+          '적 HP = 모드 HP × (1 + Stage마다 적 HP+ × n). 피해 · XP · Point도 같은 꼴',
           '초당 출현 = 모드 출현 × 출현량 배율 ÷ max(간격 바닥, 출현 간격 ÷ (1 + Stage마다 출현+ × n))',
           '사수 초당 사격 = 모드 사격 ÷ max(재사격 바닥, 재사격 ÷ (1 + Stage마다 재사격 빨라짐 × n))',
           '적 탄속은 모드 값 그대로. 적 이동 속도는 모든 모드가 같다',
@@ -11645,9 +11656,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         launch: '출격',
         launches: { normal: '일반', super: SC + ' 출격' },
         stagePlan: stage.upper,
-        stages: { steady: '1분마다 +1', rush: '빨리 30까지', none: '안 올림' },
+        stages: { steady: '1분마다 +n', rush: '빨리 N까지', none: '안 올림' },
+        // 글 복사 · 결과 설명: 고른 방식과 N · n
+        stageText: (plan, to, per) =>
+          plan === 'none' ? '안 올림' : (plan === 'rush' ? '빨리 ' + to + '까지 · ' : '') + '1분마다 +' + per,
+        rushTo: 'N(까지)',
+        perMin: 'n(1분마다)',
         minutes: '길이',
         minute: n => n + '분',
+        minutesIn: '직접(분)',
         seeds: '판 수',
         seedsOf: n => '× ' + n,
         autoGold: '자동 ' + G,
@@ -11663,28 +11680,29 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           level: 'LV',
           stage: stage.upper,
           bosses: '보스',
+          full: '끝까지',
+          score: '판당 Point',
+          ppm: '분당 Point',
           gold: '판당 ' + G,
           blue: BL,
         },
         average: '평균',
         chart: '모드별 평균',
-        chartMetrics: { time: '생존', level: 'LV', stage: stage.upper, gold: '판당 ' + G },
+        chartMetrics: {
+          time: '생존',
+          level: 'LV',
+          stage: stage.upper,
+          score: '판당 Point',
+          gold: '판당 ' + G,
+        },
         error: msg => '판이 멈췄습니다: ' + msg,
         timeout: '너무 오래 걸려 끊었습니다',
-        note: '자동 조작은 사람보다 단순하게 피하므로 결과는 경향만 봅니다. 확정은 balance.js에 반영한 뒤 /test/에서 직접 플레이로 합니다.',
+        note: '자동 조작은 사람보다 단순하게 피하므로 결과는 경향만 봅니다. 같은 판도 기기마다 몇 분 뒤 갈라질 수 있어 판 수를 늘려 평균으로 봅니다. 끝까지 = 길이 끝까지 버틴 판 수. 확정은 balance.js에 반영한 뒤 /test/에서 직접 플레이로 합니다.',
         fallback: '이 브라우저는 작업자를 쓸 수 없어 화면에서 천천히 돌립니다.',
       },
       save: {
         builtin: '기본 제공',
-        builtins: {
-          first: {
-            name: '첫 실험 — 난이도 곡선 · 기체 · 보스 ' + G,
-            desc:
-              '모드 배율을 Easy 1 → Insane 사이 비율 곡선으로, 기체 3종 수치, 보스 1마리 ' +
-              G +
-              ' 3 → 2. 자동 판은 Insane · 기체 3종.',
-          },
-        },
+        builtins: {},
         load: '불러오기',
         current: '지금 상태 저장',
         name: '이름',
@@ -12617,7 +12635,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         speed: s.speed * rules.speed,
         damage: s.damage * rules.damage * this.profile.damage,
         xp: s.xp * rules.xp * this.profile.xp,
-        reward: s.score * rules.score,
+        reward: s.score * rules.score * this.profile.score,
         stage: originStage,
         born: B.spawn.born,
         shot: B.hostile.firstShot + this.rng(),
@@ -12849,7 +12867,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     spawnBossWave() {
       const wave = this.bossWaves[0];
       if (!wave) return;
-      while (wave.remaining > 0 && wave.alive < 4) {
+      // 동시에 나와 있는 보스는 boss.alive마리까지(spawn이 전체 보스 수로 한 번 더 막는다)
+      while (wave.remaining > 0 && wave.alive < B.boss.alive) {
         const e = this.spawn('boss', undefined, undefined, wave.originStage);
         if (!e) break;
         e.waveId = wave.waveId;
@@ -18893,7 +18912,7 @@ function bind() {
     },
     onUpgradeKey: e => {
       if (g.mode !== 'upgrade' || autoEnabled()) return false;
-      if (['Digit1', 'Digit2', 'Digit3'].includes(e.code)) {
+      if (['Digit1', 'Digit2', 'Digit3', 'Digit4'].includes(e.code)) {
         e.preventDefault();
         const u = shownChoices()[Number(e.code.slice(-1)) - 1];
         if (u) choose(u.id);
