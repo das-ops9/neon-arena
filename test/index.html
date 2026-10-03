@@ -9969,7 +9969,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     name: 'v5-3',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
-    // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · blue: 실제 LV10마다 B
+    // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
     // fan·burst: 사수 부채꼴·연속 사격 · bossSide: 보스 조준 탄 양옆 2발
     // score: 처치 Point 배율(적 Point × STAGE 배율에 곱한다. 콤보 보너스는 그대로)
     modes: {
@@ -9985,6 +9985,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 4,
         auto: false,
         goldBonus: 0,
+        bossGold: 1,
         blue: 1,
         fan: false,
         burst: false,
@@ -10002,6 +10003,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 4,
         auto: false,
         goldBonus: 0,
+        bossGold: 2,
         blue: 1,
         fan: false,
         burst: false,
@@ -10019,6 +10021,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 3,
         auto: true,
         goldBonus: 1,
+        bossGold: 3,
         blue: 1,
         fan: true,
         burst: false,
@@ -10036,6 +10039,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 3,
         auto: true,
         goldBonus: 1,
+        bossGold: 4,
         blue: 1,
         fan: true,
         burst: false,
@@ -10053,6 +10057,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 3,
         auto: true,
         goldBonus: 2,
+        bossGold: 5,
         blue: 2,
         fan: true,
         burst: true,
@@ -10070,6 +10075,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: 2,
         auto: true,
         goldBonus: 2,
+        bossGold: 6,
         blue: 2,
         fan: true,
         burst: true,
@@ -10270,7 +10276,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
     superLaunch: { stage: 29, level: 29, picks: 28 },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
-    // 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G. bossGold: 보스 1마리 처치마다 G(R-002)
+    // 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G. 보스 처치 G는 모드마다(modes.*.bossGold)
     // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
     // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 autoGoldCapped 확률(1 = 항상).
     // perma: 성장 탭 영구 스택(R-042). 스킬마다 max까지 B로 산다. 다음 하나의 값 = price + step × 이미 산 수.
@@ -10287,7 +10293,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       scBlue: 10,
       notePerChar: 10,
       noteMax: 15,
-      bossGold: 2,
       autoGoldPrice: 50,
       autoGoldChance: 0.25,
       autoGoldCapped: 1,
@@ -10692,6 +10697,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const blueExtra = unit => modeGroups('blue', ' ', unit);
   // 분당 G 보너스(goldBonus)가 있는 모드: 'Extream · Super +1, Ultra 이상 +2'
   const goldExtra = () => modeGroups('goldBonus', ' +').join(', ');
+  // 보스 1마리 G(R-036): 모드마다 다르면 첫 모드 ~ 마지막 모드('Easy 1 ~ Insane 6'), 모두 같으면 그 값
+  const bossGoldText = () => {
+    const m = B().modes,
+      ids = Object.keys(m),
+      a = m[ids[0]].bossGold,
+      z = m[ids.at(-1)].bossGold;
+    return ids.every(id => m[id].bossGold === a)
+      ? String(a)
+      : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
+  };
 
   // ── 전투 알림(R-030). 알림 대기열 하나로 보인다(app.js notify) ──
   // major: 중요 알림 — 차례로 보이고(대기 최대 3, 다음 것은 흐리게) 색 테두리(tone: danger · gold · violet).
@@ -11414,6 +11429,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         choices: '카드 수',
         auto: auto.short,
         goldBonus: '분당 ' + G + '+',
+        bossGold: '보스 ' + G,
         blue: 'LV10 ' + BL,
         fan: '부채꼴',
         burst: '연속',
@@ -11443,7 +11459,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         scBlue: SC + ' 만들기 ' + BL,
         notePerChar: '한 줄 남기기 글자당 ' + G,
         noteMax: '한 줄 남기기 글자 수',
-        bossGold: '보스 1마리 ' + G,
         autoGoldPrice: '자동 ' + G + ' 습득 가격 ' + G,
         autoGoldChance: '자동 ' + G + ' 확률',
         autoGoldCapped: '자동 ' + G + ' 확률(스킬 모두 최대)',
@@ -11724,7 +11739,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         method: '계산 방법',
         formulas: [
           '분 보상 = 전투 1분마다 min(분당 G 상한, 분당 G 기본 + 수입 단계) + 모드 분당 G+',
-          '보스 = 처치 수 × 보스 1마리 G. 레벨업 코인 = 손으로 고른 코인 × 레벨업 코인 G',
+          '보스 = 처치 수 × 그 모드의 보스 G. 레벨업 코인 = 손으로 고른 코인 × 레벨업 코인 G',
           '자동 G = AUTO 횟수 × (모두 최대 비율 × 확률(스킬 모두 최대) + 나머지 × 확률) × 레벨업 코인 G',
           '고양이 = 전투 1분마다 보급관 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
           'S = Insane에서 슈퍼코인 간격마다 1개(줍는다고 가정). S 출격은 1개를 쓴다',
@@ -11840,7 +11855,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             G,
             coins.g.name,
             '전투 1분마다, 보스를 처치할 때마다(' +
-              e.bossGold +
+              bossGoldText() +
               ' ' +
               G +
               "), 레벨업 때 '코인' 선택으로 얻는다. 시간 코인 단계 · 자동 강화 · 한 줄 남기기 · " +
@@ -12169,6 +12184,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     auto,
     unlockGate,
     goldExtra,
+    bossGoldText,
     alerts,
     ui,
     msg,
@@ -15015,7 +15031,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.gold += ECONOMY.coinChoice;
       return { ok: true, gold: ECONOMY.coinChoice };
     },
-    // 보스 처치 G(R-002): 판 안 보스 번호로 한 번만 지급한다.
+    // 보스 처치 G(R-002): 판 안 보스 번호로 한 번만, 그 판 모드의 bossGold(R-036)를 지급한다.
     awardBoss(p, { runId, bossId }) {
       const r = p.runs[runId];
       if (!r) return fail('run_unknown');
@@ -15023,8 +15039,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (r.b.includes(bossId)) return dup({ gold: 0 });
       r.b.push(bossId);
       if (r.b.length > 400) r.b.splice(0, r.b.length - 400);
-      p.gold += ECONOMY.bossGold;
-      return { ok: true, gold: ECONOMY.bossGold };
+      const gold = B.modes[r.mode].bossGold;
+      p.gold += gold;
+      return { ok: true, gold };
     },
     // Insane S 코인(R-023): superCoin.mode 판에서 판 안 S 코인 번호로 한 번만 1 S.
     awardSuper(p, { runId, coinId }) {
