@@ -4520,6 +4520,9 @@ return Plotly;
     superPrep: '슈퍼 출격 준비',
   };
   const auto = { name: '자동 강화', short: 'AUTO' };
+  // Ranking(R-032): 일반 출격 판과 S 출격 판을 따로 매기는 Point 순위. kind = 'normal' | 'super'
+  const ranking = { name: 'Ranking', upper: 'RANKING', normal: '일반', super: SC + '출격' };
+  const rankingName = kind => (kind === 'super' ? ranking.super : ranking.normal);
 
   // 해금 조건 한 줄(예: 'Super 10분 + 500,000 Point')
   function unlockGate(id) {
@@ -4642,13 +4645,19 @@ return Plotly;
     },
     menu: { label: '메뉴', wallet: '보유 재화', settings: '설정', tabs: '메뉴 탭' },
     tabs: { play: '플레이', grow: '성장', shop: '상점', rec: '기록' },
+    // 플레이 탭 영역(R-032): 테두리 위 라벨 RANKING · MODE · 기체 · LAST PLAY RECORD · 출격
     home: {
-      top3: point.name + ' TOP 3',
-      top3Note: '· 전체 모드',
+      rank: ranking.upper,
+      rankTabs: ranking.name + ' 종류',
+      rankNormal: ranking.normal,
+      rankSuper: ranking.super,
       allRecords: '전체 기록 ›',
+      mode: 'MODE',
       modeChange: '변경 ›',
       crafts: '기체',
       craftsLabel: '기체 선택',
+      last: 'LAST PLAY RECORD',
+      launch: '출격',
     },
     grow: {
       title: '공통 스킬트리',
@@ -4701,7 +4710,8 @@ return Plotly;
       status: '기체 상태',
       hp: 'HP',
       pause: '일시정지',
-      level: () => levelShort(1),
+      // LV 글자(색) + 숫자(밝게), 편집장 2026-10-03
+      lvKey: level.short,
       auto: auto.short,
       dash: abilities.dash,
       nova: abilities.nova,
@@ -4713,6 +4723,8 @@ return Plotly;
       shield: '보호막',
       xpKey: 'XP',
       xpMax: () => B().level.base,
+      // 획득 스킬 줄(H-SKILLS, R-031): 가진 스킬만, 출처 합계
+      skills: '적용 중인 스킬',
     },
     upgrade: {
       kicker: 'LEVEL UP',
@@ -4748,6 +4760,11 @@ return Plotly;
     settings: {
       kicker: 'SETTINGS',
       title: '화면 · 소리 설정',
+      // 대시 · 충격파 버튼 위치(R-031, 이 기기 설정)
+      pad: '버튼 위치',
+      padCenter: '가운데 · 기본',
+      padRight: '오른쪽',
+      padLeft: '왼쪽',
       view: '시야',
       viewWide: '넓게 · 기본',
       viewStandard: '표준',
@@ -4849,7 +4866,8 @@ return Plotly;
     resultHidden: '히든 탭 해금 · 성장 탭 맨 아래',
     resultKicker: defeated => (defeated ? 'SIGNAL LOST · RUN RECORDED' : 'RUN SAVED · SIGNAL ON HOLD'),
     resultAnnounce: (score, lv) => '도전 기록. ' + num(score) + '점, 레벨 ' + lv,
-    newBest: 'NEW BEST · TOP 1',
+    // 결과 NEW BEST는 그 판이 속한 Ranking 기준(R-032)
+    newBest: kind => 'NEW BEST · ' + rankingName(kind) + ' 1위',
     recordSaving: '기록 저장 중…',
     recordSaved: '이 기기에 기록을 저장했습니다.',
     recordSaveFail: '기록 저장에 실패했습니다. 분석 로그를 파일로 남겨주세요.',
@@ -4997,6 +5015,13 @@ return Plotly;
   // ── view.js 화면 조각 문구 ──
   const view = {
     top3Empty: '첫 기록을 기다립니다.<br>새로운 최고점에 도전하세요.',
+    superEmpty: SC + ' 출격 기록이 아직 없습니다.<br>' + SC + ' 출격으로 도전해 보세요.',
+    // LAST PLAY RECORD(R-032): 위 줄 점수 + 그 판의 Ranking 순위(TOP3 밖이어도 숫자), 아래 줄 '최근 · 모드 · 시간 · LV · STAGE'
+    rankPlace: (kind, place) => rankingName(kind) + ' ' + place + '위',
+    lastRecent: '최근',
+    lastEmpty: '아직 기록 없음',
+    lastLabel: (score, place) => '최근 기록 ' + score + ' · ' + place + ' · 상세 보기',
+    modeOpen: id => '모드 변경 · 지금 ' + modeName(id),
     recordsEmpty: '아직 저장된 기록이 없습니다.',
     // 기록 탭 별표 · 선택 삭제(R-018)
     rec: {
@@ -5017,10 +5042,6 @@ return Plotly;
     next: '다음',
     interrupted: '중단 기록',
     perma: '영구',
-    modeHp: v => '적 체력 ' + v + '×',
-    modeDamage: v => '공격 ' + v + '×',
-    modeAuto: auto.name + ' 가능',
-    modeBase: '기본 아레나',
     unlockBy: id => unlockGate(id) + roAfter(unlockGate(id)) + ' 해금',
     locked: id => '🔒 ' + unlockGate(id),
     shop: {
@@ -5456,7 +5477,25 @@ return Plotly;
       {
         title: '기록',
         items: [
-          { term: 'TOP3', desc: '모든 모드와 S 출격을 합친 ' + point.name + ' 상위 3판.' },
+          {
+            term: ranking.name,
+            desc:
+              point.name +
+              ' 순위. ' +
+              ranking.normal +
+              '(일반 출격 판)과 ' +
+              ranking.super +
+              '(S 출격 판)을 따로 매기고, 플레이 탭에서 각각 TOP3를 보여 준다. 순서는 ' +
+              point.name +
+              ' → 시간 → STAGE → LV(모두 같으면 먼저 한 판).',
+          },
+          {
+            term: 'LAST PLAY RECORD',
+            desc:
+              '가장 최근 판. 그 판이 속한 ' +
+              ranking.name +
+              '에서 지금 남은 기록 중 몇 위인지 보인다(예: 일반 15위).',
+          },
           { term: '이전 버전 최고점', desc: 'v2 시절 점수. 순위에는 넣지 않는다.' },
           {
             term: '한 줄 남기기',
@@ -5668,10 +5707,33 @@ return Plotly;
           b.score - a.score || b.time - a.time || b.stage - a.stage || b.level - a.level || a.date - b.date,
       );
   }
+  // ── Ranking(R-032): 일반 출격 판과 S 출격 판을 따로 순위 매긴다. 저장은 그대로, 보기만 나눈다. ──
+  // 순서는 rank()와 같다(Point → 시간 → STAGE → LV, 모두 같으면 먼저 한 판). 남아 있는 기록 기준이다.
+  const isSuperLaunch = r => r.launch?.type === 'super';
+  const rankingOf = r => (isSuperLaunch(r) ? 'super' : 'normal');
+  function ranking(records, kind) {
+    return rank(records || []).filter(r => rankingOf(r) === kind);
+  }
+  // 한 판이 속한 Ranking과 그 안의 순위(1부터, TOP3 밖이어도 숫자). 기록이 없으면 null.
+  function rankPlace(records, id) {
+    const list = rank(records || []),
+      r = list.find(x => x.id === id);
+    if (!r) return null;
+    const kind = rankingOf(r);
+    return { kind, place: list.filter(x => rankingOf(x) === kind).findIndex(x => x.id === id) + 1 };
+  }
+  // LAST PLAY RECORD: 가장 늦게 끝난(저장된) 판. 날짜가 같으면 id가 큰 쪽.
+  function lastPlayed(records) {
+    let last = null;
+    for (const raw of records || []) {
+      const r = normalizeRecord(raw);
+      if (r && (!last || r.date > last.date || (r.date === last.date && r.id > last.id))) last = r;
+    }
+    return last;
+  }
   // ── 기록 보관(R-018): 순수 함수. 저장 계층은 한 트랜잭션 안에서 이 함수들을 부르기만 한다. ──
   // 보호 기록(R-035): Ranking 일반 TOP3 + S 출격 TOP3(각각 rank() 순 앞 3개)와 별표 기록.
-  // 자동 정리·선택 삭제 모두 지우지 않는다. 화면의 TOP3 표시는 2단계(R-032)에서 둘로 나눈다.
-  const isSuperLaunch = r => r.launch?.type === 'super';
+  // 자동 정리·선택 삭제 모두 지우지 않는다.
   function protectedIds(records) {
     const list = rank(records || []),
       ids = new Set(
@@ -6605,6 +6667,10 @@ return Plotly;
     RunStore,
     Recorder,
     rank,
+    rankingOf,
+    ranking,
+    rankPlace,
+    lastPlayed,
     normalizeRecord,
     safeSkills,
     difficultyId,
