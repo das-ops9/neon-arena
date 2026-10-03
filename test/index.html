@@ -1426,6 +1426,9 @@ p.cat-note {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-2);
 }
+.btn-row__wide {
+  grid-column: 1 / -1;
+}
 
 /* SC 출격 준비 */
 .prep {
@@ -2804,6 +2807,11 @@ kbd {
               <button class="btn btn--sm" id="backup-export">백업 내보내기</button
               ><button class="btn btn--sm" id="backup-import">백업 가져오기</button>
             </div>
+            <div class="btn-row">
+              <button class="btn btn--sm" id="history-export">이력 내보내기</button
+              ><button class="btn btn--sm btn--danger" id="reset-open">처음부터 다시</button
+              ><button class="btn btn--sm btn-row__wide" id="reset-undo" hidden>초기화 되돌리기</button>
+            </div>
             <input type="file" id="backup-file" accept="application/json,.json" multiple hidden />
             <p id="data-status" role="status"></p>
             <p id="legacy-note"></p>
@@ -3134,6 +3142,16 @@ kbd {
         ><button class="btn btn--danger" id="delete-confirm">지우기</button>
       </div>
     </dialog>
+    <dialog id="reset-dialog" class="dialog" aria-labelledby="reset-title">
+      <div class="eyebrow">RESET</div>
+      <h2 id="reset-title"></h2>
+      <p id="reset-summary"></p>
+      <div class="btn-row">
+        <button class="btn btn--ghost" id="reset-cancel">취소</button
+        ><button class="btn btn--danger" id="reset-confirm"></button>
+      </div>
+    </dialog>
+
     <dialog id="import-dialog" class="dialog" aria-labelledby="import-title">
       <div class="eyebrow">IMPORT</div>
       <h2 id="import-title">백업 가져오기</h2>
@@ -10790,6 +10808,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       dataNote: '기록과 재화를 파일 하나로 백업하거나, 다른 기기·이전 버전에서 가져옵니다.',
       export: '백업 내보내기',
       import: '백업 가져오기',
+      history: '이력 내보내기',
+      reset: '처음부터 다시',
+      undo: '초기화 되돌리기',
     },
     launch: { normal: launches.normal, super: launches.super, owned: '보유 0' },
     prep: {
@@ -10885,6 +10906,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     detail: { exportLog: '분석 로그 저장', analysis: '상세 분석', back: '돌아가기' },
     del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
+    reset: { kicker: 'RESET', cancel: '취소' },
     import: {
       kicker: 'IMPORT',
       title: '백업 가져오기',
@@ -11026,6 +11048,39 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       start: (s, lv) => stage.upper + ' ' + s + ' · ' + levelShort(lv),
       craft: (id, hp) => craftName(id) + ' · 시작 HP ' + num(hp),
     },
+    // 초기화 · 되돌리기(R-039). 직전 상태는 이 기기에 하나만 보관한다
+    reset: {
+      reset: {
+        title: '처음부터 다시',
+        summary: (w, runs) =>
+          G +
+          ' ' +
+          num(w.gold) +
+          ' · ' +
+          BL +
+          ' ' +
+          num(w.blue) +
+          ' · ' +
+          SC +
+          ' ' +
+          num(w.sc) +
+          ', 성장 · 상점 구매 · 해금 · 고양이 · 기록 ' +
+          runs +
+          '판이 처음 상태로 돌아갑니다. 기기 설정은 그대로입니다. ' +
+          "지금 상태는 이 기기에 하나 보관되어 '초기화 되돌리기'로 돌아올 수 있습니다(전에 보관한 것은 바뀝니다). 이력은 남습니다.",
+        confirm: '처음부터 다시',
+        done: runs => '처음 상태로 돌아왔습니다. 기록 ' + runs + '판과 재화는 보관했습니다(초기화 되돌리기).',
+      },
+      undo: {
+        title: '초기화 되돌리기',
+        summary:
+          '초기화 직전 상태로 돌아갑니다. 초기화 뒤에 한 판 · 받은 재화 · 산 것은 사라집니다. 이력은 남습니다.',
+        confirm: '되돌리기',
+        done: runs => '초기화 전으로 돌아왔습니다. 기록 ' + runs + '판.',
+      },
+      fail: '저장소를 쓸 수 없어 하지 못했습니다.',
+    },
+    history: { exported: n => '이력 ' + n + '줄을 파일로 내보냈습니다.' },
     backup: {
       exported: n => '기록 ' + n + '개와 재화·해금을 백업했습니다.',
       nothing: '새로 가져올 기록이 없습니다.',
@@ -14646,6 +14701,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     SCHEMA = 4,
     TX_KEEP = 200,
     IMPORT_BACKUPS_KEEP = 3,
+    // 이력 · 초기화(R-039): 'profiles' 저장소 안의 문서(저장 형식 · DB 버전은 그대로)
+    HISTORY_ID = 'history',
+    HISTORY_KEEP = 2000,
+    RESET_ID = 'main-before-reset',
     RUN_STALE_MS = 12 * 3600 * 1000,
     HOLD_STALE_MS = 30 * 60 * 1000;
   // 금액은 balance.js economy, 모드별 B는 modes[모드].blue
@@ -15066,6 +15125,69 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
   };
 
+  // 이력 한 줄(R-039): 판 · 초기화 · 되돌리기 · 가져오기. 초기화해도 남고 최근 HISTORY_KEEP줄만 둔다.
+  // meta = { version, balance, at }. 판 줄의 wallet은 판 보상이 끝난 뒤 잔액
+  const wallet3 = p => ({ gold: count(p?.gold), blue: count(p?.blue), sc: count(p?.superCoins) });
+  const launchOf = r => (r?.launch?.type === 'super' ? 'super' : 'normal');
+  const history = {
+    run(r, p, extra = {}) {
+      return {
+        at: Number(r.date) || Date.now(),
+        kind: 'run',
+        version: String(r.version || ''),
+        balance: String(r.balance || ''),
+        mode: modeId(r.difficultyId),
+        craft: String(r.craft || ''),
+        launch: launchOf(r),
+        reason: String(r.reason || ''),
+        time: Math.round((Number(r.time) || 0) * 10) / 10,
+        level: count(r.level),
+        stage: count(r.stage),
+        score: count(r.score),
+        kills: count(r.kills),
+        bosses: count(r.bossKills),
+        auto: r.autoUsed === true,
+        earned: { gold: count(r.earned?.gold), blue: count(r.earned?.blue), sc: count(r.earned?.super) },
+        wallet: wallet3(p),
+        unlocked: Array.isArray(extra.unlocked) ? extra.unlocked.map(modeId) : [],
+        hidden: extra.hidden === true,
+      };
+    },
+    // 초기화 직전 상태 요약: 잔액 · 상점 · 해금 · 영구 스택 합 · 고양이 · 기록 수 · Ranking 1위 Point
+    reset(raw, records, meta = {}) {
+      const p = migrate(raw),
+        list = Array.isArray(records) ? records : [],
+        best = kind => list.reduce((m, r) => (launchOf(r) === kind ? Math.max(m, count(r.score)) : m), 0);
+      return {
+        ...history.mark('reset', meta),
+        wallet: wallet3(p),
+        incomeTier: p.incomeTier,
+        ownedAuto: p.ownedAuto,
+        ownedAutoGold: p.ownedAutoGold,
+        unlocked: [...p.unlockedModes],
+        perma: Object.values(p.perma).reduce((a, n) => a + count(n), 0),
+        cats: { ...p.cats },
+        hidden: p.hidden,
+        runs: list.length,
+        best: { normal: best('normal'), super: best('super') },
+      };
+    },
+    mark(kind, meta = {}, extra = {}) {
+      return {
+        at: Number(meta.at) || Date.now(),
+        kind,
+        version: String(meta.version || ''),
+        balance: String(meta.balance || B.name),
+        ...extra,
+      };
+    },
+    // 문서에 한 줄 더하기(오래된 줄부터 버린다)
+    add(doc, entry) {
+      const old = Array.isArray(doc?.entries) ? doc.entries : [];
+      return { id: HISTORY_ID, entries: [...old, entry].slice(-HISTORY_KEEP) };
+    },
+  };
+
   class ProfileStore {
     constructor(runStore, clock = () => Date.now()) {
       this.store = runStore;
@@ -15242,6 +15364,148 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return perform();
       });
     }
+    // 여러 저장소를 한 트랜잭션에서: reads의 요청이 모두 끝나면 write(결과, 저장소)를 부르고 커밋 뒤 그 값을 낸다.
+    // 실패 · 중단이면 null(아무것도 바뀌지 않음)
+    tx(stores, reads, write) {
+      return new Promise(resolve => {
+        let t;
+        try {
+          t = this.store.db.transaction(stores, 'readwrite');
+        } catch {
+          return resolve(null);
+        }
+        const os = Object.fromEntries(stores.map(n => [n, t.objectStore(n)])),
+          got = {},
+          keys = Object.keys(reads);
+        let left = keys.length,
+          out = null;
+        const go = () => {
+          try {
+            out = write(got, os);
+          } catch {
+            out = null;
+            t.abort();
+          }
+        };
+        for (const k of keys) {
+          const req = reads[k](os);
+          req.onsuccess = () => {
+            got[k] = req.result;
+            if (!--left) go();
+          };
+        }
+        if (!keys.length) go();
+        t.oncomplete = () => resolve(out);
+        t.onerror = t.onabort = () => resolve(null);
+      });
+    }
+    // 이력(R-039). DB를 쓸 수 없으면 남기지 않는다.
+    history() {
+      return this.serial(async () => {
+        if (!this.store.db) return [];
+        const doc = await this.store.operation('profiles', 'readonly', s => s.get(HISTORY_ID));
+        return Array.isArray(doc?.entries) ? doc.entries : [];
+      });
+    }
+    addHistory(entry) {
+      return this.serial(async () => {
+        if (!this.store.db || !entry) return false;
+        const out = await this.tx(['profiles'], { h: os => os.profiles.get(HISTORY_ID) }, (got, os) => {
+          os.profiles.put(history.add(got.h, entry));
+          return true;
+        });
+        return out === true;
+      });
+    }
+    canUndoReset() {
+      return this.serial(async () => {
+        if (!this.store.db) return false;
+        return (await this.store.operation('profiles', 'readonly', s => s.count(RESET_ID))) > 0;
+      });
+    }
+    // 초기화(R-039): 프로필 · 기록 · 상세 로그를 처음 상태로. 직전 상태 전부를 RESET_ID 문서 하나로 보관하고
+    // (다시 초기화하면 바뀜) 이력에 한 줄. 이전 버전(v2) 최고점은 옛 자료라 남긴다. 한 트랜잭션이라 반만 지워지지 않는다.
+    resetAll(meta = {}) {
+      return this.serial(async () => {
+        if (!this.store.db) return this.result(false, { reason: 'storage' });
+        const at = this.now();
+        let fresh = null;
+        const out = await this.tx(
+          ['profiles', 'records', 'chunks'],
+          {
+            main: os => os.profiles.get(PROFILE_ID),
+            records: os => os.records.getAll(),
+            chunks: os => os.chunks.getAll(),
+            h: os => os.profiles.get(HISTORY_ID),
+          },
+          (got, os) => {
+            const records = got.records || [],
+              chunks = got.chunks || [];
+            fresh = blank();
+            fresh.legacyBest = migrate(got.main).legacyBest;
+            os.profiles.put({
+              id: RESET_ID,
+              at,
+              version: String(meta.version || ''),
+              balance: B.name,
+              profile: got.main || null,
+              records,
+              chunks,
+            });
+            os.records.clear();
+            os.chunks.clear();
+            os.profiles.put(fresh);
+            os.profiles.put(history.add(got.h, history.reset(got.main, records, { ...meta, at })));
+            return { ok: true, records: records.length };
+          },
+        );
+        if (!out?.ok) return this.result(false, { reason: 'storage' });
+        this.profile = fresh;
+        this.store.memory.clear();
+        this.store.memoryChunks.clear();
+        this.store.cache();
+        return this.result(true, { records: out.records });
+      });
+    }
+    // 되돌리기: 보관한 직전 상태로 프로필 · 기록 · 상세 로그를 바꾼다(초기화 뒤에 한 판 · 재화는 사라짐). 보관본은 지운다.
+    undoReset(meta = {}) {
+      return this.serial(async () => {
+        if (!this.store.db) return this.result(false, { reason: 'storage' });
+        const at = this.now();
+        let back = null;
+        const out = await this.tx(
+          ['profiles', 'records', 'chunks'],
+          { snap: os => os.profiles.get(RESET_ID), h: os => os.profiles.get(HISTORY_ID) },
+          (got, os) => {
+            const s = got.snap;
+            if (!s || !Array.isArray(s.records) || !Array.isArray(s.chunks))
+              return { ok: false, reason: 'no_snapshot' };
+            os.records.clear();
+            os.chunks.clear();
+            for (const r of s.records) os.records.put(r);
+            for (const c of s.chunks) os.chunks.put(c);
+            if (s.profile) os.profiles.put(s.profile);
+            else os.profiles.delete(PROFILE_ID);
+            os.profiles.delete(RESET_ID);
+            os.profiles.put(
+              history.add(got.h, history.mark('undo', { ...meta, at }, { runs: s.records.length })),
+            );
+            back = s;
+            return { ok: true, records: s.records.length };
+          },
+        );
+        if (!out?.ok) return this.result(false, { reason: out?.reason || 'storage' });
+        this.profile = migrate(back.profile);
+        this.store.memory.clear();
+        this.store.memoryChunks.clear();
+        for (const raw of back.records) {
+          const r = root.NeonData.normalizeRecord(raw);
+          if (r) this.store.memory.set(r.id, r);
+        }
+        this.store.cache();
+        return this.result(true, { records: out.records });
+      });
+    }
     startRun(runId, mode, launch) {
       const now = this.now();
       return this.mutate(p => rules.startRun(p, { runId, mode, launch, now }));
@@ -15350,6 +15614,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     migrate,
     blank,
     rules,
+    history,
+    HISTORY_KEEP,
     ECONOMY,
     SKILLS,
     CATS,
@@ -18256,6 +18522,9 @@ function showResult() {
       // 히든 탭(R-026): 실제로 끝난 판(패배 · 직접 종료)만. 백업 가져오기의 기록 평가에서는 열지 않는다.
       const hidden = await profile.unlockHidden({ difficultyId: r.difficultyId, reason: r.reason });
       runHidden = hidden.ok && hidden.unlocked === true;
+      await profile.addHistory(
+        NeonProgress.history.run(r, profile.snapshot(), { unlocked: runUnlocked, hidden: runHidden }),
+      );
       await refreshRecords();
       refreshProfileUI();
       if (lastResult === r) {
@@ -18868,6 +19137,18 @@ function bind() {
     if (files.length) onBackupFiles(files);
   });
   $('import-confirm').onclick = confirmImport;
+  $('history-export').onclick = exportHistory;
+  $('reset-open').onclick = () => openReset('reset');
+  $('reset-undo').onclick = () => openReset('undo');
+  $('reset-confirm').onclick = confirmReset;
+  $('reset-cancel').onclick = () => {
+    resetMode = null;
+    $('reset-dialog').close();
+  };
+  // 다른 탭에서 초기화 · 되돌리기를 하면 이 탭의 화면 값이 옛것이 되므로 새로 연다
+  window.addEventListener('storage', e => {
+    if (e.key === RESET_SIGNAL) location.reload();
+  });
   $('delete-confirm').onclick = confirmDelete;
   $('delete-cancel').onclick = () => $('delete-dialog').close();
   $('import-cancel').onclick = () => {
@@ -19502,6 +19783,9 @@ async function confirmImport() {
     for (const r of plan.add) await profile.evaluateRun(r);
     const restored =
       plan.profile && $('import-profile').checked ? await profile.restoreFromBackup(plan.profile) : null;
+    await profile.addHistory(
+      NeonProgress.history.mark('import', historyMeta(), { added, profile: restored?.ok === true }),
+    );
     await refreshRecords();
     refreshProfileUI();
     text('data-status', T.msg.backup.done(added, restored));
@@ -19510,6 +19794,62 @@ async function confirmImport() {
     $('import-confirm').disabled = false;
     $('import-dialog').close();
   }
+}
+// 초기화 · 되돌리기 · 이력(R-039). 메뉴에서만, 저장 중인 판 · 보상이 끝난 뒤에 한다.
+const RESET_SIGNAL = 'neon-arena-reset' + NS;
+let resetMode = null;
+const historyMeta = () => ({ version: Neon.VERSION, balance: Neon.BALANCE });
+function openReset(mode) {
+  if (g.mode !== 'menu' || prep || starting) return;
+  const R = T.msg.reset[mode];
+  resetMode = mode;
+  text('reset-title', R.title);
+  text('reset-summary', mode === 'reset' ? R.summary(wallet(), records.length) : R.summary);
+  text('reset-confirm', R.confirm);
+  $('reset-dialog').showModal();
+}
+async function confirmReset() {
+  const mode = resetMode;
+  if (!mode) return;
+  $('reset-confirm').disabled = true;
+  try {
+    await lastSavedPromise;
+    await checkpointPromise;
+    await rewards;
+    const r =
+      mode === 'reset' ? await profile.resetAll(historyMeta()) : await profile.undoReset(historyMeta());
+    lastResult = null;
+    await refreshRecords();
+    refreshProfileUI();
+    await refreshResetUI();
+    text('data-status', r.ok ? T.msg.reset[mode].done(r.records) : T.msg.reset.fail);
+    if (r.ok)
+      try {
+        localStorage.setItem(RESET_SIGNAL, String(Date.now()));
+      } catch {}
+  } finally {
+    resetMode = null;
+    $('reset-confirm').disabled = false;
+    $('reset-dialog').close();
+  }
+}
+async function refreshResetUI() {
+  $('reset-undo').hidden = !(await profile.canUndoReset());
+}
+async function exportHistory() {
+  const entries = await profile.history();
+  text('data-status', T.msg.history.exported(entries.length));
+  download(
+    'NEON-history-' + new Date().toISOString().slice(0, 10) + '.json',
+    {
+      format: 'neon-arena-history',
+      schema: 1,
+      exportedAt: new Date().toISOString(),
+      ...historyMeta(),
+      entries,
+    },
+    $('data-status'),
+  );
 }
 function toggleAuto() {
   if (choiceBusy || !profile.snapshot().ownedAuto || !NeonProgress.canAuto(g.difficultyId)) return;
@@ -19628,6 +19968,7 @@ async function boot() {
   renderCrafts();
   showPage('play');
   await refreshRecords();
+  refreshResetUI();
   renderer = await new NeonRenderer(canvas).init();
   canvas = renderer.canvas;
   resize();

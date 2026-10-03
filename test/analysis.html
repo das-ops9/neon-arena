@@ -4693,6 +4693,9 @@ return Plotly;
       dataNote: '기록과 재화를 파일 하나로 백업하거나, 다른 기기·이전 버전에서 가져옵니다.',
       export: '백업 내보내기',
       import: '백업 가져오기',
+      history: '이력 내보내기',
+      reset: '처음부터 다시',
+      undo: '초기화 되돌리기',
     },
     launch: { normal: launches.normal, super: launches.super, owned: '보유 0' },
     prep: {
@@ -4788,6 +4791,7 @@ return Plotly;
     },
     detail: { exportLog: '분석 로그 저장', analysis: '상세 분석', back: '돌아가기' },
     del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
+    reset: { kicker: 'RESET', cancel: '취소' },
     import: {
       kicker: 'IMPORT',
       title: '백업 가져오기',
@@ -4929,6 +4933,39 @@ return Plotly;
       start: (s, lv) => stage.upper + ' ' + s + ' · ' + levelShort(lv),
       craft: (id, hp) => craftName(id) + ' · 시작 HP ' + num(hp),
     },
+    // 초기화 · 되돌리기(R-039). 직전 상태는 이 기기에 하나만 보관한다
+    reset: {
+      reset: {
+        title: '처음부터 다시',
+        summary: (w, runs) =>
+          G +
+          ' ' +
+          num(w.gold) +
+          ' · ' +
+          BL +
+          ' ' +
+          num(w.blue) +
+          ' · ' +
+          SC +
+          ' ' +
+          num(w.sc) +
+          ', 성장 · 상점 구매 · 해금 · 고양이 · 기록 ' +
+          runs +
+          '판이 처음 상태로 돌아갑니다. 기기 설정은 그대로입니다. ' +
+          "지금 상태는 이 기기에 하나 보관되어 '초기화 되돌리기'로 돌아올 수 있습니다(전에 보관한 것은 바뀝니다). 이력은 남습니다.",
+        confirm: '처음부터 다시',
+        done: runs => '처음 상태로 돌아왔습니다. 기록 ' + runs + '판과 재화는 보관했습니다(초기화 되돌리기).',
+      },
+      undo: {
+        title: '초기화 되돌리기',
+        summary:
+          '초기화 직전 상태로 돌아갑니다. 초기화 뒤에 한 판 · 받은 재화 · 산 것은 사라집니다. 이력은 남습니다.',
+        confirm: '되돌리기',
+        done: runs => '초기화 전으로 돌아왔습니다. 기록 ' + runs + '판.',
+      },
+      fail: '저장소를 쓸 수 없어 하지 못했습니다.',
+    },
+    history: { exported: n => '이력 ' + n + '줄을 파일로 내보냈습니다.' },
     backup: {
       exported: n => '기록 ' + n + '개와 재화·해금을 백업했습니다.',
       nothing: '새로 가져올 기록이 없습니다.',
