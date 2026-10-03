@@ -3844,7 +3844,7 @@ return Plotly;
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-2',
+    name: 'v5-3',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · blue: 실제 LV10마다 B
@@ -3874,9 +3874,9 @@ return Plotly;
         damage: 1.25,
         fire: 1.25,
         bulletSpeed: 1.15,
-        xp: 0.8,
-        score: 1,
-        defenseCap: 24,
+        xp: 0.95,
+        score: 2.5,
+        defenseCap: 20,
         choices: 4,
         auto: false,
         goldBonus: 0,
@@ -3891,12 +3891,12 @@ return Plotly;
         damage: 1.55,
         fire: 1.55,
         bulletSpeed: 1.32,
-        xp: 0.7,
-        score: 1,
-        defenseCap: 16,
+        xp: 0.85,
+        score: 5,
+        defenseCap: 15,
         choices: 3,
         auto: true,
-        goldBonus: 0,
+        goldBonus: 1,
         blue: 1,
         fan: true,
         burst: false,
@@ -3908,8 +3908,8 @@ return Plotly;
         damage: 1.93,
         fire: 1.93,
         bulletSpeed: 1.52,
-        xp: 0.6,
-        score: 1,
+        xp: 0.7,
+        score: 9,
         defenseCap: 10,
         choices: 3,
         auto: true,
@@ -3925,12 +3925,12 @@ return Plotly;
         damage: 2.41,
         fire: 2.41,
         bulletSpeed: 1.74,
-        xp: 0.5,
-        score: 1,
-        defenseCap: 6,
+        xp: 0.6,
+        score: 15,
+        defenseCap: 8,
         choices: 3,
         auto: true,
-        goldBonus: 1,
+        goldBonus: 2,
         blue: 2,
         fan: true,
         burst: true,
@@ -3942,12 +3942,12 @@ return Plotly;
         damage: 3,
         fire: 3,
         bulletSpeed: 2,
-        xp: 0.4,
-        score: 1,
-        defenseCap: 3,
+        xp: 0.5,
+        score: 23,
+        defenseCap: 5,
         choices: 2,
         auto: true,
-        goldBonus: 1,
+        goldBonus: 2,
         blue: 2,
         fan: true,
         burst: true,
@@ -3973,7 +3973,7 @@ return Plotly;
         shield: 0,
         start: { speed: 3, rapid: 3 },
       },
-      bulwark: { hp: 150, speed: 200, damage: 25, fire: 0.4, dash: 7, shield: 20, start: { multi: 3 } },
+      bulwark: { hp: 150, speed: 200, damage: 22, fire: 0.4, dash: 7, shield: 20, start: { multi: 3 } },
     },
     // 기체 공통: 충돌 반경 · 흡수 범위 · 치명타 · 피격 뒤 무적 · 보호막 재생(안 맞은 지 delay초 뒤 초당 regen + 재생 방벽 스택)
     // choiceHeal: 레벨업 때 스킬을 고르면 회복하는 HP
@@ -3988,7 +3988,7 @@ return Plotly;
       choiceHeal: 5,
     },
     // 다음 레벨 XP = base + (LV − 1) × step
-    level: { base: 6, step: 12 },
+    level: { base: 5, step: 10 },
     // 내 탄환: 속도 · 수명(초) · 여러 발일 때 사이 각도(라디안) · 기체 앞 출발 거리
     shot: { speed: 720, ttl: 1.3, spread: 0.115, muzzle: 18 },
     // 대시: 돌진 시간 · 무적 · 돌진 속도 · 재충전 바닥(초). 재충전 = 기체 dash ÷ (1 + 벡터 드라이브 스택 × skills.speed.dash) → 바닥
@@ -3996,19 +3996,19 @@ return Plotly;
     // 충격파 기본값: 피해 · 범위 · 재충전(초) · 맞은 적을 밀어내는 거리
     nova: { damage: 100, radius: 220, cooldown: 19, push: 30 },
     // 공전 칼날: 충돌과 렌더러가 같은 반경·회전 속도(라디안/초)를 쓴다. 칼날 피해 = damage + LV + 스택 × skills.orbit.step
-    orbit: { radius: 140, speed: 3.1, max: 7, damage: 24, hit: 14, hitCooldown: 0.25 },
+    orbit: { radius: 150, speed: 3, max: 7, damage: 30, hit: 15, hitCooldown: 0.25 },
     // 스킬 스택당 효과. 키 순서 = 레벨업 카드 뽑기 순서(바꾸면 같은 시드의 판이 달라진다).
     // overflow: 물리 상한에 닿은 뒤 스택마다 늘어나는 탄환 피해
     skills: {
-      power: { damage: 0.22 },
+      power: { damage: 0.25 },
       rapid: { rate: 0.14, minFire: 0.07, overflow: 0.03 },
       multi: { max: 6, overflow: 0.045 },
       pierce: { max: 6, overflow: 0.025 },
       speed: { step: 12, max: 360, dash: 0.07, overflow: 0.025 },
       magnet: { step: 35, max: 520, xp: 5, overflow: 0.035 },
       orbit: { step: 7 },
-      vital: { hp: 20, heal: 38 },
-      nova: { damage: 40, radius: 25, radiusMax: 800, cooldown: 1, cooldownMin: 8 },
+      vital: { hp: 20, heal: 50 },
+      nova: { damage: 40, radius: 40, radiusMax: 800, cooldown: 1, cooldownMin: 8 },
       crit: { step: 0.07, max: 0.8, overflow: 0.035 },
       shield: { amount: 16, regen: 1 },
     },
@@ -4021,23 +4021,24 @@ return Plotly;
       damage: 0.1,
       density: 0.12,
       xp: 0.1,
-      score: 0.15,
-      speed: 0.03,
+      score: 0.06,
+      speed: 0.02,
       speedMax: 2,
       autoLevel: 5,
     },
     // 보스: Stage를 every의 배수로 올릴 때 웨이브. 수 = base + floor(Stage ÷ per), 동시에 alive마리까지
     boss: { every: 3, base: 1, per: 10, alive: 8 },
     // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ (모드 출현 배율 × rate), 기체에서 radius 거리.
+    // radius는 엔진 기본값(기준 재생 검사)이다. 실제 게임은 화면 크기로 다시 정한다(app.js resize, 폰 세로 약 790~935).
     // rate: 맵 넓이만큼 늘린 출현량(R-020, 3520×2640 ÷ 3200×2400 = 1.21). 동시 적 상한은 caps.enemies 그대로.
     // 나온 적은 born초 동안 움직이지 않고 맞지 않는다(예고 테두리).
     // mix: 종류 확률. 분열·사수 = base + min(max, (Stage − 1) × step), 돌격은 고정, 나머지는 추적
     spawn: {
       first: 0.5,
-      interval: 0.85,
+      interval: 1,
       rate: 1.21,
       min: 0.24,
-      radius: 700,
+      radius: 800,
       born: 0.8,
       mix: {
         splitter: { base: 0.03, step: 0.025, max: 0.16 },
@@ -4061,10 +4062,10 @@ return Plotly;
     // 적 기본값. split: 죽을 때 나오는 돌격 수
     enemies: {
       chaser: { r: 15, hp: 30, speed: 80, damage: 13, xp: 4, score: 90 },
-      runner: { r: 12, hp: 23, speed: 137, damage: 11, xp: 4, score: 110 },
-      shooter: { r: 18, hp: 60, speed: 60, damage: 12, xp: 7, score: 170 },
-      splitter: { r: 24, hp: 110, speed: 56, damage: 20, xp: 9, score: 240, split: 3 },
-      boss: { r: 62, hp: 1800, speed: 55, damage: 25, xp: 40, score: 4200 },
+      runner: { r: 12, hp: 23, speed: 140, damage: 11, xp: 4, score: 110 },
+      shooter: { r: 18, hp: 60, speed: 60, damage: 15, xp: 7, score: 200 },
+      splitter: { r: 24, hp: 110, speed: 56, damage: 20, xp: 10, score: 250, split: 3 },
+      boss: { r: 62, hp: 1800, speed: 55, damage: 25, xp: 40, score: 5000 },
     },
     // 사수: near~far 거리를 유지, 재사격 = max(reloadMin, reload ÷ (1 + reloadStage × (Stage − 1))) ÷ 모드 사격
     // 부채꼴(fan 모드): id가 fanEvery의 배수인 사수가 ±fanAngle 두 발 · 연속(burst 모드): burstEvery의 배수가 burstDelay 뒤 한 발 더
@@ -4096,11 +4097,11 @@ return Plotly;
       sideAngle: 0.13,
     },
     // 적 탄환: 피해 = 적 피해 × damage, 수명(초). 사수·보스의 첫 사격은 등장 뒤 firstShot + 0~1초
-    hostile: { damage: 0.85, ttl: 6, firstShot: 1.5 },
+    hostile: { damage: 0.85, ttl: 5, firstShot: 1.5 },
     // 동시에 있을 수 있는 수
-    caps: { enemies: 110, hostiles: 350, bullets: 400, gems: 220 },
+    caps: { enemies: 150, hostiles: 400, bullets: 450, gems: 300 },
     // Point: 처치 보너스 = min(comboMax, 콤보 × comboStep), 콤보는 comboWindow초 안에 처치가 이어질 때 쌓인다
-    score: { comboWindow: 3, comboStep: 2, comboMax: 40 },
+    score: { comboWindow: 2, comboStep: 2, comboMax: 40 },
     // 포위(R-021): 전투 시계 interval초마다 sides방향 × pattern(한 방향의 종류 순서). 남은 동안 일반 출현을 멈추고
     // 적 상한 미만일 때 스텝마다 perStep마리. 사수 첫 사격 = shotDelay + 앞선 사수 수 × shotStep초. warn초 전 예고.
     // n회차 포위 적의 이동 속도 = 기본 × min(speedMax, 1 + speedStep × (n − 1)). 포위가 겹치면 먼저 온 회차부터 나온다.
@@ -4108,11 +4109,11 @@ return Plotly;
     siege: {
       interval: 300,
       warn: 2,
-      perStep: 4,
+      perStep: 5,
       sides: 4,
       shotDelay: 1.5,
       shotStep: 0.45,
-      speedStep: 0.1,
+      speedStep: 0.4,
       speedMax: 2,
       pattern: [
         'chaser',
@@ -4204,8 +4205,8 @@ return Plotly;
       },
     },
     // Insane 슈퍼코인(R-023): mode 판(일반 · S 출격)에서 전투 시계 every초마다 1개. 기체에서 near~far 거리의 무작위
-    // 방향, 맵 가장자리에서 margin 안쪽. 크기 r(기체 충돌 반경과 같음), 자석 없이 기체가 닿아야 1 S. 줍지 않으면 판 끝까지 남는다.
-    superCoin: { mode: 'insane', every: 300, near: 600, far: 1000, r: 13, margin: 40 },
+    // 방향, 맵 가장자리에서 margin 안쪽. 크기 r, 자석 없이 기체가 닿아야 1 S. 줍지 않으면 판 끝까지 남는다.
+    superCoin: { mode: 'insane', every: 300, near: 600, far: 1000, r: 15, margin: 50 },
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 100, logs: 10 },
@@ -4545,27 +4546,30 @@ return Plotly;
   // 자동 강화를 켤 수 있는 가장 낮은 모드
   const firstMode = key => Object.keys(B().modes).find(id => B().modes[id][key]);
   const autoFrom = () => modeName(firstMode('auto'));
-  const goldBonusFrom = () => modeName(firstMode('goldBonus'));
-  // Easy와 B가 다른 모드를 같은 값끼리 묶는다. 마지막 모드까지 이어지면 'Ultra 이상 2' + unit
-  const blueExtra = unit => {
+  // Easy와 key 값이 다른 모드를 이웃끼리 같은 값으로 묶는다. 마지막 모드까지 이어지면 'Ultra 이상'
+  // 예: modeGroups('blue', ' ', '개') → ['Ultra 이상 2개'], modeGroups('goldBonus', ' +') → ['Extream · Super +1', 'Ultra 이상 +2']
+  const modeGroups = (key, sep, unit = '') => {
     const m = B().modes,
       ids = Object.keys(m),
       groups = [];
     for (const id of ids) {
-      if (m[id].blue === m.easy.blue) continue;
+      if (m[id][key] === m.easy[key]) continue;
       const last = groups[groups.length - 1];
-      if (last && last.blue === m[id].blue && ids.indexOf(id) === ids.indexOf(last.ids.at(-1)) + 1)
+      if (last && last.value === m[id][key] && ids.indexOf(id) === ids.indexOf(last.ids.at(-1)) + 1)
         last.ids.push(id);
-      else groups.push({ blue: m[id].blue, ids: [id] });
+      else groups.push({ value: m[id][key], ids: [id] });
     }
     return groups.map(g => {
       const name =
         g.ids.length > 1 && g.ids.at(-1) === ids.at(-1)
           ? modeName(g.ids[0]) + ' 이상'
           : g.ids.map(modeName).join(' · ');
-      return name + ' ' + g.blue + unit;
+      return name + sep + g.value + unit;
     });
   };
+  const blueExtra = unit => modeGroups('blue', ' ', unit);
+  // 분당 G 보너스(goldBonus)가 있는 모드: 'Extream · Super +1, Ultra 이상 +2'
+  const goldExtra = () => modeGroups('goldBonus', ' +').join(', ');
 
   // ── 전투 알림(R-030). 알림 대기열 하나로 보인다(app.js notify) ──
   // major: 중요 알림 — 차례로 보이고(대기 최대 3, 다음 것은 흐리게) 색 테두리(tone: danger · gold · violet).
@@ -5092,7 +5096,7 @@ return Plotly;
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
-      // 큰 숫자는 고른 모드 기준 분당 G(Super 이상은 보너스 포함, 보완 11)
+      // 큰 숫자는 고른 모드 기준 분당 G(모드 보너스 goldBonus 포함, 보완 11)
       perMinute: rate => '분당 <b>' + rate + '</b> ' + G,
       incomeStep: () => '단계마다 분당 +1 ' + G,
       tierLabel: (tier, max) => '구매 단계 ' + tier + ' / ' + max,
@@ -5750,11 +5754,11 @@ return Plotly;
           {
             term: ['extream', 'super', 'ultra', 'insane'].map(modeName).join(' · '),
             desc:
-              '갈수록 적이 많고 강하며 빨라진다. 대신 ' +
-              goldBonusFrom() +
-              ' 이상은 분당 ' +
+              '갈수록 적이 많고 강하며 빨라진다. 대신 분당 ' +
               G +
-              '가 1 더 많고, ' +
+              '가 더 많고(' +
+              goldExtra() +
+              '), ' +
               Object.keys(m)
                 .filter(id => m[id].blue !== m.easy.blue)
                 .map(modeName)
@@ -6025,6 +6029,7 @@ return Plotly;
     launches,
     auto,
     unlockGate,
+    goldExtra,
     alerts,
     ui,
     msg,
