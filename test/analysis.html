@@ -4148,10 +4148,11 @@ return Plotly;
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
     superLaunch: { stage: 29, level: 29, picks: 28 },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
-    // 영구 스택 가격 = permaBase + floor(이미 산 수 ÷ permaStep). 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G.
-    // bossGold: 보스 1마리 처치마다 G(R-002)
+    // 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G. bossGold: 보스 1마리 처치마다 G(R-002)
     // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
     // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 autoGoldCapped 확률(1 = 항상).
+    // perma: 성장 탭 영구 스택(R-042). 스킬마다 max까지 B로 산다. 다음 하나의 값 = price + step × 이미 산 수.
+    // max를 낮추면 넘는 스택은 이관 때 max로 줄이고 B로 돌려준다(progression.js permaExcess, DATA.md 5절).
     economy: {
       goldBase: 1,
       goldMax: 5,
@@ -4164,23 +4165,22 @@ return Plotly;
       scBlue: 10,
       notePerChar: 10,
       noteMax: 15,
-      permaStep: 3,
       bossGold: 2,
       autoGoldPrice: 50,
       autoGoldChance: 0.25,
       autoGoldCapped: 1,
-      permaBase: {
-        power: 2,
-        rapid: 3,
-        multi: 4,
-        pierce: 3,
-        speed: 2,
-        magnet: 2,
-        orbit: 4,
-        vital: 3,
-        nova: 3,
-        crit: 3,
-        shield: 4,
+      perma: {
+        power: { max: 10, price: 2, step: 1 },
+        rapid: { max: 10, price: 2, step: 1 },
+        multi: { max: 3, price: 6, step: 4 },
+        pierce: { max: 3, price: 6, step: 4 },
+        speed: { max: 5, price: 3, step: 2 },
+        magnet: { max: 5, price: 3, step: 2 },
+        orbit: { max: 3, price: 6, step: 4 },
+        vital: { max: 5, price: 3, step: 2 },
+        nova: { max: 5, price: 3, step: 2 },
+        crit: { max: 5, price: 3, step: 2 },
+        shield: { max: 5, price: 3, step: 2 },
       },
     },
     // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
@@ -4679,7 +4679,7 @@ return Plotly;
     },
     grow: {
       title: '공통 스킬트리',
-      note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 다음 출격부터 적용',
+      note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 스킬마다 MAX까지 · 다음 출격부터 적용',
       // 아래 칸 3개 중 Coming soon 두 칸(R-033)
       soon: 'Coming soon',
     },
@@ -4928,6 +4928,17 @@ return Plotly;
       catLevel: (id, lv) => cats[id].name + ' Lv' + lv + ' · 다음 출격부터 적용',
       companion: id => (id ? cats[id].name + ' 동반 · 다음 출격부터 적용' : '동반 해제'),
     },
+    // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
+    permaCapped: c =>
+      '성장 MAX 정리 · ' +
+      Object.entries(c.cut)
+        .map(([id, [from, to]]) => skillName(id) + ' ' + from + ' → ' + to)
+        .join(' · ') +
+      ' · ' +
+      c.blue +
+      ' ' +
+      BL +
+      ' 돌려받음',
     prep: {
       insufficient: SC + ' 없음',
       held_elsewhere: '다른 창에서 준비 중',
@@ -5091,6 +5102,8 @@ return Plotly;
     next: '다음',
     interrupted: '중단 기록',
     perma: '영구',
+    // 성장 카드: 더 살 수 없는 스킬의 버튼 자리(R-042)
+    permaMax: 'MAX',
     unlockBy: id => unlockGate(id) + roAfter(unlockGate(id)) + ' 해금',
     locked: id => '🔒 ' + unlockGate(id),
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
@@ -5308,7 +5321,6 @@ return Plotly;
         scBlue: SC + ' 만들기 ' + BL,
         notePerChar: '한 줄 남기기 글자당 ' + G,
         noteMax: '한 줄 남기기 글자 수',
-        permaStep: '영구 스택 가격 +1 개수',
         bossGold: '보스 1마리 ' + G,
         autoGoldPrice: '자동 ' + G + ' 습득 가격 ' + G,
         autoGoldChance: '자동 ' + G + ' 확률',
@@ -5443,6 +5455,8 @@ return Plotly;
     };
     const mixKeys = { base: '비율 기본', step: stage.name + '마다 +', max: '+ 상한' };
     const unlockKeys = { score: point.name, time: '시간(초)', level: 'LV' };
+    // 영구 스택(R-042): 스킬마다 MAX · 첫 값 · 살 때마다 오르는 값
+    const permaKeys = { max: 'MAX', price: '첫 가격 ' + BL, step: '가격 증가 ' + BL };
     const skillShort = id => skills[id]?.abbr || skills[id]?.name || id;
     // 표 칸 이름(모드 · 기체 · 적)
     const column = (group, id) =>
@@ -5456,8 +5470,8 @@ return Plotly;
       if (rows[group] && p.length >= 3)
         return column(group, p[1]) + ' · ' + rowName(group, p.slice(2).join('.'));
       if (group === 'skills' && p.length === 3) return skillName(p[1]) + ' · ' + (skillKeys[p[2]] || p[2]);
-      if (group === 'economy' && p[1] === 'permaBase')
-        return '영구 스택 첫 가격 ' + BL + ' · ' + skillShort(p[2]);
+      if (group === 'economy' && p[1] === 'perma')
+        return '영구 스택 ' + (permaKeys[p[3]] || p[3]) + ' · ' + skillShort(p[2]);
       if (group === 'unlock') return modeName(p[1]) + ' 해금 · ' + (unlockKeys[p[2]] || p[2]);
       if (group === 'spawn' && p[1] === 'mix' && p.length === 4)
         return (enemies[p[2]]?.name || p[2]) + ' ' + (mixKeys[p[3]] || p[3]);
@@ -5568,7 +5582,7 @@ return Plotly;
           sc: SC + ' 1개 만들기',
           catUnlock: '고양이 모두 해금',
           catMax: '고양이 1마리 Lv5',
-          perma10: '영구 스택 스킬마다 10개',
+          permaMax: '영구 스택 전부 MAX',
         },
         never: '불가',
         runsOf: n => n + '판',
@@ -5901,7 +5915,10 @@ return Plotly;
           },
           {
             term: '영구 스택',
-            desc: '성장 화면에서 ' + BL + '로 사는 스킬. 모든 기체의 다음 출격부터 적용된다.',
+            desc:
+              '성장 화면에서 ' +
+              BL +
+              '로 사는 스킬. 스킬마다 MAX까지 살 수 있고, 모든 기체의 다음 출격부터 적용된다.',
           },
           {
             term: '시간 코인 단계',

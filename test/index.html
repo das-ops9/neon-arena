@@ -944,6 +944,13 @@ ul {
   font-size: var(--fs-sm);
   font-weight: 800;
 }
+/* MAX(R-042): 더 살 수 없음 — 파란 버튼 대신 금색 테두리 글자(흐리게 하지 않음) */
+.grow-buy.is-max:disabled {
+  opacity: 1;
+  background: transparent;
+  border-color: var(--gold);
+  color: var(--gold);
+}
 /* 아래 칸 3개: 히든 + Coming soon 두 칸 */
 .soon-list {
   display: grid;
@@ -2764,7 +2771,7 @@ kbd {
         <section class="page page--growth" id="page-grow" aria-label="성장" hidden>
           <div class="page-head">
             <h2>공통 스킬트리</h2>
-            <p>모든 기체 공통 · 구매 1회 = 영구 1스택 · 다음 출격부터 적용</p>
+            <p>모든 기체 공통 · 구매 1회 = 영구 1스택 · 스킬마다 MAX까지 · 다음 출격부터 적용</p>
           </div>
           <p class="overlay-note" id="grow-status" role="status"></p>
           <div id="growth-list" class="page" data-area="G-LIST"></div>
@@ -10263,10 +10270,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
     superLaunch: { stage: 29, level: 29, picks: 28 },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
-    // 영구 스택 가격 = permaBase + floor(이미 산 수 ÷ permaStep). 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G.
-    // bossGold: 보스 1마리 처치마다 G(R-002)
+    // 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G. bossGold: 보스 1마리 처치마다 G(R-002)
     // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
     // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 autoGoldCapped 확률(1 = 항상).
+    // perma: 성장 탭 영구 스택(R-042). 스킬마다 max까지 B로 산다. 다음 하나의 값 = price + step × 이미 산 수.
+    // max를 낮추면 넘는 스택은 이관 때 max로 줄이고 B로 돌려준다(progression.js permaExcess, DATA.md 5절).
     economy: {
       goldBase: 1,
       goldMax: 5,
@@ -10279,23 +10287,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       scBlue: 10,
       notePerChar: 10,
       noteMax: 15,
-      permaStep: 3,
       bossGold: 2,
       autoGoldPrice: 50,
       autoGoldChance: 0.25,
       autoGoldCapped: 1,
-      permaBase: {
-        power: 2,
-        rapid: 3,
-        multi: 4,
-        pierce: 3,
-        speed: 2,
-        magnet: 2,
-        orbit: 4,
-        vital: 3,
-        nova: 3,
-        crit: 3,
-        shield: 4,
+      perma: {
+        power: { max: 10, price: 2, step: 1 },
+        rapid: { max: 10, price: 2, step: 1 },
+        multi: { max: 3, price: 6, step: 4 },
+        pierce: { max: 3, price: 6, step: 4 },
+        speed: { max: 5, price: 3, step: 2 },
+        magnet: { max: 5, price: 3, step: 2 },
+        orbit: { max: 3, price: 6, step: 4 },
+        vital: { max: 5, price: 3, step: 2 },
+        nova: { max: 5, price: 3, step: 2 },
+        crit: { max: 5, price: 3, step: 2 },
+        shield: { max: 5, price: 3, step: 2 },
       },
     },
     // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
@@ -10794,7 +10801,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     grow: {
       title: '공통 스킬트리',
-      note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 다음 출격부터 적용',
+      note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 스킬마다 MAX까지 · 다음 출격부터 적용',
       // 아래 칸 3개 중 Coming soon 두 칸(R-033)
       soon: 'Coming soon',
     },
@@ -11043,6 +11050,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       catLevel: (id, lv) => cats[id].name + ' Lv' + lv + ' · 다음 출격부터 적용',
       companion: id => (id ? cats[id].name + ' 동반 · 다음 출격부터 적용' : '동반 해제'),
     },
+    // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
+    permaCapped: c =>
+      '성장 MAX 정리 · ' +
+      Object.entries(c.cut)
+        .map(([id, [from, to]]) => skillName(id) + ' ' + from + ' → ' + to)
+        .join(' · ') +
+      ' · ' +
+      c.blue +
+      ' ' +
+      BL +
+      ' 돌려받음',
     prep: {
       insufficient: SC + ' 없음',
       held_elsewhere: '다른 창에서 준비 중',
@@ -11206,6 +11224,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     next: '다음',
     interrupted: '중단 기록',
     perma: '영구',
+    // 성장 카드: 더 살 수 없는 스킬의 버튼 자리(R-042)
+    permaMax: 'MAX',
     unlockBy: id => unlockGate(id) + roAfter(unlockGate(id)) + ' 해금',
     locked: id => '🔒 ' + unlockGate(id),
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
@@ -11423,7 +11443,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         scBlue: SC + ' 만들기 ' + BL,
         notePerChar: '한 줄 남기기 글자당 ' + G,
         noteMax: '한 줄 남기기 글자 수',
-        permaStep: '영구 스택 가격 +1 개수',
         bossGold: '보스 1마리 ' + G,
         autoGoldPrice: '자동 ' + G + ' 습득 가격 ' + G,
         autoGoldChance: '자동 ' + G + ' 확률',
@@ -11558,6 +11577,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     };
     const mixKeys = { base: '비율 기본', step: stage.name + '마다 +', max: '+ 상한' };
     const unlockKeys = { score: point.name, time: '시간(초)', level: 'LV' };
+    // 영구 스택(R-042): 스킬마다 MAX · 첫 값 · 살 때마다 오르는 값
+    const permaKeys = { max: 'MAX', price: '첫 가격 ' + BL, step: '가격 증가 ' + BL };
     const skillShort = id => skills[id]?.abbr || skills[id]?.name || id;
     // 표 칸 이름(모드 · 기체 · 적)
     const column = (group, id) =>
@@ -11571,8 +11592,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (rows[group] && p.length >= 3)
         return column(group, p[1]) + ' · ' + rowName(group, p.slice(2).join('.'));
       if (group === 'skills' && p.length === 3) return skillName(p[1]) + ' · ' + (skillKeys[p[2]] || p[2]);
-      if (group === 'economy' && p[1] === 'permaBase')
-        return '영구 스택 첫 가격 ' + BL + ' · ' + skillShort(p[2]);
+      if (group === 'economy' && p[1] === 'perma')
+        return '영구 스택 ' + (permaKeys[p[3]] || p[3]) + ' · ' + skillShort(p[2]);
       if (group === 'unlock') return modeName(p[1]) + ' 해금 · ' + (unlockKeys[p[2]] || p[2]);
       if (group === 'spawn' && p[1] === 'mix' && p.length === 4)
         return (enemies[p[2]]?.name || p[2]) + ' ' + (mixKeys[p[3]] || p[3]);
@@ -11683,7 +11704,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           sc: SC + ' 1개 만들기',
           catUnlock: '고양이 모두 해금',
           catMax: '고양이 1마리 Lv5',
-          perma10: '영구 스택 스킬마다 10개',
+          permaMax: '영구 스택 전부 MAX',
         },
         never: '불가',
         runsOf: n => n + '판',
@@ -12016,7 +12037,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           },
           {
             term: '영구 스택',
-            desc: '성장 화면에서 ' + BL + '로 사는 스킬. 모든 기체의 다음 출격부터 적용된다.',
+            desc:
+              '성장 화면에서 ' +
+              BL +
+              '로 사는 스킬. 스킬마다 MAX까지 살 수 있고, 모든 기체의 다음 출격부터 적용된다.',
           },
           {
             term: '시간 코인 단계',
@@ -14718,8 +14742,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     ...B.economy,
     bluePerMilestone: Object.freeze(Object.fromEntries(MODES.map(id => [id, B.modes[id].blue]))),
   });
-  const SKILLS = Object.keys(ECONOMY.permaBase),
+  const SKILLS = Object.keys(ECONOMY.perma),
     CATS = Object.freeze([...B.cats.list]);
+  // 영구 스택 값 규칙(R-042): 프로필 permaRule. 없으면(0) R-042 이전에 LEGACY_PERMA 값으로 산 스택이다.
+  // MAX를 넘는 스택을 돌려줄 때 그 스택을 산 규칙의 값으로 계산한다.
+  const PERMA_RULE = 1,
+    LEGACY_PERMA = Object.freeze({
+      step: 3,
+      base: Object.freeze({
+        power: 2,
+        rapid: 3,
+        multi: 4,
+        pierce: 3,
+        speed: 2,
+        magnet: 2,
+        orbit: 4,
+        vital: 3,
+        nova: 3,
+        crit: 3,
+        shield: 4,
+      }),
+    });
   const modeId = id => (MODES.includes(String(id || '').toLowerCase()) ? String(id).toLowerCase() : 'easy');
   const count = v => (Number.isSafeInteger(v) && v >= 0 ? v : 0);
   const validId = id => typeof id === 'string' && id.length > 0 && id.length <= 100;
@@ -14733,8 +14776,36 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       B.modes[modeId(mode)].goldBonus
     );
   }
+  // 성장 영구 스택(R-042): 스킬마다 MAX까지. k번째(0부터) 스택의 값 = price + step × k
+  function permaMax(id) {
+    return count(ECONOMY.perma[id]?.max);
+  }
+  function permaCost(id, k) {
+    const c = ECONOMY.perma[id];
+    return c ? c.price + c.step * k : 0;
+  }
+  // 다음 하나의 값. MAX면 null
   function permaPrice(id, owned) {
-    return ECONOMY.permaBase[id] + Math.floor(count(owned) / ECONOMY.permaStep);
+    const n = count(owned);
+    return SKILLS.includes(id) && n < permaMax(id) ? permaCost(id, n) : null;
+  }
+  // 저장된 문서(v3 · v4)에서 MAX를 넘는 스택과 돌려줄 B: { blue, cut: { 스킬: [보유, MAX] } }, 없으면 null.
+  // R-042 이전(permaRule 없음)에 산 스택은 옛 값으로, 그 뒤에 산 스택은 지금 값으로 계산한다.
+  function permaExcess(raw) {
+    if (!raw || typeof raw !== 'object' || (raw.schemaVersion !== 3 && raw.schemaVersion !== SCHEMA))
+      return null;
+    const legacy = raw.permaRule !== PERMA_RULE,
+      cut = {};
+    let blue = 0;
+    for (const id of SKILLS) {
+      const n = count(raw.perma?.[id]),
+        max = permaMax(id);
+      if (n <= max) continue;
+      for (let k = max; k < n; k++)
+        blue += legacy ? LEGACY_PERMA.base[id] + Math.floor(k / LEGACY_PERMA.step) : permaCost(id, k);
+      cut[id] = [n, max];
+    }
+    return Object.keys(cut).length ? { blue, cut } : null;
   }
   function canAuto(id) {
     return B.modes[modeId(id)].auto;
@@ -14790,6 +14861,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       companion: null,
       hidden: false,
       ownedAutoGold: false,
+      permaRule: PERMA_RULE,
     };
   }
   function cleanRuns(raw) {
@@ -14831,6 +14903,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.superCoins = count(raw.superCoins);
       p.incomeTier = Math.min(ECONOMY.incomeMax, count(raw.incomeTier));
       for (const id of SKILLS) if (count(raw.perma?.[id])) p.perma[id] = count(raw.perma[id]);
+      // MAX를 넘는 스택은 MAX로 줄이고 그 값을 B로 돌려준다(R-042). 줄인 뒤에는 넘는 스택이 없어 다시 돌려주지 않는다.
+      const excess = permaExcess(raw);
+      if (excess) {
+        for (const [id, [, max]] of Object.entries(excess.cut))
+          if (max > 0) p.perma[id] = max;
+          else delete p.perma[id];
+        p.blue += excess.blue;
+      }
       p.runs = cleanRuns(raw.runs);
       p.tx = Array.isArray(raw.tx) ? raw.tx.filter(validId).slice(-TX_KEEP) : [];
       p.scHold =
@@ -14994,6 +15074,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       const owned = p.perma[skill] || 0;
       if (owned !== expectedOwned) return fail('stale');
       const price = permaPrice(skill, owned);
+      if (price === null) return fail('max');
       if (p.blue < price) return fail('insufficient');
       p.blue -= price;
       p.perma[skill] = owned + 1;
@@ -15201,6 +15282,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.profile = blank();
       this.storageLimited = false;
       this.storageReason = '';
+      // 열 때 MAX를 넘던 영구 스택을 줄이고 돌려준 내역(R-042, permaExcess 형식). 없으면 null
+      this.capped = null;
       this.queue = Promise.resolve();
       this.ready = this.load();
     }
@@ -15222,6 +15305,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         companion: p.companion,
         hidden: p.hidden,
         ownedAutoGold: p.ownedAutoGold,
+        permaRule: p.permaRule,
       };
     }
     isUnlocked(id) {
@@ -15241,9 +15325,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (this.store.db) {
         const result = await this.transaction((p, r, raw) => {
           if (!raw && fallback) Object.assign(p, migrate(fallback));
+          // MAX를 넘던 영구 스택(R-042)은 migrate가 줄이고 B로 돌려준다. 그 결과를 바로 저장하고 화면에 알린다.
           const migrating = !!raw && raw.schemaVersion !== SCHEMA,
+            capped = permaExcess(raw || fallback),
             cleaned = rules.cleanup(p, { now }),
-            out = { ok: true, duplicate: !!raw && !migrating && cleaned.duplicate === true };
+            out = { ok: true, duplicate: !!raw && !migrating && !capped && cleaned.duplicate === true };
+          if (capped) out.capped = capped;
           // 이관 전 원본 사본: v3 문서는 main-v3-backup, 그 밖(v2 지갑)은 지금처럼 main-v2-backup
           if (migrating)
             out.extra = [{ ...raw, id: raw.schemaVersion === 3 ? 'main-v3-backup' : 'main-v2-backup' }];
@@ -15252,13 +15339,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         if (!result.ok) {
           this.storageLimited = true;
           this.storageReason = T().msg.storage.profileRead;
-        }
+        } else this.capped = result.capped || null;
         return this.snapshot();
       }
       this.storageLimited = true;
       this.storageReason = T().msg.storage.needDB;
       try {
         this.profile = migrate(fallback);
+        this.capped = permaExcess(fallback);
         rules.cleanup(this.profile, { now });
       } catch {
         this.storageReason = T().msg.storage.none;
@@ -15616,6 +15704,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     modeId,
     goldPerMinute,
     permaPrice,
+    permaMax,
+    permaExcess,
     catEffects,
     migrate,
     blank,
@@ -15658,6 +15748,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       companion: p.companion,
       hidden: p.hidden,
       ownedAutoGold: p.ownedAutoGold,
+      permaRule: p.permaRule,
     };
   }
   // schema 1 파일에는 고양이·히든 탭·자동 G 항목이 없다. 있더라도 읽지 않고 기본값으로 둔다.
@@ -17384,7 +17475,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // 성장(R-033): 2열 카드 — 아이콘 · 이름 · 영구 스택 · 오른쪽 가격 버튼, 단일 순서(T.skillOrder).
   // 긴 이름은 글자를 줄이고 띄어쓰기에서 두 줄(잘림 없음, 보완 9).
-  // profile: { blue, perma:{}, priceOf(id), ready } — 재화 연결 전에는 구매 버튼이 비활성으로 보인다.
+  // profile: { blue, perma:{}, priceOf(id), maxOf(id), ready } — 재화 연결 전에는 구매 버튼이 비활성으로 보인다.
+  // MAX(R-042): '영구 +n/MAX', MAX에 닿으면 버튼 자리에 잠긴 MAX
   function growthList(profile) {
     return (
       '<div class="grow-grid">' +
@@ -17392,9 +17484,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         .map(id => {
           const u = upgrade(id),
             n = profile.perma?.[id] || 0,
-            price = profile.priceOf ? profile.priceOf(id) : null,
+            max = profile.maxOf ? profile.maxOf(id) : null,
+            full = max != null && n >= max,
+            price = !full && profile.priceOf ? profile.priceOf(id) : null,
             can = profile.ready && price != null && profile.blue >= price,
-            label = price == null ? '—' : price + ' ' + T.coins.b.short;
+            label = full ? TV.permaMax : price == null ? '—' : price + ' ' + T.coins.b.short;
           return (
             '<div class="grow-card">' +
             skillIcon(u) +
@@ -17406,7 +17500,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             TV.perma +
             ' <b>+' +
             n +
-            '</b></span><button class="btn btn--blue grow-buy" data-perma="' +
+            '</b>' +
+            (max != null ? '/' + max : '') +
+            '</span><button class="btn btn--blue grow-buy' +
+            (full ? ' is-max' : '') +
+            '" data-perma="' +
             id +
             '" aria-label="' +
             esc(u.name + ' · ' + label) +
@@ -19484,6 +19582,7 @@ function refreshProfileUI() {
       ...w,
       ready: !buyBusy,
       priceOf: id => NeonProgress.permaPrice(id, w.perma[id] || 0),
+      maxOf: NeonProgress.permaMax,
     });
     $('hidden-entry').innerHTML = V.hiddenEntry(
       w.hidden,
@@ -19970,6 +20069,16 @@ async function boot() {
   NeonBadges.ensureDefs(document);
   applyPad();
   await profile.ready;
+  // MAX를 넘던 영구 스택을 줄이고 B로 돌려줬으면(R-042) 성장 탭에 알리고 이력에 한 줄
+  if (profile.capped) {
+    text('grow-status', T.msg.permaCapped(profile.capped));
+    profile.addHistory(
+      NeonProgress.history.mark('perma_cap', historyMeta(), {
+        blue: profile.capped.blue,
+        cut: profile.capped.cut,
+      }),
+    );
+  }
   selected = prefs.craft;
   selectedDifficulty = profile.isUnlocked(prefs.mode) ? prefs.mode : 'easy';
   renderCrafts();
