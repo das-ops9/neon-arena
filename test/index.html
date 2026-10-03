@@ -658,11 +658,6 @@ ul {
   gap: 2px;
   --nb-w: 104px;
 }
-.legacy-note {
-  font-size: var(--fs-2xs);
-  color: var(--muted);
-  text-align: right;
-}
 
 /* MODE(R-032 · 보완 7): 영역 전체가 버튼 하나. 3칸 그리드로 배지를 정확히 가운데에 둔다 */
 .mode-area {
@@ -891,27 +886,79 @@ ul {
   color: var(--ink-2);
 }
 
-/* 성장(공통 스킬트리): 한 줄 목록으로 11종을 짧게 훑는다 */
-.skill-group {
+/* 성장(R-033): 2열 카드 — 아이콘 · 이름 · 영구 스택 · 오른쪽 가격 버튼. 긴 이름은 띄어쓰기에서 두 줄(잘림 없음) */
+.grow-grid {
   display: grid;
-  gap: 6px;
-}
-.skill-group h3 {
-  font-size: var(--fs-xs);
-  font-weight: 800;
-  color: var(--cyan);
-  letter-spacing: 0.08em;
-}
-.skill-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-2);
-  min-height: 56px;
-  padding: 6px 6px 6px var(--sp-3);
-  border-radius: var(--r-md);
+}
+.grow-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'icon name buy'
+    'icon stack buy';
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 1px;
+  min-height: 58px;
+  padding: 6px 6px 6px 7px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface);
+}
+.grow-card .skill-icon {
+  grid-area: icon;
+}
+.grow-name {
+  grid-area: name;
+  align-self: end;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  line-height: 1.2;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.grow-name.fit {
+  font-size: var(--fs-xs);
+}
+/* 글자가 커져 칸이 좁으면 '영구' 와 숫자를 두 줄로(잘림 없음) */
+.grow-stack {
+  grid-area: stack;
+  align-self: start;
+  min-width: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--muted);
+  word-break: keep-all;
+}
+.grow-stack b {
+  color: var(--ink);
+}
+.grow-buy {
+  grid-area: buy;
+  min-width: 48px;
+  min-height: var(--tap);
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+}
+/* 아래 칸 3개: 히든 + Coming soon 두 칸 */
+.soon-list {
+  display: grid;
+  gap: var(--sp-2);
+}
+.soon-cell {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  border-radius: var(--r-lg);
+  border: 1.5px dashed #2a3d50;
+  background: #0b121c90;
+  color: #5d7387;
+  font-size: var(--fs-sm);
+  font-weight: 900;
 }
 .skill-icon {
   display: grid;
@@ -923,36 +970,6 @@ ul {
   color: var(--c, var(--cyan));
   background: #ffffff08;
   font-size: var(--fs-md);
-}
-.skill-name {
-  min-width: 0;
-}
-.skill-name strong {
-  display: block;
-  font-size: var(--fs-sm);
-}
-.skill-name small {
-  display: block;
-  font-size: var(--fs-2xs);
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.skill-count {
-  display: grid;
-  justify-items: center;
-  font-size: var(--fs-2xs);
-  color: var(--muted);
-  min-width: 2.4rem;
-}
-.skill-count b {
-  font-size: var(--fs-md);
-  color: var(--ink);
-}
-.skill-row .btn {
-  min-width: 64px;
-  padding-inline: var(--sp-3);
 }
 
 /* 상점 */
@@ -973,6 +990,27 @@ ul {
 }
 .shop-card .big b {
   color: var(--gold);
+}
+.shop-card .big--sc {
+  color: var(--violet);
+}
+/* 시간 코인 | S 제작 반반 두 칸: 구매 버튼은 칸 아래 끝에 맞춘다 */
+.shop-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.shop-pair .shop-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--sp-3);
+}
+.shop-pair .shop-buy {
+  margin-top: auto;
+  flex-direction: column;
+  gap: 0;
+  padding-inline: var(--sp-2);
 }
 .shop-card small {
   font-size: var(--fs-xs);
@@ -1008,17 +1046,6 @@ ul {
 /* 자동 G 습득 카드(R-025): 보유하면 켜기/끄기 스위치 */
 .shop-card--autogold {
   border-color: #50f3d655;
-}
-.tag-new {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--cyan);
-  color: #04201c;
-  font-size: var(--fs-2xs);
-  font-weight: 800;
-  vertical-align: 2px;
 }
 .shop-own {
   display: flex;
@@ -1835,13 +1862,51 @@ p.cat-note {
   font-style: italic;
   color: var(--pink);
 }
-.hud-notice {
+/* 알림(R-030 · 보완 5). 세로: 위 덩어리 아래 위쪽 1/3 가운데에 크게, 지금 1개 + 흐린 대기 1개.
+   알림 묶음 아래 끝은 '화면 세로 가운데 − 56px'(기준선)보다 위다. 흐린 대기가 넘으면 숨긴다(app.js checkAlertLine). */
+.hud-alerts {
   grid-area: notice;
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 4px;
+  gap: 6px;
   min-height: 1.75rem;
+  padding-top: clamp(4px, calc(var(--vh-full) * 0.05), 48px);
+}
+.alert {
+  max-width: 100%;
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: #070b13e0;
+  font-size: min(1.0625rem, 18px);
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+}
+/* 중요 알림: 색 테두리(포위 빨강 · 보스 · 해금 · 자동 승격 금색 · S 코인 보라) */
+.alert--major {
+  border-width: 2px;
+}
+.alert--danger {
+  border-color: var(--danger);
+  color: #ffd0d5;
+}
+.alert--gold {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.alert--violet {
+  border-color: var(--violet);
+  color: #e9ddff;
+}
+.alert--next {
+  opacity: 0.45;
+  font-size: min(0.9375rem, 16px);
+}
+.alert--next.is-over {
+  display: none;
 }
 .hud-play {
   grid-area: play;
@@ -1903,19 +1968,6 @@ p.cat-note {
   font-size: var(--fs-xs);
   font-weight: 700;
 }
-.notice--siege {
-  border-color: var(--danger);
-  color: #ffd0d5;
-}
-/* 강조 알림(판 도중 해금 R-024) */
-.notice--strong {
-  border-color: var(--gold);
-  color: var(--gold);
-  font-size: var(--fs-sm);
-  box-shadow: 0 0 18px #f4ce7233;
-}
-/* 아래(R-031): 대시 · 충격파 기둥(H-PAD, 위 충격파 · 아래 대시, 같은 크기 110×54) + 맨 아래 획득 스킬 줄(H-SKILLS).
-   기둥 자리는 설정 '버튼 위치'(body[data-pad]): 가운데(기본) · 오른쪽 · 왼쪽. 고정 좌표 없이 그리드 정렬로만 옮긴다. */
 .hud-bottom {
   grid-area: bottom;
   display: grid;
@@ -2024,7 +2076,8 @@ body[data-pad='left'] .action-row {
   border: 1px solid var(--c);
   background: #070b13b3;
   color: var(--c);
-  font-size: clamp(8px, 2.9cqi, 0.6875rem);
+  /* 글자 배율이 커져도 칸 최대 36px 안에 세 자리 스택이 들어가게 px로도 막는다 */
+  font-size: clamp(8px, 2.9cqi, min(0.6875rem, 11px));
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
@@ -2590,6 +2643,28 @@ kbd {
   .hud-boss .bar {
     height: 4px;
   }
+  /* 가로 HUD는 위 여백 · 줄 간격을 줄여 알림이 기준선(화면 세로 가운데 − 56px) 위에 들어가게 한다 */
+  .hud {
+    row-gap: 3px;
+    padding-top: calc(6px + var(--safe-t));
+  }
+  /* 가로 알림(보완 2): 위 덩어리 바로 아래 가운데 작은 한 줄(글자 약 13px, 높이 약 24px), 지금 것만 */
+  .hud-alerts {
+    min-height: 0;
+    padding-top: 0;
+  }
+  .alert {
+    padding: 2px 12px;
+    font-size: min(0.8125rem, 13px);
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+  .alert--major {
+    border-width: 1.5px;
+  }
+  .alert--next {
+    display: none;
+  }
   .hud-bottom {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas: 'skills pad';
@@ -2688,8 +2763,11 @@ kbd {
           </div>
           <p class="overlay-note" id="grow-status" role="status"></p>
           <div id="growth-list" class="page" data-area="G-LIST"></div>
-          <p class="legacy-note">블루코인: 실제 LV10마다 1B · Ultra 이상 2B</p>
           <div id="hidden-entry" data-area="G-HIDDEN"></div>
+          <div class="soon-list" data-area="G-SOON" aria-hidden="true">
+            <div class="soon-cell">Coming soon</div>
+            <div class="soon-cell">Coming soon</div>
+          </div>
         </section>
         <section class="page page--hidden" id="page-hidden" aria-label="히든 탭 · 고양이 비행사" hidden>
           <div class="page-head page-head--back">
@@ -2902,10 +2980,10 @@ kbd {
           <span class="hud-cell hud-chain num" id="combo" data-area="H-CHAIN" hidden></span>
         </div>
       </header>
-      <div class="hud-notice" data-area="H-ALERT">
-        <span class="notice" id="callout" role="status" hidden></span>
-        <span class="notice" id="stage-toast" hidden></span>
-        <span class="notice notice--siege" id="siege-notice" hidden></span>
+      <!-- 알림(R-030): 지금 1개 + 흐린 대기 1개. 읽어 주기는 #announcer가 맡는다 -->
+      <div class="hud-alerts" data-area="H-ALERT" aria-hidden="true">
+        <span class="alert" id="alert-now" hidden></span>
+        <span class="alert alert--next" id="alert-next" hidden></span>
       </div>
       <div class="hud-play"></div>
       <div class="siege-edges" id="siege-edges" hidden aria-hidden="true">
@@ -10576,42 +10654,34 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     });
   };
 
-  // ── 전투 알림(알림 줄). sec: 보이는 시간(초) ──
+  // ── 전투 알림(R-030). 알림 대기열 하나로 보인다(app.js notify) ──
+  // major: 중요 알림 — 차례로 보이고(대기 최대 3, 다음 것은 흐리게) 색 테두리(tone: danger · gold · violet).
+  // major가 없으면 보통 알림 — 쌓지 않는다. 빈 때나 보통 알림이 떠 있을 때만 최신 것으로 바꿔 보인다.
+  // sec: 보이는 시간(초). 레벨업 · 일시정지 창이 떠 있으면 알림 시계가 멈춘다.
+  // 문구는 짧게: 설명 숫자 · 방향은 빼고 보상 수는 남긴다.
   const alerts = {
-    start: { sec: 2.5 },
     startLimited: {
+      major: true,
+      tone: 'danger',
       sec: 2.5,
-      text: () => '재화 저장이 제한되어 이번 판의 ' + G + '·' + BL + '는 저장되지 않습니다.',
+      text: () => G + '·' + BL + ' 저장 안 됨 · 저장소 제한',
     },
     startSuper: {
       sec: 2.5,
-      text: (s, lv) => launches.superLong + ' · ' + stageLabel(s) + ' · ' + levelShort(lv) + '부터',
+      text: (s, lv) => launches.super + ' · ' + stageLabel(s) + ' · ' + levelShort(lv),
     },
-    startNormal: { sec: 2.5, text: mode => modeName(mode) + ' · 원하는 때 ' + stage.name + '를 올리세요.' },
+    startNormal: { sec: 2.5, text: mode => modeName(mode) + ' 출격' },
     blue: { sec: 1.6, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
-    boss: { sec: 1.3, text: () => '보스 접근 · 이동할 공간을 확보하세요.' },
-    bossNext: { sec: 2, text: s => '다음 ' + stageLabel(s) + ' · 보스 등장' },
-    bossStage: { sec: 2, text: s => stageLabel(s) + ' · 보스 등장' },
+    boss: { major: true, tone: 'gold', sec: 2.5, text: () => '보스 접근' },
     bossWave: { sec: 1.2, text: () => '보스 웨이브 격파' },
     bossGold: { sec: 1.6, text: n => '보스 격파 +' + n + ' ' + G },
-    // 1단계 알림은 2단계(R-030)의 짧은 형식으로 쓴다: 설명 숫자 없이, 보상 수만
-    siegeWarn: { sec: 2, text: () => '⚠ 포위 접근' },
-    siege: { sec: 2, text: wave => '⚠ 포위 ' + wave + '회차' },
+    siegeWarn: { major: true, tone: 'danger', sec: 2.5, text: () => '⚠ 포위 접근' },
+    siege: { major: true, tone: 'danger', sec: 2.5, text: wave => '⚠ 포위 ' + wave + '회차' },
+    // 손으로 올린 STAGE(배율 숫자는 뺀다): boss = 'now'(이 Stage가 보스) · 'next'(다음이 보스) · ''
     stage: {
       sec: 1.3,
-      text: (s, hp, xp, score) =>
-        stage.upper +
-        ' ' +
-        s +
-        ' · 적 체력 ' +
-        hp +
-        '× · XP ' +
-        xp +
-        '× · ' +
-        point.upper +
-        ' ' +
-        score +
-        '×',
+      text: (s, boss) =>
+        stageLabel(s) + (boss === 'now' ? ' · 보스 등장' : boss === 'next' ? ' · 다음 보스' : ''),
     },
     // AUTO 결과: n = 고른 스킬 수, gold = 자동 G 습득으로 받은 G(R-025)
     auto: {
@@ -10625,19 +10695,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               ? auto.name + ' · ' + skillName(id) + ' +1'
               : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
     },
-    // 판 도중 해금(R-024): 4초 강조
-    unlock: { sec: 4, strong: true, text: id => modeName(id) + ' 해금' },
-    // Stage 자동 승격(R-022): boss = 'now'(이 Stage가 보스) · 'next'(다음이 보스) · ''
+    // 판 도중 해금(R-024): 금색 테두리, 2.5초로 통일(결과 화면 '새 모드 해금' 줄이 놓침을 보완)
+    unlock: { major: true, tone: 'gold', sec: 2.5, text: id => modeName(id) + ' 해금' },
+    // Stage 자동 승격(R-022): boss = 'now' · 'next' · ''
     stageAuto: {
-      sec: 2,
+      major: true,
+      tone: 'gold',
+      sec: 2.5,
       text: (s, boss) =>
         stageLabel(s) +
         ' 자동 상승' +
         (boss === 'now' ? ' · 보스 등장' : boss === 'next' ? ' · 다음 보스' : ''),
     },
     // Insane S 코인(R-023)
-    sCoin: { sec: 3, text: () => SC + ' 코인 등장' },
-    sPick: { sec: 2, text: n => '+' + n + ' ' + SC },
+    sCoin: { major: true, tone: 'violet', sec: 2.5, text: () => SC + ' 코인 등장' },
+    sPick: { major: true, tone: 'violet', sec: 2.5, text: n => '+' + n + ' ' + SC },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -10679,14 +10751,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     grow: {
       title: '공통 스킬트리',
       note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 다음 출격부터 적용',
-      blueNote: () => {
-        const m = B().modes,
-          every = E().blueEvery,
-          extra = blueExtra(BL);
-        return (
-          coins.b.ko + ': 실제 ' + levelShort(every) + '마다 ' + m.easy.blue + BL + ' · ' + extra.join(' · ')
-        );
-      },
+      // 아래 칸 3개 중 Coming soon 두 칸(R-033)
+      soon: 'Coming soon',
     },
     shop: { title: '상점', note: '재화는 이 기기 브라우저에 저장됩니다 · 백업은 기록 탭' },
     rec: {
@@ -11061,43 +11127,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     perma: '영구',
     unlockBy: id => unlockGate(id) + roAfter(unlockGate(id)) + ' 해금',
     locked: id => '🔒 ' + unlockGate(id),
+    // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
+      // 큰 숫자는 고른 모드 기준 분당 G(Super 이상은 보너스 포함, 보완 11)
       perMinute: rate => '분당 <b>' + rate + '</b> ' + G,
-      incomeNote: mode =>
-        modeName(mode) +
-        ' 기준 · 실제 전투 1분마다 적립 · ' +
-        goldBonusFrom() +
-        ' 이상 모드는 +' +
-        B().modes[firstMode('goldBonus')].goldBonus +
-        ' ' +
-        G,
+      incomeStep: () => '단계마다 분당 +1 ' + G,
       tierLabel: (tier, max) => '구매 단계 ' + tier + ' / ' + max,
       buyIncome: (tier, max) =>
-        tier < max ? E().incomePrice + ' ' + G + ' · 분당 +1 구매 (' + tier + '/' + max + ')' : '최대 단계',
-      sc: coins.s.ko,
-      scRecipe: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL + ' → 1 ' + SC,
-      scNote: () =>
-        SC +
-        ' 1개로 ' +
-        stageLabel(B().superLaunch.stage) +
-        ' · ' +
-        levelShort(B().superLaunch.level) +
-        ' 특수 출격 · 출격 전 강화 ' +
-        B().superLaunch.picks +
-        '회 직접 배분 · ' +
-        modeName(B().superCoin.mode) +
-        '에서는 ' +
-        B().superCoin.every / 60 +
-        '분마다 맵에 등장',
+        tier < max ? E().incomePrice + ' ' + G + ' 구매 (' + tier + '/' + max + ')' : '최대 단계',
+      sc: coins.s.ko + ' ' + SC,
+      scGet: () => '→ 1 ' + SC,
+      scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
       scCraft: SC + ' 제작',
-      auto: auto.name,
+      scHave: n => '보유 ' + num(n),
+      // '자동 강화(Auto)'는 상점 카드 제목에만(다른 화면은 '자동 강화', 보완 11)
+      autoTitle: auto.name + '(Auto)',
       autoNote: () => '레벨업 때 추천 스킬을 자동 선택 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
       owned: '✓ 보유 중',
       buyAuto: () => E().autoPrice + ' ' + G + ' · 한 번 구매',
       // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님)
       autoGold: '자동 ' + G + ' 습득',
-      autoGoldNew: 'NEW',
       autoGoldNote: () =>
         auto.short +
         '가 레벨업을 고를 때 ' +
@@ -11120,7 +11170,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     hidden: {
       entry: '히든',
       entryLocked: () => modeName(B().cats.hiddenFrom) + ' mode 플레이 시 해제',
-      entryOpen: '고양이 비행사',
+      // 해금 뒤 성장 탭 칸(보완 10, 문구 임시): '히든 · 고양이 비행사' + '동반 정비사 Lv3'
+      entryOpen: '히든 · 고양이 비행사',
+      entryCompanion: (id, lv) => (id ? '동반 ' + cats[id].name + ' Lv' + lv : '동반 없음'),
       title: '히든 탭 · 고양이 비행사',
       sub: () => modeName(B().cats.hiddenFrom) + ' 한 판으로 열림 · 효과는 다음 출격부터',
       back: '성장으로 돌아가기',
@@ -11728,7 +11780,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.2.0',
+  const VERSION = '4.3.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -16576,44 +16628,44 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     );
   }
 
-  // profile: { blue, perma:{}, priceOf(id) } — 재화 연결 전에는 구매 버튼이 비활성으로 보인다.
+  // 성장(R-033): 2열 카드 — 아이콘 · 이름 · 영구 스택 · 오른쪽 가격 버튼, 단일 순서(T.skillOrder).
+  // 긴 이름은 글자를 줄이고 띄어쓰기에서 두 줄(잘림 없음, 보완 9).
+  // profile: { blue, perma:{}, priceOf(id), ready } — 재화 연결 전에는 구매 버튼이 비활성으로 보인다.
   function growthList(profile) {
-    return SKILL_GROUPS.map(
-      ([title, ids]) =>
-        '<section class="skill-group"><h3>' +
-        title +
-        '</h3>' +
-        ids
-          .map(id => {
-            const u = upgrade(id),
-              n = profile.perma?.[id] || 0,
-              price = profile.priceOf ? profile.priceOf(id) : null,
-              can = profile.ready && price != null && profile.blue >= price;
-            return (
-              '<div class="skill-row">' +
-              skillIcon(u) +
-              '<span class="skill-name"><strong>' +
-              u.name +
-              '</strong><small>' +
-              T.skillEffect(id) +
-              '</small></span>' +
-              '<span class="skill-count"><b>' +
-              n +
-              '</b>' +
-              TV.perma +
-              '</span>' +
-              '<button class="btn btn--blue btn--sm" data-perma="' +
-              id +
-              '"' +
-              (can ? '' : ' disabled') +
-              '>' +
-              (price == null ? '—' : price + ' ' + T.coins.b.short) +
-              '</button></div>'
-            );
-          })
-          .join('') +
-        '</section>',
-    ).join('');
+    return (
+      '<div class="grow-grid">' +
+      T.skillOrder
+        .map(id => {
+          const u = upgrade(id),
+            n = profile.perma?.[id] || 0,
+            price = profile.priceOf ? profile.priceOf(id) : null,
+            can = profile.ready && price != null && profile.blue >= price,
+            label = price == null ? '—' : price + ' ' + T.coins.b.short;
+          return (
+            '<div class="grow-card">' +
+            skillIcon(u) +
+            '<strong class="grow-name' +
+            (u.name.length > 6 ? ' fit' : '') +
+            '">' +
+            u.name +
+            '</strong><span class="grow-stack">' +
+            TV.perma +
+            ' <b>+' +
+            n +
+            '</b></span><button class="btn btn--blue grow-buy" data-perma="' +
+            id +
+            '" aria-label="' +
+            esc(u.name + ' · ' + label) +
+            '"' +
+            (can ? '' : ' disabled') +
+            '>' +
+            label +
+            '</button></div>'
+          );
+        })
+        .join('') +
+      '</div>'
+    );
   }
 
   // 자동 G 습득 카드(R-025): 미보유면 구매 버튼(자동 강화가 먼저), 보유하면 켜기/끄기 스위치(이 기기 설정)
@@ -16624,7 +16676,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return (
       '<article class="shop-card shop-card--autogold" data-area="S-AUTOG"><h3>' +
       S.autoGold +
-      (profile.ownedAutoGold ? '' : ' <span class="tag-new">' + S.autoGoldNew + '</span>') +
       '</h3><small>' +
       esc(S.autoGoldNote()) +
       '</small>' +
@@ -16657,39 +16708,41 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       pips = Array.from({ length: max }, (_, i) => '<i' + (i < tier ? ' class="on"' : '') + '></i>').join(''),
       rate = profile.rate ? profile.rate(mode) : 1;
     return (
-      '<article class="shop-card shop-card--income" data-area="S-TIME"><h3>' +
+      '<div class="shop-pair"><article class="shop-card shop-card--income" data-area="S-TIME"><h3>' +
       S.income +
       '</h3><p class="big">' +
       S.perMinute(rate) +
       '</p>' +
       '<small>' +
-      esc(S.incomeNote(mode)) +
+      esc(S.incomeStep()) +
       '</small>' +
       '<div class="tier-pips" aria-label="' +
       S.tierLabel(tier, max) +
       '">' +
       pips +
       '</div>' +
-      '<button class="btn btn--gold" id="buy-income"' +
+      '<button class="btn btn--gold shop-buy" id="buy-income"' +
       (profile.ready && tier < max && profile.gold >= E.incomePrice ? '' : ' disabled') +
       '>' +
       S.buyIncome(tier, max) +
       '</button></article>' +
       '<article class="shop-card shop-card--sc" data-area="S-SUPER"><h3>' +
       S.sc +
-      '</h3><p class="big" style="color:var(--violet)">' +
-      S.scRecipe() +
+      '</h3><p class="big big--sc">' +
+      S.scGet() +
       '</p>' +
       '<small>' +
-      S.scNote() +
+      S.scCost() +
       '</small>' +
-      '<button class="btn btn--sc" id="craft-sc"' +
+      '<button class="btn btn--sc shop-buy" id="craft-sc"' +
       (profile.ready && profile.canCraftSC ? '' : ' disabled') +
       '>' +
       S.scCraft +
-      '</button></article>' +
+      '<small>' +
+      S.scHave(profile.sc || 0) +
+      '</small></button></article></div>' +
       '<article class="shop-card" data-area="S-AUTO"><h3>' +
-      S.auto +
+      S.autoTitle +
       '</h3><small>' +
       S.autoNote() +
       '</small>' +
@@ -16706,14 +16759,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
 
   // ── 히든 탭 · 고양이 비행사(R-026) ──
-  // 성장 탭 맨 아래 입구 칸. 잠겨 있으면 해제 조건만 보인다(2단계 성장 탭에서도 같은 자리).
-  function hiddenEntry(open) {
+  // 성장 탭 아래 칸 3개 중 첫 칸(R-033, 같은 자리). 잠겨 있으면 해제 조건, 열리면 동반 고양이(보완 10).
+  // companion = [고양이 id, 레벨] | null
+  function hiddenEntry(open, companion) {
     const H = TV.hidden;
     return open
       ? '<button class="hidden-entry is-open" id="hidden-open"><strong>' +
-          H.entry +
-          '</strong><small>' +
           H.entryOpen +
+          '</strong><small>' +
+          esc(H.entryCompanion(...(companion || []))) +
           ' ›</small></button>'
       : '<div class="hidden-entry"><strong><span aria-hidden="true">🔒</span> ' +
           H.entry +
@@ -17173,8 +17227,6 @@ let canvas = $('arena'),
   hudClock = 0,
   visualTime = 0,
   oldMode = '',
-  calloutUntil = 0,
-  stageToastUntil = 0,
   audioCtx,
   lastSound = 0,
   upgradeStarted = 0,
@@ -17197,7 +17249,6 @@ let canvas = $('arena'),
   pendingImport = null,
   prep = null,
   scNote = '',
-  siegeUntil = 0,
   siegeEdgeUntil = 0,
   bossNoticeUntil = 0,
   runCats = {},
@@ -17270,11 +17321,64 @@ function show(id, on) {
 function clearInput() {
   controls?.clear();
 }
-function callout(message, seconds = 2.5, strong = false) {
-  text('callout', message);
-  $('callout').classList.toggle('notice--strong', strong);
-  calloutUntil = visualTime + seconds;
-  text('announcer', message);
+// 알림 대기열(R-030 · 보완 5): 화면에는 지금 1개 + 흐린 대기 1개.
+// 중요 알림(T.alerts의 major)은 차례로 보이고(대기 최대 3, 넘치면 가장 오래된 대기를 버림) 색 테두리를 단다.
+// 보통 알림은 쌓지 않는다: 빈 때나 보통 알림이 떠 있을 때만 최신 것으로 바꾸고, 중요 알림이 떠 있으면 버린다.
+// 알림 시계(alertClock)는 전투가 흐를 때만 간다(레벨업 · 일시정지 창이 떠 있으면 멈춤). DOM은 바뀔 때만 쓴다.
+const alertQ = { now: null, wait: [] };
+let alertClock = 0;
+function notify(type, ...args) {
+  const a = T.alerts[type];
+  if (!a) return;
+  const item = { text: a.text(...args), sec: a.sec, major: !!a.major, tone: a.tone || '' },
+    now = alertQ.now;
+  text('announcer', item.text);
+  if (now?.major) {
+    if (!item.major || now.text === item.text || alertQ.wait.some(w => w.text === item.text)) return;
+    alertQ.wait.push(item);
+    if (alertQ.wait.length > 3) alertQ.wait.shift();
+  } else {
+    item.until = alertClock + item.sec;
+    alertQ.now = item;
+  }
+  renderAlerts();
+}
+function tickAlerts() {
+  if (!alertQ.now || alertClock < alertQ.now.until) return;
+  const next = alertQ.wait.shift() || null;
+  if (next) next.until = alertClock + next.sec;
+  alertQ.now = next;
+  renderAlerts();
+}
+function clearAlerts() {
+  alertQ.now = null;
+  alertQ.wait = [];
+  renderAlerts();
+}
+function paintAlert(el, item, waiting) {
+  el.hidden = !item;
+  if (!item) return;
+  if (el.textContent !== item.text) el.textContent = item.text;
+  const cls =
+    'alert' +
+    (waiting ? ' alert--next' : '') +
+    (item.major ? ' alert--major' : '') +
+    (item.tone ? ' alert--' + item.tone : '');
+  if (el.className !== cls) el.className = cls;
+}
+function renderAlerts() {
+  paintAlert($('alert-now'), alertQ.now, false);
+  paintAlert($('alert-next'), alertQ.wait[0] || null, true);
+  checkAlertLine();
+}
+// 기준선(보완 5): 알림 묶음의 아래 끝은 '화면 세로 가운데 − 56px'보다 위다(카메라가 기체를 가운데에 둔다).
+// 흐린 대기 알림이 선을 넘으면 숨긴다. 알림 · 보스 줄 · 화면 크기가 바뀔 때만 잰다.
+function checkAlertLine() {
+  const next = $('alert-next');
+  // HUD가 숨어 있으면(일시정지 · 설정 창) 재지 않는다. 다시 보일 때 syncMode가 잰다.
+  if (next.hidden || $('hud').hidden) return;
+  next.classList.remove('is-over');
+  if (next.getBoundingClientRect().bottom > innerHeight / 2 - 56) next.classList.add('is-over');
 }
 
 // 재화 보기: 화면은 이 함수로만 잔액을 읽는다(금액 규칙은 NeonProgress에 하나만 둔다).
@@ -17438,7 +17542,7 @@ async function begin(launch = {}) {
     // 저장소가 막혀 startRun이 실패해도 같은 규칙(catEffects)으로 엔진을 채운다.
     const cats = started.cats || NeonProgress.catEffects(profile.snapshot());
     g.reset(selected, seed, selectedDifficulty, { ...launch, perma: profile.snapshot().perma, cats });
-    siegeUntil = siegeEdgeUntil = 0;
+    siegeEdgeUntil = 0;
     resize();
     renderer.clear();
     renderer.cam.x = g.p.x;
@@ -17482,15 +17586,10 @@ async function begin(launch = {}) {
     refreshProfileUI();
     updateHUD();
     canvas.focus({ preventScroll: true });
-    const a = T.alerts;
-    callout(
-      !started.ok
-        ? a.startLimited.text()
-        : sc
-          ? a.startSuper.text(g.stage, g.p.level)
-          : a.startNormal.text(g.difficultyId),
-      a.start.sec,
-    );
+    clearAlerts();
+    if (!started.ok) notify('startLimited');
+    else if (sc) notify('startSuper', g.stage, g.p.level);
+    else notify('startNormal', g.difficultyId);
     tone('start');
   } finally {
     starting = false;
@@ -17520,6 +17619,7 @@ function syncMode() {
   // 일시정지·결과는 내용이 길어 뒤에 비치는 HUD와 겹치므로 HUD 없이 흐린 전장 위에 둔다.
   // 레벨업은 창이 짧고 HP를 보며 고르므로 HUD가 흐리게 비친다(시안 기준).
   $('hud').hidden = ['menu', 'paused', 'ended'].includes(displayMode);
+  if (!$('hud').hidden) checkAlertLine();
   $('upgrade').hidden = displayMode !== 'upgrade';
   $('paused').hidden = displayMode !== 'paused' || !!document.querySelector('dialog[open]');
   $('result').hidden = displayMode !== 'ended';
@@ -17649,7 +17749,6 @@ function renderResultUnlock() {
 }
 function showResult() {
   clearInput();
-  $('stage-toast').hidden = true;
   if (!lastResult) {
     const session = recorder,
       r = makeRecord();
@@ -17715,7 +17814,8 @@ function showResult() {
 }
 function goMenu() {
   g.mode = 'menu';
-  siegeUntil = siegeEdgeUntil = 0;
+  siegeEdgeUntil = 0;
+  clearAlerts();
   g.enemies = [];
   g.bullets = [];
   g.hostiles = [];
@@ -17811,6 +17911,7 @@ function resize() {
       ? Math.max(0.5, Math.min(0.86, Math.min(width / 1500, height / 980)))
       : Math.max(0.6, Math.min(1.05, Math.min(width / 1200, height / 800)));
   renderer?.resize(width, height, zoom);
+  checkAlertLine();
   g.spawnRadius = Math.min(1100, (Math.max(width, height) / zoom) * 0.52 + 70);
   g.targetRange = 900;
 }
@@ -17864,7 +17965,8 @@ function updateHUD() {
       T.skillOrder.map((id, i) => [id, stacks[i]]).filter(([, n]) => n > 0),
     );
   }
-  const boss = g.bossInfo();
+  const boss = g.bossInfo(),
+    bossLine = $('boss-hud').hidden;
   show('boss-hud', boss.alive > 0);
   if (boss.alive) {
     setP($('boss-fill'), boss.maxHp ? boss.hp / boss.maxHp : 0);
@@ -17873,10 +17975,9 @@ function updateHUD() {
   }
   show('combo', g.combo >= 5);
   if (g.combo >= 5) text('combo', T.msg.combo(g.combo));
-  show('siege-notice', visualTime < siegeUntil);
+  // 보스 줄이 나타나거나 사라지면 알림 자리가 움직여 기준선을 다시 잰다
+  if (bossLine !== $('boss-hud').hidden) checkAlertLine();
   show('siege-edges', visualTime < siegeEdgeUntil);
-  show('callout', visualTime < calloutUntil);
-  show('stage-toast', visualTime < stageToastUntil);
   $('stage-button').disabled = g.mode !== 'playing';
 }
 function tone(type) {
@@ -17943,7 +18044,7 @@ function awardLevel(id, level) {
         text('announcer', T.msg.blueAnnounce(r.blue));
       } else {
         const every = BAL.economy.blueEvery;
-        callout(T.alerts.blue.text(r.blue, Math.floor(level / every) * every), T.alerts.blue.sec);
+        notify('blue', r.blue, Math.floor(level / every) * every);
       }
     }
     if (r.ok && r.blue) refreshProfileUI();
@@ -17955,7 +18056,7 @@ function awardSuper(id, coinId) {
     const r = await profile.awardSuper(id, coinId);
     if (r.ok && r.super && id === runId) {
       runEarned.super += r.super;
-      callout(T.alerts.sPick.text(r.super), T.alerts.sPick.sec);
+      notify('sPick', r.super);
     }
     if (r.ok && r.super) refreshProfileUI();
   });
@@ -17978,7 +18079,7 @@ function awardBoss(id, bossId) {
     if (r.ok && r.gold && id === runId) {
       runEarned.gold += r.gold;
       runEarned.boss += r.gold;
-      callout(T.alerts.bossGold.text(r.gold), T.alerts.bossGold.sec);
+      notify('bossGold', r.gold);
     }
     if (r.ok && r.gold) refreshProfileUI();
   });
@@ -17998,48 +18099,32 @@ function events() {
       (e.type === 'level' && !autoEnabled())
     )
       tone(e.type);
-    const a = T.alerts;
     if (e.type === 'boss') {
       // Stage로 부른 보스는 'STAGE n · 보스 등장' 알림을 덮지 않는다
-      if (visualTime >= bossNoticeUntil) callout(a.boss.text(), a.boss.sec);
+      if (alertClock >= bossNoticeUntil) notify('boss');
       tone('boss');
     }
-    if (e.type === 'boss_wave_complete') callout(a.bossWave.text(), a.bossWave.sec);
+    if (e.type === 'boss_wave_complete') notify('bossWave');
     if (e.type === 'bossdown' && Number.isSafeInteger(e.id)) awardBoss(runId, e.id);
     // 포위: 발동 전 네 가장자리 표시와 짧은 문구, 시작하면 회차를 알린다(전투는 멈추지 않는다)
     if (e.type === 'siege_warn') {
-      text('siege-notice', a.siegeWarn.text());
-      siegeUntil = siegeEdgeUntil = visualTime + a.siegeWarn.sec;
+      notify('siegeWarn');
+      siegeEdgeUntil = visualTime + T.alerts.siegeWarn.sec;
       tone('boss');
     }
-    if (e.type === 'siege') {
-      text('siege-notice', a.siege.text(e.wave));
-      siegeUntil = visualTime + a.siege.sec;
-    }
-    if (e.type === 's_spawn') callout(a.sCoin.text(), a.sCoin.sec);
+    if (e.type === 'siege') notify('siege', e.wave);
+    if (e.type === 's_spawn') notify('sCoin');
     if (e.type === 's_pick' && Number.isSafeInteger(e.id)) awardSuper(runId, e.id);
     if (e.type === 'minute') awardMinute(runId, e.minute);
     if (e.type === 'level') awardLevel(runId, e.level);
     if (e.type === 'stage') {
-      const d = Neon.difficulty(g.difficultyId),
-        r = e.rules || Neon.stageRules(e.to);
-      text(
-        'stage-toast',
-        a.stage.text(e.to, (r.hp * d.hp).toFixed(2), (r.xp * d.xp).toFixed(2), r.score.toFixed(2)),
-      );
-      stageToastUntil = visualTime + a.stage.sec;
-      $('stage-toast').hidden = false;
-      // 보스 예고(R-004): 다음 Stage가 보스 Stage면 예고, 보스 Stage에 들어서면 등장 알림.
-      // 자동 승격(R-022)은 한 줄에 붙인다: 'STAGE 3 자동 상승 · 보스 등장'
+      // 'STAGE 6' · 'STAGE 6 · 보스 등장' · 'STAGE 5 · 다음 보스'(배율 숫자는 뺀다, R-030). 보스 예고는 R-004.
+      // 손으로 올린 STAGE는 보통 알림(연타해도 쌓이지 않음), 자동 승격(R-022)은 중요 알림이다.
       const every = BAL.boss.every,
-        boss = e.to % every === 0 ? 'now' : (e.to + 1) % every === 0 ? 'next' : '';
-      if (e.auto) {
-        callout(a.stageAuto.text(e.to, boss), a.stageAuto.sec);
-        if (boss === 'now') bossNoticeUntil = visualTime + a.stageAuto.sec;
-      } else if (boss === 'now') {
-        callout(a.bossStage.text(e.to), a.bossStage.sec);
-        bossNoticeUntil = visualTime + a.bossStage.sec;
-      } else if (boss === 'next') callout(a.bossNext.text(e.to + 1), a.bossNext.sec);
+        boss = e.to % every === 0 ? 'now' : (e.to + 1) % every === 0 ? 'next' : '',
+        type = e.auto ? 'stageAuto' : 'stage';
+      notify(type, e.to, boss);
+      if (boss === 'now') bossNoticeUntil = alertClock + T.alerts[type].sec;
     }
   }
 }
@@ -18096,6 +18181,11 @@ function loop(ms) {
     renderer.draw(g, dt, options);
   }
   syncMode();
+  // 알림 시계는 전투가 흐를 때만(레벨업 · 일시정지 · 결과 창이 떠 있으면 멈춤)
+  if (g.mode === 'playing' && !frozen) {
+    alertClock += dt;
+    tickAlerts();
+  }
   hudClock += dt;
   if (hudClock >= 0.1 && g.mode !== 'menu' && !frozen) {
     updateHUD();
@@ -18626,7 +18716,10 @@ function refreshProfileUI() {
       ready: !buyBusy,
       priceOf: id => NeonProgress.permaPrice(id, w.perma[id] || 0),
     });
-    $('hidden-entry').innerHTML = V.hiddenEntry(w.hidden);
+    $('hidden-entry').innerHTML = V.hiddenEntry(
+      w.hidden,
+      w.companion ? [w.companion, w.cats[w.companion] || 0] : null,
+    );
   }
   // 히든 탭이 닫혀 있으면(예: 백업으로 바꿈) 성장 탭으로 돌아간다
   if (page === 'hidden' && !w.hidden) showPage('grow');
@@ -18970,7 +19063,7 @@ function resolveAutomatic() {
     n++;
   }
   if (n || gold) {
-    callout(T.alerts.auto.text(n, lastId, gold), T.alerts.auto.sec);
+    notify('auto', n, lastId, gold);
     return true;
   }
   return false;
@@ -18990,7 +19083,7 @@ async function maybeUnlock() {
     if (result.newlyUnlocked?.length) {
       for (const id of result.newlyUnlocked) if (!runUnlocked.includes(id)) runUnlocked.push(id);
       refreshProfileUI();
-      callout(T.alerts.unlock.text(target), T.alerts.unlock.sec, T.alerts.unlock.strong);
+      notify('unlock', target);
     }
   } finally {
     unlockBusy = false;
@@ -19080,6 +19173,7 @@ async function boot() {
       closePrep,
       openModeSheet,
       closeModeSheet,
+      notify,
       updateHUD,
       syncMode,
       refreshRecords,
