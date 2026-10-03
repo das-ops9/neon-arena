@@ -10238,7 +10238,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 영구 스택 가격 = permaBase + floor(이미 산 수 ÷ permaStep). 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G.
     // bossGold: 보스 1마리 처치마다 G(R-002)
     // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
-    // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 항상 코인.
+    // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 autoGoldCapped 확률(1 = 항상).
     economy: {
       goldBase: 1,
       goldMax: 5,
@@ -10255,6 +10255,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       bossGold: 3,
       autoGoldPrice: 50,
       autoGoldChance: 0.25,
+      autoGoldCapped: 1,
       permaBase: {
         power: 2,
         rapid: 3,
@@ -10714,6 +10715,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
   const E = () => B().economy;
+  // 고를 스킬이 모두 최대일 때의 자동 G 확률(autoGoldCapped): 일반 확률과 같으면 문구를 붙이지 않는다
+  const autoGoldCappedNote = () => {
+    const e = E(),
+      c = e.autoGoldCapped,
+      coin = e.coinChoice + ' ' + G;
+    if (c === e.autoGoldChance) return '';
+    return (
+      ' · 고를 스킬이 모두 최대면 ' +
+      (c >= 1 ? '항상 ' + coin : c <= 0 ? coin + ' 없음' : pctOf(c) + '% 확률로 ' + coin)
+    );
+  };
   const ui = {
     meta: {
       title: 'NEON ARENA · ENDLESS',
@@ -11156,10 +11168,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         E().coinChoice +
         ' ' +
         G +
-        ' · 고를 스킬이 모두 최대면 항상 ' +
-        E().coinChoice +
-        ' ' +
-        G,
+        autoGoldCappedNote(),
       buyAutoGold: () => E().autoGoldPrice + ' ' + G + ' · 한 번 구매',
       needAuto: () => auto.name + ' 보유 필요',
       on: '켜짐',
@@ -11269,6 +11278,452 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     nova: '노바',
     title: mode => modeName(mode) + ' · 런 기록',
   };
+
+  // ── 밸런스 실험실(lab.html, R-037) ──
+  // 값 이름은 label(경로)이 만든다: 표 묶음(모드 · 기체 · 적) → 묶음 규칙(스킬 · 영구 스택 · 해금 · 출현 비율 · 고양이)
+  // → names(묶음별 키) → 키 그대로.
+  const lab = (() => {
+    const groups = {
+      economy: '경제',
+      modes: '모드',
+      crafts: '기체',
+      unlock: '해금',
+      player: '기체 공통',
+      level: '레벨',
+      shot: '내 탄환',
+      dash: abilities.dash,
+      nova: abilities.nova,
+      orbit: '공전 칼날',
+      skills: '스킬',
+      stage: stage.name,
+      boss: '보스 웨이브',
+      spawn: '출현',
+      hazard: enemies.hazard.name,
+      enemies: '적',
+      shooter: enemies.shooter.name,
+      bossAttack: '보스 공격',
+      hostile: '적 탄환',
+      caps: '동시 상한',
+      score: point.name,
+      siege: '포위',
+      map: '맵',
+      superLaunch: SC + ' 출격',
+      cats: '고양이',
+      superCoin: coins.s.ko,
+    };
+    // 표로 보는 묶음의 줄 이름(열 = 모드 · 기체 · 적). 기체 start.<스킬>은 '시작 ' + 스킬 약칭
+    const rows = {
+      modes: {
+        spawn: '출현',
+        hp: 'HP',
+        damage: '피해',
+        fire: '사격',
+        bulletSpeed: '탄속',
+        xp: 'XP',
+        defenseCap: '방어 한도',
+        choices: '카드 수',
+        auto: auto.short,
+        goldBonus: '분당 ' + G + '+',
+        blue: 'LV10 ' + BL,
+        fan: '부채꼴',
+        burst: '연속',
+        bossSide: '보스 양옆',
+      },
+      crafts: { hp: 'HP', speed: '이동', damage: '피해', fire: '발사 간격', dash: '대시', shield: '보호막' },
+      enemies: {
+        r: '크기',
+        hp: 'HP',
+        speed: '속도',
+        damage: '피해',
+        xp: 'XP',
+        score: point.name,
+        split: '분열 수',
+      },
+    };
+    const names = {
+      economy: {
+        goldBase: '분당 ' + G + ' 기본',
+        goldMax: '분당 ' + G + ' 상한',
+        blueEvery: BL + ' 받는 LV 간격',
+        coinChoice: '레벨업 코인 ' + G,
+        incomePrice: '수입 단계 가격 ' + G,
+        incomeMax: '수입 단계 수',
+        autoPrice: auto.short + ' 가격 ' + G,
+        scGold: SC + ' 만들기 ' + G,
+        scBlue: SC + ' 만들기 ' + BL,
+        notePerChar: '한 줄 남기기 글자당 ' + G,
+        noteMax: '한 줄 남기기 글자 수',
+        permaStep: '영구 스택 가격 +1 개수',
+        bossGold: '보스 1마리 ' + G,
+        autoGoldPrice: '자동 ' + G + ' 습득 가격 ' + G,
+        autoGoldChance: '자동 ' + G + ' 확률',
+        autoGoldCapped: '자동 ' + G + ' 확률(스킬 모두 최대)',
+      },
+      player: {
+        r: '충돌 반경',
+        magnet: '흡수 범위',
+        crit: '치명타 확률',
+        critScale: '치명타 배율',
+        hurtInvuln: '피격 뒤 무적(초)',
+        shieldDelay: '보호막 재생 대기(초)',
+        shieldRegen: '보호막 초당 재생',
+        choiceHeal: '스킬 고를 때 회복',
+      },
+      level: { base: '다음 LV XP 기본', step: '다음 LV XP 증가' },
+      shot: { speed: '속도', ttl: '수명(초)', spread: '여러 발 사이 각도', muzzle: '출발 거리' },
+      dash: { time: '돌진 시간(초)', invuln: '무적(초)', speed: '돌진 속도', min: '재충전 바닥(초)' },
+      nova: { damage: '피해', radius: '범위', cooldown: '재충전(초)', push: '밀어내는 거리' },
+      orbit: {
+        radius: '회전 반경',
+        speed: '회전 속도',
+        max: '최대 개수',
+        damage: '피해',
+        hit: '판정 크기',
+        hitCooldown: '같은 적 재타격(초)',
+      },
+      stage: {
+        hp: stage.name + '마다 적 HP +',
+        damage: stage.name + '마다 적 피해 +',
+        density: stage.name + '마다 출현 +',
+        xp: stage.name + '마다 XP +',
+        score: stage.name + '마다 ' + point.name + ' +',
+        speed: stage.name + '마다 적 속도 +',
+        speedMax: '적 속도 상한',
+        autoLevel: '자동 승격 LV 간격',
+      },
+      boss: {
+        every: '보스 ' + stage.name + ' 간격',
+        base: '웨이브 기본 수',
+        per: '수 +1 ' + stage.name + ' 간격',
+        alive: '동시 최대',
+      },
+      spawn: {
+        first: '첫 출현(초)',
+        interval: '출현 간격(초)',
+        rate: '출현량 배율',
+        min: '간격 바닥(초)',
+        radius: '출현 거리',
+        born: '예고(초)',
+        'mix.runner': enemies.runner.name + ' 비율',
+      },
+      hazard: {
+        fromStage: '시작 ' + stage.name,
+        first: '첫 시점(초)',
+        interval: '간격(초)',
+        step: stage.name + '마다 간격 −',
+        min: '간격 바닥(초)',
+        max: '동시 최대',
+        offset: '기체에서 거리',
+        r: '반경',
+        delay: '터지기까지(초)',
+        damage: '피해',
+      },
+      shooter: {
+        near: '유지 거리(가까이)',
+        far: '유지 거리(멀리)',
+        reload: '재사격(초)',
+        reloadStage: stage.name + '마다 재사격 빨라짐',
+        reloadMin: '재사격 바닥(초)',
+        shotSpeed: '탄 속도',
+        fanEvery: '부채꼴 사수 간격',
+        fanAngle: '부채꼴 각도',
+        burstEvery: '연속 사수 간격',
+        burstDelay: '연속 사이(초)',
+      },
+      bossAttack: {
+        near: '다가오는 거리',
+        hurt: '격노 체력 비율',
+        reload: '사격(초)',
+        reloadHurt: '격노 사격(초)',
+        ring: '원형 탄 수',
+        ringHurt: '격노 원형 탄 수',
+        ringSpeed: '원형 탄 속도',
+        ringSpin: '원형 탄 회전',
+        aimSpeed: '조준 탄 속도',
+        sideEvery: '양옆 탄 보스 간격',
+        sideAngle: '양옆 탄 각도',
+      },
+      hostile: { damage: '피해 배율', ttl: '수명(초)', firstShot: '첫 사격(초)' },
+      caps: { enemies: '적', hostiles: '적 탄환', bullets: '내 탄환', gems: 'XP 보석' },
+      score: { comboWindow: '콤보 시간(초)', comboStep: '콤보당 보너스', comboMax: '보너스 상한' },
+      siege: {
+        interval: '간격(초)',
+        warn: '예고(초)',
+        perStep: '스텝당 수',
+        sides: '방향 수',
+        shotDelay: '사수 첫 사격(초)',
+        shotStep: '사수마다 +(초)',
+        speedStep: '회차마다 속도 +',
+        speedMax: '속도 상한',
+      },
+      map: { width: '가로', height: '세로' },
+      superLaunch: { stage: '시작 ' + stage.name, level: '시작 LV', picks: '준비 배분 수' },
+      cats: { maxLevel: '최대 Lv' },
+      superCoin: {
+        every: '간격(초)',
+        near: '가까운 거리',
+        far: '먼 거리',
+        r: '크기',
+        margin: '가장자리 여백',
+      },
+    };
+    // 스킬 묶음의 키 이름(앞에 스킬 이름이 붙는다)
+    const skillKeys = {
+      damage: '피해',
+      rate: '발사 속도',
+      minFire: '발사 간격 바닥',
+      overflow: '상한 뒤 피해 +',
+      max: '상한',
+      step: '스택당',
+      dash: '대시 재충전 −',
+      xp: '고를 때 XP',
+      hp: '최대 HP +',
+      heal: '고를 때 회복',
+      radius: '범위 +',
+      radiusMax: '범위 상한',
+      cooldown: '재충전 −(초)',
+      cooldownMin: '재충전 바닥(초)',
+      amount: '보호막 +',
+      regen: '재생 +',
+    };
+    const mixKeys = { base: '비율 기본', step: stage.name + '마다 +', max: '+ 상한' };
+    const unlockKeys = { score: point.name, time: '시간(초)', level: 'LV' };
+    const skillShort = id => skills[id]?.abbr || skills[id]?.name || id;
+    // 표 칸 이름(모드 · 기체 · 적)
+    const column = (group, id) =>
+      group === 'modes' ? modeName(id) : group === 'crafts' ? craftName(id) : enemies[id]?.short || id;
+    const rowName = (group, key) =>
+      key.startsWith('start.') ? '시작 ' + skillShort(key.slice(6)) : rows[group]?.[key] || key;
+    function label(path) {
+      const p = String(path).split('.'),
+        group = p[0],
+        rest = p.slice(1).join('.');
+      if (rows[group] && p.length >= 3)
+        return column(group, p[1]) + ' · ' + rowName(group, p.slice(2).join('.'));
+      if (group === 'skills' && p.length === 3) return skillName(p[1]) + ' · ' + (skillKeys[p[2]] || p[2]);
+      if (group === 'economy' && p[1] === 'permaBase')
+        return '영구 스택 첫 가격 ' + BL + ' · ' + skillShort(p[2]);
+      if (group === 'unlock') return modeName(p[1]) + ' 해금 · ' + (unlockKeys[p[2]] || p[2]);
+      if (group === 'spawn' && p[1] === 'mix' && p.length === 4)
+        return (enemies[p[2]]?.name || p[2]) + ' ' + (mixKeys[p[3]] || p[3]);
+      if (group === 'cats' && p[1] === 'unlock') return (cats[p[2]]?.name || p[2]) + ' 해금 ' + SC;
+      if (group === 'cats' && p[1] === 'levelCost')
+        return 'Lv' + (Number(p[2]) + 2) + ' 비용 ' + (p[3] === 's' ? SC : BL);
+      if (group === 'cats' && p[1] === 'effect')
+        return (cats[p[2]]?.name || p[2]) + ' Lv' + (Number(p[3]) + 1) + ' 효과';
+      return names[group]?.[rest] || rest || group;
+    }
+    return {
+      title: '밸런스 실험실',
+      sub: (version, balance) => 'NEON ARENA ' + version + ' · 지금 값 ' + balance,
+      changed: n => '바꾼 값 ' + n,
+      tabs: { values: '값', difficulty: '난이도', economy: '경제', sim: '자동 판', save: '저장' },
+      now: '지금',
+      exp: '실험',
+      groups,
+      rows,
+      column,
+      rowName,
+      label,
+      values: {
+        search: '찾기 · 이름이나 키',
+        onlyChanged: '바꾼 값만',
+        resetAll: '모두 되돌리기',
+        reset: '되돌리기',
+        tagCalc: '경제',
+        tagDifficulty: '난이도',
+        note: "값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다.",
+        was: v => '지금 ' + v,
+        invalid: '0 이상의 숫자',
+        on: '켬',
+        off: '끔',
+        empty: '찾는 값이 없습니다',
+        resetConfirm: n => '바꾼 값 ' + n + '개를 모두 지금 값으로 되돌릴까요?',
+      },
+      difficulty: {
+        note: '모드마다 적이 얼마나 센지 지금 값과 실험 값으로 비교합니다. Stage를 고르면 그 Stage 기준입니다.',
+        stage: stage.name,
+        metrics: {
+          hp: '적 HP 배율',
+          damage: '적 피해 배율',
+          spawnPerSec: '초당 출현',
+          shotsPerSec: '사수 1마리 초당 사격',
+          bulletSpeed: '적 탄속 배율',
+          xp: '처치 XP 배율',
+        },
+        speed: (a, b) => '적 이동 속도(모든 모드 같음) ×' + a + (a === b ? '' : ' → ×' + b),
+        method: '계산 방법',
+        formulas: [
+          'n = Stage − 1',
+          '적 HP = 모드 HP × (1 + Stage마다 적 HP+ × n). 피해 · XP도 같은 꼴',
+          '초당 출현 = 모드 출현 × 출현량 배율 ÷ max(간격 바닥, 출현 간격 ÷ (1 + Stage마다 출현+ × n))',
+          '사수 초당 사격 = 모드 사격 ÷ max(재사격 바닥, 재사격 ÷ (1 + Stage마다 재사격 빨라짐 × n))',
+          '적 탄속은 모드 값 그대로. 적 이동 속도는 모든 모드가 같다',
+        ],
+      },
+      economy: {
+        sources: { preset: '예시', test: '시험 경로 기록', real: '실제 주소 기록' },
+        reading: '기록을 읽는 중…',
+        presetNote:
+          "예시 숫자입니다. '자세히'에서 조건을 바꿀 수 있고, 기록을 고르면 이 폰의 실제 판으로 바뀝니다.",
+        recordNote: (n, skipped) =>
+          '이 폰의 기록 ' +
+          n +
+          '판을 읽기만 했습니다' +
+          (skipped ? ' · 10초가 안 된 판 ' + skipped + '개는 뺐습니다' : '') +
+          '.',
+        noRecords: '읽을 기록이 없습니다. 이 폰에서 그 주소로 한 판 이상 해야 합니다.',
+        unsupported: '이 브라우저에서는 기록을 읽을 수 없습니다.',
+        presets: {
+          easy: 'Easy · STAGE 올리기',
+          hard: 'Hard',
+          extream: 'Extream',
+          super: 'Super',
+          ultra: 'Ultra',
+          insane: 'Insane',
+          'super-s': 'Super · ' + SC + ' 출격',
+          'insane-s': 'Insane · ' + SC + ' 출격',
+        },
+        group: (mode, launch) => modeName(mode) + (launch === 'super' ? ' · ' + SC + ' 출격' : ''),
+        runs: (n, time) => n + '판 · 평균 ' + time,
+        brief: (time, lv, boss) => time + ' · LV' + lv + ' · 보스 ' + boss,
+        perRun: '판당 ' + G,
+        perMinute: '분당 ' + G,
+        blue: BL,
+        super: SC,
+        superCost: n => '출격 −' + n,
+        details: '자세히',
+        gold: {
+          minute: '분 보상',
+          boss: '보스',
+          coin: '레벨업 코인',
+          autoGoldCapped: '자동 ' + G + '(스킬 모두 최대)',
+          autoGoldChance: '자동 ' + G + '(확률)',
+          cat: '고양이',
+          total: '합계',
+        },
+        actual: '실제로 받은 값(판당)',
+        goalsTitle: '목표까지 판 수',
+        goals: {
+          income: '수입 단계 전부',
+          auto: auto.short,
+          autoGold: '자동 ' + G + ' 습득',
+          note: '한 줄 남기기(최대)',
+          sc: SC + ' 1개 만들기',
+          catUnlock: '고양이 모두 해금',
+          catMax: '고양이 1마리 Lv5',
+          perma10: '영구 스택 스킬마다 10개',
+        },
+        never: '불가',
+        runsOf: n => n + '판',
+        conditions: '조건',
+        fields: {
+          minutes: '분',
+          level: 'LV',
+          bosses: '보스',
+          manualCoins: '손 코인',
+          autoPicks: auto.short + ' 횟수',
+          capShare: '모두 최대 비율',
+          autoGold: '자동 ' + G,
+          tier: '수입 단계',
+          supplyLv: cats.supply.name + ' Lv',
+        },
+        resetRows: '예시 되돌리기',
+        method: '계산 방법',
+        formulas: [
+          '분 보상 = 전투 1분마다 min(분당 G 상한, 분당 G 기본 + 수입 단계) + 모드 분당 G+',
+          '보스 = 처치 수 × 보스 1마리 G. 레벨업 코인 = 손으로 고른 코인 × 레벨업 코인 G',
+          '자동 G = AUTO 횟수 × (모두 최대 비율 × 확률(스킬 모두 최대) + 나머지 × 확률) × 레벨업 코인 G',
+          '고양이 = 전투 1분마다 보급관 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
+          'S = Insane에서 슈퍼코인 간격마다 1개(줍는다고 가정). S 출격은 1개를 쓴다',
+          '기록 줄은 실제 받은 값에서 수입 단계 · 모두 최대 비율을 거꾸로 구해 다시 계산한다',
+        ],
+      },
+      sim: {
+        modes: '모드',
+        crafts: '기체',
+        launch: '출격',
+        launches: { normal: '일반', super: SC + ' 출격' },
+        stagePlan: stage.upper,
+        stages: { steady: '1분마다 +1', rush: '빨리 30까지', none: '안 올림' },
+        minutes: '길이',
+        minute: n => n + '분',
+        seeds: '판 수',
+        seedsOf: n => '× ' + n,
+        autoGold: '자동 ' + G,
+        tier: '수입 단계',
+        run: n => '돌리기 · 판 ' + n + '개',
+        stop: '멈추기',
+        progress: (done, total) => done + ' / ' + total + '판',
+        stale: '값이나 조건이 바뀌었습니다 · 다시 돌려 보세요',
+        none: "아직 돌린 판이 없습니다. 조건을 고르고 '돌리기'를 누르세요.",
+        cols: {
+          craft: '기체',
+          time: '생존',
+          level: 'LV',
+          stage: stage.upper,
+          bosses: '보스',
+          gold: '판당 ' + G,
+          blue: BL,
+        },
+        average: '평균',
+        chart: '모드별 평균',
+        chartMetrics: { time: '생존', level: 'LV', stage: stage.upper, gold: '판당 ' + G },
+        error: msg => '판이 멈췄습니다: ' + msg,
+        timeout: '너무 오래 걸려 끊었습니다',
+        note: '자동 조작은 사람보다 단순하게 피하므로 결과는 경향만 봅니다. 확정은 balance.js에 반영한 뒤 /test/에서 직접 플레이로 합니다.',
+        fallback: '이 브라우저는 작업자를 쓸 수 없어 화면에서 천천히 돌립니다.',
+      },
+      save: {
+        builtin: '기본 제공',
+        builtins: {
+          first: {
+            name: '첫 실험 — 난이도 곡선 · 기체 · 보스 ' + G,
+            desc:
+              '모드 배율을 Easy 1 → Insane 사이 비율 곡선으로, 기체 3종 수치, 보스 1마리 ' +
+              G +
+              ' 3 → 2. 자동 판은 Insane · 기체 3종.',
+          },
+        },
+        load: '불러오기',
+        current: '지금 상태 저장',
+        name: '이름',
+        store: '저장',
+        list: '저장한 시나리오',
+        empty: '아직 없습니다',
+        open: '열기',
+        remove: '지우기',
+        file: '파일',
+        exportFile: '파일로 내보내기',
+        importFile: '파일 가져오기',
+        copy: '글 복사',
+        copied: '복사했습니다 · 대화에 붙여 넣으세요',
+        copyFail: '복사가 막혔습니다 · 아래 글을 길게 눌러 복사하세요',
+        saved: name => "'" + name + "' 저장",
+        opened: name => "'" + name + "' 열기",
+        removeConfirm: name => "'" + name + "'을(를) 지울까요?",
+        replaceConfirm: n => '지금 바꾼 값 ' + n + '개를 버리고 불러올까요?',
+        drift: list => '저장한 뒤 지금 값이 바뀐 항목: ' + list,
+        missing: list => '지금은 없는 값(빼고 열었습니다): ' + list,
+        rejected: list => '맞지 않는 값(빼고 열었습니다): ' + list,
+        badFile: '실험실 시나리오 파일이 아닙니다',
+        storage: '이 기기 브라우저에만 저장됩니다(게임 기록과 따로).',
+        storageFail: '이 브라우저에 저장할 수 없습니다 · 파일로 내보내 두세요',
+        paste: '시나리오 글 붙여 넣기',
+        pasteHint: '에이전트가 대화로 준 시나리오 글(JSON)을 붙여 넣으세요',
+        pasteOpen: '붙여 넣은 시나리오 열기',
+      },
+      // 글 복사: 에이전트에게 넘기는 글
+      text: {
+        head: name => '[NEON 실험실] ' + name,
+        meta: (version, balance, date) => '게임 ' + version + ' · 지금 값 ' + balance + ' · ' + date,
+        changes: n => '바꾼 값 ' + n + '개',
+        none: '바꾼 값 없음',
+        economy: source => '경제(' + source + ' · 판당 ' + G + ' 지금 → 실험)',
+        sim: desc => '자동 판(' + desc + ' · 지금 → 실험)',
+      },
+    };
+  })();
 
   // ── 용어집: docs/spec/TERMS.md 전체를 이 표에서 만든다(npm run docs). 3단계 Help의 원본. ──
   // 항목: { term, desc } → '- **term**: desc'. 표: { head, rows }.
@@ -11616,6 +12071,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     msg,
     view,
     analysis,
+    lab,
     glossary,
   };
   root.NeonTerms = api;
@@ -12562,12 +13018,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.checkLevel();
       return true;
     }
-    // 자동 G 습득(R-025): AUTO가 고를 때만 부른다. 제시된 카드가 모두 상한이거나 엔진 난수가 autoGoldChance 미만이면
-    // 스킬 대신 레벨업 코인을 받고 choose처럼 전투로 돌아간다(같은 시드면 같은 결과). 아니면 false.
+    // 자동 G 습득(R-025): AUTO가 고를 때만 부른다. 엔진 난수가 확률 미만이면 스킬 대신 레벨업 코인을 받고
+    // choose처럼 전투로 돌아간다(같은 시드면 같은 결과). 아니면 false. 확률은 autoGoldChance, 제시된 카드가 모두 상한이면
+    // autoGoldCapped이고, 1이면 난수를 쓰지 않는다(항상).
     chooseAutoGold(wait = 0) {
       if (this.mode !== 'upgrade' || !this.choices.length) return false;
-      const capped = this.choices.every(u => this.isCapped(u.id));
-      if (!capped && this.rng() >= B.economy.autoGoldChance) return false;
+      const chance = this.choices.every(u => this.isCapped(u.id))
+        ? B.economy.autoGoldCapped
+        : B.economy.autoGoldChance;
+      if (chance < 1 && this.rng() >= chance) return false;
       this.autoChoices++;
       this.autoUsed = true;
       this.coinsEarned++;
@@ -13057,8 +13516,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const MODE_IDS = Object.keys(BAL.modes);
   // 저장소 이름 접미사: 시험 경로 빌드(build.cjs --ns=-test)는 실제 기록과 다른 이름을 쓴다.
   // DB 버전 3(R-014): 구조는 버전 2와 같다. 버전을 올려 다른 탭에 남은 v4.0.0 화면이 연결을 끊고 쓰지 못하게 한다.
+  // DB_BASE: 실제 주소의 DB 이름. 밸런스 실험실(lab.html)이 시험 · 실제 기록을 읽기만 할 때도 쓴다.
   const NS = typeof root.NEON_NS === 'string' ? root.NEON_NS : '',
-    DB_NAME = 'neon-arena-endless-v2' + NS,
+    DB_BASE = 'neon-arena-endless-v2',
+    DB_NAME = DB_BASE + NS,
     DB_VERSION = 3,
     RECORDS_KEY = 'neon-endless-records-v2' + NS,
     TELEMETRY = 4;
@@ -14146,6 +14607,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     STATE_COLUMNS,
     TELEMETRY_VERSION: TELEMETRY,
     DB_VERSION,
+    DB_BASE,
   };
   if (typeof module !== 'undefined') module.exports = root.NeonData;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
