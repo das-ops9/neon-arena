@@ -3849,6 +3849,7 @@ return Plotly;
     // defenseCap: 응급 재구성·재생 방벽을 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
     // fan·burst: 사수 부채꼴·연속 사격 · bossSide: 보스 조준 탄 양옆 2발
+    // blueCoin: 레벨업 코인 칸이 B 코인(economy.coinChoiceBlue B)이 될 확률(R-043, 엔진 난수와 따로)
     // score: 처치 Point 배율(적 Point × STAGE 배율에 곱한다. 콤보 보너스는 그대로)
     modes: {
       easy: {
@@ -3865,6 +3866,7 @@ return Plotly;
         goldBonus: 0,
         bossGold: 1,
         blue: 1,
+        blueCoin: 0,
         fan: false,
         burst: false,
         bossSide: false,
@@ -3883,6 +3885,7 @@ return Plotly;
         goldBonus: 0,
         bossGold: 2,
         blue: 1,
+        blueCoin: 0.01,
         fan: false,
         burst: false,
         bossSide: false,
@@ -3901,6 +3904,7 @@ return Plotly;
         goldBonus: 1,
         bossGold: 3,
         blue: 1,
+        blueCoin: 0.02,
         fan: true,
         burst: false,
         bossSide: false,
@@ -3919,6 +3923,7 @@ return Plotly;
         goldBonus: 1,
         bossGold: 4,
         blue: 1,
+        blueCoin: 0.03,
         fan: true,
         burst: false,
         bossSide: false,
@@ -3937,6 +3942,7 @@ return Plotly;
         goldBonus: 2,
         bossGold: 5,
         blue: 2,
+        blueCoin: 0.04,
         fan: true,
         burst: true,
         bossSide: false,
@@ -3955,6 +3961,7 @@ return Plotly;
         goldBonus: 2,
         bossGold: 6,
         blue: 2,
+        blueCoin: 0.05,
         fan: true,
         burst: true,
         bossSide: true,
@@ -4164,6 +4171,7 @@ return Plotly;
       goldMax: 5,
       blueEvery: 10,
       coinChoice: 1,
+      coinChoiceBlue: 1,
       incomePrice: 100,
       incomeMax: 4,
       autoPrice: 100,
@@ -4285,10 +4293,9 @@ return Plotly;
   const G = coins.g.short,
     BL = coins.b.short,
     SC = coins.s.short;
-  // note: 열린 모드 카드의 한 줄(없으면 해금 조건)
   const modes = {
-    easy: { name: 'Easy', note: '기본 아레나' },
-    hard: { name: 'Hard', note: '바로 선택 가능' },
+    easy: { name: 'Easy' },
+    hard: { name: 'Hard' },
     extream: { name: 'Extream' },
     super: { name: 'Super' },
     ultra: { name: 'Ultra' },
@@ -4573,6 +4580,12 @@ return Plotly;
     });
   };
   const blueExtra = unit => modeGroups('blue', ' ', unit);
+  // B 코인 칸 확률(R-043): 확률이 있는 모드만 'Hard 1% · … · Insane 5%'
+  const blueCoinModes = () =>
+    Object.entries(B().modes)
+      .filter(([, m]) => m.blueCoin > 0)
+      .map(([id, m]) => modeName(id) + ' ' + pctOf(m.blueCoin) + '%')
+      .join(' · ');
   // 분당 G 보너스(goldBonus)가 있는 모드: 'Extream · Super +1, Ultra 이상 +2'
   const goldExtra = () => modeGroups('goldBonus', ' +').join(', ');
   // 보스 1마리 G(R-036): 모드마다 다르면 첫 모드 ~ 마지막 모드('Easy 1 ~ Insane 6'), 모두 같으면 그 값
@@ -4616,17 +4629,21 @@ return Plotly;
       text: (s, boss) =>
         stageLabel(s) + (boss === 'now' ? ' · 보스 등장' : boss === 'next' ? ' · 다음 보스' : ''),
     },
-    // AUTO 결과: n = 고른 스킬 수, gold = 자동 G 습득으로 받은 G(R-025)
+    // AUTO 결과: n = 고른 스킬 수, gold = 자동 G 습득으로 받은 G(R-025), blue = 그중 B 코인 칸으로 받은 B(R-043)
     auto: {
       sec: 3,
-      text: (n, id, gold = 0) =>
-        !n
-          ? '자동 ' + G + ' 습득 +' + gold + ' ' + G
-          : gold
-            ? auto.name + ' ' + n + '개 · +' + gold + ' ' + G
+      text: (n, id, gold = 0, blue = 0) => {
+        const got = [gold ? '+' + gold + ' ' + G : '', blue ? '+' + blue + ' ' + BL : '']
+          .filter(Boolean)
+          .join(' · ');
+        return !n
+          ? (blue ? '자동 코인 ' : '자동 ' + G + ' 습득 ') + got
+          : got
+            ? auto.name + ' ' + n + '개 · ' + got
             : n === 1
               ? auto.name + ' · ' + skillName(id) + ' +1'
-              : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id),
+              : auto.name + ' ' + n + '개 · 마지막 ' + skillName(id);
+      },
     },
     // 판 도중 해금(R-024): 금색 테두리(결과 화면 '새 모드 해금' 줄이 놓침을 보완)
     unlock: { major: true, tone: 'gold', sec: 4, text: id => modeName(id) + ' 해금' },
@@ -4760,6 +4777,8 @@ return Plotly;
       kicker: 'LEVEL UP',
       title: '강화 하나를 고르세요',
       coin: () => '대신 코인 +' + E().coinChoice + ' ' + G + ' 받기',
+      // 코인 칸이 B 코인일 때(R-043, 모드 확률). 레벨업마다 화면이 바꿔 쓴다.
+      coinBlue: () => '대신 코인 +' + E().coinChoiceBlue + ' ' + BL + ' 받기',
       sub: '1 · 2 · 3 키로 선택 · 선택 중에는 전투가 멈춥니다',
     },
     pause: {
@@ -4768,6 +4787,7 @@ return Plotly;
       resume: '전투 계속',
       retire: '기록을 남기고 종료',
       settings: '화면 · 소리 설정',
+      help: '도움말',
     },
     result: {
       kicker: 'RUN RECORDED',
@@ -4806,7 +4826,7 @@ return Plotly;
       motion: '화면 흔들림',
       numbers: '치명타 숫자',
       fullscreen: '전체 화면',
-      help: '조작법',
+      help: '도움말',
       done: '설정 완료',
     },
     detail: { exportLog: '분석 로그 저장', analysis: '상세 분석', back: '돌아가기' },
@@ -4819,30 +4839,15 @@ return Plotly;
       cancel: '취소',
       confirm: '가져오기',
     },
+    // 도움말 창(O-HELP, R-005): 메뉴 '?' · 일시정지 · 설정에서 연다. 접는 칸 5개(처음엔 ①만 펼침).
+    // 칸 = { title, rows: [[이름, 설명]], sub?: { title, rows }, tips?: [문장] }. 이름 · 숫자는 이 파일과 balance.js를 따른다.
+    // I-06 이름 · I-01 스토리 때 이 문구만 고친다.
     help: {
       kicker: 'PILOT BRIEFING',
-      title: '성장하고, 다음 ' + stage.name + '를 선택하세요',
-      move: '이동 · 방향키도 가능',
-      dash: '짧은 무적 ' + abilities.dash,
-      nova: abilities.nova + ' · 근처 적 탄환 제거',
-      stage: stage.name + ' 즉시 올리기',
-      pause: '일시정지',
-      p1: () =>
-        '공격은 자동입니다. 마우스를 누르면 커서 방향으로 조준합니다. 황금 XP 조각을 모아 레벨업마다 강화 하나를 선택하세요. ' +
-        stage.name +
-        '는 원하는 때 올릴 수 있고, ' +
-        B().boss.every +
-        '의 배수 ' +
-        stage.name +
-        '에서 보스가 나타납니다.',
-      p2:
-        '휴대폰: 버튼을 뺀 빈 공간 어디서든 끌어 이동하세요. 다른 손가락으로 ' +
-        abilities.dash +
-        '·' +
-        abilities.nova +
-        '를 누를 수 있습니다. 일시정지 화면에서 기록을 남기고 종료할 수 있습니다.',
-      p3: '게임 기록과 로그는 이 브라우저에 저장됩니다. 기록 탭의 백업으로 다른 기기에 옮길 수 있고, 내보낸 분석 로그는 상세 분석 화면에서 다시 열 수 있습니다.',
-      done: '준비 완료',
+      title: '도움말',
+      open: '도움말',
+      done: '닫기',
+      sections: () => helpSections(),
     },
   };
 
@@ -4868,11 +4873,17 @@ return Plotly;
       point: point.upper,
       kills: '처치',
     },
-    // 결과 재화 줄: G 내역(있을 때) + 잔액
-    resultCoins: (parts, gold, blue) => {
-      const detail = msg.resultGold(parts);
+    // 결과 재화 줄: G 내역(있을 때) + B 내역(B 코인을 받은 판만, R-043) + 잔액
+    resultCoins: (parts, gold, blue, blueParts = {}) => {
+      const detail = msg.resultGold(parts),
+        blueDetail = blueParts.coin
+          ? [blueParts.level ? 'LV ' + num(blueParts.level) : '', '코인 ' + num(blueParts.coin)]
+              .filter(Boolean)
+              .join(' · ')
+          : '';
       return (
         (detail ? G + ' 내역 ' + detail + ' · ' : '') +
+        (blueDetail ? BL + ' 내역 ' + blueDetail + ' · ' : '') +
         '잔액 ' +
         num(gold) +
         ' ' +
@@ -5119,8 +5130,9 @@ return Plotly;
     perma: '영구',
     // 성장 카드: 더 살 수 없는 스킬의 버튼 자리(R-042)
     permaMax: 'MAX',
-    unlockBy: id => unlockGate(id) + roAfter(unlockGate(id)) + ' 해금',
     locked: id => '🔒 ' + unlockGate(id),
+    // 모드 창 카드 칩(R-046): 자동 강화를 못 쓰는 모드 · S 코인이 나오는 모드
+    modeChips: { noAuto: () => auto.short + ' 불가', superCoin: () => SC + ' 출현' },
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
@@ -5248,7 +5260,7 @@ return Plotly;
         BL +
         (sup ? ' · +' + num(sup) + ' ' + SC : '') +
         ' · ',
-      coins: n => '코인 선택 ' + n + '회',
+      coins: (n, blue = 0) => '코인 선택 ' + n + '회' + (blue ? ' · ' + BL + ' 코인 ' + blue + '개' : ''),
     },
   };
 
@@ -5309,6 +5321,7 @@ return Plotly;
         goldBonus: '분당 ' + G + '+',
         bossGold: '보스 ' + G,
         blue: 'LV10 ' + BL,
+        blueCoin: BL + ' 코인 확률',
         fan: '부채꼴',
         burst: '연속',
         bossSide: '보스 양옆',
@@ -5330,6 +5343,7 @@ return Plotly;
         goldMax: '분당 ' + G + ' 상한',
         blueEvery: BL + ' 받는 LV 간격',
         coinChoice: '레벨업 코인 ' + G,
+        coinChoiceBlue: '레벨업 코인 ' + BL,
         incomePrice: '수입 단계 가격 ' + G,
         incomeMax: '수입 단계 수',
         autoPrice: auto.short + ' 가격 ' + G,
@@ -5575,6 +5589,8 @@ return Plotly;
         perRun: '판당 ' + G,
         perMinute: '분당 ' + G,
         blue: BL,
+        // B 내역(R-043): LV 보상 · B 코인 칸
+        blueParts: { level: 'LV 보상', coin: BL + ' 코인', coinShort: '코인' },
         super: SC,
         superCost: n => '출격 −' + n,
         details: '자세히',
@@ -5717,6 +5733,138 @@ return Plotly;
     };
   })();
 
+  // ── 도움말 칸(R-005). 재화 칸은 용어집 코인 표를 그대로 쓴다(한 사실 한 곳). ──
+  const helpSections = () => {
+    const b = B(),
+      e = b.economy,
+      modeIds = Object.keys(b.modes),
+      siegeMin = b.siege.interval / 60,
+      sMin = b.superCoin.every / 60,
+      sl = b.superLaunch;
+    const modeLine = id => {
+      const m = b.modes[id],
+        gate = b.unlock[id] ? unlockGate(id) + roAfter(unlockGate(id)) + ' 해금' : '처음부터 열림';
+      return [
+        gate,
+        auto.short + (m.auto ? ' 가능' : ' 불가'),
+        b.superCoin.mode === id ? SC + ' 코인 출현' : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
+    };
+    return [
+      {
+        title: '기본 조작',
+        rows: [
+          ['이동', '버튼이 없는 빈 화면 어디서든 끌면 그쪽으로 움직입니다. 공격은 자동입니다.'],
+          [abilities.dash, '짧게 돌진하며 잠깐 무적이 됩니다.'],
+          [abilities.nova, '주변 적을 밀어내고 피해를 주며, 가까운 적 탄환을 지웁니다.'],
+          [
+            stage.upper,
+            '누르면 바로 ' + stage.name + ' +1. 올릴수록 적이 강해지고 ' + point.name + ' · XP가 커집니다.',
+          ],
+          ['일시정지', '판을 멈춥니다. 여기서 도움말을 보거나 기록을 남기고 끝냅니다.'],
+          [
+            '키보드',
+            'W A S D · 방향키 이동 · SPACE ' +
+              abilities.dash +
+              ' · E ' +
+              abilities.nova +
+              ' · U ' +
+              stage.upper +
+              ' · P / ESC 일시정지 · 숫자키로 레벨업 선택',
+          ],
+        ],
+        sub: {
+          title: '화면 표시',
+          rows: [
+            [
+              stage.upper,
+              '지금 ' + stage.name + '(난이도 단계). ' + b.boss.every + '의 배수에서 보스가 나옵니다.',
+            ],
+            [level.short, '레벨. 레벨업마다 스킬 하나 또는 코인을 고릅니다.'],
+            [point.name, '점수. 높은 모드 · 높은 ' + stage.name + '에서 처치할수록 많이 오릅니다.'],
+            [auto.short, auto.name + '. 켜면 레벨업 때 스킬을 자동으로 고릅니다.'],
+            ['CHAIN', '연속 처치 수. 이어질수록 ' + point.name + ' 보너스가 붙습니다.'],
+            ['HP', '체력. 0이 되면 판이 끝납니다.'],
+            ['보호막', '방패 막대. ' + 'HP보다 먼저 피해를 받습니다.'],
+            ['XP', '적이 남긴 보석. 막대가 차면 레벨업합니다.'],
+          ],
+        },
+      },
+      {
+        title: '모드',
+        rows: modeIds.map(id => [modeName(id), modeLine(id)]),
+      },
+      {
+        title: '재화',
+        rows: glossary()[0].rows.map(([mark, name, desc]) => [mark + ' · ' + name, desc]),
+      },
+      {
+        title: '성장',
+        rows: [
+          [
+            '영구 스택',
+            '성장 탭에서 ' + BL + '로 사는 스킬. 스킬마다 MAX까지, 모든 기체의 다음 출격부터 적용됩니다.',
+          ],
+          [
+            launches.super,
+            SC +
+              ' 1개로 강화 ' +
+              sl.picks +
+              '회를 직접 나눈 뒤 ' +
+              stage.upper +
+              ' ' +
+              sl.stage +
+              ' · ' +
+              level.short +
+              ' ' +
+              sl.level +
+              '에서 시작합니다.',
+          ],
+          ['히든 탭', modeName(b.superCoin.mode) + ' 한 판을 끝내면 성장 탭 맨 아래에 열립니다.'],
+          [
+            '고양이 비행사',
+            SC +
+              '로 해금하고 ' +
+              SC +
+              ' + ' +
+              BL +
+              '로 Lv' +
+              b.cats.maxLevel +
+              '까지 키웁니다. 동반 1마리와 Lv' +
+              b.cats.maxLevel +
+              ' 고양이의 효과가 출격 때 적용됩니다.',
+          ],
+        ],
+      },
+      {
+        title: 'Tip',
+        tips: [
+          stage.upper + ' 버튼을 누르면 전투 중에도 바로 ' + stage.name + '가 오릅니다.',
+          stage.name +
+            ' ' +
+            b.boss.every +
+            '의 배수마다 보스가 나옵니다. 처치하면 ' +
+            G +
+            '(' +
+            bossGoldText() +
+            ')를 받습니다.',
+          abilities.dash + '하는 동안은 잠깐 무적입니다. 탄환 사이를 빠져나갈 때 쓰세요.',
+          abilities.nova + '는 가까운 적 탄환도 지웁니다.',
+          '레벨업 코인 칸이 가끔 ' + BL + ' 코인이 됩니다(' + blueCoinModes() + ').',
+          modeName(b.superCoin.mode) +
+            '에서는 ' +
+            sMin +
+            '분마다 ' +
+            SC +
+            ' 코인이 맵에 나타납니다. 방향 표시가 없으니 근처를 돌며 찾으세요.',
+          '포위는 ' + siegeMin + '분마다 사방에서 몰려옵니다. 화면 가장자리가 붉어지면 대비하세요.',
+          '★ 별표한 기록은 자동 정리에서 지워지지 않습니다.',
+        ],
+      },
+    ];
+  };
   // ── 용어집: docs/spec/TERMS.md 전체를 이 표에서 만든다(npm run docs). 3단계 Help의 원본. ──
   // 항목: { term, desc } → '- **term**: desc'. 표: { head, rows }.
   const glossary = () => {
@@ -5747,6 +5895,14 @@ return Plotly;
               e.blueEvery +
               '마다 얻는다(' +
               blueModes +
+              '). 레벨업 코인 칸이 모드 확률로 ' +
+              BL +
+              ' 코인(+' +
+              e.coinChoiceBlue +
+              ' ' +
+              BL +
+              ')이 되기도 한다(' +
+              blueCoinModes() +
               '). 성장 화면의 영구 스킬과 ' +
               coins.s.name +
               ' 제작에 쓴다.',
@@ -6063,6 +6219,7 @@ return Plotly;
     unlockGate,
     goldExtra,
     bossGoldText,
+    blueCoinModes,
     alerts,
     ui,
     msg,
@@ -6096,7 +6253,7 @@ return Plotly;
   //   - kills: [t(묶음의 마지막 처치), from(첫 처치), counts(dict.kinds 순서 개수), other?(목록 밖 종류 객체)]
   //     kill 이벤트를 log.killBatch초 동안 모아 한 번에 쓴다. 판 끝 · 내보내기 때 남은 것도 쓴다.
   //   - 반올림: t · from · at 소수 1자리, x · y · r 정수, 피해 · hp · wait 소수 1자리, stage의 rules 소수 3자리.
-  //   - stage · coin_choice의 auto(자동 승격 R-022 · 자동 G 습득 R-025)는 참일 때만 쓴다. s_spawn · s_pick은 Insane S 코인(R-023).
+  //   - stage · coin_choice의 auto(자동 승격 R-022 · 자동 G 습득 R-025)와 coin_choice의 blue(B 코인 R-043)는 참일 때만 쓴다. s_spawn · s_pick은 Insane S 코인(R-023).
   // events: 열 목록에 없는 종류만 v3처럼 객체로 둔다(context · postContext는 뺀다).
   // 이벤트로 쓰지 않고 summary에서만 세는 것:
   //   summary.attempts[능력] = 시도(받아들인 누름 ability_attempt + 거절 ability_rejected, R-003 엔진 기준).
@@ -6162,6 +6319,8 @@ return Plotly;
       super: finiteCount(e?.super),
       cat: finiteCount(e?.cat),
       autoGold: finiteCount(e?.autoGold),
+      // B 코인(R-043)으로 받은 B. blue 안의 내역이다.
+      blueCoin: finiteCount(e?.blueCoin),
     };
   }
   // 출격 순간 고양이 레벨: 고양이마다 0~maxLevel 정수(0은 미해금)
@@ -6188,6 +6347,7 @@ return Plotly;
       coinChoices: finiteCount(raw.coinChoices),
       autoChoices: finiteCount(raw.autoChoices),
       coinsEarned: finiteCount(raw.coinsEarned),
+      blueCoins: finiteCount(raw.blueCoins),
       autoUsed: raw.autoUsed === true,
       note: typeof raw.note === 'string' ? raw.note : null,
       noteConfirmed: raw.noteConfirmed === true || (typeof raw.note === 'string' && raw.note.length > 0),
@@ -6709,7 +6869,7 @@ return Plotly;
     ],
     level: ['t', 'level', 'offered'],
     upgrade: ['t', 'source', 'id', 'count', 'level', 'wait'],
-    coin_choice: ['t', 'level', 'wait', 'amount', 'auto'],
+    coin_choice: ['t', 'level', 'wait', 'amount', 'auto', 'blue'],
     stage: ['t', 'to', 'hp', 'level', 'rules', 'skills', 'auto'],
     boss: ['t', 'enemyStage', 'id'],
     bossdown: ['t', 'enemyStage', 'waveId'],
@@ -6963,6 +7123,7 @@ return Plotly;
         abilities: { dash: 0, nova: 0 },
         autoChoices: 0,
         coinChoices: 0,
+        blueCoins: 0,
         attempts: { dash: 0, nova: 0 },
         rejected: { dash: 0, nova: 0 },
         hazards: 0,
@@ -7010,10 +7171,11 @@ return Plotly;
         s.chosen[e.id] = (s.chosen[e.id] || 0) + 1;
         if (e.source === 'auto') s.autoChoices++;
       }
-      // 자동 G 습득(R-025)의 코인은 AUTO 선택으로 센다
+      // 자동 G 습득(R-025)의 코인은 AUTO 선택으로 센다. coinChoices는 손 G 코인만, B 코인(R-043)은 blueCoins
       if (type === 'coin_choice') {
         if (e.auto) s.autoChoices++;
-        else s.coinChoices++;
+        else if (!e.blue) s.coinChoices++;
+        if (e.blue) s.blueCoins++;
       }
       if (type === 'stage') {
         s.stageChanges.push({
@@ -7535,7 +7697,9 @@ return Plotly;
           r.coinChoices +
           '회 · 획득 ' +
           r.coinsEarned +
-          '코인 · 자동 강화 ' +
+          '코인 · ' +
+          (r.blueCoins ? 'B 코인 ' + r.blueCoins + '개 · ' : '') +
+          '자동 강화 ' +
           (r.autoUsed ? '사용' : '미사용');
         section.append(summary);
         if (r.note) {
