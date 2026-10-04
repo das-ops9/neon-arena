@@ -91,6 +91,8 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
+  /* 화면 위 · 아래 끝 여백(R-047): 로고 글씨 높이의 50%. 가로 화면은 0(ui.css) */
+  --edge-gap: calc(var(--fs-lg) * 0.5);
 
   /* 화면 높이: 주소창이 펼쳐진 작은 높이 기준 */
   --vh-full: 100vh;
@@ -465,7 +467,7 @@ ul {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   height: var(--vh-full);
-  padding: var(--safe-t) var(--safe-r) 0 var(--safe-l);
+  padding: calc(var(--safe-t) + var(--edge-gap)) var(--safe-r) 0 var(--safe-l);
   background:
     radial-gradient(120% 60% at 0% 0%, #50f3d61f, transparent 60%),
     radial-gradient(110% 55% at 100% 100%, #b996ff1c, transparent 60%),
@@ -806,7 +808,7 @@ ul {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 1px solid var(--line);
   background: #070b13f5;
-  padding-bottom: var(--safe-b);
+  padding-bottom: calc(var(--safe-b) + var(--edge-gap));
 }
 .tab {
   display: grid;
@@ -1460,7 +1462,7 @@ p.cat-note {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: var(--vh-full);
-  padding: var(--safe-t) var(--safe-r) 0 var(--safe-l);
+  padding: calc(var(--safe-t) + var(--edge-gap)) var(--safe-r) 0 var(--safe-l);
   background: radial-gradient(110% 50% at 50% 0%, #c4a3ff22, transparent 60%), var(--bg);
 }
 .prep-head {
@@ -1572,7 +1574,7 @@ p.cat-note {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
   gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4) calc(var(--sp-3) + var(--safe-b));
+  padding: var(--sp-2) var(--sp-4) calc(var(--sp-3) + var(--safe-b) + var(--edge-gap));
   border-top: 1px solid var(--line);
   background: var(--bg-raise);
 }
@@ -1594,8 +1596,8 @@ p.cat-note {
   gap: 6px;
   height: var(--vh-full);
   /* 화면 맨 위 · 맨 아래에 여백을 조금 둔다(R-029) */
-  padding: calc(10px + var(--safe-t)) calc(8px + var(--safe-r)) calc(12px + var(--safe-b))
-    calc(8px + var(--safe-l));
+  padding: calc(10px + var(--safe-t) + var(--edge-gap)) calc(8px + var(--safe-r))
+    calc(12px + var(--safe-b) + var(--edge-gap)) calc(8px + var(--safe-l));
   pointer-events: none;
 }
 .hud button {
@@ -1931,6 +1933,38 @@ p.cat-note {
   border-color: var(--violet);
   color: #e9ddff;
 }
+/* S 코인 줍기(R-044): 금색 큰 글자(약 1.4배) + 빛줄기 한 번(transform · opacity만). 가로는 아래 가로 .alert 규칙이 크기를 되돌린다 */
+.alert--shine {
+  position: relative;
+  overflow: hidden;
+  padding: 8px 26px;
+  font-size: min(1.5rem, 25px);
+  box-shadow: 0 0 18px #ffd36a55;
+}
+.alert--shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, #fff6d8b0 50%, transparent 70%);
+  opacity: 0;
+  transform: translateX(-110%);
+  animation: alert-shine 0.8s var(--ease) 1;
+  pointer-events: none;
+}
+@keyframes alert-shine {
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(110%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .alert--shine::after {
+    display: none;
+  }
+}
 .alert--next {
   opacity: 0.45;
   font-size: min(0.9375rem, 16px);
@@ -2118,6 +2152,68 @@ body[data-pad='left'] .action-row {
 }
 
 /* ── 전투 위 오버레이: 레벨업 · 일시정지 · 결과 (backdrop-filter 없이 불투명 배경) ── */
+/* S출격 시작 연출(R-048, O-INTRO): 전투 화면 위 겹(t=0이라 적 없음). 금색 'S 출격' + 빛줄기 → 가운데 3 · 2 · 1.
+   움직임은 transform · opacity만, '동작 줄이기'면 글자만 바뀐다. 입력은 막지 않는다(엔진이 'paused'라 조작이 듣지 않음) */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(closest-side, #070b13b0, transparent);
+}
+.intro-title {
+  position: relative;
+  overflow: hidden;
+  padding: 6px 22px;
+  font-size: clamp(2.5rem, 15vw, 4rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  text-shadow: 0 0 18px #ffd36a99;
+  animation: intro-in 0.45s var(--ease) 1;
+}
+.intro-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, #fff6d8b0 50%, transparent 70%);
+  opacity: 0;
+  transform: translateX(-110%);
+  animation: alert-shine 0.9s var(--ease) 0.35s 2;
+}
+.intro-count {
+  font-size: clamp(4.5rem, 26vw, 6rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #e9fffb;
+  text-shadow: 0 0 16px #50f3d6aa;
+}
+.intro-count.is-pop {
+  animation: intro-pop 0.4s var(--ease) 1;
+}
+@keyframes intro-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+@keyframes intro-pop {
+  from {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-title,
+  .intro-count.is-pop {
+    animation: none;
+  }
+  .intro-title::after {
+    display: none;
+  }
+}
 .overlay {
   position: fixed;
   inset: 0;
@@ -2550,6 +2646,10 @@ body[data-mode='menu'] .vignette {
 
 /* ── 가로 화면: 메뉴는 왼쪽 내비 레일 + 두 칸, HUD 상단은 한 줄 ── */
 @media (orientation: landscape) and (max-height: 520px) {
+  /* 낮은 가로 화면은 위 · 아래 끝 여백을 더하지 않는다(R-047) */
+  :root {
+    --edge-gap: 0px;
+  }
   .menu {
     grid-template-columns: 64px minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
@@ -3103,6 +3203,12 @@ body[data-mode='menu'] .vignette {
       </footer>
     </div>
 
+    <!-- S출격 시작 연출(R-048): 전투 화면 위 겹, 'S 출격' 2초 → 3 · 2 · 1 -->
+    <div id="intro" class="intro" data-area="O-INTRO" hidden aria-live="assertive">
+      <strong class="intro-title" id="intro-title">S 출격</strong>
+      <b class="intro-count" id="intro-count" hidden></b>
+    </div>
+
     <section id="upgrade" class="overlay" hidden aria-labelledby="upgrade-title">
       <div class="overlay-panel" data-area="O-LEVEL">
         <div class="eyebrow" id="upgrade-kicker">LEVEL UP</div>
@@ -3208,6 +3314,9 @@ body[data-mode='menu'] .vignette {
       /></label>
       <label class="setting-row" for="numbers-setting"
         >치명타 숫자<input type="checkbox" id="numbers-setting"
+      /></label>
+      <label class="setting-row" for="vibrate-setting"
+        >진동<input type="checkbox" id="vibrate-setting"
       /></label>
       <div class="btn-row">
         <button class="btn btn--sm" id="fullscreen">전체 화면</button
@@ -10803,7 +10912,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // ── 전투 알림(R-030). 알림 대기열 하나로 보인다(app.js notify) ──
   // major: 중요 알림 — 차례로 보이고(대기 최대 3, 다음 것은 흐리게) 색 테두리(tone: danger · gold · violet).
   // major가 없으면 보통 알림 — 쌓지 않는다. 빈 때나 보통 알림이 떠 있을 때만 최신 것으로 바꿔 보인다.
-  // sec: 보이는 시간(초). 모두 3초, STAGE(직접 · 자동 상승) · 보스 접근 · 해금만 4초(Q58).
+  // sec: 보이는 시간(초). 모두 3초, STAGE(직접 · 자동 상승) · 보스 접근 · 해금 · S 코인 줍기만 4초(Q58 · R-044).
+  // fx: 'shine' — 지금 알림일 때 큰 글자 + 빛줄기 한 번(R-044).
   // 레벨업 · 일시정지 창이 떠 있으면 알림 시계가 멈춘다.
   // 문구는 짧게: 설명 숫자 · 방향은 빼고 보상 수는 남긴다.
   const alerts = {
@@ -10860,7 +10970,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     // Insane S 코인(R-023)
     sCoin: { major: true, tone: 'violet', sec: 3, text: () => SC + ' 코인 등장' },
-    sPick: { major: true, tone: 'violet', sec: 3, text: n => '+' + n + ' ' + SC },
+    // 줍기(R-044): 금색 · 큰 글자 · 반짝임 한 번(fx: 'shine'), 4초
+    sPick: { major: true, tone: 'gold', fx: 'shine', sec: 4, text: n => '+' + n + ' ' + SC },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -10982,6 +11093,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       coinBlue: () => '대신 코인 +' + E().coinChoiceBlue + ' ' + BL + ' 받기',
       sub: '1 · 2 · 3 키로 선택 · 선택 중에는 전투가 멈춥니다',
     },
+    // S출격 시작 연출(R-048, O-INTRO): 제목 2초 → 3 · 2 · 1 각 1초. 그동안 적 · 시간이 멈춘다
+    // 알림 sec처럼 보이는 시간도 여기 둔다: titleSec 초 + count 초, 진동 패턴(ms, 약 2초)
+    intro: { title: SC + ' 출격', titleSec: 2, count: 3, vibrate: [200, 100, 200, 100, 600] },
     pause: {
       kicker: 'PAUSED',
       title: '잠시 숨을 고르세요',
@@ -11026,6 +11140,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       sound: '효과음',
       motion: '화면 흔들림',
       numbers: '치명타 숫자',
+      // 진동(R-048, 이 기기 설정, 기본 켜짐). 진동을 지원하지 않는 브라우저(아이폰)는 조용히 건너뜀
+      vibrate: '진동',
       fullscreen: '전체 화면',
       help: '도움말',
       done: '설정 완료',
@@ -17783,7 +17899,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             ' <b>+' +
             n +
             '</b>' +
-            (max != null ? '/' + max : '') +
+            (max != null ? '<wbr>/' + max : '') +
             '</span><button class="btn btn--blue grow-buy' +
             (full ? ' is-max' : '') +
             '" data-perma="' +
@@ -18416,12 +18532,16 @@ let canvas = $('arena'),
   // 획득 스킬 줄을 마지막으로 그린 스택(바뀔 때만 다시 그림)
   skillKey = '';
 const preview = new Neon.Game();
+// S출격 시작 연출(R-048): { t: 화면 시간(초), step }. 그동안 엔진은 'paused'라 시간 · 기록 · 보상 시계가 멈춘다.
+let intro = null;
 let prefs = {
     view: 'wide',
     quality: 'auto',
     sound: false,
     motion: !matchMedia('(prefers-reduced-motion: reduce)').matches,
     numbers: true,
+    // 진동(R-048): 기본 켜짐. 이 기기 설정(백업 대상 아님)
+    vibrate: true,
     // 대시 · 충격파 버튼 위치(R-031): 'center'(기본) | 'right' | 'left'. 이 기기 설정(백업 대상 아님)
     pad: 'center',
     auto: false,
@@ -18438,6 +18558,7 @@ try {
     prefs.sound = p.sound === true;
     prefs.motion = p.motion === true && !matchMedia('(prefers-reduced-motion: reduce)').matches;
     prefs.numbers = p.numbers !== false;
+    prefs.vibrate = p.vibrate !== false;
     prefs.pad = ['center', 'right', 'left'].includes(p.pad) ? p.pad : 'center';
     prefs.auto = p.auto === true;
     prefs.autoGold = p.autoGold === true;
@@ -18490,7 +18611,7 @@ let alertClock = 0;
 function notify(type, ...args) {
   const a = T.alerts[type];
   if (!a) return;
-  const item = { text: a.text(...args), sec: a.sec, major: !!a.major, tone: a.tone || '' },
+  const item = { text: a.text(...args), sec: a.sec, major: !!a.major, tone: a.tone || '', fx: a.fx || '' },
     now = alertQ.now;
   text('announcer', item.text);
   if (now?.major) {
@@ -18523,7 +18644,8 @@ function paintAlert(el, item, waiting) {
     'alert' +
     (waiting ? ' alert--next' : '') +
     (item.major ? ' alert--major' : '') +
-    (item.tone ? ' alert--' + item.tone : '');
+    (item.tone ? ' alert--' + item.tone : '') +
+    (item.fx && !waiting ? ' alert--' + item.fx : '');
   if (el.className !== cls) el.className = cls;
 }
 function renderAlerts() {
@@ -18741,6 +18863,13 @@ async function begin(launch = {}) {
     // Insane 판은 HUD 재화 줄에 S도 보인다(R-023)
     $('hud-s-wrap').hidden = g.difficultyId !== BAL.superCoin.mode;
     clearInput();
+    // S출격은 연출(약 5초) 뒤에 전투가 흐른다. 일시정지와 같은 길이라 연출이 시간 · 기록에 들어가지 않는다.
+    intro = sc ? { t: 0, step: -1 } : null;
+    if (intro) {
+      g.pause();
+      tickIntro(0);
+      vibrate(T.ui.intro.vibrate);
+    }
     oldMode = '';
     syncMode();
     refreshProfileUI();
@@ -18748,15 +18877,50 @@ async function begin(launch = {}) {
     canvas.focus({ preventScroll: true });
     clearAlerts();
     if (!started.ok) notify('startLimited');
-    else if (sc) notify('startSuper', g.stage, g.p.level);
-    else notify('startNormal', g.difficultyId);
+    else if (!sc) notify('startNormal', g.difficultyId);
     tone('start');
   } finally {
     starting = false;
     $('start').disabled = false;
   }
 }
+// 연출 단계: 0 = 'S 출격' 제목, 3 · 2 · 1 = 카운트다운. 단계가 바뀔 때만 DOM을 쓴다.
+function tickIntro(dt) {
+  intro.t += dt;
+  const I = T.ui.intro,
+    left = I.titleSec + I.count - intro.t;
+  if (left <= 0) {
+    intro = null;
+    g.resume();
+    clearInput();
+    syncMode();
+    notify('startSuper', g.stage, g.p.level);
+    canvas.focus({ preventScroll: true });
+    return;
+  }
+  const step = intro.t < I.titleSec ? 0 : Math.ceil(left);
+  if (step === intro.step) return;
+  intro.step = step;
+  $('intro-title').hidden = step !== 0;
+  const count = $('intro-count');
+  count.hidden = step === 0;
+  if (step) {
+    count.textContent = step;
+    // 숫자마다 나타나는 움직임을 처음부터 다시(transform · opacity)
+    count.classList.remove('is-pop');
+    void count.offsetWidth;
+    count.classList.add('is-pop');
+  }
+}
+function vibrate(pattern) {
+  if (!prefs.vibrate || !navigator.vibrate) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch {}
+}
 function togglePause() {
+  // 연출 중에는 일시정지 입력을 받지 않는다(resume으로 연출이 끊기지 않게)
+  if (intro) return;
   if (g.mode === 'playing') {
     g.pause();
     clearInput();
@@ -18770,7 +18934,7 @@ function togglePause() {
 }
 function syncMode() {
   if (g.mode === 'upgrade' && autoEnabled()) resolveAutomatic();
-  const displayMode = g.mode === 'upgrade' && autoEnabled() ? 'playing' : g.mode;
+  const displayMode = intro ? 'intro' : g.mode === 'upgrade' && autoEnabled() ? 'playing' : g.mode;
   if (displayMode === oldMode) return;
   oldMode = displayMode;
   document.body.dataset.mode = displayMode;
@@ -18781,6 +18945,7 @@ function syncMode() {
   $('hud').hidden = ['menu', 'paused', 'ended'].includes(displayMode);
   if (!$('hud').hidden) checkAlertLine();
   $('upgrade').hidden = displayMode !== 'upgrade';
+  $('intro').hidden = displayMode !== 'intro';
   $('paused').hidden = displayMode !== 'paused' || !!document.querySelector('dialog[open]');
   $('result').hidden = displayMode !== 'ended';
   if (displayMode !== 'menu') $('mode-sheet').hidden = true;
@@ -19078,6 +19243,7 @@ function settingsDialog() {
   $('sound-setting').checked = prefs.sound;
   $('motion-setting').checked = prefs.motion;
   $('numbers-setting').checked = prefs.numbers;
+  $('vibrate-setting').checked = prefs.vibrate;
   $('pad-setting').value = prefs.pad;
   $('settings-dialog').showModal();
 }
@@ -19358,6 +19524,8 @@ function loop(ms) {
       }
     }
   } else accumulator = 0;
+  // 연출 시간은 화면 시간으로 센다(탭이 숨으면 rAF와 함께 멈췄다 이어진다)
+  if (intro && !frozen) tickIntro(dt);
   if (g.mode !== 'menu') {
     const options = {
       motion: prefs.motion,
@@ -19519,6 +19687,7 @@ function bind() {
     prefs.sound = $('sound-setting').checked;
     prefs.motion = $('motion-setting').checked;
     prefs.numbers = $('numbers-setting').checked;
+    prefs.vibrate = $('vibrate-setting').checked;
     prefs.pad = $('pad-setting').value;
     applyPad();
     savePrefs();
