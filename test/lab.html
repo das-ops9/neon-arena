@@ -86,8 +86,10 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
-  /* 화면 위 · 아래 끝 여백(R-047): 로고 글씨 높이의 50%. 가로 화면은 0(ui.css) */
-  --edge-gap: calc(var(--fs-lg) * 0.5);
+  /* 화면 위 · 아래 끝 여백(R-047): 위는 로고 글씨 높이의 70%(편집장 +20%, 앞 카메라 구멍), 아래는 50%.
+     모든 화면(메뉴 · 준비 · 전투 HUD · 창 · 시트)이 쓴다. 가로 화면은 0(ui.css) */
+  --edge-top: calc(var(--fs-lg) * 0.7);
+  --edge-bottom: calc(var(--fs-lg) * 0.5);
 
   /* 화면 높이: 주소창이 펼쳐진 작은 높이 기준 */
   --vh-full: 100vh;
@@ -95,6 +97,13 @@
 @supports (height: 100svh) {
   :root {
     --vh-full: 100svh;
+  }
+}
+/* 세로 전체 화면(설정 '전체 화면'): 상태 표시줄이 사라져 앞 카메라 구멍이 화면 위에 걸린다.
+   브라우저가 알려 주는 위 안전 영역이 그보다 작으면 최소 28px을 둔다(R-047) */
+@media (orientation: portrait) {
+  :root:fullscreen {
+    --safe-t: max(env(safe-area-inset-top, 0px), 28px);
   }
 }
 

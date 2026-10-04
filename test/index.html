@@ -91,8 +91,10 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
-  /* 화면 위 · 아래 끝 여백(R-047): 로고 글씨 높이의 50%. 가로 화면은 0(ui.css) */
-  --edge-gap: calc(var(--fs-lg) * 0.5);
+  /* 화면 위 · 아래 끝 여백(R-047): 위는 로고 글씨 높이의 70%(편집장 +20%, 앞 카메라 구멍), 아래는 50%.
+     모든 화면(메뉴 · 준비 · 전투 HUD · 창 · 시트)이 쓴다. 가로 화면은 0(ui.css) */
+  --edge-top: calc(var(--fs-lg) * 0.7);
+  --edge-bottom: calc(var(--fs-lg) * 0.5);
 
   /* 화면 높이: 주소창이 펼쳐진 작은 높이 기준 */
   --vh-full: 100vh;
@@ -100,6 +102,13 @@
 @supports (height: 100svh) {
   :root {
     --vh-full: 100svh;
+  }
+}
+/* 세로 전체 화면(설정 '전체 화면'): 상태 표시줄이 사라져 앞 카메라 구멍이 화면 위에 걸린다.
+   브라우저가 알려 주는 위 안전 영역이 그보다 작으면 최소 28px을 둔다(R-047) */
+@media (orientation: portrait) {
+  :root:fullscreen {
+    --safe-t: max(env(safe-area-inset-top, 0px), 28px);
   }
 }
 
@@ -467,7 +476,7 @@ ul {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   height: var(--vh-full);
-  padding: calc(var(--safe-t) + var(--edge-gap)) var(--safe-r) 0 var(--safe-l);
+  padding: calc(var(--safe-t) + var(--edge-top)) var(--safe-r) 0 var(--safe-l);
   background:
     radial-gradient(120% 60% at 0% 0%, #50f3d61f, transparent 60%),
     radial-gradient(110% 55% at 100% 100%, #b996ff1c, transparent 60%),
@@ -808,7 +817,7 @@ ul {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 1px solid var(--line);
   background: #070b13f5;
-  padding-bottom: calc(var(--safe-b) + var(--edge-gap));
+  padding-bottom: calc(var(--safe-b) + var(--edge-bottom));
 }
 .tab {
   display: grid;
@@ -840,7 +849,8 @@ ul {
 .sheet-panel {
   display: grid;
   gap: var(--sp-3);
-  max-height: calc(var(--vh-full) - 24px);
+  /* 위 끝은 카메라 구멍 자리를 피한다(R-047) */
+  max-height: calc(var(--vh-full) - 24px - var(--safe-t) - var(--edge-top));
   overflow-y: auto;
   padding: var(--sp-3) var(--sp-4) calc(var(--sp-4) + var(--safe-b));
   border-radius: 18px 18px 0 0;
@@ -1462,7 +1472,7 @@ p.cat-note {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: var(--vh-full);
-  padding: calc(var(--safe-t) + var(--edge-gap)) var(--safe-r) 0 var(--safe-l);
+  padding: calc(var(--safe-t) + var(--edge-top)) var(--safe-r) 0 var(--safe-l);
   background: radial-gradient(110% 50% at 50% 0%, #c4a3ff22, transparent 60%), var(--bg);
 }
 .prep-head {
@@ -1574,7 +1584,7 @@ p.cat-note {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
   gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4) calc(var(--sp-3) + var(--safe-b) + var(--edge-gap));
+  padding: var(--sp-2) var(--sp-4) calc(var(--sp-3) + var(--safe-b) + var(--edge-bottom));
   border-top: 1px solid var(--line);
   background: var(--bg-raise);
 }
@@ -1596,8 +1606,8 @@ p.cat-note {
   gap: 6px;
   height: var(--vh-full);
   /* 화면 맨 위 · 맨 아래에 여백을 조금 둔다(R-029) */
-  padding: calc(10px + var(--safe-t) + var(--edge-gap)) calc(8px + var(--safe-r))
-    calc(12px + var(--safe-b) + var(--edge-gap)) calc(8px + var(--safe-l));
+  padding: calc(10px + var(--safe-t) + var(--edge-top)) calc(8px + var(--safe-r))
+    calc(12px + var(--safe-b) + var(--edge-bottom)) calc(8px + var(--safe-l));
   pointer-events: none;
 }
 .hud button {
@@ -1903,7 +1913,8 @@ p.cat-note {
   align-content: start;
   gap: 6px;
   min-height: 1.75rem;
-  padding-top: clamp(4px, calc(var(--vh-full) * 0.05), 48px);
+  /* 위 여백(--edge-top)으로 HUD가 내려간 만큼 빼서 알림 자리는 그대로 둔다(R-047) */
+  padding-top: clamp(4px, calc(var(--vh-full) * 0.05 - var(--edge-top)), 48px);
 }
 .alert {
   max-width: 100%;
@@ -1936,31 +1947,36 @@ p.cat-note {
 /* S 코인 줍기(R-044): 금색 큰 글자(약 1.4배) + 빛줄기 한 번(transform · opacity만). 가로는 아래 가로 .alert 규칙이 크기를 되돌린다 */
 .alert--shine {
   position: relative;
-  overflow: hidden;
   padding: 8px 26px;
   font-size: min(1.5rem, 25px);
   box-shadow: 0 0 18px #ffd36a55;
+  animation: shine-pop 0.4s var(--ease) 1;
 }
+/* 반짝임: 상자 안에서 제자리 번쩍임(움직이는 빛줄기는 상자 밖으로 넘쳐 잘림으로 잡힌다) */
 .alert--shine::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 30%, #fff6d8b0 50%, transparent 70%);
+  border-radius: inherit;
+  background: radial-gradient(closest-side, #fff6d8c0, #ffd36a40 70%, transparent);
   opacity: 0;
-  transform: translateX(-110%);
-  animation: alert-shine 0.8s var(--ease) 1;
+  animation: shine-flash 0.8s var(--ease) 1;
   pointer-events: none;
 }
-@keyframes alert-shine {
-  20% {
-    opacity: 1;
+@keyframes shine-pop {
+  from {
+    transform: scale(1.25);
   }
-  100% {
-    opacity: 0;
-    transform: translateX(110%);
+}
+@keyframes shine-flash {
+  25% {
+    opacity: 1;
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .alert--shine {
+    animation: none;
+  }
   .alert--shine::after {
     display: none;
   }
@@ -2165,7 +2181,6 @@ body[data-pad='left'] .action-row {
 }
 .intro-title {
   position: relative;
-  overflow: hidden;
   padding: 6px 22px;
   font-size: clamp(2.5rem, 15vw, 4rem);
   font-weight: 900;
@@ -2178,10 +2193,9 @@ body[data-pad='left'] .action-row {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 30%, #fff6d8b0 50%, transparent 70%);
+  background: radial-gradient(closest-side, #fff6d8a0, #ffd36a30 70%, transparent);
   opacity: 0;
-  transform: translateX(-110%);
-  animation: alert-shine 0.9s var(--ease) 0.35s 2;
+  animation: shine-flash 0.8s var(--ease) 0.35s 2;
 }
 .intro-count {
   font-size: clamp(4.5rem, 26vw, 6rem);
@@ -2223,7 +2237,7 @@ body[data-pad='left'] .action-row {
   align-items: safe center;
   justify-items: center;
   height: var(--vh-full);
-  padding: calc(var(--sp-4) + var(--safe-t)) calc(var(--sp-4) + var(--safe-r))
+  padding: calc(var(--sp-4) + var(--safe-t) + var(--edge-top)) calc(var(--sp-4) + var(--safe-r))
     calc(var(--sp-4) + var(--safe-b)) calc(var(--sp-4) + var(--safe-l));
   background: #04070cdb;
   overflow-y: auto;
@@ -2480,7 +2494,8 @@ body[data-mode='menu'] .vignette {
 }
 .dialog {
   width: min(520px, calc(100% - 24px));
-  max-height: calc(var(--vh-full) - 24px);
+  /* 가운데 창: 위아래 똑같이 줄여 위 끝이 카메라 구멍 자리(안전 영역 + 위 여백) 아래에 온다(R-047) */
+  max-height: calc(var(--vh-full) - 24px - 2 * (var(--safe-t) + var(--edge-top)));
   overflow-y: auto;
   padding: var(--sp-4);
   border-radius: var(--r-lg);
@@ -2648,7 +2663,8 @@ body[data-mode='menu'] .vignette {
 @media (orientation: landscape) and (max-height: 520px) {
   /* 낮은 가로 화면은 위 · 아래 끝 여백을 더하지 않는다(R-047) */
   :root {
-    --edge-gap: 0px;
+    --edge-top: 0px;
+    --edge-bottom: 0px;
   }
   .menu {
     grid-template-columns: 64px minmax(0, 1fr);
