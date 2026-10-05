@@ -2260,12 +2260,14 @@ ul {
   const view = {
     top3Empty: '첫 기록을 기다립니다.<br>새로운 최고점에 도전하세요.',
     superEmpty: SC + ' 출격 기록이 아직 없습니다.<br>' + SC + ' 출격으로 도전해 보세요.',
-    // 최근 기록(R-032): 위 줄 점수 + 그 판의 순위(TOP3 밖이어도 숫자), 아래 줄 '최근 · 모드 · 시간 · LV · STAGE'
+    // 최근 기록(R-032 · R-053): 한 줄 — 점수 + 그 판의 순위(TOP3 밖이어도 숫자) + '모드 · 시간 · LV · STAGE'
     rankPlace: (kind, place) => rankingName(kind) + ' ' + place + '위',
-    lastRecent: '최근',
     lastEmpty: '아직 기록 없음',
     lastLabel: (score, place) => '최근 기록 ' + score + ' · ' + place + ' · 상세 보기',
-    modeOpen: id => '모드 변경 · 지금 ' + modeName(id),
+    // best: 이 모드 최고 Point 글자(없으면 빈 값)
+    modeOpen: (id, best) => '모드 변경 · 지금 ' + modeName(id) + (best ? ' · 이 모드 최고 ' + best : ''),
+    // 모드 칸 · 모드 창의 최고 기록(R-053): 일반 출격 판만(S 출격은 시작 STAGE가 달라 따로, Q44)
+    modeBest: { title: '이 모드 최고', none: '기록 없음', card: '최고', cardNone: '최고 기록 없음' },
     recordsEmpty: '아직 저장된 기록이 없습니다.',
     // 기록 탭 별표 · 선택 삭제(R-018)
     rec: {
@@ -2889,48 +2891,6 @@ ul {
     };
   })();
 
-  // ── 음악 후보 듣기(music.html, R-051 피드백 · /test/ 전용). 곡 표는 music.js, 여기는 이름 · 설명 ──
-  // tracks: 곡 id → [이름, 한 줄 설명]. 편집장이 고르면 고른 곡만 남기고 이 칸은 지운다.
-  const musicLab = {
-    title: '음악 후보 듣기',
-    note: "▶를 누르면 곡을 만든 뒤(몇 초) 반복해서 들려 줍니다. '게임에 쓰기'를 고르면 이 폰의 /test/ 게임에서 그 곡이 나옵니다.",
-    game: '게임 열기 ›',
-    scenes: { intro: '인트로', lobby: '대기실', battle: '전투' },
-    play: name => name + ' 듣기',
-    stop: name => name + ' 멈추기',
-    making: n => '만드는 중 ' + n + '%',
-    waiting: '차례 기다리는 중',
-    playing: '재생 중',
-    failed: '만들지 못했습니다',
-    meta: (bpm, sec) => bpm + 'bpm · ' + sec + '초 반복',
-    use: '게임에 쓰기',
-    saved: scene => musicLab.scenes[scene] + ' 곡을 저장했습니다 · 게임을 다시 열면 그 곡이 나옵니다',
-    copy: '고른 곡 글 복사',
-    copied: '복사했습니다 · 대화에 붙여 넣으세요',
-    copyFail: '복사가 막혔습니다 · 아래 글을 길게 눌러 복사하세요',
-    // 글 복사: picks = { 장면: 곡 id }
-    text: picks =>
-      '[NEON 음악] ' +
-      Object.entries(musicLab.scenes)
-        .map(([scene, name]) => name + ' ' + musicLab.tracks[picks[scene] || scene][0])
-        .join(' · '),
-    noAudio: '이 브라우저는 소리를 만들 수 없습니다.',
-    tracks: {
-      intro: ['지금 곡', '느린 패드 · 삼각파 반짝임 · 5마디부터 킥(첫 버전)'],
-      'intro-a': ['A · 우주 앰비언트', '넓은 패드 · 유리 종 아르페지오 · 북 없이 잔잔'],
-      'intro-b': ['B · 신스웨이브 새벽', '튕기는 아르페지오 · 5마디부터 북 · 톱니 리드'],
-      'intro-c': ['C · 로파이 피아노', '전자 피아노 재즈 화음 · 레코드 잡음 · 둥근 북'],
-      lobby: ['지금 곡', '사각파 리드 · 박수 · 가벼운 신스팝(첫 버전)'],
-      'lobby-a': ['A · 로파이 칠', '전자 피아노 · 스윙 북 · 레코드 잡음 · 9마디부터 리드'],
-      'lobby-b': ['B · 시티팝', '펑키 베이스 · 뒷박 튕김 · 밝은 리드 훅'],
-      'lobby-c': ['C · 드림팝', '넓은 패드 · 8분 아르페지오 · 4박 킥 · 부드러운 리드'],
-      battle: ['지금 곡', '16분 베이스 · 사각파 훅(첫 버전)'],
-      'battle-a': ['A · 아웃런 질주', '4박 킥 · 옥타브 베이스 · 9마디부터 톱니 리드'],
-      'battle-b': ['B · 다크 사이버', '반박자 북 · 미끄러지는 리스 베이스 · 어두운 단조'],
-      'battle-c': ['C · 드럼앤베이스', '172bpm 브레이크 · 서브 베이스 · 전자 피아노 · 리드'],
-    },
-  };
-
   // ── 도움말 칸(R-005). 재화 칸은 용어집 코인 표를 그대로 쓴다(한 사실 한 곳). ──
   const helpSections = () => {
     const b = B(),
@@ -3406,7 +3366,6 @@ ul {
     view,
     analysis,
     lab,
-    musicLab,
     glossary,
   };
   root.NeonTerms = api;
@@ -3586,6 +3545,11 @@ ul {
     if (!r) return null;
     const kind = rankingOf(r);
     return { kind, place: list.filter(x => rankingOf(x) === kind).findIndex(x => x.id === id) + 1 };
+  }
+  // 모드 최고(R-053): 그 모드의 일반 출격 판 중 순위가 가장 높은 판. S 출격 판은 시작 STAGE가 달라 따로 매기므로(Q44)
+  // 넣지 않는다. 없으면 null.
+  function modeBest(records, mode) {
+    return ranking(records, 'normal').find(r => r.difficultyId === mode) || null;
   }
   // 최근 기록: 가장 늦게 끝난(저장된) 판. 날짜가 같으면 id가 큰 쪽.
   function lastPlayed(records) {
@@ -4537,6 +4501,7 @@ ul {
     rankingOf,
     ranking,
     rankPlace,
+    modeBest,
     lastPlayed,
     normalizeRecord,
     safeSkills,

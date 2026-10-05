@@ -602,12 +602,13 @@ ul {
     repeating-linear-gradient(0deg, transparent 0 47px, #16313d55 47px 48px),
     repeating-linear-gradient(90deg, transparent 0 47px, #16313d55 47px 48px), var(--bg);
 }
-/* 메뉴 머리(M-HEAD, R-032): 1줄 로고 가운데 · 설정 오른쪽, 2줄 재화 가운데 */
+/* 메뉴 머리(M-HEAD, R-032): 1줄 로고 가운데 · 설정 오른쪽, 2줄 재화 가운데.
+   ?·⚙ 누르는 칸 44px는 두고 위아래 −10px로 1줄 높이를 로고 글씨에 맞춘다(R-053, 위 여백 줄임) */
 .menu-top {
   display: grid;
   grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap);
   align-items: center;
-  padding: 2px var(--sp-3) 0;
+  padding: 0 var(--sp-3);
 }
 .brand {
   grid-column: 2;
@@ -628,6 +629,7 @@ ul {
 .menu-top .icon-btn {
   grid-column: 3;
   grid-row: 1;
+  margin-block: -10px;
 }
 /* 도움말 '?'(R-005): 머리 1열(설정과 대칭) */
 .menu-top .icon-btn--help {
@@ -795,19 +797,57 @@ ul {
   --nb-w: 104px;
 }
 
-/* MODE(R-032 · 보완 7): 영역 전체가 버튼 하나. 3칸 그리드로 배지를 정확히 가운데에 둔다 */
+/* 모드(R-032 · 보완 7 · R-053): 영역 전체가 버튼 하나. 3칸 그리드로 배지를 정확히 가운데에, 왼쪽 칸에 이 모드 최고 세 줄.
+   배지 너비 = 칸 너비 − 양옆 글자 자리(4.4rem씩, 8자리 Point가 들어감), 최대 150px. 글자를 키우면 배지만 작아져
+   가운데를 지키면서 글자와 겹치지 않는다(--mode-max: 배지 최대) */
 .mode-area {
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  min-height: 56px;
+  column-gap: var(--sp-2);
+  min-height: 64px;
   border-radius: var(--r-md);
-  --nb-w: 120px;
+  container-type: inline-size;
+  --mode-max: 150px;
+  --nb-w: clamp(64px, calc(100cqw - 8.8rem - 2 * var(--sp-2)), var(--mode-max));
 }
+.mode-best {
+  grid-column: 1;
+  justify-self: start;
+  display: grid;
+  line-height: 1.25;
+  text-align: left;
+  white-space: nowrap;
+}
+.mode-best-k,
+.mode-best-s {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--muted);
+}
+.mode-best b {
+  font-size: var(--fs-sm);
+  font-weight: 900;
+  color: var(--ink);
+}
+.mode-best-s {
+  color: var(--ink-2);
+}
+/* 배지 뒤 모드 색 빛(--mode-glow: 모드 색, app.js가 정한다) */
 .mode-badge {
   grid-column: 2;
   display: grid;
+  position: relative;
+  isolation: isolate;
+}
+.mode-badge::before {
+  content: '';
+  position: absolute;
+  inset: -14px -30px;
+  z-index: -1;
+  background: radial-gradient(closest-side, var(--mode-glow, transparent), transparent);
+  pointer-events: none;
 }
 .mode-change {
   grid-column: 3;
@@ -869,10 +909,14 @@ ul {
   gap: 2px;
   padding-bottom: 4px;
 }
+/* 최근 기록 한 줄(R-053): 점수 · 순위 · 판 정보. 글자가 커지면 판 정보만 다음 줄로(자르지 않음, R-015) */
 .last-play {
   width: 100%;
-  display: grid;
-  gap: 1px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  align-content: center;
+  gap: 0 10px;
   min-height: var(--tap);
   padding: 2px 2px 4px;
   text-align: left;
@@ -898,7 +942,7 @@ ul {
 .last-rank.is-top {
   color: var(--gold);
 }
-/* 판 정보는 자르지 않고 글자가 커지면 다음 줄로(R-015) */
+/* 판 정보는 자르지 않는다(R-015) */
 .last-l2 {
   font-size: var(--fs-2xs);
   font-weight: 700;
@@ -993,14 +1037,24 @@ ul {
 .mode-card {
   display: grid;
   justify-items: center;
-  align-content: start;
+  align-content: center;
   gap: var(--sp-1);
-  min-height: 116px;
+  min-height: 124px;
   padding: var(--sp-2);
   border-radius: var(--r-lg);
   border: 1px solid var(--line);
   background: var(--surface);
-  --nb-w: 120px;
+  --nb-w: min(100%, 168px);
+}
+/* 배지 아래 최고 한 줄(R-053, 열린 모드만): '최고 905,880' · 없으면 '최고 기록 없음' */
+.mode-card-best {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--muted);
+}
+.mode-card-best b {
+  font-weight: 900;
+  color: var(--ink);
 }
 .mode-card[aria-pressed='true'] {
   border-color: var(--cyan);
@@ -2812,9 +2866,10 @@ body[data-mode='title'] .vignette {
     grid-row: 1;
     justify-self: end;
   }
-  /* 가로 머리: 로고 | 재화 | ? | 설정 */
+  /* 가로 머리: 로고 | 재화 | ? | 설정. 한 줄이라 버튼을 위아래로 당기지 않는다(화면 위로 나감) */
   .menu-top .icon-btn {
     grid-column: 4;
+    margin-block: 0;
   }
   .menu-top .icon-btn--help {
     grid-column: 3;
@@ -2869,7 +2924,7 @@ body[data-mode='title'] .vignette {
   }
   .mode-area {
     min-height: 48px;
-    --nb-w: 100px;
+    --mode-max: 100px;
   }
   .craft {
     min-height: 62px;
@@ -3090,7 +3145,8 @@ body[data-mode='title'] .vignette {
           <section class="area area--mode" data-area="P-MODE" aria-labelledby="mode-label">
             <h2 class="area-label" id="mode-label">모드</h2>
             <button class="mode-area" id="mode-open">
-              <span class="mode-badge" id="mode-badge"></span
+              <span class="mode-best" id="mode-best" aria-hidden="true"></span
+              ><span class="mode-badge" id="mode-badge"></span
               ><span class="mode-change" aria-hidden="true">변경 ›</span>
             </button>
           </section>
@@ -11550,12 +11606,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const view = {
     top3Empty: '첫 기록을 기다립니다.<br>새로운 최고점에 도전하세요.',
     superEmpty: SC + ' 출격 기록이 아직 없습니다.<br>' + SC + ' 출격으로 도전해 보세요.',
-    // 최근 기록(R-032): 위 줄 점수 + 그 판의 순위(TOP3 밖이어도 숫자), 아래 줄 '최근 · 모드 · 시간 · LV · STAGE'
+    // 최근 기록(R-032 · R-053): 한 줄 — 점수 + 그 판의 순위(TOP3 밖이어도 숫자) + '모드 · 시간 · LV · STAGE'
     rankPlace: (kind, place) => rankingName(kind) + ' ' + place + '위',
-    lastRecent: '최근',
     lastEmpty: '아직 기록 없음',
     lastLabel: (score, place) => '최근 기록 ' + score + ' · ' + place + ' · 상세 보기',
-    modeOpen: id => '모드 변경 · 지금 ' + modeName(id),
+    // best: 이 모드 최고 Point 글자(없으면 빈 값)
+    modeOpen: (id, best) => '모드 변경 · 지금 ' + modeName(id) + (best ? ' · 이 모드 최고 ' + best : ''),
+    // 모드 칸 · 모드 창의 최고 기록(R-053): 일반 출격 판만(S 출격은 시작 STAGE가 달라 따로, Q44)
+    modeBest: { title: '이 모드 최고', none: '기록 없음', card: '최고', cardNone: '최고 기록 없음' },
     recordsEmpty: '아직 저장된 기록이 없습니다.',
     // 기록 탭 별표 · 선택 삭제(R-018)
     rec: {
@@ -12179,48 +12237,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     };
   })();
 
-  // ── 음악 후보 듣기(music.html, R-051 피드백 · /test/ 전용). 곡 표는 music.js, 여기는 이름 · 설명 ──
-  // tracks: 곡 id → [이름, 한 줄 설명]. 편집장이 고르면 고른 곡만 남기고 이 칸은 지운다.
-  const musicLab = {
-    title: '음악 후보 듣기',
-    note: "▶를 누르면 곡을 만든 뒤(몇 초) 반복해서 들려 줍니다. '게임에 쓰기'를 고르면 이 폰의 /test/ 게임에서 그 곡이 나옵니다.",
-    game: '게임 열기 ›',
-    scenes: { intro: '인트로', lobby: '대기실', battle: '전투' },
-    play: name => name + ' 듣기',
-    stop: name => name + ' 멈추기',
-    making: n => '만드는 중 ' + n + '%',
-    waiting: '차례 기다리는 중',
-    playing: '재생 중',
-    failed: '만들지 못했습니다',
-    meta: (bpm, sec) => bpm + 'bpm · ' + sec + '초 반복',
-    use: '게임에 쓰기',
-    saved: scene => musicLab.scenes[scene] + ' 곡을 저장했습니다 · 게임을 다시 열면 그 곡이 나옵니다',
-    copy: '고른 곡 글 복사',
-    copied: '복사했습니다 · 대화에 붙여 넣으세요',
-    copyFail: '복사가 막혔습니다 · 아래 글을 길게 눌러 복사하세요',
-    // 글 복사: picks = { 장면: 곡 id }
-    text: picks =>
-      '[NEON 음악] ' +
-      Object.entries(musicLab.scenes)
-        .map(([scene, name]) => name + ' ' + musicLab.tracks[picks[scene] || scene][0])
-        .join(' · '),
-    noAudio: '이 브라우저는 소리를 만들 수 없습니다.',
-    tracks: {
-      intro: ['지금 곡', '느린 패드 · 삼각파 반짝임 · 5마디부터 킥(첫 버전)'],
-      'intro-a': ['A · 우주 앰비언트', '넓은 패드 · 유리 종 아르페지오 · 북 없이 잔잔'],
-      'intro-b': ['B · 신스웨이브 새벽', '튕기는 아르페지오 · 5마디부터 북 · 톱니 리드'],
-      'intro-c': ['C · 로파이 피아노', '전자 피아노 재즈 화음 · 레코드 잡음 · 둥근 북'],
-      lobby: ['지금 곡', '사각파 리드 · 박수 · 가벼운 신스팝(첫 버전)'],
-      'lobby-a': ['A · 로파이 칠', '전자 피아노 · 스윙 북 · 레코드 잡음 · 9마디부터 리드'],
-      'lobby-b': ['B · 시티팝', '펑키 베이스 · 뒷박 튕김 · 밝은 리드 훅'],
-      'lobby-c': ['C · 드림팝', '넓은 패드 · 8분 아르페지오 · 4박 킥 · 부드러운 리드'],
-      battle: ['지금 곡', '16분 베이스 · 사각파 훅(첫 버전)'],
-      'battle-a': ['A · 아웃런 질주', '4박 킥 · 옥타브 베이스 · 9마디부터 톱니 리드'],
-      'battle-b': ['B · 다크 사이버', '반박자 북 · 미끄러지는 리스 베이스 · 어두운 단조'],
-      'battle-c': ['C · 드럼앤베이스', '172bpm 브레이크 · 서브 베이스 · 전자 피아노 · 리드'],
-    },
-  };
-
   // ── 도움말 칸(R-005). 재화 칸은 용어집 코인 표를 그대로 쓴다(한 사실 한 곳). ──
   const helpSections = () => {
     const b = B(),
@@ -12696,7 +12712,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     view,
     analysis,
     lab,
-    musicLab,
     glossary,
   };
   root.NeonTerms = api;
@@ -14288,6 +14303,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     const kind = rankingOf(r);
     return { kind, place: list.filter(x => rankingOf(x) === kind).findIndex(x => x.id === id) + 1 };
   }
+  // 모드 최고(R-053): 그 모드의 일반 출격 판 중 순위가 가장 높은 판. S 출격 판은 시작 STAGE가 달라 따로 매기므로(Q44)
+  // 넣지 않는다. 없으면 null.
+  function modeBest(records, mode) {
+    return ranking(records, 'normal').find(r => r.difficultyId === mode) || null;
+  }
   // 최근 기록: 가장 늦게 끝난(저장된) 판. 날짜가 같으면 id가 큰 쪽.
   function lastPlayed(records) {
     let last = null;
@@ -15238,6 +15258,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     rankingOf,
     ranking,
     rankPlace,
+    modeBest,
     lastPlayed,
     normalizeRecord,
     safeSkills,
@@ -17824,11 +17845,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ? list.slice(0, 3).map(rankRow).join('')
       : '<li class="record-empty">' + (kind === 'super' ? TV.superEmpty : TV.top3Empty) + '</li>';
   }
-  // 최근 기록 두 줄(R-032): 점수 + 그 판의 순위(TOP3면 금색) / '최근 · 모드 · 시간 · LV · STAGE'.
-  // 기록이 없으면 '아직 기록 없음'(자리는 그대로 둬 출격 버튼이 움직이지 않는다)
+  // 최근 기록 한 줄(R-032 · R-053): 점수 + 그 판의 순위(TOP3면 금색) + '모드 · 시간 · LV · STAGE'.
+  // 글자가 커지면 판 정보만 다음 줄로(자르지 않음, R-015). 기록이 없으면 '아직 기록 없음'(자리는 그대로)
   function lastPlay(r, pos) {
-    if (!r)
-      return '<span class="last-l1"><b>' + TV.lastEmpty + '</b></span><span class="last-l2">&nbsp;</span>';
+    if (!r) return '<span class="last-l1"><b>' + TV.lastEmpty + '</b></span>';
     return (
       '<span class="last-l1"><b class="num">' +
       num(r.score) +
@@ -17841,14 +17861,26 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '</em>'
         : '') +
       '</span><span class="last-l2">' +
-      [
-        TV.lastRecent,
-        T.modeName(r.difficultyId),
-        timeString(r.time),
-        T.levelShort(r.level),
-        T.stageLabel(r.stage),
-      ].join(' · ') +
+      [T.modeName(r.difficultyId), timeString(r.time), T.levelShort(r.level), T.stageLabel(r.stage)].join(
+        ' · ',
+      ) +
       '</span>'
+    );
+  }
+  // 모드 칸 왼쪽(R-053): 이 모드 최고(일반 출격 판) — 제목 · Point · STAGE, 없으면 제목 · '기록 없음'
+  function modeBest(r) {
+    const M = TV.modeBest;
+    return (
+      '<span class="mode-best-k">' +
+      M.title +
+      '</span>' +
+      (r
+        ? '<b class="num">' +
+          num(r.score) +
+          '</b><span class="mode-best-s">' +
+          T.stageLabel(r.stage) +
+          '</span>'
+        : '<span class="mode-best-s">' + M.none + '</span>')
     );
   }
 
@@ -17875,11 +17907,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       .join('');
   }
 
-  // 모드 카드(R-046): 배지 + 칩 줄. 칩은 AUTO 불가 · S 출현 · 잠긴 모드의 해금 조건뿐이고 balance 값을 따른다.
-  function modeCards(selected, isUnlocked) {
+  // 모드 카드(R-046 · R-053): 배지 + 최고 한 줄(열린 모드만) + 칩 줄. 칩은 AUTO 불가 · S 출현 · 잠긴 모드의 해금 조건뿐이고
+  // balance 값을 따른다. bestOf(id) = 그 모드 최고 기록(일반 출격) 또는 null
+  function modeCards(selected, isUnlocked, bestOf = () => null) {
     return Object.values(Neon.DIFFICULTIES)
       .map(d => {
         const open = isUnlocked(d.id),
+          best = open ? bestOf(d.id) : null,
           chips = [
             d.auto ? '' : tagMini(TV.modeChips.noAuto()),
             BAL.superCoin.mode === d.id ? tagMini(TV.modeChips.superCoin(), 's') : '',
@@ -17894,6 +17928,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           (open ? '' : ' disabled') +
           '>' +
           badge(d.id, 'full', open ? '' : 'nb-static') +
+          (open
+            ? '<span class="mode-card-best">' +
+              (best
+                ? TV.modeBest.card + ' <b class="num">' + num(best.score) + '</b>'
+                : TV.modeBest.cardNone) +
+              '</span>'
+            : '') +
           (chips ? '<span class="mode-chips">' + chips + '</span>' : '') +
           '</button>'
         );
@@ -18596,6 +18637,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     coin,
     top3,
     lastPlay,
+    modeBest,
     crafts,
     modeCards,
     recordList,
@@ -18627,8 +18669,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 곡마다 한 번 OfflineAudioContext로 미리 만들고(꼬리를 처음에 더해 반복 이음매를 잇는다) 반복 재생한다.
   // 전투 중 음악 일은 반복 버퍼 하나뿐이다. 효과음(app.js tone)도 같은 소리 장치와 효과음 버스를 쓴다.
   // score()는 순수 함수라 node 검사(tests/music.test.cjs)에서도 돈다. 소리 기능이 없는 브라우저는 조용히 건너뛴다.
-  // 음악 후보(R-051 피드백): 장면마다 새 꼴 곡 3개(CANDIDATES). 후보 페이지(music.html, /test/ 전용)에서 들어 보고
-  // '게임에 쓰기'로 고르면 이 기기의 게임이 그 곡을 쓴다(trackFor). 편집장이 고르면 고른 곡만 남기고 이 장치는 지운다.
+  // 곡(R-051 피드백 · 편집장 2026-10-05 고름): 인트로는 첫 버전(옛 꼴 파트), 대기실 로파이 칠 · 전투 아웃런 질주는
+  // 새 꼴 파트(kind)로 쓴다. 후보 9곡 · 후보 페이지는 고른 뒤 지웠다(커밋 기록에 있다).
 
   // ── 음량 · 페이드(임시값: 편집장 플레이 피드백으로 조정) ──
   const MIX = {
@@ -18658,7 +18700,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   //     북: X 강 · x 약(×0.55) · O/o 열린 하이햇. 베이스: R/r 근음 · O/o 한 옥타브 위. 아르페지오: 숫자 = 음 번호.
   //   lead.bars: 마디마다 8분 8칸('-' 늘임 · '.' 쉼). 멜로디는 그 마디 화음 음으로 끝내고 C6 위는 쓰지 않는다.
   const TRACKS = {
-    // 인트로: 설렘 · 반짝임. 느린 패드 + 삼각파 아르페지오(5옥타브 위아래), 5~8마디만 킥 · 하이햇, 8마디 끝 라이저
+    // 인트로(옛 꼴): 설렘 · 반짝임. 느린 패드 + 삼각파 아르페지오(5옥타브 위아래), 5~8마디만 킥 · 하이햇, 8마디 끝 라이저
     intro: {
       bpm: 90,
       bars: 8,
@@ -18695,395 +18737,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         riser: { v: 0.1, rev: 0.3, len: 8, lines: [['8', '........X.......']] },
       },
     },
-    // 대기실: 편안 · 귀여움, 가벼운 신스팝. A(1~8) · B(9~16), 사각파 리드 2마디 물음 · 답
+    // 대기실 · 로파이 칠(편집장 2026-10-05 고름): 전자 피아노 재즈 화음 + 스윙 북 + 레코드 잡음, 9~16마디 부드러운 리드
     lobby: {
-      bpm: 100,
-      bars: 16,
-      rms: 0.112,
-      // F장조 A: Fmaj7 · Am7 · B♭maj7 · C · Fmaj7 · Am7 · B♭maj7 · C7
-      //       B: Dm7 · B♭maj7 · Gm7 · C · Dm7 · B♭maj7 · Gm7 · Csus4 → C
-      chords: [
-        'F3 A3 C4 E4',
-        'G3 A3 C4 E4',
-        'F3 A3 Bb3 D4',
-        'E3 G3 C4',
-        'F3 A3 C4 E4',
-        'G3 A3 C4 E4',
-        'F3 A3 Bb3 D4',
-        'E3 G3 Bb3 C4',
-        'F3 A3 C4 D4',
-        'F3 A3 Bb3 D4',
-        'F3 G3 Bb3 D4',
-        'E3 G3 C4',
-        'F3 A3 C4 D4',
-        'F3 A3 Bb3 D4',
-        'F3 G3 Bb3 D4',
-        'F3 G3 C4 | E3 G3 C4',
-      ],
-      roots: 'F2 A2 Bb2 C2 F2 A2 Bb2 C2 D2 Bb2 G2 C2 D2 Bb2 G2 C2',
-      fx: { delay: { fb: 0.3, wet: 0.18 }, reverb: 0.2 },
-      parts: {
-        kick: { v: 0.5, lines: [['1-16', 'X.......X.......']] },
-        clap: { v: 0.25, rev: 0.3, lines: [['1-16', '....X.......X...']] },
-        // 8분(뒷박 강), 짝수 마디는 4박 뒤 열림
-        hat: {
-          v: 0.06,
-          lines: [
-            ['1-16/2', 'x.X.x.X.x.X.x.X.'],
-            ['2-16/2', 'x.X.x.X.x.X.x.O.'],
-          ],
-        },
-        // 8분 근음 · 옥타브 번갈아
-        bass: { v: 0.22, wave: 'saw', cut: 900, gate: 0.85, lines: [['1-16', 'R.O.R.O.R.O.R.O.']] },
-        pad: { v: 0.08, cut: 1600, atk: 0.6, rel: 1.1, rev: 0.4 },
-        // 사각 5옥타브 F 5음 음계(F G A C D), 7~8 · 15~16마디 쉼
-        lead: {
-          v: 0.1,
-          gate: 0.65,
-          dly: 0.5,
-          rev: 0.2,
-          bars: {
-            1: 'A5 . A5 G5 F5 - C5 -',
-            2: 'D5 - F5 - G5 - - .',
-            3: 'A5 . A5 G5 F5 - D5 -',
-            4: 'C5 - D5 - C5 - - .',
-            5: 'F5 . G5 A5 C6 - A5 -',
-            6: 'G5 - A5 - G5 - - .',
-            9: 'D5 - F5 - A5 - C6 -',
-            10: 'A5 - G5 - F5 - - .',
-            11: 'G5 . G5 A5 G5 - D5 -',
-            12: 'C5 - D5 - G5 - - .',
-            13: 'A5 . A5 C6 A5 - F5 -',
-            14: 'G5 - F5 - D5 - - .',
-          },
-        },
-        // B 구간만 짧게 튕기는 아르페지오 8분
-        arp: {
-          v: 0.06,
-          wave: 'square',
-          cut: 2400,
-          decay: 0.15,
-          dly: 1,
-          base: 'C5',
-          tones: 'chord',
-          lines: [['9-16', '0.1.2.3.2.1.2.3.']],
-        },
-        bell: { v: 0.05, rev: 1, up: 12, bars: '1,9' },
-      },
-    },
-    // 전투: 긴장 · 질주, 신스웨이브 베이스 + 드럼. 킥마다 pad · bass 펌프, 9~16마디만 리드 훅
-    battle: {
-      bpm: 130,
-      bars: 16,
-      rms: 0.141,
-      pump: 0.35,
-      // A단조: Am · F · C · G · Am · F · C · G · Dm · F · Am · G · Dm · F · E · E
-      chords: [
-        'A3 C4 E4',
-        'A3 C4 F4',
-        'G3 C4 E4',
-        'G3 B3 D4',
-        'A3 C4 E4',
-        'A3 C4 F4',
-        'G3 C4 E4',
-        'G3 B3 D4',
-        'A3 D4 F4',
-        'A3 C4 F4',
-        'A3 C4 E4',
-        'G3 B3 D4',
-        'A3 D4 F4',
-        'A3 C4 F4',
-        'G#3 B3 E4',
-        'G#3 B3 E4',
-      ],
-      roots: 'A2 F2 C2 G2 A2 F2 C2 G2 D2 F2 A2 G2 D2 F2 E2 E2',
-      fx: { delay: { fb: 0.35, wet: 0.25 }, reverb: 0.15 },
-      parts: {
-        kick: { v: 0.6, lines: [['1-16', 'X...X...X...X...']] },
-        // 2 · 4박, 16마디 3~4박 스네어 연타
-        snare: {
-          v: 0.32,
-          rev: 0.8,
-          lines: [
-            ['1-15', '....X.......X...'],
-            ['16', '....X...xxxxXXXX'],
-          ],
-        },
-        // 16분(8분 강세), 9마디부터 뒷박 열림
-        hat: {
-          v: 0.05,
-          lines: [
-            ['1-8', 'XxXxXxXxXxXxXxXx'],
-            ['9-16', 'XxOxXxOxXxOxXxOx'],
-          ],
-        },
-        crash: { v: 0.2, rev: 0.4, lines: [['1,9', 'X...............']] },
-        riser: { v: 0.12, rev: 0.3, len: 16, lines: [['8,16', 'X...............']] },
-        // 16분 근음(8분 강세, 박 끝 16분은 옥타브 위) + 한 옥타브 아래 사인
-        bass: {
-          v: 0.26,
-          wave: 'saw',
-          env: [2000, 400],
-          sub: 0.4,
-          gate: 0.85,
-          lines: [['1-16', 'RrRORrRORrRORrRO']],
-        },
-        // 톱니 16분: 근음 · 5도 · 옥타브 · 10도
-        arp: {
-          v: 0.07,
-          wave: 'sawtooth',
-          cut: 2600,
-          decay: 0.12,
-          dly: 1,
-          base: 'C4',
-          tones: '1-5-8-10',
-          lines: [['1-16', '0123012301230123']],
-        },
-        pad: { v: 0.09, cut: 1800, atk: 0.5, rel: 1.0, rev: 0.4 },
-        // 사각 5옥타브 A단조 5음 음계(E 마디는 G# 허용) 8분 · 4분 훅
-        lead: {
-          v: 0.11,
-          gate: 0.65,
-          dly: 0.5,
-          rev: 0.2,
-          bars: {
-            9: 'A5 . A5 G5 A5 - D5 -',
-            10: 'C6 - A5 - G5 - C5 -',
-            11: 'A5 . A5 G5 A5 - E5 -',
-            12: 'D5 - E5 - G5 - - .',
-            13: 'A5 . A5 G5 A5 - D5 -',
-            14: 'C6 - A5 - C6 - A5 -',
-            15: 'E5 . E5 G#5 - - E5 -',
-            16: 'G#5 - - - E5 - - .',
-          },
-        },
-      },
-    },
-
-    // ── 음악 후보(R-051 피드백 2026-10-05 '지금 곡이 별로'): 장면마다 3곡, 새 꼴 파트(kind) ──
-    // 이름 · 한 줄 설명은 terms.js musicLab.tracks. 편집장이 고르면 고른 곡만 남긴다.
-
-    // 인트로 A · 우주 앰비언트: 느린 슈퍼소 패드 + 유리 종 아르페지오, 5~8마디 부드러운 리드. 북 없음
-    'intro-a': {
-      bpm: 70,
-      bars: 8,
-      rms: 0.085,
-      // D장조(리디안 빛깔): Dmaj9 · Bm9 · Gmaj9 · A6sus · D/F# · Gmaj9 · Em9 · Asus4 → A
-      chords: [
-        'F#3 A3 C#4 E4',
-        'F#3 A3 C#4 D4',
-        'F#3 A3 B3 D4',
-        'E3 F#3 B3 D4',
-        'F#3 A3 D4 E4',
-        'F#3 A3 B3 D4',
-        'G3 B3 D4 F#4',
-        'E3 A3 B3 D4 | E3 A3 C#4 E4',
-      ],
-      roots: 'D2 B1 G2 A2 F#2 G2 E2 A2',
-      fx: {
-        delay: { fb: 0.45, wet: 0.25 },
-        room: { sec: 4, damp: 0.5, pre: 0.03 },
-        reverb: 0.45,
-        tone: { hp: 30, shelf: -2, low: -4, lowAt: 160 },
-      },
-      parts: {
-        pad: { kind: 'pad', inst: 'pad2', voices: 5, v: 0.16, cut: 1500, atk: 1.6, rel: 2, rev: 0.6 },
-        sub: {
-          kind: 'bass',
-          inst: 'sub',
-          v: 0.2,
-          gate: 1,
-          atk: 0.4,
-          rel: 0.8,
-          drive: 1.6,
-          lines: [['1-8', 'R...............']],
-        },
-        bells: {
-          kind: 'arp',
-          inst: 'glass',
-          v: 0.06,
-          decay: 1.8,
-          base: 'A4',
-          rev: 0.7,
-          dly: 0.4,
-          pan: 0.15,
-          lines: [['1-8', '0.2.1.3.2.4.3.1.']],
-        },
-        lead: {
-          kind: 'melody',
-          inst: 'soft',
-          v: 0.11,
-          gate: 0.95,
-          glide: 0.06,
-          atk: 0.08,
-          rev: 0.5,
-          dly: 0.35,
-          bars: {
-            5: 'F#5 - - - A5 - E5 -',
-            6: 'D5 - - - - - B4 -',
-            7: 'E5 - - - F#5 - G5 -',
-            8: 'A5 - - - - - - .',
-          },
-        },
-        riser: { kind: 'riser', v: 0.05, len: 8, rev: 0.4, lines: [['8', '........X.......']] },
-      },
-    },
-    // 인트로 B · 신스웨이브 새벽: 튕기는 아르페지오 + 패드, 5마디부터 북 · 베이스 · 톱니 리드
-    'intro-b': {
-      bpm: 86,
-      bars: 8,
-      rms: 0.09,
-      // A단조: Am9 · Fmaj9 · Cadd9 · G6 · Am9 · Fmaj9 · Dm9 · Esus4 → E
-      chords: [
-        'E3 G3 B3 C4',
-        'E3 G3 A3 C4',
-        'E3 G3 C4 D4',
-        'D3 G3 B3 E4',
-        'E3 G3 B3 C4',
-        'E3 G3 A3 C4',
-        'F3 A3 C4 E4',
-        'E3 A3 B3 E4 | E3 G#3 B3 E4',
-      ],
-      roots: 'A2 F2 C2 G2 A2 F2 D2 E2',
-      fx: {
-        delay: { fb: 0.4, wet: 0.25 },
-        room: { sec: 3, damp: 0.4 },
-        reverb: 0.3,
-        tone: { hp: 30, shelf: -2, low: -4, lowAt: 160 },
-      },
-      pump: { v: 0.5, rel: 0.25, parts: ['pad', 'bass'] },
-      parts: {
-        pad: { kind: 'pad', inst: 'pad2', v: 0.14, cut: 2200, atk: 0.6, rel: 1.2, rev: 0.5 },
-        arp: {
-          kind: 'arp',
-          inst: 'pluck',
-          v: 0.07,
-          decay: 0.3,
-          peak: 3500,
-          cut: 600,
-          base: 'A4',
-          dly: 0.55,
-          rev: 0.2,
-          pan: -0.15,
-          lines: [['1-8', '0.1.2.3.4.3.2.1.']],
-        },
-        sub: { kind: 'bass', inst: 'sub', v: 0.18, gate: 1, atk: 0.2, lines: [['1-4', 'R...............']] },
-        bass: { kind: 'bass', inst: 'bass2', v: 0.2, gate: 0.8, lines: [['5-8', 'R.r.R.r.R.r.R.r.']] },
-        kick: { kind: 'drum', inst: 'kick2', v: 0.45, lines: [['5-8', 'X...X...X...X...']] },
-        snare: { kind: 'drum', inst: 'snare2', v: 0.3, rev: 0.5, lines: [['5-8', '....X.......X...']] },
-        hat: { kind: 'drum', inst: 'hat2', v: 0.12, human: 0.15, lines: [['5-8', '..x...x...x...x.']] },
-        crash: { kind: 'drum', inst: 'crash2', v: 0.15, rev: 0.3, lines: [['5', 'X...............']] },
-        lead: {
-          kind: 'melody',
-          inst: 'saw',
-          v: 0.1,
-          gate: 0.85,
-          cut: 2400,
-          rev: 0.3,
-          dly: 0.35,
-          bars: {
-            5: 'A4 - C5 - E5 - - D5',
-            6: 'C5 - - - - - . .',
-            7: 'D5 - F5 - A5 - - G5',
-            8: 'E5 - - - - - . .',
-          },
-        },
-        riser: { kind: 'riser', v: 0.07, len: 16, rev: 0.3, lines: [['4', 'X...............']] },
-        riser2: {
-          kind: 'riser',
-          inst: 'riser',
-          v: 0.05,
-          len: 8,
-          rev: 0.3,
-          lines: [['8', '........X.......']],
-        },
-      },
-    },
-    // 인트로 C · 로파이 피아노: 전자 피아노 재즈 화음 + 레코드 잡음, 3마디부터 둥근 북, 5~8마디 유리 종 멜로디
-    'intro-c': {
-      bpm: 74,
-      bars: 8,
-      rms: 0.085,
-      swing: 0.3,
-      // C장조: Fmaj9 · Em7 · Dm9 · Cmaj9 · Fmaj9 · Em7 A7(b13) · Dm9 · G13sus G7(b9)
-      chords: [
-        'E3 G3 A3 C4',
-        'E3 G3 B3 D4',
-        'F3 A3 C4 E4',
-        'E3 G3 B3 D4',
-        'E3 G3 A3 C4',
-        'E3 G3 B3 D4 | C#3 F3 G3 B3',
-        'F3 A3 C4 E4',
-        'F3 A3 C4 E4 | F3 G#3 B3 E4',
-      ],
-      roots: 'F2 E2 D2 C2 F2 E2|A2 D2 G2',
-      fx: {
-        delay: { fb: 0.3, wet: 0.12 },
-        room: { sec: 2.2, damp: 0.7, pre: 0.02 },
-        reverb: 0.25,
-        tone: { hp: 35, shelf: -3, low: -4, lowAt: 160 },
-      },
-      parts: {
-        keys: {
-          kind: 'chord',
-          inst: 'epiano',
-          v: 0.34,
-          gate: 0.95,
-          strum: 0.015,
-          rev: 0.3,
-          dly: 0.08,
-          wobble: { rate: 4, depth: 0.35 },
-          lines: [
-            ['1-5,7', 'X.........x.....'],
-            ['6,8', 'X.......X.....x.'],
-          ],
-        },
-        bass: {
-          kind: 'melody',
-          inst: 'sub',
-          v: 0.3,
-          gate: 0.85,
-          drive: 1.8,
-          bars: {
-            '1,5': 'F2 - - - - - C3 -',
-            2: 'E2 - - - - - B2 -',
-            '3,7': 'D2 - - - - - A2 -',
-            4: 'C2 - - - - - G2 -',
-            6: 'E2 - - - A2 - - -',
-            8: 'G2 - - - - - D2 -',
-          },
-        },
-        kick: { kind: 'drum', inst: 'kick3', v: 0.5, lines: [['3-8', 'X......X..X.....']] },
-        snare: { kind: 'drum', inst: 'snare3', v: 0.36, rev: 0.15, lines: [['3-8', '....X.......X...']] },
-        hat: {
-          kind: 'drum',
-          inst: 'hat2',
-          v: 0.09,
-          human: 0.25,
-          pan: 0.2,
-          lines: [['3-8', 'x.x.x.xxx.x.x.xx']],
-        },
-        vinyl: { kind: 'noise', inst: 'vinyl', v: 0.045 },
-        lead: {
-          kind: 'melody',
-          inst: 'glass',
-          v: 0.075,
-          decay: 1.4,
-          bright: 1.5,
-          rev: 0.45,
-          dly: 0.25,
-          bars: {
-            5: 'A5 - - - G5 - E5 -',
-            6: 'D5 - - - C#5 - - -',
-            7: 'C5 - - - D5 - F5 -',
-            8: 'E5 - - - - - . .',
-          },
-        },
-      },
-    },
-
-    // 대기실 A · 로파이 칠: 전자 피아노 재즈 화음 + 스윙 북 + 레코드 잡음, 9~16마디 부드러운 리드
-    'lobby-a': {
       bpm: 84,
       bars: 16,
       rms: 0.115,
@@ -19206,240 +18861,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         },
       },
     },
-    // 대기실 B · 시티팝: 펑키 베이스 + 뒷박 튕김 + 박수, 1~8마디 톱니 리드 훅 · 9~16마디 부드러운 변주
-    'lobby-b': {
-      bpm: 108,
-      bars: 16,
-      rms: 0.11,
-      // D장조. A: Gmaj9 · F#m7 · Em7 · A9sus4 A7 · Dmaj9 · Bm7 · Em9 · A13
-      //        B: Gmaj9 · F#m7 B7 · Em9 · A13 · F#m7 · Bm9 · Em9 · A9sus4 A7
-      chords: [
-        'F#3 A3 B3 D4',
-        'E3 A3 C#4 F#4',
-        'D3 G3 B3 E4',
-        'D3 G3 B3 E4 | C#3 G3 B3 E4',
-        'F#3 A3 C#4 E4',
-        'F#3 A3 B3 D4',
-        'G3 B3 D4 F#4',
-        'G3 B3 C#4 F#4',
-        'F#3 A3 B3 D4',
-        'E3 A3 C#4 F#4 | D#3 A3 C#4 F#4',
-        'G3 B3 D4 F#4',
-        'G3 B3 C#4 F#4',
-        'E3 A3 C#4 F#4',
-        'D3 F#3 A3 C#4',
-        'G3 B3 D4 F#4',
-        'D3 G3 B3 E4 | C#3 G3 B3 E4',
-      ],
-      roots: 'G2 F#2 E2 A2 D2 B2 E2 A2 G2 F#2|B2 E2 A2 F#2 B2 E2 A2',
-      fx: {
-        delay: { fb: 0.3, wet: 0.15 },
-        room: { sec: 1.8, damp: 0.5 },
-        reverb: 0.18,
-        tone: { hp: 30, shelf: -2, low: -6, lowAt: 180 },
-      },
-      parts: {
-        kick: { kind: 'drum', inst: 'kick2', v: 0.5, lines: [['1-16', 'X......XX.......']] },
-        snare: {
-          kind: 'drum',
-          inst: 'snare2',
-          v: 0.32,
-          rev: 0.2,
-          lines: [
-            ['1-15', '....X.......X...'],
-            ['16', '....X.......X.XX'],
-          ],
-        },
-        clap: { kind: 'drum', inst: 'clap2', v: 0.18, rev: 0.25, lines: [['1-16', '....X.......X...']] },
-        hat: {
-          kind: 'drum',
-          inst: 'hat2',
-          v: 0.08,
-          human: 0.2,
-          pan: 0.2,
-          lines: [
-            ['1-8', 'xxXxxxXxxxXxxxXx'],
-            ['9-16', 'xxXxxxOxxxXxxxOx'],
-          ],
-        },
-        bass: {
-          kind: 'bass',
-          inst: 'bass2',
-          v: 0.3,
-          gate: 0.6,
-          peak: 2200,
-          cut: 420,
-          env: 0.12,
-          lines: [
-            ['1-3,5-7,9,11,13-15', 'R..R..O.,.R.O.r.'],
-            ['4,8,10,12,16', 'R..R..O.R.5.O.5.'],
-          ],
-        },
-        keys: {
-          kind: 'chord',
-          inst: 'epiano',
-          v: 0.22,
-          gate: 0.9,
-          strum: 0.008,
-          rev: 0.2,
-          wobble: { rate: 5, depth: 0.25 },
-          lines: [['1-16', 'X.......X.......']],
-        },
-        stab: {
-          kind: 'chord',
-          inst: 'pluck',
-          v: 0.09,
-          decay: 0.16,
-          peak: 5000,
-          cut: 900,
-          oct: 1,
-          top: 3,
-          pan: -0.3,
-          dly: 0.15,
-          lines: [['1-16', '..x...x...x...x.']],
-        },
-        lead: {
-          kind: 'melody',
-          inst: 'saw',
-          v: 0.1,
-          gate: 0.8,
-          cut: 3000,
-          rev: 0.25,
-          dly: 0.25,
-          bars: {
-            1: 'B5 - A5 - F#5 - D5 -',
-            2: 'E5 - - - C#5 - A4 -',
-            3: 'B4 - D5 - E5 - G5 -',
-            4: 'F#5 - - E5 - - - .',
-            5: 'A5 - F#5 - E5 - C#5 -',
-            6: 'D5 - - - B4 - F#5 -',
-            7: 'G5 - F#5 - E5 - D5 -',
-            8: 'C#5 - - - - - . .',
-          },
-        },
-        lead2: {
-          kind: 'melody',
-          inst: 'soft',
-          v: 0.1,
-          gate: 0.9,
-          glide: 0.04,
-          rev: 0.3,
-          dly: 0.25,
-          bars: {
-            9: 'D5 - F#5 - A5 - B5 -',
-            10: 'A5 - - - F#5 - - -',
-            11: 'G5 - - - E5 - D5 -',
-            12: 'C#5 - E5 - G5 - F#5 -',
-            13: 'E5 - - - C#5 - A4 -',
-            14: 'D5 - - - F#5 - A5 -',
-            15: 'G5 - - - B5 - A5 -',
-            16: 'G5 - - - - - E5 -',
-          },
-        },
-      },
-    },
-    // 대기실 C · 드림팝: 넓은 패드 + 튕기는 8분 아르페지오 + 4박 킥 · 셰이커, 부드러운 리드
-    'lobby-c': {
-      bpm: 96,
-      bars: 16,
-      rms: 0.115,
-      // C장조. A: Cmaj9 · Em7 · Am9 · Fmaj9 · Cmaj9 · Em7 · Fmaj9 · Gsus2 G
-      //        B: Am9 · Fmaj9 · Cmaj9 · G6 · Am9 · Fmaj9 · Dm9 · Gsus4 G
-      chords: [
-        'E3 G3 B3 D4',
-        'G3 B3 D4 E4',
-        'G3 B3 C4 E4',
-        'E3 G3 A3 C4',
-        'E3 G3 B3 D4',
-        'G3 B3 D4 E4',
-        'E3 G3 A3 C4',
-        'D3 G3 A3 D4 | D3 G3 B3 D4',
-        'G3 B3 C4 E4',
-        'E3 G3 A3 C4',
-        'E3 G3 B3 D4',
-        'D3 G3 B3 E4',
-        'G3 B3 C4 E4',
-        'E3 G3 A3 C4',
-        'F3 A3 C4 E4',
-        'D3 G3 C4 D4 | D3 G3 B3 D4',
-      ],
-      roots: 'C2 E2 A2 F2 C2 E2 F2 G2 A2 F2 C2 G2 A2 F2 D2 G2',
-      fx: {
-        delay: { fb: 0.35, wet: 0.2 },
-        room: { sec: 3, damp: 0.4 },
-        reverb: 0.3,
-        tone: { hp: 30, shelf: -2, low: -6, lowAt: 180 },
-      },
-      pump: { v: 0.55, rel: 0.25, parts: ['pad', 'bass'] },
-      parts: {
-        pad: { kind: 'pad', inst: 'pad2', voices: 5, v: 0.12, cut: 2400, atk: 0.4, rel: 1.2, rev: 0.5 },
-        arp: {
-          kind: 'arp',
-          inst: 'pluck',
-          v: 0.06,
-          decay: 0.35,
-          peak: 4000,
-          cut: 700,
-          base: 'C5',
-          dly: 0.6,
-          rev: 0.25,
-          pan: 0.2,
-          lines: [['1-16', '0.1.2.3.2.1.3.2.']],
-        },
-        bass: {
-          kind: 'bass',
-          inst: 'sub',
-          v: 0.25,
-          gate: 0.7,
-          drive: 2.4,
-          lines: [
-            ['1-15', 'R.R.R.R.R.R.R.O.'],
-            ['16', 'R.R.R.R.R.O.R.O.'],
-          ],
-        },
-        kick: { kind: 'drum', inst: 'kick2', v: 0.45, lines: [['1-16', 'X...X...X...X...']] },
-        clap: { kind: 'drum', inst: 'clap2', v: 0.22, rev: 0.4, lines: [['1-16', '....X.......X...']] },
-        shaker: {
-          kind: 'drum',
-          inst: 'shaker',
-          v: 0.06,
-          human: 0.3,
-          pan: -0.25,
-          lines: [['1-16', 'xxXxxxXxxxXxxxXx']],
-        },
-        hat: { kind: 'drum', inst: 'hat2', v: 0.06, pan: 0.25, lines: [['9-16', '..O...O...O...O.']] },
-        lead: {
-          kind: 'melody',
-          inst: 'soft',
-          v: 0.11,
-          gate: 0.9,
-          glide: 0.03,
-          rev: 0.35,
-          dly: 0.3,
-          bars: {
-            '1,5': 'G5 - - - E5 - D5 -',
-            2: 'E5 - - - - - B4 -',
-            3: 'C5 - - - E5 - A5 -',
-            4: 'G5 - - - - - . .',
-            6: 'E5 - - - G5 - B5 -',
-            7: 'A5 - - - G5 - E5 -',
-            8: 'D5 - - - - - . .',
-            9: 'C5 - E5 - G5 - B5 -',
-            10: 'A5 - - - G5 - - -',
-            11: 'E5 - - - G5 - D5 -',
-            12: 'B4 - - - D5 - - -',
-            13: 'C5 - E5 - A5 - G5 -',
-            14: 'F5 - - - E5 - C5 -',
-            15: 'D5 - - - F5 - A5 -',
-            16: 'G5 - - - - - . .',
-          },
-        },
-        riser: { kind: 'riser', v: 0.05, len: 8, rev: 0.3, lines: [['8,16', '........X.......']] },
-      },
-    },
-
-    // 전투 A · 아웃런 질주: 4박 킥 + 16분 옥타브 베이스(펌프) + 튕기는 아르페지오, 9~16마디 톱니 리드
-    'battle-a': {
+    // 전투 · 아웃런 질주(편집장 2026-10-05 고름): 4박 킥 + 16분 옥타브 베이스(펌프) + 튕기는 아르페지오, 9~16마디 톱니 리드
+    battle: {
       bpm: 124,
       bars: 16,
       rms: 0.135,
@@ -19554,289 +18977,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         },
       },
     },
-    // 전투 B · 다크 사이버: 반박자 북(3박 스네어) + 미끄러지는 리스 베이스 리프, 9~16마디 리드 · 높은 아르페지오
-    'battle-b': {
-      bpm: 140,
-      bars: 16,
-      rms: 0.135,
-      // D단조. A: Dm · Dm · Bb · Bb · Gm · Gm · A · A7 / B: Dm · C · Bb · A · Dm · C · Bb · A7(b9)
-      chords: [
-        'D3 F3 A3 E4',
-        'D3 F3 A3 D4',
-        'D3 F3 Bb3 D4',
-        'D3 F3 Bb3 F4',
-        'D3 G3 Bb3 D4',
-        'D3 G3 Bb3 D4',
-        'E3 A3 C#4 E4',
-        'E3 G3 C#4 E4',
-        'D3 F3 A3 D4',
-        'E3 G3 C4 E4',
-        'D3 F3 Bb3 D4',
-        'C#3 E3 A3 C#4',
-        'D3 F3 A3 D4',
-        'E3 G3 C4 E4',
-        'D3 F3 Bb3 D4',
-        'C#3 G3 Bb3 E4',
-      ],
-      roots: 'D2 D2 Bb1 Bb1 G1 G1 A1 A1 D2 C2 Bb1 A1 D2 C2 Bb1 A1',
-      fx: {
-        delay: { fb: 0.35, wet: 0.2 },
-        room: { sec: 2.6, damp: 0.4 },
-        reverb: 0.22,
-        tone: { hp: 30, shelf: -2, low: -6, lowAt: 180 },
-      },
-      pump: { v: 0.45, rel: 0.2, parts: ['pad', 'stab'] },
-      parts: {
-        kick: {
-          kind: 'drum',
-          inst: 'kick2',
-          v: 0.52,
-          lines: [
-            ['1-7,9-15', 'X.....X.......X.'],
-            ['8,16', 'X.....X...X.X...'],
-          ],
-        },
-        snare: {
-          kind: 'drum',
-          inst: 'snare2',
-          v: 0.4,
-          rev: 0.35,
-          lines: [
-            ['1-7,9-15', '........X.......'],
-            ['8', '........X...xxXX'],
-            ['16', '........X.xxxxXX'],
-          ],
-        },
-        hat: {
-          kind: 'drum',
-          inst: 'hat2',
-          v: 0.07,
-          human: 0.2,
-          pan: 0.25,
-          lines: [['1-16', 'XxXxXxXxXxXxXxXx']],
-        },
-        crash: { kind: 'drum', inst: 'crash2', v: 0.18, rev: 0.3, lines: [['1,9', 'X...............']] },
-        riser: { kind: 'riser', v: 0.08, len: 16, rev: 0.3, lines: [['8,16', 'X...............']] },
-        bass: {
-          kind: 'melody',
-          inst: 'reese',
-          v: 0.3,
-          sub: 0.25,
-          gate: 0.9,
-          cut: 650,
-          glide: 0.03,
-          bars: {
-            '1,9,13': 'D2 - - D3 - D2 - F2',
-            2: 'D2 - - D3 - C3 - A2',
-            '3,11': 'Bb1 - - Bb2 - Bb1 - D2',
-            4: 'Bb1 - - Bb2 - A2 - F2',
-            5: 'G1 - - G2 - G1 - Bb1',
-            6: 'G1 - - G2 - A2 - Bb2',
-            7: 'A1 - - A2 - A1 - C#2',
-            8: 'A1 - - A2 - G2 - E2',
-            10: 'C2 - - C3 - C2 - E2',
-            12: 'A1 - - A2 - A1 - E2',
-            14: 'C2 - - C3 - C2 - G2',
-            15: 'Bb1 - - Bb2 - D2 - F2',
-            16: 'A1 - - A2 - G2 - C#2',
-          },
-        },
-        pad: { kind: 'pad', inst: 'pad2', v: 0.09, cut: 1100, atk: 0.3, rel: 1, rev: 0.5 },
-        stab: {
-          kind: 'chord',
-          inst: 'pluck',
-          v: 0.08,
-          decay: 0.25,
-          peak: 3000,
-          cut: 500,
-          rev: 0.4,
-          dly: 0.3,
-          lines: [['1-8', 'X.........X.....']],
-        },
-        arp: {
-          kind: 'arp',
-          inst: 'pluck',
-          v: 0.05,
-          decay: 0.12,
-          peak: 6000,
-          cut: 1500,
-          base: 'D5',
-          dly: 0.4,
-          pan: 0.25,
-          lines: [['9-16', '0123210123210123']],
-        },
-        lead: {
-          kind: 'melody',
-          inst: 'saw',
-          v: 0.1,
-          gate: 0.85,
-          cut: 2400,
-          rev: 0.25,
-          dly: 0.3,
-          bars: {
-            9: 'A5 - - - F5 - D5 -',
-            10: 'E5 - - - G5 - C5 -',
-            11: 'D5 - - - F5 - Bb5 -',
-            12: 'C#5 - - - E5 - A5 -',
-            13: 'A5 - - - G5 - F5 E5',
-            14: 'E5 - - - D5 - C5 -',
-            15: 'D5 - - - F5 - A5 -',
-            16: 'Bb5 - - - G5 - E5 C#5',
-          },
-        },
-      },
-    },
-    // 전투 C · 드럼앤베이스(리퀴드): 172bpm 브레이크 + 서브 · 리스, 전자 피아노 · 패드, 9~24마디 리드, 17~24마디 종
-    'battle-c': {
-      bpm: 172,
-      bars: 24,
-      rms: 0.13,
-      // A단조. 1~16: Am9 Am9 · Fmaj9 Fmaj9 · Dm9 Dm9 · Esus4 · E (두 번)
-      //        17~24: Fmaj9 Fmaj9 · G6 G6 · Em9 Em9 · Am9 · Esus4 E
-      chords: [
-        'E3 G3 B3 C4',
-        'E3 G3 B3 C4',
-        'E3 G3 A3 C4',
-        'E3 G3 A3 C4',
-        'F3 A3 C4 E4',
-        'F3 A3 C4 E4',
-        'E3 A3 B3 E4',
-        'E3 G#3 B3 E4',
-        'E3 G3 B3 C4',
-        'E3 G3 B3 C4',
-        'E3 G3 A3 C4',
-        'E3 G3 A3 C4',
-        'F3 A3 C4 E4',
-        'F3 A3 C4 E4',
-        'E3 A3 B3 E4',
-        'E3 G#3 B3 E4',
-        'E3 G3 A3 C4',
-        'E3 G3 A3 C4',
-        'D3 G3 B3 E4',
-        'D3 G3 B3 E4',
-        'G3 B3 D4 F#4',
-        'G3 B3 D4 F#4',
-        'E3 G3 B3 C4',
-        'E3 A3 B3 E4 | E3 G#3 B3 E4',
-      ],
-      roots: 'A2 A2 F2 F2 D2 D2 E2 E2 A2 A2 F2 F2 D2 D2 E2 E2 F2 F2 G2 G2 E2 E2 A2 E2',
-      fx: {
-        delay: { fb: 0.35, wet: 0.2 },
-        room: { sec: 2.4, damp: 0.45 },
-        reverb: 0.3,
-        tone: { hp: 30, shelf: -2, low: -6, lowAt: 180 },
-      },
-      pump: { v: 0.5, rel: 0.18, parts: ['pad', 'keys'] },
-      parts: {
-        kick: { kind: 'drum', inst: 'kick2', v: 0.5, lines: [['1-24', 'X.........X.....']] },
-        snare: {
-          kind: 'drum',
-          inst: 'snare2',
-          v: 0.42,
-          rev: 0.25,
-          lines: [
-            ['1-7,9-15,17-23', '....X..x....X..x'],
-            ['8,16', '....X..x....X.XX'],
-            ['24', '....X..x..x.xxXX'],
-          ],
-        },
-        hat: {
-          kind: 'drum',
-          inst: 'hat2',
-          v: 0.07,
-          human: 0.2,
-          pan: 0.2,
-          lines: [['1-24', 'x.x.x.x.x.x.x.O.']],
-        },
-        shaker: {
-          kind: 'drum',
-          inst: 'shaker',
-          v: 0.045,
-          human: 0.3,
-          pan: -0.25,
-          lines: [['9-24', 'xxxxxxxxxxxxxxxx']],
-        },
-        crash: { kind: 'drum', inst: 'crash2', v: 0.17, rev: 0.3, lines: [['1,9,17', 'X...............']] },
-        riser: { kind: 'riser', v: 0.07, len: 16, rev: 0.3, lines: [['8,16,24', 'X...............']] },
-        sub: {
-          kind: 'bass',
-          inst: 'sub',
-          v: 0.22,
-          gate: 0.95,
-          drive: 2.4,
-          lines: [['1-24', 'R.........R.....']],
-        },
-        reese: {
-          kind: 'bass',
-          inst: 'reese',
-          v: 0.11,
-          gate: 0.98,
-          cut: 600,
-          lines: [['9-24', 'R.......R.......']],
-        },
-        pad: { kind: 'pad', inst: 'pad2', v: 0.12, cut: 2400, atk: 0.5, rel: 1.4, rev: 0.6 },
-        keys: {
-          kind: 'chord',
-          inst: 'epiano',
-          v: 0.16,
-          gate: 0.95,
-          strum: 0.01,
-          rev: 0.35,
-          dly: 0.2,
-          wobble: { rate: 3, depth: 0.3 },
-          lines: [['1-24', 'X.......x.......']],
-        },
-        bells: {
-          kind: 'arp',
-          inst: 'glass',
-          v: 0.04,
-          decay: 1.2,
-          base: 'A4',
-          rev: 0.6,
-          dly: 0.3,
-          pan: 0.2,
-          lines: [['17-24', '0.1.2.3.2.1.3.2.']],
-        },
-        lead: {
-          kind: 'melody',
-          inst: 'soft',
-          v: 0.11,
-          gate: 0.92,
-          glide: 0.04,
-          rev: 0.4,
-          dly: 0.3,
-          bars: {
-            9: 'A5 - - -',
-            10: 'G5 - E5 -',
-            11: 'G5 - - -',
-            12: 'A5 - G5 -',
-            13: 'F5 - - -',
-            14: 'E5 - D5 -',
-            15: 'E5 - - -',
-            16: 'G#5 - - -',
-            17: 'A5 - - -',
-            18: 'C5 - E5 G5',
-            19: 'B4 - D5 -',
-            20: 'E5 - - -',
-            21: 'F#5 - - -',
-            22: 'G5 - B5 -',
-            23: 'A5 - - -',
-            24: 'B4 - - -',
-          },
-        },
-      },
-    },
-  };
-
-  // 장면마다 고를 수 있는 곡(음악 후보, R-051 피드백). 첫째가 기본(지금 곡), 이름 · 설명은 terms.js musicLab
-  const CANDIDATES = {
-    intro: ['intro', 'intro-a', 'intro-b', 'intro-c'],
-    lobby: ['lobby', 'lobby-a', 'lobby-b', 'lobby-c'],
-    battle: ['battle', 'battle-a', 'battle-b', 'battle-c'],
   };
 
   // ── 곡 표 → 음 이벤트(순수) ──
-  // 새 꼴 파트(음악 후보, R-051 피드백): 파트에 kind가 있으면 아래 규칙으로 읽는다(없으면 위 지금 곡의 옛 꼴).
+  // 새 꼴 파트(R-051 피드백): 파트에 kind가 있으면 아래 규칙으로 읽는다(없으면 인트로의 옛 꼴).
   //   inst = 소리(PLAY 이름, 없으면 파트 이름) · pan(−1~1) · wobble { rate, depth }(좌우 흔들림) · human(세기 흔들림, 고정 씨앗)
   //   pad: 마디 화음을 길게 · chord: 16칸 X/x 자리에서 화음(top 위 n음 · oct 옥타브 · strum 초 · gate)
   //   bass: 16칸 R/r 근음 · O/o 옥타브 위 · 5 5도(근음은 roots, '|'로 마디를 나눈다) · arp: 16칸 숫자 = 화음 음 번호
@@ -19877,15 +19021,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }
     return [...new Set(seg.notes.map(n => above(n, base)))].sort((a, b) => a - b);
   }
-  // 북 소리 길이(초). 열린 하이햇은 0.25
-  const DRUM = { kick: 0.35, snare: 0.18, clap: 0.22, hat: 0.04, crash: 1.5 };
+  // 옛 꼴 북 소리 길이(초). 열린 하이햇은 0.25
+  const DRUM = { kick: 0.35, hat: 0.04 };
   // 새 꼴 북 샘플 길이(초). 소리 만드는 법은 아래 합성 KIT
   const KIT_SEC = {
     kick2: 0.55,
     kick3: 0.45,
     snare2: 0.4,
     snare3: 0.45,
-    clap2: 0.45,
     hat2: 0.09,
     'hat2-open': 0.45,
     shaker: 0.16,
@@ -19943,7 +19086,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           }
       }
     };
-    // 옛 꼴(kind 없음): 지금 곡 세 개
+    // 옛 꼴(kind 없음): 인트로
     const old = k => P[k] && !P[k].kind;
     if (old('pad'))
       for (const s of segs) for (const n of s.notes) add('pad', s.t, s.d, P.pad.v / s.notes.length, hz(n));
@@ -19967,31 +19110,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         add('arp', t, P.arp.decay, P.arp.v, hz(tones[k % tones.length] + 12 * Math.floor(k / tones.length)));
       });
     }
-    if (old('lead'))
-      for (const [b, text] of Object.entries(P.lead.bars)) {
-        const cells = text.trim().split(/\s+/),
-          eighth = beat / 2;
-        if (cells.length !== 8) throw new Error(id + ' 멜로디 ' + b + '마디 칸 수 ' + cells.length);
-        for (let k = 0; k < 8; k++) {
-          if (cells[k] === '-' || cells[k] === '.') continue;
-          let n = k + 1;
-          while (n < 8 && cells[n] === '-') n++;
-          add(
-            'lead',
-            (b - 1) * bar + k * eighth,
-            (n - k) * eighth * P.lead.gate,
-            P.lead.v,
-            hz(midi(cells[k])),
-          );
-        }
-      }
     if (old('bell'))
       for (const b of barsOf(P.bell.bars, tr.bars)) {
         const s = segAt((b - 1) * bar);
         add('bell', (b - 1) * bar, 0.8, P.bell.v, hz(Math.max(...s.notes) + P.bell.up));
       }
 
-    // 새 꼴(kind 있음): 음악 후보
+    // 새 꼴(kind 있음): 대기실 · 전투
     const sw = (tr.swing || 0) * step,
       at16 = (b, k) => (b - 1) * bar + k * step + (k % 2 ? sw : 0);
     // 16칸: '.' 늘임 · ',' 끊음(소리 없음). fn(글자, 시작, 다음 칸까지 길이)
@@ -20317,20 +19442,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       o.frequency.exponentialRampToValueAtTime(160, 0.06);
       link(o, hit(c, 0, 0.6, 0.14, 0.002), c.destination);
     },
-    // 박수: 대역 잡음 11ms 간격 3번 + 꼬리
-    clap2(c, nz) {
-      const s = c.createBufferSource(),
-        g = c.createGain();
-      g.gain.setValueAtTime(0, 0);
-      for (let k = 0; k < 3; k++) {
-        g.gain.setValueAtTime(1, k * 0.011);
-        g.gain.exponentialRampToValueAtTime(k < 2 ? 0.12 : 1e-4, k < 2 ? k * 0.011 + 0.01 : 0.33);
-      }
-      s.buffer = nz;
-      link(s, filter(c, 'highpass', 600), filter(c, 'bandpass', 1300, 1.4), g, c.destination);
-      s.start(0);
-      s.stop(0.45);
-    },
     // 쇳소리 하이햇: 사각파 6개(808 방식) + 잡음 조금 → 고역. open이면 길게
     hat2(c, nz, open) {
       const dec = open ? 0.42 : 0.06,
@@ -20467,30 +19578,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       g.connect(out);
     },
-    // 사각파 + 비브라토(5.5Hz · 6cent, 0.12초 뒤) → 저역 4000Hz. 길이는 score가 줄여 둔다(또렷하게)
-    lead(c, e, p, out) {
-      const end = e.t + e.d,
-        o = c.createOscillator(),
-        lfo = c.createOscillator(),
-        depth = c.createGain(),
-        g = c.createGain();
-      o.type = 'square';
-      o.frequency.value = e.f;
-      lfo.frequency.value = 5.5;
-      depth.gain.setValueAtTime(0, e.t);
-      depth.gain.setValueAtTime(0, e.t + 0.12);
-      depth.gain.linearRampToValueAtTime(6, e.t + 0.2);
-      link(lfo, depth, o.detune);
-      g.gain.setValueAtTime(0, e.t);
-      g.gain.linearRampToValueAtTime(e.v, e.t + 0.01);
-      g.gain.setValueAtTime(e.v, end);
-      g.gain.linearRampToValueAtTime(0, end + 0.04);
-      link(o, filter(c, 'lowpass', 4000), g, out);
-      o.start(e.t);
-      lfo.start(e.t);
-      o.stop(end + 0.06);
-      lfo.stop(end + 0.06);
-    },
     // 사인 + 2.76배 사인(작게), 감쇠 0.8초(잔향 많이)
     bell(c, e, p, out) {
       const g = hit(c, e.t, e.v, e.d);
@@ -20515,34 +19602,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       o.start(e.t);
       o.stop(e.t + e.d + 0.02);
     },
-    // 잡음 → 대역 1800Hz + 삼각 190Hz 0.1초
-    snare(c, e, p, out, nz) {
-      link(noiseFrom(c, nz, e.t, e.d), filter(c, 'bandpass', 1800, 0.9), hit(c, e.t, e.v, e.d, 0.002), out);
-      const o = c.createOscillator();
-      o.type = 'triangle';
-      o.frequency.value = 190;
-      link(o, hit(c, e.t, e.v * 0.6, 0.1, 0.002), out);
-      o.start(e.t);
-      o.stop(e.t + 0.12);
-    },
-    // 잡음 대역 1200Hz, 10ms 간격 3번 + 감쇠 0.2초
-    clap(c, e, p, out, nz) {
-      const g = c.createGain();
-      g.gain.setValueAtTime(0, e.t);
-      for (let k = 0; k < 3; k++) {
-        const t = e.t + k * 0.01;
-        g.gain.setValueAtTime(e.v, t);
-        g.gain.exponentialRampToValueAtTime(k < 2 ? e.v * 0.15 : 1e-4, k < 2 ? t + 0.009 : t + 0.2);
-      }
-      link(noiseFrom(c, nz, e.t, e.d), filter(c, 'bandpass', 1200, 1.2), g, out);
-    },
     // 잡음 → 고역 7000Hz, 닫힘 0.04초 · 열림 0.25초(길이는 score)
     hat(c, e, p, out, nz) {
       link(noiseFrom(c, nz, e.t, e.d), filter(c, 'highpass', 7000), hit(c, e.t, e.v, e.d, 0.001), out);
-    },
-    // 잡음 → 고역 5000Hz, 1.5초
-    crash(c, e, p, out, nz) {
-      link(noiseFrom(c, nz, e.t, e.d), filter(c, 'highpass', 5000), hit(c, e.t, e.v, e.d, 0.002), out);
     },
     // 잡음 대역 400 → 6000Hz 상승, 점점 크게
     riser(c, e, p, out, nz) {
@@ -20679,20 +19741,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       vib(c, oscs, t, end, p.vib ?? 7, 0.18);
       link(lp, sustain(c, t, end, e.v, 0.008, rel), out);
     },
-    // 유리 종(FM): 3.5배 변조가 빨리 사라져 맑게 울린다
-    glass(c, e, p, out) {
-      const t = e.t,
-        dec = p.decay || 1.6,
-        car = osc(c, 'sine', t, t + dec + 0.05),
-        mod = osc(c, 'sine', t, t + dec + 0.05),
-        idx = c.createGain();
-      car.frequency.value = e.f;
-      mod.frequency.value = e.f * (p.ratio || 3.5);
-      idx.gain.setValueAtTime(e.f * (p.bright || 2), t);
-      idx.gain.setTargetAtTime(0, t, dec * 0.15);
-      link(mod, idx, car.frequency);
-      link(car, hit(c, t, e.v, dec, 0.002), out);
-    },
     // 둥근 베이스: 사인 → 포화(배음) → 저역 통과
     sub(c, e, p, out) {
       const t = e.t,
@@ -20725,26 +19773,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       link(s, gainOf(c, 0.6), g);
       g.connect(out);
     },
-    // 리스 베이스(어두움): 톱니 2개(±13 cent) → 저역 통과 → 포화 + 사인 무게(sub, 기본 0.5)
-    reese(c, e, p, out) {
-      const t = e.t,
-        end = t + e.d,
-        rel = p.rel || 0.08,
-        stop = end + rel * 2,
-        lp = filter(c, 'lowpass', p.cut || 700, 1.2),
-        g = sustain(c, t, end, e.v / 2, 0.01, rel),
-        s = osc(c, 'sine', t, stop);
-      for (const cents of [-13, 13]) {
-        const o = osc(c, 'sawtooth', t, stop);
-        pitch(o, e, p.glide);
-        o.detune.value = cents;
-        o.connect(lp);
-      }
-      pitch(s, e, p.glide);
-      link(lp, shaper(c, p.drive || 1.6), g);
-      link(s, gainOf(c, p.sub ?? 0.5), g);
-      g.connect(out);
-    },
     // 레코드 잡음: 3.7초 고정 고리(낮은 쉬익 + 드문 틱)를 곡 내내
     vinyl(c, e, p, out) {
       const n = Math.round(3.7 * c.sampleRate),
@@ -20768,8 +19796,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   for (const k of Object.keys(KIT)) PLAY[k] = sample;
 
   // 곡 하나를 미리 만든다 → { buffer(반복 단위 길이), sec, rms }
-  // onProgress(0~1): 만드는 정도(후보 페이지)
-  async function render(id, onProgress) {
+  async function render(id) {
     const OAC = root.OfflineAudioContext || root.webkitOfflineAudioContext;
     if (!OAC) throw new Error('OfflineAudioContext 없음');
     const tr = TRACKS[id],
@@ -20865,7 +19892,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         // 떼어 내는 때: 음 끝 + 꼬리(끝남 · 감쇠 중 긴 것)
         alive.push({ end: e.t + e.d + Math.max(1.5, (p.rel || 0) * 2 + 0.2, (p.decay || 0) + 0.2), node: v });
       }
-      if (onProgress) onProgress(Math.min(1, now / total));
     };
     if (typeof c.suspend === 'function') {
       feed(0);
@@ -20910,7 +19936,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     enabled = false,
     everEnabled = false,
     wantId = null,
-    wantScene = null,
     ducked = false,
     cur = null,
     pendingIn = MIX.fades.other[1],
@@ -20919,20 +19944,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     buildTimer = 0;
   const ready = {},
     failed = {};
-
-  // 장면 곡: 후보 페이지(/test/music.html)에서 '게임에 쓰기'로 고른 곡(이 기기 저장). 없거나 모르는 값이면 기본(지금 곡)
-  const PICK_KEY = 'neon-music-pick' + (root.NEON_NS || '');
-  function picks() {
-    try {
-      return JSON.parse(root.localStorage.getItem(PICK_KEY) || '{}') || {};
-    } catch {
-      return {};
-    }
-  }
-  function trackFor(scene) {
-    const id = picks()[scene];
-    return (CANDIDATES[scene] || []).includes(id) ? id : scene;
-  }
 
   // 소리 장치(효과음과 같이 씀). 처음 부를 때 만든다(첫 손짓 · 효과음). 없으면 null
   function ensure() {
@@ -20982,7 +19993,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   function needed() {
     const list = [];
-    for (const id of [wantId, trackFor('lobby'), trackFor('battle')])
+    for (const id of [wantId, 'lobby', 'battle'])
       if (id && TRACKS[id] && !list.includes(id) && !ready[id] && !failed[id]) list.push(id);
     return list;
   }
@@ -20997,7 +20008,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       try {
         const tr = await render(id);
         // 만드는 동안 인트로 화면을 떠났으면 인트로 곡은 버린다
-        if (id !== trackFor('intro') || wantScene === 'intro') ready[id] = tr;
+        if (id !== 'intro' || wantId === 'intro') ready[id] = tr;
       } catch (e) {
         failed[id] = true;
       }
@@ -21007,25 +20018,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }, delay * 1000);
   }
 
-  // 화면 상태가 바뀔 때 app.js syncMode가 부른다: 장면(intro · lobby · battle) 곡 고르기 · 일시정지 숙임
-  function want(scene, duck) {
+  // 화면 상태가 바뀔 때 app.js syncMode가 부른다: 곡 고르기 · 일시정지 숙임
+  function want(id, duck) {
     try {
       if (!!duck !== ducked) {
         ducked = !!duck;
         if (ac) ramp(duckBus.gain, ducked ? MIX.duck : 1, MIX.duckSec);
       }
-      if (scene === wantScene) return;
-      const from = wantScene,
-        fromId = wantId,
-        [out, inn, gap] = MIX.fades[from + '>' + scene] || MIX.fades.other;
-      wantScene = scene;
-      wantId = scene ? trackFor(scene) : null;
+      if (id === wantId) return;
+      const from = wantId,
+        [out, inn, gap] = MIX.fades[from + '>' + id] || MIX.fades.other;
+      wantId = id;
       pendingIn = inn;
       // 인트로 곡은 START 뒤 페이드가 끝나면 버린다(다시 안 씀)
       if (from === 'intro')
         setTimeout(
           () => {
-            if (wantScene !== 'intro' && (!cur || cur.id !== fromId)) delete ready[fromId];
+            if (wantId !== 'intro' && (!cur || cur.id !== 'intro')) delete ready.intro;
           },
           (out + 0.2) * 1000,
         );
@@ -21100,13 +20109,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const api = {
     MIX,
     TRACKS,
-    CANDIDATES,
-    PICK_KEY,
     score,
-    // 후보 페이지: 곡 하나를 만든다 → { buffer, sec, rms }, 장면에 고른 곡
-    render,
-    picks,
-    trackFor,
     ctx() {
       try {
         return ensure();
@@ -21474,10 +20477,20 @@ function renderLastPlay() {
     b.removeAttribute('aria-label');
   }
 }
+// 모드 칸(R-053): 고른 모드의 최고 기록(일반 출격) 세 줄 · 배지 뒤 모드 색 빛 · 읽기 이름(최고 포함)
+function renderModeBest() {
+  const best = NeonData.modeBest(records, selectedDifficulty),
+    open = $('mode-open'),
+    label = T.view.modeOpen(selectedDifficulty, best ? num(best.score) : '');
+  $('mode-best').innerHTML = V.modeBest(best);
+  if (open.getAttribute('aria-label') !== label) open.setAttribute('aria-label', label);
+  open.style.setProperty('--mode-glow', NeonBadges.info(selectedDifficulty).color + '40');
+}
 async function refreshRecords() {
   records = await store.all();
   renderRanking();
   renderLastPlay();
+  renderModeBest();
   if (page === 'rec') renderRecordsPage();
   text('legacy-note', legacyBest() ? T.msg.legacy(legacyBest()) : '');
   text('storage-note', !store.db && !store.storageOK ? T.msg.storageFull : '');
@@ -22801,10 +21814,12 @@ function refreshProfileUI() {
     badgeHost.dataset.mode = selectedDifficulty;
     badgeHost.innerHTML = V.badge(selectedDifficulty);
   }
-  const modeLabel = T.view.modeOpen(selectedDifficulty);
-  if ($('mode-open').getAttribute('aria-label') !== modeLabel)
-    $('mode-open').setAttribute('aria-label', modeLabel);
-  $('difficulty-cards').innerHTML = V.modeCards(selectedDifficulty, id => profile.isUnlocked(id));
+  renderModeBest();
+  $('difficulty-cards').innerHTML = V.modeCards(
+    selectedDifficulty,
+    id => profile.isUnlocked(id),
+    id => NeonData.modeBest(records, id),
+  );
   text('auto-status', T.msg.autoStatus(w.ownedAuto));
   text('sc-start-note', scNote || T.msg.superNote(w.sc));
   $('sc-start').disabled = w.sc < 1 || !!prep;
