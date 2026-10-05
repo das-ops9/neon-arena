@@ -94,6 +94,11 @@
   --sk-crit: var(--gold);
   --sk-shield: #50b6ff;
 
+  /* 회복(R-061 회복 구역 · R-062 HP 회복 버프 · 버프 표시): 장갑 강화와 같은 초록 계열(전장에 없는 색) */
+  --heal: var(--sk-vital);
+  /* GM 실험 칸 표시(R-065, 시험 경로에만) */
+  --gm: var(--pink);
+
   /* 모드 배지(badges.js, 모양은 그 파일): 색 · 판 위(tone) · 판 아래(tone2) · 글자 */
   --mode-easy: #52ead1;
   --mode-easy-tone: #123033;
@@ -174,6 +179,8 @@
   --cv-scoin: var(--violet);
   --cv-scoin-fill: var(--violet-deep);
   --cv-scoin-ink: #eee2ff;
+  --cv-heal: var(--heal);
+  --cv-revive: var(--gold);
 
   /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
   --an-bg: #090f18;
@@ -4677,9 +4684,26 @@ return Plotly;
         pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
       },
     },
-    // Insane S 코인(R-023): mode 판(일반 · S 출격)에서 전투 시계 every초마다 1개. 기체에서 near~far 거리의 무작위
-    // 방향, 맵 가장자리에서 margin 안쪽. 크기 r, 자석 없이 기체가 닿아야 1 S. 줍지 않으면 판 끝까지 남는다.
-    superCoin: { mode: 'insane', every: 300, near: 600, far: 1000, r: 15, margin: 50 },
+    // Insane S 코인(R-023 · R-061): mode 판(일반 · S 출격)에서 세 출처로 1개씩 생긴다. 크기 r, 자석 없이 기체가
+    // 닿아야 1 S, 줍지 않으면 판 끝까지 남는다. ① 전투 시계 every초마다 기체에서 near~far 거리의 무작위 방향
+    // ② 레벨업마다 levelChance 확률(시드 · LV 해시) ③ 보스 웨이브를 다 잡을 때마다(판당 bossMax).
+    // ②③은 맵 전역 무작위. 셋 모두 맵 가장자리에서 margin 안쪽
+    superCoin: {
+      mode: 'insane',
+      every: 300,
+      near: 600,
+      far: 1000,
+      r: 15,
+      margin: 50,
+      levelChance: 0.01,
+      bossMax: 5,
+    },
+    // 출격 버프(R-062, I-36): from 모드부터 켤 수 있고, 켜 두면 출격할 때마다 비용(b: B · s: S)을 낸다. 키 순서 = 화면 위 → 아래.
+    // regen: 판 내내 초당 hp 회복 · revive: 한 번 쓰러지면 최대 HP × hp로 일어나 invuln초 무적 + 지금 충격파 한 번
+    buffs: { from: 'super', regen: { b: 10, hp: 1 }, revive: { s: 2, hp: 0.5, invuln: 2 } },
+    // 회복 구역(R-061, I-34): 전투 시계 first초부터 every초마다 맵 아무 곳(가장자리 margin 안)에 life초 동안 하나(동시 1개).
+    // 반지름 = 보스 반지름(enemies.boss.r) × sizes 중 하나. 기체 중심이 원 안이면 초당 hp 회복(최대 HP까지)
+    healZone: { first: 60, every: 60, life: 30, sizes: [1, 1.5, 2], hp: 1, margin: 150 },
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 100, logs: 10 },
@@ -4956,6 +4980,35 @@ return Plotly;
   // 고양이 비행사(1단계 R-026에서 화면에 나온다. 이름은 임시, 3단계에서 확정)
   // 고양이 비행사(R-026). 이름 · 그림은 임시(3단계에서 확정). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
   const pctOf = v => Math.round(v * 100);
+  // 출격 버프 id(R-062): balance buffs 키 순서(from 제외)
+  const buffList = () => Object.keys(B().buffs).filter(k => k !== 'from');
+  // 회복 구역(R-061): '전투 1분부터 1분마다 맵 어딘가에 30초 동안 생기는 초록 원. 안에 있으면 HP가 1초에 1씩 찬다'
+  const healZoneText = () => {
+    const h = B().healZone;
+    return (
+      '전투 ' +
+      h.first / 60 +
+      '분부터 ' +
+      h.every / 60 +
+      '분마다 맵 어딘가에 ' +
+      h.life +
+      '초 동안 생기는 초록 원. 기체가 안에 있으면 HP가 1초에 ' +
+      h.hp +
+      '씩 찬다'
+    );
+  };
+  // Insane S 코인이 나타나는 때(R-023 · R-061): '5분마다 · 레벨업 때 1% 확률로 · 보스 웨이브를 다 잡을 때마다(판당 5번)'
+  const sCoinFrom = () => {
+    const c = B().superCoin;
+    return (
+      c.every / 60 +
+      '분마다 · 레벨업 때 ' +
+      pct(c.levelChance) +
+      ' 확률로 · 보스 웨이브를 다 잡을 때마다(판당 ' +
+      c.bossMax +
+      '번)'
+    );
+  };
   const cats = {
     engineer: { name: '정비사', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
     supply: { name: '보급관', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
@@ -4977,6 +5030,25 @@ return Plotly;
     superPrep: SC + ' 출격 준비',
   };
   const auto = { name: '자동 강화', short: 'AUTO' };
+  // 출격 버프(R-062, I-36): 플레이 탭 모드 칸 왼쪽 스위치(위 → 아래 = balance buffs 키 순서). 켜 두면 출격할 때마다 비용
+  const buffs = {
+    group: '출격 버프',
+    tag: '버프',
+    regen: { name: 'HP 회복' },
+    revive: { name: '1회 부활', used: '1회 부활(씀)' },
+    // 비용 글자: '10 B' · '2 S'
+    cost: id => {
+      const c = B().buffs[id];
+      return [c.b ? c.b + ' ' + BL : '', c.s ? c.s + ' ' + SC : ''].filter(Boolean).join(' + ');
+    },
+    // from 모드 아래: '🔒 Super'
+    locked: () => '🔒 ' + modeName(B().buffs.from),
+    // 스위치 읽기 이름: 'HP 회복 · 10 B · 켜면 출격할 때마다 씀'(잠기면 'HP 회복 · Super부터')
+    label: (id, open) =>
+      buffs[id].name +
+      ' · ' +
+      (open ? buffs.cost(id) + ' · 켜면 출격할 때마다 씀' : modeName(B().buffs.from) + '부터'),
+  };
   // 순위(R-032): 일반 출격 판과 S 출격 판을 따로 매기는 Point 순위. kind = 'normal' | 'super'
   const ranking = { name: '순위', normal: '일반', super: launches.super };
   const rankingName = kind => (kind === 'super' ? ranking.super : ranking.normal);
@@ -5035,9 +5107,10 @@ return Plotly;
       : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
   };
 
-  // ── 전투 알림(R-030). 알림 대기열 하나로 보인다(app.js notify) ──
-  // major: 중요 알림 — 차례로 보이고(대기 최대 3, 다음 것은 흐리게) 색 테두리(tone: danger · gold · violet).
-  // major가 없으면 보통 알림 — 쌓지 않는다. 빈 때나 보통 알림이 떠 있을 때만 최신 것으로 바꿔 보인다.
+  // ── 전투 알림(R-030 · R-064). 알림 묶음 하나로 보인다(app.js notify) ──
+  // 들어오는 알림은 모두 바로 맨 위(최신)에 보이고 지난 것은 작고 흐리게 아래로 밀린다(보이는 수 ui.alertStack.max).
+  // 같은 문구는 하나로, 같은 종류의 보통 알림은 새 것이 그 줄을 대신한다. 각 알림은 sec초 뒤 사라진다.
+  // major: 중요 알림 — 색 테두리(tone: danger · gold · violet). major가 없으면 보통 알림.
   // sec: 보이는 시간(초). 모두 3초, STAGE(직접 · 자동 상승) · 보스 접근 · 해금 · S 코인 줍기만 4초(Q58 · R-044).
   // fx: 'shine' — 지금 알림일 때 큰 글자 + 빛줄기 한 번(R-044).
   // 레벨업 · 일시정지 창이 떠 있으면 알림 시계가 멈춘다.
@@ -5094,10 +5167,27 @@ return Plotly;
         ' 자동 상승' +
         (boss === 'now' ? ' · 보스 등장' : boss === 'next' ? ' · 다음 보스' : ''),
     },
-    // Insane S 코인(R-023)
-    sCoin: { major: true, tone: 'violet', sec: 3, text: () => SC + ' 코인 등장' },
+    // Insane S 코인(R-023 · R-061): src = 'time'(5분마다) · 'level'(레벨업) · 'boss'(보스 웨이브 격파)
+    sCoin: {
+      major: true,
+      tone: 'violet',
+      sec: 3,
+      text: src => SC + ' 코인 등장' + (src === 'level' ? ' · 레벨업' : src === 'boss' ? ' · 보스 격파' : ''),
+    },
     // 줍기(R-044): 금색 · 큰 글자 · 반짝임 한 번(fx: 'shine'), 4초
     sPick: { major: true, tone: 'gold', fx: 'shine', sec: 4, text: n => '+' + n + ' ' + SC },
+    // 출격 버프(R-062): 적용(ids = 낸 버프) · 재화 부족으로 꺼짐(ids = 건너뛴 버프) · 1회 부활
+    buffOn: { sec: 3, text: ids => buffs.tag + ' · ' + ids.map(id => buffs[id].name).join(' · ') },
+    buffSkip: {
+      major: true,
+      tone: 'danger',
+      sec: 3,
+      text: ids =>
+        ids.length === 1
+          ? buffs[ids[0]].name + ' ' + (B().buffs[ids[0]].s ? SC : BL) + ' 부족 · 꺼짐'
+          : buffs.tag + ' 재화 부족 · 꺼짐',
+    },
+    revive: { major: true, tone: 'gold', sec: 4, text: () => buffs.revive.name },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -5184,6 +5274,9 @@ return Plotly;
       picks: () => B().superLaunch.picks,
       picksOf: () => '/ ' + B().superLaunch.picks,
       allocLabel: '강화 배분',
+      // 아이콘 버튼(R-063, 글자 없음 · 읽기 이름만): 주사위 = 남은 강화를 무작위로(다시 누르면 새로) · ↺ = 모두 0
+      random: '무작위 배분',
+      reset: '배분 초기화',
       cancel: '준비 취소',
       launch: '출격 · ' + SC + ' 1 사용',
       note: () =>
@@ -5224,8 +5317,34 @@ return Plotly;
     // S 출격 시작 연출(R-048, O-INTRO): 제목 2초 → 3 · 2 · 1 각 1초. 그동안 적 · 시간이 멈춘다
     // 알림 sec처럼 보이는 시간도 여기 둔다: titleSec 초 + count 초, 진동 패턴(ms, 약 2초)
     intro: { title: SC + ' 출격', titleSec: 2, count: 3, vibrate: [200, 100, 200, 100, 600] },
-    // 전투 진동 패턴(R-055, ms · 설정 '진동'): 피격 · 보스 등장 경고 · 레벨업 창(AUTO가 아닐 때). 임시값
-    vibe: { hurt: 30, boss: [90, 120, 90], level: 40 },
+    // 전투 진동 패턴(R-055, ms · 설정 '진동'): 피격 · 보스 등장 경고 · 레벨업 창(AUTO가 아닐 때) · 1회 부활(R-062). 임시값
+    vibe: { hurt: 30, boss: [90, 120, 90], level: 40, revive: [60, 40, 160] },
+    // 출격 버프 스위치 묶음(R-062, shell.html P-BUFF 읽기 이름)
+    buffs: { group: buffs.group },
+    // 전투 알림 묶음(R-064): 보이는 수(최신 + 지난 것) · 자리 이동 시간(초). 임시값
+    alertStack: { max: 3, move: 0.25 },
+    // GM 실험 칸(R-065, 시험 경로에만): 기록 탭 입구 · GM 화면 패널 · 설정 줄
+    gm: {
+      enter: 'GM 실험 칸 ›',
+      panel: 'GM 패널',
+      hide: 'GM 버튼 숨기기',
+      tag: 'GM',
+      kicker: 'GAME MASTER',
+      title: 'GM 실험 칸',
+      note: '따로 된 저장소에서 값을 바꿔 판을 해 봅니다. /test/의 재화 · 기록은 그대로입니다.',
+      coins: '재화',
+      cats: '고양이 Lv',
+      unlocks: '해금',
+      hidden: '히든 탭',
+      start: '시작 ' + stage.upper,
+      startNote: '일반 출격만',
+      fill: '가득 채우기',
+      apply: '적용',
+      close: '닫기',
+      exit: 'GM 나가기',
+      applied: '적용했습니다',
+      failed: '적용하지 못했습니다',
+    },
     pause: {
       kicker: 'PAUSED',
       title: '잠시 숨을 고르세요',
@@ -5260,6 +5379,11 @@ return Plotly;
       padCenter: '가운데 · 기본',
       padRight: '오른쪽',
       padLeft: '왼쪽',
+      // 전투 알림 묶음 위치(R-064, 이 기기 설정)
+      alertPos: '알림 위치',
+      alertCenter: '가운데 · 기본',
+      alertLeft: '왼쪽',
+      alertRight: '오른쪽',
       view: '시야',
       viewWide: '넓게 · 기본',
       viewStandard: '표준',
@@ -5479,6 +5603,7 @@ return Plotly;
         unknown_format: 'NEON ARENA 백업이나 분석 로그 파일이 아닙니다.',
         unsupported_schema: '이 버전에서 읽을 수 없는 백업 형식입니다.',
         broken_record: '기록 정보가 손상된 로그입니다.',
+        gm_backup: 'GM 백업은 GM 실험 칸에서만 가져올 수 있습니다.',
       },
       // 가져오기 비교표 줄 이름
       rows: {
@@ -5558,8 +5683,14 @@ return Plotly;
     lastLabel: (score, place) => '최근 기록 ' + score + ' · ' + place + ' · 상세 보기',
     // best: 이 모드 최고 Point 글자(없으면 빈 값)
     modeOpen: (id, best) => '모드 변경 · 지금 ' + modeName(id) + (best ? ' · 이 모드 최고 ' + best : ''),
-    // 모드 칸 · 모드 창의 최고 기록(R-053): 일반 출격 판만(S 출격은 시작 STAGE가 달라 따로, Q44)
-    modeBest: { title: '이 모드 최고', none: '기록 없음', card: '최고', cardNone: '최고 기록 없음' },
+    // 모드 창 카드의 최고 기록(R-053): 일반 출격 판만(S 출격은 시작 STAGE가 달라 따로, Q44).
+    // 플레이 탭 모드 칸에서는 뺐다(R-062 스위치 자리, 모드 칸 읽기 이름 modeOpen에만 남김)
+    modeBest: { card: '최고', cardNone: '최고 기록 없음' },
+    // 출격 버프 표시(R-062): 결과 · 기록 상세 한 줄 '출격 버프 · HP 회복 · 1회 부활(씀)'
+    buffLine: (ids, revived) =>
+      buffs.group +
+      ' · ' +
+      ids.map(id => (id === 'revive' && revived ? buffs.revive.used : buffs[id].name)).join(' · '),
     recordsEmpty: '아직 저장된 기록이 없습니다.',
     // 기록 탭 별표 · 선택 삭제(R-018)
     rec: {
@@ -5575,6 +5706,8 @@ return Plotly;
       star: '별표',
       top: 'TOP3',
       summaryOnly: '요약만',
+      // 출격 버프를 쓴 판(R-062)
+      buff: buffs.tag,
     },
     prev: '이전',
     next: '다음',
@@ -5755,6 +5888,8 @@ return Plotly;
       superLaunch: SC + ' 출격',
       cats: '고양이',
       superCoin: coins.s.ko,
+      healZone: '회복 구역',
+      buffs: buffs.group,
     };
     // 표로 보는 묶음의 줄 이름(열 = 모드 · 기체 · 적). 기체 start.<스킬>은 '시작 ' + 스킬 이름
     const rows = {
@@ -5918,6 +6053,23 @@ return Plotly;
         far: '먼 거리',
         r: '크기',
         margin: '가장자리 여백',
+        levelChance: '레벨업 확률',
+        bossMax: '보스 S 판당 최대',
+      },
+      buffs: {
+        'regen.b': buffs.regen.name + ' 비용 ' + BL,
+        'regen.hp': buffs.regen.name + ' 초당 회복',
+        'revive.s': buffs.revive.name + ' 비용 ' + SC,
+        'revive.hp': '부활 HP 비율',
+        'revive.invuln': '부활 무적(초)',
+      },
+      healZone: {
+        first: '첫 구역(초)',
+        every: '간격(초)',
+        life: '유지(초)',
+        sizes: '크기 배율',
+        hp: '초당 회복',
+        margin: '가장자리 여백',
       },
     };
     // 스킬 묶음의 키 이름(앞에 스킬 이름이 붙는다)
@@ -5965,6 +6117,9 @@ return Plotly;
         return 'Lv' + (Number(p[2]) + 2) + ' 비용 ' + (p[3] === 's' ? SC : BL);
       if (group === 'cats' && p[1] === 'effect')
         return (cats[p[2]]?.name || p[2]) + ' Lv' + (Number(p[3]) + 1) + ' 효과';
+      // 숫자 배열(회복 구역 크기 배율 등): '이름 n'(1부터)
+      if (p.length === 3 && /^\d+$/.test(p[2]) && names[group]?.[p[1]])
+        return names[group][p[1]] + ' ' + (Number(p[2]) + 1);
       return names[group]?.[rest] || rest || group;
     }
     return {
@@ -6245,6 +6400,16 @@ return Plotly;
             ['HP', '체력. 0이 되면 판이 끝납니다.'],
             ['보호막', '방패 막대. ' + 'HP보다 먼저 피해를 받습니다.'],
             ['XP', '적이 남긴 보석. 막대가 차면 레벨업합니다.'],
+            [
+              '회복 구역',
+              '맵 어딘가에 ' +
+                b.healZone.every / 60 +
+                '분마다 ' +
+                b.healZone.life +
+                '초 동안 생기는 초록 원. 안에 있으면 HP가 1초에 ' +
+                b.healZone.hp +
+                '씩 찹니다.',
+            ],
           ],
         },
       },
@@ -6254,7 +6419,18 @@ return Plotly;
       },
       {
         title: '재화',
-        rows: glossary()[0].rows.map(([mark, name, desc]) => [mark + ' · ' + name, desc]),
+        rows: [
+          ...glossary()[0].rows.map(([mark, name, desc]) => [mark + ' · ' + name, desc]),
+          [
+            buffs.group,
+            modeName(b.buffs.from) +
+              ' 이상에서 모드 칸 왼쪽 스위치로 켭니다. 켜 두면 출격할 때마다 ' +
+              buffList()
+                .map(id => buffs[id].name + ' ' + buffs.cost(id))
+                .join(' · ') +
+              '를 씁니다(모자라면 꺼진 채 출격).',
+          ],
+        ],
       },
       {
         title: '성장',
@@ -6311,11 +6487,12 @@ return Plotly;
           '레벨업 코인 칸이 가끔 ' + BL + ' 코인이 됩니다(' + blueCoinModes() + ').',
           modeName(b.superCoin.mode) +
             '에서는 ' +
-            sMin +
-            '분마다 ' +
             SC +
-            ' 코인이 맵에 나타납니다. 방향 표시가 없으니 근처를 돌며 찾으세요.',
+            ' 코인이 맵에 나타납니다(' +
+            sMin +
+            '분마다 · 레벨업 · 보스 웨이브 격파). 방향 표시가 없으니 근처를 돌며 찾으세요.',
           '포위는 ' + siegeMin + '분마다 사방에서 몰려옵니다. 화면 가장자리가 붉어지면 대비하세요.',
+          launches.superPrep + '의 주사위는 남은 강화를 무작위로 나눕니다(다시 누르면 새로, ↺는 모두 0).',
           '★ 별표한 기록은 자동 정리에서 지워지지 않습니다.',
         ],
       },
@@ -6377,8 +6554,8 @@ return Plotly;
               ' 만든다. ' +
               modeName(b.superCoin.mode) +
               '에서는 ' +
-              b.superCoin.every / 60 +
-              '분마다 맵에 하나씩 나타나 기체가 닿으면 얻는다. ' +
+              sCoinFrom() +
+              ' 맵에 하나씩 나타나 기체가 닿으면 얻는다. ' +
               launches.super +
               ' 한 번에 1개를 쓰고, 고양이 비행사 해금 · 육성에도 쓴다.',
           ],
@@ -6479,6 +6656,7 @@ return Plotly;
               '초 전에 화면 가장자리에 붉은 표시가 뜬다.',
           },
           { term: enemies.hazard.name, desc: '보라색 원이 차오르면 그 자리에 피해가 터진다.' },
+          { term: '회복 구역', desc: healZoneText() + '. 방향 표시는 없다.' },
           {
             term: level.short + ' · XP',
             desc:
@@ -6551,6 +6729,29 @@ return Plotly;
               '단계까지).',
           },
           { term: '일반 출격', desc: stage.name + ' 1 · ' + levelShort(1) + '에서 시작한다.' },
+          {
+            term: buffs.group,
+            desc:
+              '플레이 탭 모드 칸 왼쪽 스위치(' +
+              modeName(b.buffs.from) +
+              ' 이상). 켜 두면 출격할 때마다 비용을 내고, 모자라면 꺼진 채 출격한다. ' +
+              buffs.regen.name +
+              '(' +
+              buffs.cost('regen') +
+              '): 판 내내 HP가 1초에 ' +
+              b.buffs.regen.hp +
+              '씩 찬다. ' +
+              buffs.revive.name +
+              '(' +
+              buffs.cost('revive') +
+              '): 한 번 쓰러지면 HP ' +
+              pctOf(b.buffs.revive.hp) +
+              '%로 일어나 ' +
+              b.buffs.revive.invuln +
+              '초 무적 + ' +
+              abilities.nova +
+              ' 한 번. 순위는 그대로다.',
+          },
           {
             term: launches.super,
             desc:
@@ -6662,6 +6863,7 @@ return Plotly;
     josa,
     launches,
     auto,
+    buffs,
     unlockGate,
     goldExtra,
     bossGoldText,
@@ -6700,6 +6902,8 @@ return Plotly;
   //     kill 이벤트를 log.killBatch초 동안 모아 한 번에 쓴다. 판 끝 · 내보내기 때 남은 것도 쓴다.
   //   - 반올림: t · from · at 소수 1자리, x · y · r 정수, 피해 · hp · wait 소수 1자리, stage의 rules 소수 3자리.
   //   - stage · coin_choice의 auto(자동 승격 R-022 · 자동 G 습득 R-025)와 coin_choice의 blue(B 코인 R-043)는 참일 때만 쓴다. s_spawn · s_pick은 Insane S 코인(R-023).
+  //   - s_spawn의 src는 출처(time · level · boss, R-061), zone은 회복 구역이 생긴 순간(R-061), revive는 1회 부활(R-062).
+  //     summary.sDrops[출처] = 생긴 S 코인 수, summary.heal = { zone, buff } 회복한 HP(소수 1자리), summary.zones = 생긴 회복 구역 수.
   // events: 열 목록에 없는 종류만 v3처럼 객체로 둔다(context · postContext는 뺀다).
   // 이벤트로 쓰지 않고 summary에서만 세는 것:
   //   summary.attempts[능력] = 시도(받아들인 누름 ability_attempt + 거절 ability_rejected, R-003 엔진 기준).
@@ -6731,7 +6935,9 @@ return Plotly;
     MODE_IDS.includes(String(id || '').toLowerCase()) ? String(id).toLowerCase() : 'easy';
   const finiteCount = v => (Number.isFinite(Number(v)) ? Math.max(0, Math.floor(Number(v))) : 0);
   const IDS = Object.keys(BAL.skills),
-    CRAFT_IDS = Object.keys(BAL.crafts);
+    CRAFT_IDS = Object.keys(BAL.crafts),
+    // 출격 버프 id(R-062, balance buffs의 키에서 from 제외 = progression.js BUFFS)
+    BUFF_IDS = Object.keys(BAL.buffs).filter(k => k !== 'from');
   function safeSkills(obj) {
     const out = {};
     for (const id of IDS) {
@@ -6805,6 +7011,9 @@ return Plotly;
       starred: raw.starred === true,
       log: raw.log === 'none' ? 'none' : 'full',
       cats: safeCats(raw.cats),
+      // 출격 버프(R-062): 낸 버프(BUFFS 순서, 모르는 id는 버림) · 1회 부활을 썼는지. 옛 기록은 [] · 거짓
+      buffs: Array.isArray(raw.buffs) ? BUFF_IDS.filter(id => raw.buffs.includes(id)) : [],
+      revived: raw.revived === true,
       abilityUsage:
         raw.abilityUsage && typeof raw.abilityUsage === 'object'
           ? raw.abilityUsage
@@ -7333,8 +7542,10 @@ return Plotly;
     resume: ['t'],
     settings: ['t', 'view', 'quality', 'viewport'],
     viewport: ['t', 'width', 'height', 'view'],
-    s_spawn: ['t', 'id', 'x', 'y'],
+    s_spawn: ['t', 'id', 'x', 'y', 'src'],
     s_pick: ['t', 'id', 'x', 'y'],
+    zone: ['t', 'id', 'x', 'y', 'r'],
+    revive: ['t', 'x', 'y'],
   });
   for (const cols of Object.values(EVENT_COLUMNS)) Object.freeze(cols);
   // 짧게 적는 열(내보낸 파일의 columns.dict · columns.codecs):
@@ -7579,6 +7790,7 @@ return Plotly;
         rejected: { dash: 0, nova: 0 },
         hazards: 0,
         warnings: 0,
+        sDrops: { time: 0, level: 0, boss: 0 },
         stageChanges: [],
         frames: 0,
         slowFrames: 0,
@@ -7617,6 +7829,10 @@ return Plotly;
         s.absorbed[key] = (s.absorbed[key] || 0) + (e.absorbed || 0);
       }
       if (type === 'dash' || type === 'nova') s.abilities[type]++;
+      if (type === 's_spawn') {
+        const src = typeof e.src === 'string' ? e.src : 'time';
+        s.sDrops[src] = (s.sDrops[src] || 0) + 1;
+      }
       if (type === 'level') for (const id of e.offered || []) s.offered[id] = (s.offered[id] || 0) + 1;
       if (type === 'upgrade') {
         s.chosen[e.id] = (s.chosen[e.id] || 0) + 1;
@@ -7770,6 +7986,9 @@ return Plotly;
       this.summary.difficultyId = difficultyId(g.difficultyId || this.meta.difficultyId);
       this.summary.simulationTime = g.time;
       if (g.abilityUsage) this.summary.abilityUsage = JSON.parse(JSON.stringify(g.abilityUsage));
+      // 회복(R-061 · R-062): 회복 구역 · 버프로 찬 HP, 생긴 회복 구역 수
+      if (g.healed) this.summary.heal = { zone: r1(g.healed.zone), buff: r1(g.healed.buff) };
+      if (Number.isFinite(g.zoneSerial)) this.summary.zones = g.zoneSerial;
       // 시도 수는 엔진 누적값이 정확하다(이벤트를 놓친 경우까지)
       for (const a of Object.keys(this.summary.attempts)) {
         const n = Number(g.abilityUsage?.[a]?.attempts);

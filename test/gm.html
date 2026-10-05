@@ -3809,7 +3809,7 @@ body[data-fx='low'] .boss-warn.is-on {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test";
+      globalThis.NEON_NS = "-test-gm";
     </script>
     <script>
       // 오프닝(R-058, I-02): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 5초(시간표는 ui.css).
@@ -21782,7 +21782,151 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     </script>
     <!-- GM 실험 칸(R-065): gm.html 빌드에만 src/gm.js가 들어간다(index.html은 빈칸) -->
     <script>
-      
+      (function (root) {
+  'use strict';
+  // GM 실험 칸(R-065): /test/gm.html 빌드에만 들어가는 패널(build.cjs의 /*GM*/ 자리, index.html은 빈칸).
+  // 저장소는 빌드 접미사(-test-gm)로 처음부터 따로라 여기서 바꾼 값은 /test/ 데이터와 섞이지 않는다.
+  // 값 바꾸기는 progression.js gmSet(GM 저장소에서만) 하나뿐이고, 시작 STAGE는 이 기기 설정(prefs.gmStage).
+  // app.js boot가 init(ctx)로 부르고, 기록 탭 'GM 패널' 버튼이 open()을 부른다. 문구는 terms.js ui.gm.
+  const T = root.NeonTerms,
+    B = root.NeonBalance,
+    esc = v => root.NeonView.esc(v),
+    G = () => T.ui.gm;
+  // 가득 채우기 값(임시값): G · B · S, 고양이는 최대 Lv, 모든 모드 · 히든 탭
+  const FULL = { gold: 99999, blue: 9999, superCoins: 999 },
+    STAGE_MAX = 999,
+    // 해금을 고를 모드(Easy · Hard는 처음부터 열림)
+    MODES = Object.keys(B.modes).filter(id => id !== 'easy' && id !== 'hard');
+  let ctx = null,
+    dialog = null;
+  const $ = id => document.getElementById(id);
+  // ctx = { profile, prefs, savePrefs, refreshProfileUI, refreshRecords }
+  function init(c) {
+    ctx = c;
+    document.body.dataset.gm = '';
+    const brand = document.querySelector('.brand');
+    if (brand && !brand.querySelector('.gm-tag'))
+      brand.insertAdjacentHTML('beforeend', '<span class="gm-tag">' + esc(G().tag) + '</span>');
+    const enter = $('gm-enter');
+    enter.textContent = G().panel;
+    enter.hidden = false;
+  }
+  // 일반 출격의 시작 STAGE(1~STAGE_MAX)
+  function startStage() {
+    const s = Math.floor(Number(ctx?.prefs.gmStage) || 1);
+    return Math.min(STAGE_MAX, Math.max(1, s));
+  }
+  const num = (id, label, max) =>
+    '<label class="gm-field">' +
+    esc(label) +
+    '<input type="number" inputmode="numeric" min="0" max="' +
+    max +
+    '" step="1" id="' +
+    id +
+    '" /></label>';
+  const check = (id, label) =>
+    '<label class="gm-check"><input type="checkbox" id="' + id + '" />' + esc(label) + '</label>';
+  function build() {
+    const g = G(),
+      cats = B.cats.list;
+    dialog = document.createElement('dialog');
+    dialog.className = 'dialog gm-dialog';
+    dialog.setAttribute('aria-labelledby', 'gm-title');
+    dialog.innerHTML =
+      '<div class="eyebrow">' +
+      esc(g.kicker) +
+      '</div><h2 id="gm-title">' +
+      esc(g.title) +
+      '</h2><p class="overlay-note">' +
+      esc(g.note) +
+      '</p><section class="gm-sec"><h3>' +
+      esc(g.coins) +
+      '</h3><div class="gm-grid">' +
+      num('gm-gold', T.coins.g.short, root.NeonProgress.GM_MAX) +
+      num('gm-blue', T.coins.b.short, root.NeonProgress.GM_MAX) +
+      num('gm-sc', T.coins.s.short, root.NeonProgress.GM_MAX) +
+      '</div></section><section class="gm-sec"><h3>' +
+      esc(g.cats) +
+      '</h3><div class="gm-grid">' +
+      cats.map(id => num('gm-cat-' + id, T.cats[id].name, B.cats.maxLevel)).join('') +
+      '</div></section><section class="gm-sec"><h3>' +
+      esc(g.unlocks) +
+      '</h3><div class="gm-checks">' +
+      MODES.map(id => check('gm-mode-' + id, T.modeName(id))).join('') +
+      check('gm-hidden', g.hidden) +
+      '</div></section><section class="gm-sec"><h3>' +
+      esc(g.start) +
+      '</h3><div class="gm-grid">' +
+      num('gm-stage', g.startNote, STAGE_MAX) +
+      '</div></section><div class="btn-row"><button class="btn btn--sm" id="gm-fill">' +
+      esc(g.fill) +
+      '</button><button class="btn btn--sm btn--gm" id="gm-apply">' +
+      esc(g.apply) +
+      '</button></div><p class="overlay-note" id="gm-status" role="status"></p><div class="btn-row">' +
+      '<button class="btn btn--ghost" id="gm-exit">' +
+      esc(g.exit) +
+      '</button><button class="btn btn--primary" id="gm-close">' +
+      esc(g.close) +
+      '</button></div>';
+    document.body.appendChild(dialog);
+    $('gm-fill').onclick = fill;
+    $('gm-apply').onclick = apply;
+    $('gm-close').onclick = () => dialog.close();
+    $('gm-exit').onclick = () => (location.href = 'index.html');
+    $('gm-stage').min = '1';
+  }
+  // 지금 값을 칸에 채운다
+  function load() {
+    const p = ctx.profile.snapshot();
+    $('gm-gold').value = p.gold;
+    $('gm-blue').value = p.blue;
+    $('gm-sc').value = p.superCoins;
+    for (const id of B.cats.list) $('gm-cat-' + id).value = p.cats?.[id] || 0;
+    for (const id of MODES) $('gm-mode-' + id).checked = p.unlockedModes.includes(id);
+    $('gm-hidden').checked = p.hidden === true;
+    $('gm-stage').value = startStage();
+    $('gm-status').textContent = '';
+  }
+  function fill() {
+    $('gm-gold').value = FULL.gold;
+    $('gm-blue').value = FULL.blue;
+    $('gm-sc').value = FULL.superCoins;
+    for (const id of B.cats.list) $('gm-cat-' + id).value = B.cats.maxLevel;
+    for (const id of MODES) $('gm-mode-' + id).checked = true;
+    $('gm-hidden').checked = true;
+  }
+  async function apply() {
+    const btn = $('gm-apply');
+    btn.disabled = true;
+    try {
+      ctx.prefs.gmStage = Math.min(STAGE_MAX, Math.max(1, Math.floor(Number($('gm-stage').value) || 1)));
+      ctx.savePrefs();
+      const r = await ctx.profile.gmSet({
+        gold: $('gm-gold').value,
+        blue: $('gm-blue').value,
+        superCoins: $('gm-sc').value,
+        cats: Object.fromEntries(B.cats.list.map(id => [id, $('gm-cat-' + id).value])),
+        unlocked: MODES.filter(id => $('gm-mode-' + id).checked),
+        hidden: $('gm-hidden').checked,
+      });
+      ctx.refreshProfileUI();
+      await ctx.refreshRecords();
+      load();
+      $('gm-status').textContent = r.ok ? G().applied : G().failed;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  function open() {
+    if (!ctx) return;
+    if (!dialog) build();
+    load();
+    dialog.showModal();
+  }
+  const api = { init, open, startStage };
+  root.NeonGM = api;
+})(globalThis);
+
     </script>
     <script>
       'use strict';
