@@ -86,8 +86,7 @@
   --dur: 180ms;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
-  /* 안전 영역. 세로 전체 화면도 브라우저가 알려 주는 값만 쓴다: 삼성 인터넷은 앞 카메라 자리를
-     화면 밖(흰 띠)으로 비워 두므로 그 아래를 더 비우지 않는다(R-053, R-047의 최소 28px 없앰) */
+  /* 안전 영역 */
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -103,6 +102,13 @@
 @supports (height: 100svh) {
   :root {
     --vh-full: 100svh;
+  }
+}
+/* 세로 전체 화면(설정 '전체 화면'): 상태 표시줄이 사라져 앞 카메라 구멍이 화면 위에 걸린다.
+   브라우저가 알려 주는 위 안전 영역이 그보다 작으면 최소 28px을 둔다(R-047) */
+@media (orientation: portrait) {
+  :root:fullscreen {
+    --safe-t: max(env(safe-area-inset-top, 0px), 28px);
   }
 }
 
