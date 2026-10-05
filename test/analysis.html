@@ -5,17 +5,461 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>NEON ARENA · 플레이 분석</title>
     <style>
-      :root {
-        color-scheme: dark;
+      /* NEON ARENA v4 디자인 토큰과 기본 규칙. 근거: docs/history/UI_RESEARCH.md
+   글자는 rem(사용자 글자 크기 설정을 따름), 간격·터치 영역은 px로 고정한다. */
+:root {
+  color-scheme: dark;
+
+  /* 면 */
+  --bg: #070b13;
+  --bg-raise: #0b1420;
+  --surface: #0f1b29;
+  --surface-2: #142538;
+  --surface-3: #1a3048;
+  --line: #20364a;
+  --line-strong: #2e4c66;
+
+  /* 글자 (배경 #070b13 기준 대비: ink 17:1, ink-2 11:1, muted 7:1) */
+  --ink: #ebf3f6;
+  --ink-2: #b9c9d4;
+  --muted: #8aa0ae;
+
+  /* 강조 */
+  --cyan: #50f3d6;
+  --cyan-deep: #0f3a37;
+  --gold: #f4ce72;
+  --gold-deep: #3a2d12;
+  --blue: #68b9ff;
+  --blue-deep: #12304d;
+  --violet: #c4a3ff;
+  --violet-deep: #2b1f48;
+  --pink: #ff4e8e;
+  --danger: #ff5f6d;
+  --orange: #ff9a4d;
+
+  /* 재화 */
+  --c-gold: var(--gold);
+  --c-blue: var(--blue);
+  --c-sc: var(--violet);
+
+  /* 색은 모두 이 파일 한 곳(팔레트, R-054). 다른 파일은 이름(var(--…))으로만 쓴다.
+     같은 값이 이미 있으면 그 토큰을 가리킨다. 캔버스 · 그래프는 처음 한 번 읽어 풀린 값을 쓴다 */
+
+  /* 낱색: 한두 곳에서만 쓰는 색(이름은 쓰임새) */
+  --white: #ffffff;
+  --black: #000000;
+  --lilac: #b895ff;
+  --on-cyan: #04201c;
+  --on-danger: #1a0508;
+  --blue-ink: #cfe7ff;
+  --violet-ink: #e9ddff;
+  --danger-ink: #ffd0d5;
+  --danger-deep: #3a1219;
+  --logo-ink: #e9fffb;
+  --title-top: #18153f;
+  --title-mid: #100d2a;
+  --title-bottom: #0a0918;
+  --title-glow: #7a5cff;
+  --grid-line: #16313d;
+  --area-line: #24394b;
+  --area-bg: #08101a;
+  --area-label: #8fb3c4;
+  --s-tab-ink: #b9a3e8;
+  --gold-tint: #2a2412;
+  --cyan-tint: #10302d;
+  --danger-tint: #2a1218;
+  --soon-line: #2a3d50;
+  --soon-bg: #0b121c;
+  --scrim: #03060b;
+  --overlay-bg: #04070c;
+  --stage-bg: #1d170a;
+  --bar-bg: #1b2a38;
+  --action-bg: #0a1520;
+  --vignette: #050810;
+  --shine: #ffd36a;
+  --shine-core: #fff6d8;
+  --debug-mark: #ffe45c;
+  --warn: var(--danger);
+
+  /* 스킬(terms.js skills의 color → 카드 · HUD 스킬 줄 --c) */
+  --sk-power: var(--cyan);
+  --sk-rapid: var(--cyan);
+  --sk-multi: var(--gold);
+  --sk-pierce: #af9bff;
+  --sk-speed: var(--cyan);
+  --sk-magnet: var(--gold);
+  --sk-orbit: var(--sk-pierce);
+  --sk-vital: #8ce8a2;
+  --sk-nova: var(--sk-pierce);
+  --sk-crit: var(--gold);
+  --sk-shield: #50b6ff;
+
+  /* 모드 배지(badges.js, 모양은 그 파일): 색 · 판 위(tone) · 판 아래(tone2) · 글자 */
+  --mode-easy: #52ead1;
+  --mode-easy-tone: #123033;
+  --mode-easy-tone2: #0a1d20;
+  --mode-easy-text: #d2fff6;
+  --mode-hard: #f2c768;
+  --mode-hard-tone: #3d3019;
+  --mode-hard-tone2: #231b0e;
+  --mode-hard-text: #fff0c8;
+  --mode-extream: var(--blue);
+  --mode-extream-tone: #173351;
+  --mode-extream-tone2: #0d1f33;
+  --mode-extream-text: #dbeeff;
+  --mode-super: #b996ff;
+  --mode-super-tone: #30224c;
+  --mode-super-tone2: #1b1330;
+  --mode-super-text: #efe6ff;
+  --mode-ultra: #ffd98a;
+  --mode-ultra-tone: #4c3a19;
+  --mode-ultra-tone2: #2b200d;
+  --mode-ultra-text: #fff5dc;
+  --mode-insane: #ff5a7a;
+  --mode-insane-tone: #4d1728;
+  --mode-insane-tone2: #2a0b16;
+  --mode-insane-text: #ffe3ea;
+
+  /* 전장(renderer.js가 처음 한 번 읽는다. 캔버스용이라 #rrggbb나 그 값을 가리키는 var()만, 빠지면 자홍) */
+  --cv-base-bg: #070c16;
+  --cv-base-grid: var(--grid-line);
+  --cv-base-border: #386b76;
+  --cv-super-bg: #0c0a18;
+  --cv-super-grid: #252039;
+  --cv-super-border: #514369;
+  --cv-ultra-bg: #120f0a;
+  --cv-ultra-grid: #302a1b;
+  --cv-ultra-border: #625538;
+  --cv-insane-bg: #150b12;
+  --cv-insane-grid: #33202d;
+  --cv-insane-border: #6c3e52;
+  --cv-craft-fill: #123b40;
+  --cv-craft-line: #97ffe9;
+  --cv-craft-core: #f1fffb;
+  --cv-craft-2d: var(--cyan);
+  --cv-glow: var(--cyan);
+  --cv-chaser: var(--pink);
+  --cv-runner: #ffad66;
+  --cv-shooter: var(--lilac);
+  --cv-splitter: var(--pink);
+  --cv-boss: #ffca74;
+  --cv-boss-2: var(--orange);
+  --cv-boss-3: var(--danger);
+  --cv-boss-inner: #ffd68b;
+  --cv-boss-tell: var(--gold);
+  --cv-enemy-fill: #301a2b;
+  --cv-shooter-fill: #251c38;
+  --cv-boss-fill: #362a23;
+  --cv-gem: #ffde85;
+  --cv-gem-2d: var(--gold);
+  --cv-shot: #a1ffec;
+  --cv-shot-tint: #8affea;
+  --cv-crit-tint: #ffdb8a;
+  --cv-shot-2d: #9fffe7;
+  --cv-hostile-red: #ff4d5e;
+  --cv-hostile-orange: #ff7a45;
+  --cv-hostile-edge: #2a0b0b;
+  --cv-hostile-core: #ffe0c8;
+  --cv-blade: var(--cyan);
+  --cv-blade-core: #f4fffd;
+  --cv-spark: var(--white);
+  --cv-hurt: var(--pink);
+  --cv-dash: var(--cyan);
+  --cv-nova: var(--lilac);
+  --cv-hazard: var(--lilac);
+  --cv-hazard-fuse: #d8bdff;
+  --cv-shield: #65baff;
+  --cv-shield-max: #9fdcff;
+  --cv-number: var(--gold);
+  --cv-scoin: var(--violet);
+  --cv-scoin-fill: var(--violet-deep);
+  --cv-scoin-ink: #eee2ff;
+
+  /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
+  --an-bg: #090f18;
+  --an-ink: #dcebf1;
+  --an-text: #8fa9b9;
+  --an-on-cyan: #0c2520;
+  --an-line: #2b414d;
+  --an-card: #10202b;
+  --an-label: #83a0b1;
+  --an-chart-line: #253c48;
+  --an-chart-bg: #0e1a25;
+  --an-status-bg: #11252a;
+  --an-status-ink: #b4cdd4;
+  --an-empty-ink: #91a8b7;
+  --an-notes-line: #2c414d;
+  --an-notes-ink: #9fb8c6;
+  --an-version: #667e8b;
+  --an-plot-title: #bfd8e1;
+  --an-plot-ink: #87a5b5;
+  --an-plot-note: #86a2b0;
+  --an-plot-grid: #233a46;
+  --an-shield: #7dafff;
+  --an-damage: #ff6e9d;
+  --an-fps: #79b9ff;
+
+  /* 글꼴 */
+  --font: system-ui, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --fs-2xs: 0.6875rem;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-md: 0.9375rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+
+  /* 간격·모서리 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  /* 터치 영역 */
+  --tap: 44px;
+  --tap-lg: 48px;
+  --action-h: 56px;
+  --action-w: 72px;
+
+  /* 층 */
+  --z-hud: 10;
+  --z-overlay: 20;
+  --z-menu: 30;
+  --z-sheet: 40;
+  --z-dialog: 50;
+
+  /* 움직임 */
+  --dur: 180ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* 안전 영역 */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  /* 화면 위 · 아래 끝 여백(R-047): 위는 로고 글씨 높이의 70%(편집장 +20%, 앞 카메라 구멍), 아래는 50%.
+     모든 화면(메뉴 · 준비 · 전투 HUD · 창 · 시트)이 쓴다. 가로 화면은 0(ui.css) */
+  --edge-top: calc(var(--fs-lg) * 0.7);
+  --edge-bottom: calc(var(--fs-lg) * 0.5);
+
+  /* 화면 높이: 주소창이 펼쳐진 작은 높이 기준 */
+  --vh-full: 100vh;
+}
+@supports (height: 100svh) {
+  :root {
+    --vh-full: 100svh;
+  }
+}
+/* 세로 전체 화면(설정 '전체 화면'): 삼성 인터넷은 앞 카메라 자리를 화면 밖 흰 띠로 비워 두지만, 바로 아래는
+   로고 줄이 카메라에 너무 붙어 보인다. 위 안전 영역을 최소 8px 둔다(R-053, 편집장: 0은 너무 가깝고 28px는 너무 멂 → 30%) */
+@media (orientation: portrait) {
+  :root:fullscreen {
+    --safe-t: max(env(safe-area-inset-top, 0px), 8px);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+button,
+input,
+select,
+output {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button:disabled {
+  cursor: default;
+}
+button:focus-visible,
+canvas:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+h1,
+h2,
+h3,
+p,
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+}
+ol,
+ul {
+  list-style: none;
+}
+[hidden] {
+  display: none !important;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.muted {
+  color: var(--muted);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 모드 배지 (src/badges.js). 상자 크기에 장식까지 포함해 이웃 요소와 겹치지 않는다. */
+.nb {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+  vertical-align: middle;
+}
+.nb--full {
+  width: var(--nb-w, 112px);
+  aspect-ratio: 140 / 56;
+}
+.nb--compact {
+  width: var(--nb-cw, 70px);
+  aspect-ratio: 78 / 22;
+}
+.nb svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.nb text {
+  font-family: var(--font);
+}
+.nb-shine {
+  transform-box: fill-box;
+  animation: nb-shine 3.6s var(--ease) infinite;
+}
+.nb--insane .nb-aura {
+  animation: nb-pulse 2.4s ease-in-out infinite;
+}
+.nb-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nb-twinkle 2.8s ease-in-out infinite;
+}
+.nb-spark:nth-of-type(2n) {
+  animation-delay: 1.3s;
+}
+/* Insane(R-032): Ultra보다 별빛이 많고 반짝임은 opacity만(별마다 지연이 다르다) */
+.nb--insane .nb-spark {
+  animation: nb-glint 2.4s ease-in-out infinite;
+}
+@keyframes nb-shine {
+  0%,
+  55% {
+    transform: skewX(-18deg) translateX(0);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    transform: skewX(-18deg) translateX(560%);
+    opacity: 0;
+  }
+}
+@keyframes nb-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes nb-glint {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes nb-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.nb-static .nb-shine,
+.nb-static .nb-aura,
+.nb-static .nb-spark {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nb-shine,
+  .nb-aura,
+  .nb-spark {
+    animation: none !important;
+  }
+}
+
+    </style>
+    <style>
+      /* 색은 게임 토큰(tokens.css, R-054). 게임 바탕 규칙 중 화면 고정 · 글 여백 없앰은 이 페이지에서 되돌린다(세로 스크롤) */
+      html,
+      body {
+        height: auto;
+        overflow: visible;
+        background: var(--an-bg);
         font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+      }
+      p {
+        margin: 1em 0;
+      }
+      ul {
+        margin: 1em 0;
+        padding-left: 40px;
+        list-style: disc;
       }
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        background: #090f18;
-        color: #dcebf1;
+        background: var(--an-bg);
+        color: var(--an-ink);
         padding: 30px;
       }
       main {
@@ -37,21 +481,21 @@
       p {
         font-size: 13px;
         line-height: 1.9;
-        color: #8fa9b9;
+        color: var(--an-text);
       }
       .eyebrow {
         font: 11px Consolas;
-        color: #50f3d6;
+        color: var(--cyan);
         letter-spacing: 0.14em;
       }
       .upload {
         display: inline-block;
-        background: #50f3d6;
+        background: var(--cyan);
         border-radius: 4px;
         padding: 13px 18px;
         cursor: pointer;
         font-weight: 600;
-        color: #0c2520;
+        color: var(--an-on-cyan);
         font-size: 14px;
         white-space: nowrap;
       }
@@ -68,18 +512,18 @@
         margin: 24px 0;
       }
       .stat {
-        border: 1px solid #2b414d;
+        border: 1px solid var(--an-line);
         border-radius: 5px;
-        background: #10202b;
+        background: var(--an-card);
         padding: 18px;
       }
       .stat span {
-        color: #83a0b1;
+        color: var(--an-label);
         font-size: 12px;
         display: block;
       }
       .stat b {
-        color: #f4ce72;
+        color: var(--gold);
         font: 26px Consolas;
         display: block;
         margin-top: 10px;
@@ -90,29 +534,29 @@
         gap: 15px;
       }
       .chart {
-        border: 1px solid #253c48;
-        background: #0e1a25;
+        border: 1px solid var(--an-chart-line);
+        background: var(--an-chart-bg);
         border-radius: 6px;
         min-height: 330px;
         overflow: hidden;
       }
       .status {
-        border-left: 2px solid #50f3d6;
+        border-left: 2px solid var(--cyan);
         padding: 14px 18px;
-        background: #11252a;
-        color: #b4cdd4;
+        background: var(--an-status-bg);
+        color: var(--an-status-ink);
         font-size: 13px;
         line-height: 1.9;
         margin: 20px 0;
       }
       .empty {
-        border: 1px dashed #2b414d;
+        border: 1px dashed var(--an-line);
         padding: 50px;
         text-align: center;
-        color: #91a8b7;
+        color: var(--an-empty-ink);
       }
       .notes {
-        border: 1px solid #2c414d;
+        border: 1px solid var(--an-notes-line);
         padding: 20px;
         border-radius: 6px;
         margin: 20px 0;
@@ -122,17 +566,17 @@
         margin: 0 0 12px;
       }
       .notes ul {
-        color: #9fb8c6;
+        color: var(--an-notes-ink);
         font-size: 13px;
         line-height: 2;
       }
       .version {
         font: 11px Consolas;
-        color: #667e8b;
+        color: var(--an-version);
         margin-top: 25px;
       }
       .upload:focus-within {
-        outline: 2px solid #f4ce72;
+        outline: 2px solid var(--gold);
         outline-offset: 4px;
       }
       @media (max-width: 760px) {
@@ -4094,20 +4538,30 @@ return Plotly;
       burstEvery: 4,
       burstDelay: 0.16,
     },
-    // 보스 공격: near보다 멀면 다가온다. 체력이 hurt 비율 아래면 더 자주·더 많이 쏜다(원형 탄 ring + 조준 탄 1발)
-    // bossSide 모드는 id가 sideEvery의 배수인 보스가 조준 탄 양옆 ±sideAngle로 2발 더
+    // 보스 공격: near보다 멀면 다가온다. 체력에 따라 3단계(R-057, Q50 ②): 단계마다 공격 모양과 색이 바뀐다(오르기만 함).
+    // 원형 탄은 ringSpeed로 ringSpin만큼 돌며 퍼지고, 조준 탄은 aimSpeed. bossSide 모드는 id가 sideEvery의 배수인
+    // 보스가 조준 탄 양옆 ±sideAngle로 2발 더(단계와 관계없이)
     bossAttack: {
       near: 240,
-      hurt: 0.5,
-      reload: 2.5,
-      reloadHurt: 1.5,
-      ring: 10,
-      ringHurt: 16,
       ringSpeed: 100,
       ringSpin: 0.3,
       aimSpeed: 250,
       sideEvery: 2,
       sideAngle: 0.13,
+      // 1단계(체력 phase2 위): reload초마다 원형 ring발 + 조준 1발
+      reload: 2.5,
+      ring: 10,
+      // 2단계(phase2 아래): reload2초마다 두 겹 원 — 원형 ring2발 + 느린 원 ring2발(slowSpeed, 반 칸 엇갈림) + 조준 1발
+      phase2: 0.5,
+      reload2: 1.5,
+      ring2: 8,
+      slowSpeed: 70,
+      // 3단계(phase3 아래): reload3초마다 원형 ring3발 + 조준 부채꼴 fan발(사이 fanAngle, 속도 aimSpeed)
+      phase3: 0.25,
+      reload3: 1.5,
+      ring3: 10,
+      fan: 3,
+      fanAngle: 0.2,
     },
     // 적 탄환: 피해 = 적 피해 × damage, 수명(초). 사수·보스의 첫 사격은 등장 뒤 firstShot + 0~1초
     hostile: { damage: 0.85, ttl: 5, firstShot: 1.5 },
@@ -4377,19 +4831,19 @@ return Plotly;
     },
   };
   const craftName = id => crafts[id]?.name || '';
-  // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · icon · color: 카드 표기
+  // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · icon · color: 카드 표기(값은 tokens.css --sk-<id>, R-054)
   const skills = {
-    power: { name: '화력', icon: '✦', color: '#50f3d6' },
-    rapid: { name: '속사', icon: '≋', color: '#50f3d6' },
-    multi: { name: '다연발', icon: '⋔', color: '#f4ce72' },
-    pierce: { name: '관통탄', icon: '⟐', color: '#af9bff' },
-    speed: { name: '부스터', icon: '»', color: '#50f3d6' },
-    magnet: { name: '자력 수집', icon: '◎', color: '#f4ce72' },
-    orbit: { name: '궤도 칼날', icon: '◈', color: '#af9bff' },
-    vital: { name: '장갑 강화', icon: '+', color: '#8ce8a2' },
-    nova: { name: '충격파', icon: '⊕', color: '#af9bff' },
-    crit: { name: '치명 일격', icon: '⌖', color: '#f4ce72' },
-    shield: { name: '재생 실드', icon: '⬡', color: '#50b6ff' },
+    power: { name: '화력', icon: '✦', color: 'var(--sk-power)' },
+    rapid: { name: '속사', icon: '≋', color: 'var(--sk-rapid)' },
+    multi: { name: '다연발', icon: '⋔', color: 'var(--sk-multi)' },
+    pierce: { name: '관통탄', icon: '⟐', color: 'var(--sk-pierce)' },
+    speed: { name: '부스터', icon: '»', color: 'var(--sk-speed)' },
+    magnet: { name: '자력 수집', icon: '◎', color: 'var(--sk-magnet)' },
+    orbit: { name: '궤도 칼날', icon: '◈', color: 'var(--sk-orbit)' },
+    vital: { name: '장갑 강화', icon: '+', color: 'var(--sk-vital)' },
+    nova: { name: '충격파', icon: '⊕', color: 'var(--sk-nova)' },
+    crit: { name: '치명 일격', icon: '⌖', color: 'var(--sk-crit)' },
+    shield: { name: '재생 실드', icon: '⬡', color: 'var(--sk-shield)' },
   };
   const skillName = id => skills[id]?.name || id;
   // 스킬 나열 순서(성장 탭 묶음)
@@ -4764,6 +5218,8 @@ return Plotly;
     // S 출격 시작 연출(R-048, O-INTRO): 제목 2초 → 3 · 2 · 1 각 1초. 그동안 적 · 시간이 멈춘다
     // 알림 sec처럼 보이는 시간도 여기 둔다: titleSec 초 + count 초, 진동 패턴(ms, 약 2초)
     intro: { title: SC + ' 출격', titleSec: 2, count: 3, vibrate: [200, 100, 200, 100, 600] },
+    // 전투 진동 패턴(R-055, ms · 설정 '진동'): 피격 · 보스 등장 경고 · 레벨업 창(AUTO가 아닐 때). 임시값
+    vibe: { hurt: 30, boss: [90, 120, 90], level: 40 },
     pause: {
       kicker: 'PAUSED',
       title: '잠시 숨을 고르세요',
@@ -4808,7 +5264,8 @@ return Plotly;
       // 배경음악(R-051, 이 기기 설정, 기본 켜짐). '효과음'과 따로 켜고 끈다
       music: '음악',
       sound: '효과음',
-      motion: '화면 흔들림',
+      // 체크하면 흔들림 · 깜빡임 · 반짝임을 끄거나 약하게(R-056, 저장 키는 motion 그대로 = 체크 반대)
+      reduceFx: '흔들림 · 번쩍임 줄이기',
       numbers: '치명타 숫자',
       // 진동(R-048, 이 기기 설정, 기본 켜짐). 진동을 지원하지 않는 브라우저(아이폰)는 조용히 건너뜀
       vibrate: '진동',
@@ -5416,16 +5873,22 @@ return Plotly;
       },
       bossAttack: {
         near: '다가오는 거리',
-        hurt: '격노 체력 비율',
-        reload: '사격(초)',
-        reloadHurt: '격노 사격(초)',
-        ring: '원형 탄 수',
-        ringHurt: '격노 원형 탄 수',
         ringSpeed: '원형 탄 속도',
         ringSpin: '원형 탄 회전',
         aimSpeed: '조준 탄 속도',
         sideEvery: '양옆 탄 보스 간격',
         sideAngle: '양옆 탄 각도',
+        reload: '1단계 사격(초)',
+        ring: '1단계 원형 탄 수',
+        phase2: '2단계 체력 비율',
+        reload2: '2단계 사격(초)',
+        ring2: '2단계 원 한 겹 탄 수',
+        slowSpeed: '느린 원 속도',
+        phase3: '3단계 체력 비율',
+        reload3: '3단계 사격(초)',
+        ring3: '3단계 원형 탄 수',
+        fan: '부채꼴 탄 수',
+        fanAngle: '부채꼴 사이',
       },
       hostile: { damage: '피해 배율', ttl: '수명(초)', firstShot: '첫 사격(초)' },
       caps: { enemies: '적', hostiles: '적 탄환', bullets: '내 탄환', gems: 'XP 보석' },
@@ -5990,7 +6453,15 @@ return Plotly;
           },
           {
             term: '보스',
-            desc: stage.name + '를 ' + [1, 2, 3].map(k => k * b.boss.every).join(', ') + '…로 올리면 나온다.',
+            desc:
+              stage.name +
+              '를 ' +
+              [1, 2, 3].map(k => k * b.boss.every).join(', ') +
+              '…로 올리면 나온다. 체력 ' +
+              b.bossAttack.phase2 * 100 +
+              '% · ' +
+              b.bossAttack.phase3 * 100 +
+              '%에서 공격과 색이 바뀐다.',
           },
           {
             term: '포위',
@@ -7359,14 +7830,31 @@ return Plotly;
       const skillNames = Object.fromEntries(Object.entries(T.skills).map(([id, s]) => [id, s.name])),
         enemyNames = Object.fromEntries(Object.entries(T.enemies).map(([kind, e]) => [kind, e.name])),
         abilityName = id => (id === 'dash' ? T.abilities.dash : T.abilities.nova);
+      // 그래프 색은 tokens.css 토큰을 페이지를 열 때 한 번 읽는다(R-054, 렌더러와 같은 방식)
+      const tokenStyle = getComputedStyle(document.documentElement),
+        token = name => tokenStyle.getPropertyValue('--' + name).trim(),
+        C = {
+          title: token('an-plot-title'),
+          bg: token('an-chart-bg'),
+          ink: token('an-plot-ink'),
+          note: token('an-plot-note'),
+          grid: token('an-plot-grid'),
+          cyan: token('cyan'),
+          shield: token('an-shield'),
+          gold: token('gold'),
+          lilac: token('lilac'),
+          damage: token('an-damage'),
+          hurt: token('pink'),
+          fps: token('an-fps'),
+        };
       const layout = (title, extra = {}) => ({
-        title: { text: title, font: { size: 15, color: '#bfd8e1' } },
-        paper_bgcolor: '#0e1a25',
-        plot_bgcolor: '#0e1a25',
-        font: { color: '#87a5b5', size: 11 },
+        title: { text: title, font: { size: 15, color: C.title } },
+        paper_bgcolor: C.bg,
+        plot_bgcolor: C.bg,
+        font: { color: C.ink, size: 11 },
         margin: { l: 50, r: 22, t: 60, b: 47 },
-        xaxis: { gridcolor: '#233a46', zeroline: false },
-        yaxis: { gridcolor: '#233a46', zeroline: false },
+        xaxis: { gridcolor: C.grid, zeroline: false },
+        yaxis: { gridcolor: C.grid, zeroline: false },
         legend: { orientation: 'h', y: -0.22 },
         ...extra,
       });
@@ -7438,17 +7926,17 @@ return Plotly;
               '체력',
               t,
               states.map(a => a[3]),
-              '#50f3d6',
+              C.cyan,
             ),
             line(
               '보호막',
               t,
               states.map(a => a[4]),
-              '#7dafff',
+              C.shield,
             ),
           ],
           '체력·보호막 / 시간',
-          { xaxis: { title: { text: '전투 시간(초)' }, gridcolor: '#233a46' } },
+          { xaxis: { title: { text: '전투 시간(초)' }, gridcolor: C.grid } },
         );
         chart(
           'growth-chart',
@@ -7457,20 +7945,20 @@ return Plotly;
               '레벨',
               t,
               states.map(a => a[6]),
-              '#f4ce72',
+              C.gold,
             ),
             {
               ...line(
                 T.stage.upper,
                 [0, ...(r.summary?.stageChanges || []).map(e => e.t), r.simulationTime],
                 [1, ...(r.summary?.stageChanges || []).map(e => e.to), r.stage],
-                '#b895ff',
+                C.lilac,
               ),
-              line: { color: '#b895ff', width: 2, shape: 'hv' },
+              line: { color: C.lilac, width: 2, shape: 'hv' },
             },
           ],
           '성장과 ' + T.stage.name + ' 변화',
-          { xaxis: { title: '전투 시간(초)', gridcolor: '#233a46' } },
+          { xaxis: { title: '전투 시간(초)', gridcolor: C.grid } },
         );
         const damage = Object.entries(r.summary?.damage || {}).filter(([, v]) => Number.isFinite(v));
         chart(
@@ -7485,7 +7973,7 @@ return Plotly;
                   (T.analysis.attacks[k.split('/')[1]] || T.analysis.attacks.other),
               ),
               y: damage.map(([, v]) => v),
-              marker: { color: '#ff6e9d' },
+              marker: { color: C.damage },
             },
           ],
           '피격 원인별 피해 · 보호막 포함',
@@ -7499,7 +7987,7 @@ return Plotly;
               type: 'bar',
               x: skills.map(([id]) => skillNames[id]),
               y: skills.map(([, n]) => n),
-              marker: { color: '#b895ff' },
+              marker: { color: C.lilac },
             },
           ],
           '스킬별 누적 획득',
@@ -7517,7 +8005,7 @@ return Plotly;
                     x: 0.5,
                     y: 0.5,
                     showarrow: false,
-                    font: { color: '#86a2b0', size: 13 },
+                    font: { color: C.note, size: 13 },
                   },
                 ],
           },
@@ -7531,7 +8019,7 @@ return Plotly;
               name: '이동',
               x: states.map(a => a[1]),
               y: states.map(a => a[2]),
-              line: { color: '#50f3d6', width: 1 },
+              line: { color: C.cyan, width: 1 },
             },
             {
               type: 'scatter',
@@ -7539,7 +8027,7 @@ return Plotly;
               name: '피격',
               x: hurts.map(e => e.x),
               y: hurts.map(e => e.y),
-              marker: { color: '#ff4e8e', size: 9 },
+              marker: { color: C.hurt, size: 9 },
               text: hurts.map(
                 e => (enemyNames[e.source?.kind] || enemyNames.unknown) + ' / ' + Math.round(e.value),
               ),
@@ -7547,10 +8035,10 @@ return Plotly;
           ],
           '이동 경로와 피격 위치',
           {
-            xaxis: { range: [0, NeonBalance.map.width], gridcolor: '#233a46', constrain: 'domain' },
+            xaxis: { range: [0, NeonBalance.map.width], gridcolor: C.grid, constrain: 'domain' },
             yaxis: {
               range: [NeonBalance.map.height, 0],
-              gridcolor: '#233a46',
+              gridcolor: C.grid,
               scaleanchor: 'x',
               constrain: 'domain',
             },
@@ -7563,16 +8051,16 @@ return Plotly;
               '샘플 FPS',
               frames.map(a => a[0]),
               frames.map(a => Math.min(240, 1000 / Math.max(0.1, a[1]))),
-              '#79b9ff',
+              C.fps,
             ),
           ],
           '프레임 상태 / 시간',
           {
-            xaxis: { title: '전투 시간(초)', gridcolor: '#233a46' },
+            xaxis: { title: '전투 시간(초)', gridcolor: C.grid },
             yaxis: {
               title: { text: 'FPS' },
               range: [0, Math.max(120, Math.ceil((r.summary?.avgFps || 0) / 20) * 20 + 20)],
-              gridcolor: '#233a46',
+              gridcolor: C.grid,
             },
           },
         );
@@ -7586,14 +8074,14 @@ return Plotly;
               '체력',
               tail.map(a => a[0]),
               tail.map(a => a[3]),
-              '#50f3d6',
+              C.cyan,
             ),
             {
               ...line(
                 '대시 재충전',
                 tail.map(a => a[0]),
                 tail.map(a => a[11]),
-                '#f4ce72',
+                C.gold,
               ),
               yaxis: 'y2',
             },
@@ -7602,7 +8090,7 @@ return Plotly;
                 '충격파 재충전',
                 tail.map(a => a[0]),
                 tail.map(a => a[12]),
-                '#b895ff',
+                C.lilac,
               ),
               yaxis: 'y2',
             },
@@ -7610,7 +8098,7 @@ return Plotly;
           '마지막 20초 · 체력과 능력 상태',
           {
             yaxis2: { overlaying: 'y', side: 'right', title: { text: '재충전(초)' }, showgrid: false },
-            xaxis: { title: { text: '전투 시간(초)' }, gridcolor: '#233a46' },
+            xaxis: { title: { text: '전투 시간(초)' }, gridcolor: C.grid },
           },
         );
         const s = r.summary || {},
