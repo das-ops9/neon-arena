@@ -104,11 +104,11 @@
     --vh-full: 100svh;
   }
 }
-/* 세로 전체 화면(설정 '전체 화면'): 상태 표시줄이 사라져 앞 카메라 구멍이 화면 위에 걸린다.
-   브라우저가 알려 주는 위 안전 영역이 그보다 작으면 최소 28px을 둔다(R-047) */
+/* 세로 전체 화면(설정 '전체 화면'): 삼성 인터넷은 앞 카메라 자리를 화면 밖 흰 띠로 비워 두지만, 바로 아래는
+   로고 줄이 카메라에 너무 붙어 보인다. 위 안전 영역을 최소 8px 둔다(R-053, 편집장: 0은 너무 가깝고 28px는 너무 멂 → 30%) */
 @media (orientation: portrait) {
   :root:fullscreen {
-    --safe-t: max(env(safe-area-inset-top, 0px), 28px);
+    --safe-t: max(env(safe-area-inset-top, 0px), 8px);
   }
 }
 
