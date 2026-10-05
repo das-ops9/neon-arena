@@ -4736,7 +4736,7 @@ return Plotly;
   // 게임 화면(app.js·view.js·badges.js), 정적 화면(shell.html의 {{경로}} 자리, 빌드 때 채움), 분석 페이지,
   // 정본 문서(docs/spec/TERMS.md 전체, npm run docs)가 모두 이 파일을 쓴다. 3단계 Help도 이 파일이 원본이다.
   // 값을 바꾸면 npm run docs로 문서를 다시 만든다(어긋나면 npm test가 실패한다).
-  // 새 이름 · 문구는 nameRules를 따른다(TERMS.md 맨 위).
+  // 새 이름은 nameRules, 화면 문구는 textRules를 따른다(TERMS.md 맨 위).
   const B = () => root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
 
   // ── 표기 ──
@@ -4776,6 +4776,15 @@ return Plotly;
     "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point.",
     '지우는 일은 결과가 보이게(전체 초기화).',
     '이름은 `src/terms.js`에서만 만들고 바꾼다. 내부 id · 저장 키는 바꾸지 않는다(표시만). 이름 뒤 조사는 `josa()`로 붙인다.',
+  ];
+  // ── 문구 규칙(R-066). TERMS.md '문구 규칙'이 이 문장들이다(안내 줄 · 설명 · 알림 문장) ──
+  const textRules = [
+    '안내 줄은 짧은 문장 1~2개. `·` 나열은 라벨 · 칩에만.',
+    "개발 사정은 쓰지 않는다: 저장 방식 · '임시' · 고정 시점 · '다음 출격부터 적용'(메뉴에서 산 것은 늘 다음 출격부터).",
+    '이미 보이는 것(🔒 칩 · AUTO 불가 칩 · 지금 화면)은 되풀이하지 않는다.',
+    "문장은 '~합니다', 라벨은 명사형. 켜고 끔은 '켜기/끄기'(ON/OFF 안 씀).",
+    "문장 속에 '스택'을 쓰지 않는다. '+1'처럼 숫자로.",
+    "효과는 '하면 어떻게 되는지'로(예: '추천 스킬 자동 선택' → '스킬을 대신 골라 줍니다').",
   ];
 
   // ── 이름 ──
@@ -5192,15 +5201,19 @@ return Plotly;
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
   const E = () => B().economy;
-  // 고를 스킬이 모두 최대일 때의 자동 G 확률(autoGoldCapped): 일반 확률과 같으면 문구를 붙이지 않는다
+  // 확률 문구(R-066): 1 이상은 '항상', 1/정수는 '4번 중 1번은', 그 밖은 '30% 확률로'
+  const chanceText = p => {
+    const n = Math.round(1 / p);
+    return p >= 1 ? '항상' : n > 1 && Math.abs(n * p - 1) < 1e-9 ? n + '번 중 1번은' : pctOf(p) + '% 확률로';
+  };
+  // 더 올릴 스킬이 없을 때의 자동 G 확률(autoGoldCapped): 일반 확률과 같으면 문구를 붙이지 않는다
   const autoGoldCappedNote = () => {
     const e = E(),
-      c = e.autoGoldCapped,
-      coin = e.coinChoice + ' ' + G;
+      c = e.autoGoldCapped;
     if (c === e.autoGoldChance) return '';
     return (
-      ' · 고를 스킬이 모두 최대면 ' +
-      (c >= 1 ? '항상 ' + coin : c <= 0 ? coin + ' 없음' : pctOf(c) + '% 확률로 ' + coin)
+      ' 더 올릴 스킬이 없으면 ' +
+      (c <= 0 ? G + '를 받지 않습니다.' : chanceText(c) + ' ' + e.coinChoice + ' ' + G + '.')
     );
   };
   const ui = {
@@ -5241,11 +5254,12 @@ return Plotly;
     },
     grow: {
       title: '공통 성장',
-      note: '모든 기체 공통 · 구매 1회 = 영구 1스택 · 스킬마다 MAX까지 · 다음 출격부터 적용',
+      note: '산 만큼 모든 기체가 그 스킬을 갖고 출격합니다. 한 번에 +1, 스킬마다 MAX까지.',
       // 아래 칸 3개 중 '준비 중' 두 칸(R-033)
       soon: '준비 중',
     },
-    shop: { title: '상점', note: '재화는 이 기기 브라우저에 저장됩니다 · 백업은 기록 탭' },
+    // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
+    shop: { title: '상점' },
     rec: {
       title: '기록',
       note: () =>
@@ -5257,7 +5271,8 @@ return Plotly;
         B().records.logs +
         '판',
       data: '데이터 관리',
-      dataNote: '기록과 재화를 파일 하나로 백업하거나, 다른 기기·이전 버전에서 가져옵니다.',
+      dataNote:
+        '재화와 기록은 이 브라우저에만 저장됩니다. 파일로 백업해 두면 다른 기기에서도 가져올 수 있습니다.',
       export: '백업 내보내기',
       import: '백업 가져오기',
       history: '플레이 로그 내보내기',
@@ -5280,10 +5295,11 @@ return Plotly;
       cancel: '준비 취소',
       launch: '출격 · ' + SC + ' 1 사용',
       note: () =>
+        '강화 ' +
         B().superLaunch.picks +
-        '회를 모두 배분하면 출격할 수 있습니다 · 취소는 무비용 · ' +
+        '회를 모두 나누면 출격할 수 있습니다. ' +
         SC +
-        '는 출격할 때만 사용',
+        '는 출격할 때 1개 씁니다(취소하면 그대로).',
     },
     mode: { title: '모드 선택', close: '닫기', group: '모드', done: '선택 완료' },
     hud: {
@@ -5312,7 +5328,8 @@ return Plotly;
       coin: () => '대신 코인 +' + E().coinChoice + ' ' + G + ' 받기',
       // 코인 칸이 B 코인일 때(R-043, 모드 확률). 레벨업마다 화면이 바꿔 쓴다.
       coinBlue: () => '대신 코인 +' + E().coinChoiceBlue + ' ' + BL + ' 받기',
-      sub: '1 · 2 · 3 키로 선택 · 선택 중에는 전투가 멈춥니다',
+      // keys: 키보드 기기(터치가 주 입력이 아님)만 앞에 숫자키 안내. 정적 틀은 터치 문구
+      sub: keys => (keys ? '1 · 2 · 3 키로 고를 수 있습니다. ' : '') + '고르는 동안 전투가 멈춥니다.',
     },
     // S 출격 시작 연출(R-048, O-INTRO): 제목 2초 → 3 · 2 · 1 각 1초. 그동안 적 · 시간이 멈춘다
     // 알림 sec처럼 보이는 시간도 여기 둔다: titleSec 초 + count 초, 진동 패턴(ms, 약 2초)
@@ -5359,7 +5376,7 @@ return Plotly;
       title: '결과',
       best: 'NEW BEST',
       replay: '다시 도전',
-      menu: '기록 · 기체 선택',
+      menu: '메뉴로',
       skills: '스킬 내역',
       noteLabel: '기록 한 줄 저장',
       note: '한 줄 남기기',
@@ -5427,12 +5444,12 @@ return Plotly;
 
   // ── 화면 메시지(app.js·view.js가 상황에 따라 쓰는 문구) ──
   const msg = {
-    legacy: n => '이전 버전 최고점 ' + num(n) + ' · 상세 기록 없음',
     storageFull: '저장 공간 부족 · 기록을 파일로 남기세요',
     storageLimited: '이 브라우저의 저장 기능이 제한되어 있습니다.',
     renderNote: (v, fallback) => 'v' + v + (fallback ? ' · 기본 그래픽' : ''),
     bootFail: '화면을 준비하지 못했습니다. 새로고침해 주세요.',
-    landscape: '화면을 가로로 돌려 넓게 플레이할 수 있습니다.',
+    // 전체 화면을 지원하지 않거나 바꾸지 못했을 때(설정 창 아래 줄, 아이폰)
+    fullscreenFail: '이 브라우저는 전체 화면을 지원하지 않습니다.',
     upgradeKicker: lv => 'LEVEL UP · ' + level.short + ' ' + lv,
     upgradeKickerBlue: (lv, n) => 'LEVEL UP · ' + level.short + ' ' + lv + ' · +' + n + ' ' + BL + ' 획득',
     upgradeAnnounce: lv => '레벨 ' + lv + '. 스킬 또는 코인을 선택하세요.',
@@ -5495,17 +5512,21 @@ return Plotly;
     bossCount: (alive, total) => 'BOSS ' + alive + ' / ' + total,
     bossStage: s => ' · ' + stageLabel(s),
     combo: n => n + ' CHAIN',
+    // 모드 창 아래 줄: 자동 강화를 가졌으면 빈 값(줄을 숨김)
     autoStatus: owned =>
       owned
-        ? auto.name + ' 보유 중 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF'
-        : auto.name +
-          '는 상점에서 ' +
+        ? ''
+        : '상점에서 ' +
+          auto.name +
+          '(' +
           E().autoPrice +
           ' ' +
           G +
-          '로 한 번 구매 · ' +
+          ')' +
+          josa(auto.name, '을/를') +
+          ' 사면 ' +
           autoFrom() +
-          ' 이상에서 사용',
+          '부터 레벨업 스킬을 대신 골라 줍니다.',
     superNote: n => '보유 ' + num(n) + ' · ' + stageLabel(B().superLaunch.stage),
     purchase: {
       insufficient: '재화가 부족합니다.',
@@ -5515,18 +5536,26 @@ return Plotly;
       invalid: '구매 정보를 확인할 수 없습니다.',
       duplicate: '이미 처리된 구매입니다.',
       failed: '구매하지 못했습니다.',
-      auto: () => auto.name + '를 구매했습니다 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
-      income: tier => '시간 코인 ' + tier + '단계 · 다음 판부터 분당 적립이 늘어납니다',
+      auto: () =>
+        auto.name +
+        josa(auto.name, '을/를') +
+        ' 샀습니다. ' +
+        autoFrom() +
+        '부터 전투 중 ' +
+        auto.short +
+        ' 버튼으로 켜고 끕니다.',
+      income: tier => '시간 코인 ' + tier + '단계 · 분당 ' + G + ' +1',
       craftSC: coins.s.ko + ' 1개를 만들었습니다',
-      perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용 · 다음 출격부터 적용',
+      perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용',
       needs_auto: auto.name + '를 먼저 사야 합니다.',
       sc_reserved: SC + ' 출격 준비에 예약된 ' + SC + '는 쓸 수 없습니다.',
       hidden_locked: '히든 탭이 아직 열리지 않았습니다.',
       locked: '먼저 해금해야 합니다.',
-      autoGold: () => '자동 ' + G + ' 습득을 구매했습니다 · 상점에서 켜고 끌 수 있습니다',
-      catUnlock: id => cats[id].name + ' 해금 · 동반으로 고르면 다음 출격부터 적용',
-      catLevel: (id, lv) => cats[id].name + ' Lv' + lv + ' · 다음 출격부터 적용',
-      companion: id => (id ? cats[id].name + ' 동반 · 다음 출격부터 적용' : '동반 해제'),
+      // 산 직후 켜진 스위치가 바로 아래 카드에 보인다(문구 규칙 3)
+      autoGold: () => '자동 ' + G + ' 습득을 샀습니다.',
+      catUnlock: id => cats[id].name + ' 해금',
+      catLevel: (id, lv) => cats[id].name + ' Lv' + lv,
+      companion: id => (id ? cats[id].name + ' 동반' : '동반 해제'),
     },
     // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
     permaCapped: c =>
@@ -5610,7 +5639,7 @@ return Plotly;
         gold: G,
         blue: BL,
         sc: SC,
-        tier: '분당 단계',
+        tier: '시간 코인 단계',
         modes: '해금 모드',
         perma: '영구 스택',
         auto: auto.name,
@@ -5700,7 +5729,7 @@ return Plotly;
       cancel: '취소',
       remove: '삭제',
       // 보호 = 일반 TOP3 + S 출격 TOP3 + 별표(R-035, data.js protectedIds)
-      info: '🔒 TOP3(일반 · S 출격)와 ★ 기록은 선택·자동 정리에서 빠집니다 · 삭제는 확인 창 1번 뒤 되돌릴 수 없음',
+      info: '🔒 TOP3와 ★ 기록은 지워지지 않습니다. 지운 기록은 되돌릴 수 없습니다.',
       locked: '보호된 기록(일반 · S 출격 TOP3 · 별표)',
       check: '선택',
       star: '별표',
@@ -5732,21 +5761,27 @@ return Plotly;
       scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
       scCraft: SC + ' 제작',
       scHave: n => '보유 ' + num(n),
-      // '자동 강화(Auto)'는 상점 카드 제목에만(다른 화면은 '자동 강화', 보완 11)
-      autoTitle: auto.name + '(Auto)',
-      autoNote: () => '레벨업 때 추천 스킬을 자동 선택 · ' + autoFrom() + ' 이상에서 전투 중 ON/OFF',
+      autoTitle: auto.name,
+      autoNote: () =>
+        '레벨업 때 스킬을 대신 골라 줍니다. ' +
+        autoFrom() +
+        '부터, 전투 중 ' +
+        auto.short +
+        ' 버튼으로 켜고 끕니다.',
       owned: '✓ 보유 중',
       buyAuto: () => E().autoPrice + ' ' + G + ' · 한 번 구매',
       // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님)
       autoGold: '자동 ' + G + ' 습득',
       autoGoldNote: () =>
-        auto.short +
-        '가 레벨업을 고를 때 ' +
-        pctOf(E().autoGoldChance) +
-        '% 확률로 스킬 대신 ' +
+        auto.name +
+        josa(auto.name, '이/가') +
+        ' 고를 때 ' +
+        chanceText(E().autoGoldChance) +
+        ' 스킬 대신 ' +
         E().coinChoice +
         ' ' +
         G +
+        '를 받습니다.' +
         autoGoldCappedNote(),
       buyAutoGold: () => E().autoGoldPrice + ' ' + G + ' · 한 번 구매',
       needAuto: () => auto.name + ' 보유 필요',
@@ -5763,7 +5798,6 @@ return Plotly;
       entryOpen: '히든 · 고양이 비행사',
       entryCompanion: (id, lv) => (id ? '동반 ' + cats[id].name + ' Lv' + lv : '동반 없음'),
       title: '히든 탭 · 고양이 비행사',
-      sub: () => modeName(B().cats.hiddenFrom) + ' 한 판으로 열림 · 효과는 다음 출격부터',
       back: '성장으로 돌아가기',
       applied: '적용 중',
       appliedNone: '없음 · 해금한 고양이를 동반으로 고르세요',
@@ -5785,9 +5819,9 @@ return Plotly;
       picked: '동반 중',
       pickLabel: (id, on) => cats[id].name + (on ? ' 동반 해제' : ' 동반으로 고르기'),
       note: () =>
-        '동반은 1마리, 메뉴에서만 바꿀 수 있습니다 · Lv' +
+        '함께 출격할 고양이 1마리를 고르세요. Lv' +
         B().cats.maxLevel +
-        ' 고양이는 동반과 관계없이 항상 적용 · 효과는 출격하는 순간 고정 · 이름 · 그림은 임시',
+        ' 고양이는 고르지 않아도 항상 효과를 줍니다.',
     },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
@@ -6437,7 +6471,9 @@ return Plotly;
         rows: [
           [
             '영구 스택',
-            '성장 탭에서 ' + BL + '로 사는 스킬. 스킬마다 MAX까지, 모든 기체의 다음 출격부터 적용됩니다.',
+            '성장 탭에서 ' +
+              BL +
+              '로 사는 스킬. 산 만큼 모든 기체가 그 스킬을 갖고 출격합니다(스킬마다 MAX까지).',
           ],
           [
             launches.super,
@@ -6472,8 +6508,24 @@ return Plotly;
       },
       {
         title: 'Tip',
+        // 순서(R-066): 중요한 팁 7개(Stage · 대시 · 충격파 · 백업 · 성장 · 회복 구역 · 포위)가 먼저,
+        // 그 뒤 보스 · B 코인 · S 코인 · 주사위 · 별표
         tips: [
-          stage.upper + ' 버튼을 누르면 전투 중에도 바로 ' + stage.name + '가 오릅니다.',
+          stage.name +
+            josa(stage.name, '을/를') +
+            ' 직접 올려야 ' +
+            point.name +
+            ' · XP가 커집니다. 버틸 만하면 ' +
+            stage.upper +
+            ' 버튼을 누르세요.',
+          abilities.dash + '하는 동안은 잠깐 무적입니다. 탄환 사이를 빠져나갈 때 쓰세요.',
+          abilities.nova +
+            josa(abilities.nova, '은/는') +
+            ' 가까운 적 탄환도 지웁니다. 탄환에 둘러싸였을 때 쓰세요.',
+          '재화와 기록은 이 브라우저에만 저장됩니다. 기록 탭에서 가끔 백업해 두세요.',
+          '성장 탭에서 ' + BL + '로 스킬을 사 두면 모든 기체가 더 강하게 출격합니다.',
+          '초록 원(회복 구역) 안에 있으면 HP가 찹니다.',
+          '포위는 ' + siegeMin + '분마다 사방에서 몰려옵니다. 화면 가장자리가 붉어지면 대비하세요.',
           stage.name +
             ' ' +
             b.boss.every +
@@ -6482,8 +6534,6 @@ return Plotly;
             '(' +
             bossGoldText() +
             ')를 받습니다.',
-          abilities.dash + '하는 동안은 잠깐 무적입니다. 탄환 사이를 빠져나갈 때 쓰세요.',
-          abilities.nova + '는 가까운 적 탄환도 지웁니다.',
           '레벨업 코인 칸이 가끔 ' + BL + ' 코인이 됩니다(' + blueCoinModes() + ').',
           modeName(b.superCoin.mode) +
             '에서는 ' +
@@ -6491,7 +6541,6 @@ return Plotly;
             ' 코인이 맵에 나타납니다(' +
             sMin +
             '분마다 · 레벨업 · 보스 웨이브 격파). 방향 표시가 없으니 근처를 돌며 찾으세요.',
-          '포위는 ' + siegeMin + '분마다 사방에서 몰려옵니다. 화면 가장자리가 붉어지면 대비하세요.',
           launches.superPrep + '의 주사위는 남은 강화를 무작위로 나눕니다(다시 누르면 새로, ↺는 모두 0).',
           '★ 별표한 기록은 자동 정리에서 지워지지 않습니다.',
         ],
@@ -6517,16 +6566,16 @@ return Plotly;
               bossGoldText() +
               ' ' +
               G +
-              "), 레벨업 때 '코인' 선택으로 얻는다. 시간 코인 단계 · 자동 강화 · 한 줄 남기기 · " +
+              "), 레벨업 때 '코인' 선택으로 얻습니다. 시간 코인 단계 · 자동 강화 · 한 줄 남기기 · " +
               coins.s.name +
-              ' 제작에 쓴다.',
+              ' 제작에 씁니다.',
           ],
           [
             BL,
             coins.b.name,
             '레벨 ' +
               e.blueEvery +
-              '마다 얻는다(' +
+              '마다 얻습니다(' +
               blueModes +
               '). 레벨업 코인 칸이 모드 확률로 ' +
               BL +
@@ -6534,11 +6583,11 @@ return Plotly;
               e.coinChoiceBlue +
               ' ' +
               BL +
-              ')이 되기도 한다(' +
+              ')이 되기도 합니다(' +
               blueCoinModes() +
               '). 성장 화면의 영구 스킬과 ' +
               coins.s.name +
-              ' 제작에 쓴다.',
+              ' 제작에 씁니다.',
           ],
           [
             'S',
@@ -6551,13 +6600,13 @@ return Plotly;
               ' ' +
               e.scBlue +
               josa(e.scBlue, '으로/로') +
-              ' 만든다. ' +
+              ' 만듭니다. ' +
               modeName(b.superCoin.mode) +
               '에서는 ' +
               sCoinFrom() +
-              ' 맵에 하나씩 나타나 기체가 닿으면 얻는다. ' +
+              ' 맵에 하나씩 나타나 기체가 닿으면 얻습니다. ' +
               launches.super +
-              ' 한 번에 1개를 쓰고, 고양이 비행사 해금 · 육성에도 쓴다.',
+              ' 한 번에 1개를 쓰고, 고양이 비행사 해금 · 육성에도 씁니다.',
           ],
         ],
       },
@@ -6818,7 +6867,6 @@ return Plotly;
               ranking.name +
               '에서 지금 남은 기록 중 몇 위인지 보인다(예: 일반 15위).',
           },
-          { term: '이전 버전 최고점', desc: 'v2 시절 점수. 순위에는 넣지 않는다.' },
           {
             term: '한 줄 남기기',
             desc: '판마다 ' + e.noteMax + '자까지 메모를 남긴다(글자당 ' + e.notePerChar + ' ' + G + ').',
@@ -6833,6 +6881,7 @@ return Plotly;
 
   const api = {
     nameRules,
+    textRules,
     num,
     pct,
     timeString,
