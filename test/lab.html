@@ -455,6 +455,9 @@ body[data-fx='low'] .nb-spark {
       :root {
         --now: var(--cyan);
         --exp: var(--violet);
+        --good: var(--sk-vital); /* 플레이어에게 유리(쉬워짐 · 보상 늘어남) */
+        --bad: var(--danger); /* 불리(어려워짐 · 보상 줄어듦) */
+        --real: var(--ink-2); /* 이 기기 기록(점선) */
         --gutter: 16px;
       }
       html,
@@ -779,13 +782,22 @@ body[data-fx='low'] .nb-spark {
         font-weight: 600;
         vertical-align: 1px;
       }
-      .tag.calc {
+      /* 영향 태그 4가지(R-068): 값 탭 줄 · 요약 칸이 같은 색 */
+      .tag.t-difficulty {
+        color: var(--blue);
+        background: var(--blue-deep);
+      }
+      .tag.t-economy {
         color: var(--gold);
         background: var(--gold-deep);
       }
-      .tag.diff {
-        color: var(--blue);
-        background: var(--blue-deep);
+      .tag.t-point {
+        color: var(--cyan);
+        background: var(--cyan-deep);
+      }
+      .tag.t-unlock {
+        color: var(--violet);
+        background: var(--violet-deep);
       }
       .matrix-wrap {
         overflow-x: auto;
@@ -922,54 +934,60 @@ body[data-fx='low'] .nb-spark {
         font-size: var(--fs-2xs);
         color: var(--muted);
       }
-      .eco-main {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 4px 8px;
-        font-variant-numeric: tabular-nums;
-      }
-      .eco-main .k {
-        font-size: var(--fs-xs);
-        color: var(--ink-2);
-      }
-      .eco-main b {
-        font-size: var(--fs-lg);
-      }
       .v-now {
         color: var(--now);
       }
       .v-exp {
         color: var(--exp);
       }
-      .arrow,
-      .delta {
-        font-size: var(--fs-xs);
-        color: var(--ink-2);
-      }
-      .bars {
+      /* 분당 3칸(R-068): 분당이 주인공, 판당은 아래 한 줄 */
+      .pm {
         display: grid;
-        grid-template-columns: 30px 1fr 44px;
-        gap: 4px 6px;
-        align-items: center;
-        font-size: var(--fs-2xs);
-        color: var(--ink-2);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
         font-variant-numeric: tabular-nums;
       }
-      .bars .k {
-        grid-column: 1 / -1;
+      .pm > div {
+        min-width: 0;
+        padding: 6px 8px;
+        border-radius: var(--r-sm);
+        background: var(--bg-raise);
       }
-      .bar {
-        height: 8px;
-        min-width: 2px;
+      .pm .k {
+        display: block;
+        font-size: var(--fs-2xs);
+        color: var(--ink-2);
+      }
+      .pm .big {
+        display: block;
+        font-size: var(--fs-lg);
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .pm .to {
+        display: block;
+        font-size: var(--fs-xs);
+        color: var(--exp);
+        white-space: nowrap;
+      }
+      .pm .to i {
+        font-style: normal;
+        font-size: var(--fs-2xs);
+      }
+      .len {
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+        font-variant-numeric: tabular-nums;
+        word-break: keep-all;
+      }
+      .tagsrc {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 0 5px;
         border-radius: 4px;
-        background: var(--now);
-      }
-      .bar.exp {
-        background: var(--exp);
-      }
-      .bars .val {
-        text-align: right;
+        font-size: var(--fs-2xs);
+        color: var(--muted);
+        background: var(--surface-2);
       }
       .eco-sub {
         font-size: var(--fs-xs);
@@ -1073,6 +1091,312 @@ body[data-fx='low'] .nb-spark {
       table.res tr.avg td {
         font-weight: 700;
       }
+      /* 요약 칸(R-068): 모든 탭 맨 위 · 접힘 */
+      .sum {
+        margin-bottom: 12px;
+        padding: 0;
+      }
+      .sum > * + * {
+        margin-top: 0;
+      }
+      .sum-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 44px;
+        padding: 0 12px;
+        text-align: left;
+      }
+      .sum-head .t {
+        font-size: var(--fs-sm);
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .sum-head .tg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        min-width: 0;
+      }
+      .sum-head .tag {
+        margin: 0;
+      }
+      .sum-head .w {
+        margin-left: auto;
+        flex: none;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: var(--fs-2xs);
+        font-weight: 700;
+        color: var(--gold);
+        background: var(--gold-deep);
+      }
+      .sum-head .caret {
+        flex: none;
+        margin-left: auto;
+        color: var(--muted);
+      }
+      .sum-head .w + .caret {
+        margin-left: 0;
+      }
+      .sum-body {
+        padding: 0 12px 12px;
+      }
+      .sum-body > * + * {
+        margin-top: 8px;
+      }
+      /* 경고 줄: 옛 결과(빨강) → 해금 · 순위(금) → 힌트(회색) */
+      .warns {
+        display: grid;
+        gap: 6px;
+      }
+      .warns li {
+        list-style: none;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px;
+        align-items: start;
+        padding: 7px 10px;
+        border-radius: var(--r-sm);
+        font-size: var(--fs-xs);
+        line-height: 1.4;
+        color: var(--ink);
+        background: var(--gold-deep);
+        border-left: 3px solid var(--gold);
+        word-break: keep-all;
+        cursor: pointer;
+      }
+      .warns li b {
+        color: var(--gold);
+      }
+      .warns li.danger {
+        background: var(--danger-deep);
+        border-left-color: var(--danger);
+      }
+      .warns li.danger b {
+        color: var(--danger);
+      }
+      .warns li.hint {
+        background: var(--surface-2);
+        border-left-color: var(--line-strong);
+        color: var(--ink-2);
+      }
+      .warns li.hint b {
+        color: var(--ink-2);
+      }
+      /* 영향 표(4줄 × 모드): 변화만 */
+      table.imp {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: var(--fs-2xs);
+        font-variant-numeric: tabular-nums;
+      }
+      table.imp col.k {
+        width: 44px;
+      }
+      table.imp th,
+      table.imp td {
+        padding: 3px 1px;
+        text-align: right;
+        white-space: nowrap;
+      }
+      table.imp thead th {
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: clip;
+      }
+      table.imp tbody th {
+        text-align: left;
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+      table.imp tbody tr + tr th,
+      table.imp tbody tr + tr td {
+        border-top: 1px solid var(--line);
+      }
+      .good {
+        color: var(--good);
+        font-weight: 700;
+      }
+      .bad {
+        color: var(--bad);
+        font-weight: 700;
+      }
+      .flat {
+        color: var(--muted);
+      }
+      .est {
+        opacity: 0.75;
+        font-style: italic;
+      }
+      .src {
+        font-size: var(--fs-2xs);
+        color: var(--muted);
+        line-height: 1.45;
+        word-break: keep-all;
+      }
+      /* 자동 판: 돌리기 줄 · 옛 결과 칸 · 모드 비교 한 표 · 생존 곡선 */
+      .runbar {
+        display: grid;
+        gap: 8px;
+      }
+      .runbar > * + * {
+        margin-top: 0;
+      }
+      .runbar .cond-line {
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+        line-height: 1.45;
+        word-break: keep-all;
+      }
+      .runbar .btns {
+        display: grid;
+        grid-template-columns: auto 1fr;
+      }
+      .stale {
+        padding: 10px 12px;
+        border-radius: var(--r-md);
+        border: 1.5px solid var(--danger);
+        background: var(--danger-deep);
+        color: var(--ink);
+        word-break: keep-all;
+      }
+      .stale > * + * {
+        margin-top: 6px;
+      }
+      .stale strong {
+        display: block;
+        font-size: var(--fs-sm);
+        color: var(--danger-ink);
+      }
+      .stale ul {
+        padding-left: 16px;
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+      }
+      table.cmp {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+      }
+      table.cmp col.m {
+        width: 50px;
+      }
+      table.cmp th,
+      table.cmp td {
+        padding: 5px 1px;
+        text-align: right;
+        vertical-align: top;
+        white-space: nowrap;
+      }
+      table.cmp thead th {
+        font-size: var(--fs-2xs);
+        color: var(--muted);
+        font-weight: 600;
+        vertical-align: bottom;
+      }
+      table.cmp tbody th {
+        text-align: left;
+        font-size: var(--fs-2xs);
+        font-weight: 700;
+        padding-top: 7px;
+      }
+      table.cmp tbody th small {
+        display: block;
+        font-weight: 400;
+      }
+      table.cmp tbody tr {
+        border-top: 1px solid var(--line);
+      }
+      table.cmp td s,
+      table.cmp td b,
+      table.cmp td i {
+        display: block;
+        text-decoration: none;
+        font-style: normal;
+      }
+      table.cmp td s {
+        font-size: var(--fs-2xs);
+        color: var(--muted);
+      }
+      table.cmp td b {
+        font-size: var(--fs-xs);
+        color: var(--exp);
+      }
+      table.cmp td b.n {
+        color: var(--ink);
+      }
+      table.cmp td i {
+        font-size: 0.625rem;
+      }
+      .surv-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 8px;
+      }
+      .surv-grid.one {
+        grid-template-columns: 1fr;
+      }
+      .surv h4 {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0 4px;
+        font-size: var(--fs-xs);
+      }
+      .surv h4 small {
+        font-size: 0.625rem;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      svg.chart path.real {
+        fill: none;
+        stroke: var(--real);
+        stroke-width: 1.8;
+        stroke-dasharray: 1.5 3;
+        stroke-linecap: round;
+      }
+      svg.chart line.siege {
+        stroke: var(--orange);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        opacity: 0.7;
+      }
+      .legend {
+        flex-wrap: wrap;
+      }
+      .legend i.real {
+        border-top: 2.5px dotted var(--real);
+      }
+      .legend i.siege {
+        width: 0;
+        height: 12px;
+        border-top: 0;
+        border-left: 1.5px dashed var(--orange);
+      }
+      details.fold > summary {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        font-size: var(--fs-sm);
+        color: var(--ink-2);
+        cursor: pointer;
+      }
+      .chip-old {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 0 6px;
+        border-radius: 4px;
+        font-size: var(--fs-2xs);
+        font-weight: 700;
+        color: var(--danger-ink);
+        background: var(--danger-deep);
+        vertical-align: 1px;
+      }
       /* 저장 */
       .saved-item {
         display: grid;
@@ -1149,6 +1473,7 @@ body[data-fx='low'] .nb-spark {
       </nav>
     </header>
     <main>
+      <section class="card sum" id="summary" aria-label="요약"></section>
       <section id="tab-values" role="tabpanel">
         <p class="note">값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다.</p>
         <div class="v-tools">
@@ -3047,6 +3372,43 @@ body[data-fx='low'] .nb-spark {
       tabs: { values: '값', difficulty: '난이도', economy: '경제', sim: '자동 판', save: '저장' },
       now: '지금',
       exp: '실험',
+      // 요약 칸(R-068): 모든 탭 맨 위. 경고 줄 · 영향 표(4줄 × 모드) · 출처 한 줄
+      summary: {
+        title: '요약',
+        rows: { time: '생존', point: point.name, gold: G + '/분', blue: BL + '/분' },
+        empty: '바꾼 값이 없습니다. 값 탭에서 바꾸면 여기에 영향이 보입니다.',
+        heads: { stale: '옛 결과', rank: ranking.name, hint: '자동 판' },
+        stale: n => '자동 판 결과가 지금 값과 다릅니다(차이 ' + n + '개) · 자동 판 탭에서 다시 돌리기 ›',
+        hint: '생존은 자동 판을 돌리면 보입니다 ›',
+        unlockHead: mode => modeName(mode) + ' 해금',
+        // (Hard 한 판 500,000 Point) 처치 Point −36%(식) · 자동 판 도달 9/9 → 5/9 → 더 어려워짐
+        unlockParts: u =>
+          [
+            u.time ? timeString(u.time) : '',
+            u.score ? num(u.score) + ' ' + point.name : '',
+            u.level ? levelShort(u.level) : '',
+          ].filter(Boolean),
+        unlockCond: (from, parts) => modeName(from) + ' 한 판 ' + parts.join(' · '),
+        unlock: (cond, bits, dir) => '(' + cond + ') ' + bits.join(' · ') + ' → ' + dir,
+        pointBit: d => '처치 ' + point.name + ' ' + d + '(식)',
+        condBit: (a, b) => '조건 ' + a + ' → ' + b,
+        reachBit: (a, n, b, m) => '자동 판 도달 ' + a + '/' + n + ' → ' + b + '/' + m,
+        dirs: { harder: '더 어려워짐', easier: '더 쉬워짐', changed: '바뀜' },
+        rank: (list, dir) =>
+          'TOP3 기록의 모드에서 같은 플레이 ' +
+          point.name +
+          ' ' +
+          list +
+          '(식) → 새 판이 옛 TOP3를 넘기 ' +
+          dir,
+        rankDirs: { harder: '어려움', easier: '쉬움', mixed: '모드마다 다름' },
+        simDesc: (minutes, crafts, seeds) => minutes + '분 · 기체 ' + crafts + ' · 판 × ' + seeds,
+        srcSim: desc => '생존 · ' + point.name + ': 자동 판(' + desc + '). ',
+        srcNoSim: '생존: 자동 판을 돌리면 보입니다. ≈ ' + point.name + ': 처치 ' + point.name + ' 식. ',
+        srcRunning: (done, total) => '자동 판 도는 중 ' + done + '/' + total + '. ',
+        srcEcon: source => G + ' · ' + BL + ': ' + source + ' 줄 식. ',
+        srcColors: '초록 유리 · 빨강 불리 · 회색은 판마다 흔들리는 범위 안.',
+      },
       groups,
       rows,
       column,
@@ -3057,8 +3419,8 @@ body[data-fx='low'] .nb-spark {
         onlyChanged: '바꾼 값만',
         resetAll: '모두 되돌리기',
         reset: '되돌리기',
-        tagCalc: '경제',
-        tagDifficulty: '난이도',
+        // 영향 태그(R-068): 값 탭 줄 · 요약 칸 · 글 복사가 같은 이름(규칙은 lab-core IMPACTS)
+        tags: { difficulty: '난이도', economy: '경제', point: point.name, unlock: '해금' },
         note: "값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다.",
         was: v => '지금 ' + v,
         invalid: '0 이상의 숫자',
@@ -3094,6 +3456,19 @@ body[data-fx='low'] .nb-spark {
         reading: '기록을 읽는 중…',
         presetNote:
           "예시 숫자입니다. '자세히'에서 조건을 바꿀 수 있고, 기록을 고르면 이 폰의 실제 판으로 바뀝니다.",
+        // 분당이 기준(R-068). 판 길이 = 이 기기 기록 평균(없으면 예시), 실험은 자동 판 생존 변화 비율만큼
+        note:
+          '분당 ' +
+          G +
+          ' · ' +
+          BL +
+          ' · ' +
+          SC +
+          '가 기준입니다. 판당 = 분당 × 판 길이. 판 길이는 이 기기 기록 평균(없으면 예시)이고, 실험 값의 판 길이는 자동 판 생존 변화만큼 늘거나 줄입니다.',
+        pm: { gold: G + ' / 분', blue: BL + ' / 분', super: SC + ' / 분' },
+        perRunGold: '판당 ' + G,
+        runLength: '판 길이',
+        lenSrc: { records: n => '기록 ' + n + '판', preset: '예시', sim: d => '자동 판 ' + d },
         recordNote: (n, skipped) =>
           '이 폰의 기록 ' +
           n +
@@ -3115,13 +3490,11 @@ body[data-fx='low'] .nb-spark {
         group: (mode, launch) => modeName(mode) + (launch === 'super' ? ' · ' + SC + ' 출격' : ''),
         runs: (n, time) => n + '판 · 평균 ' + time,
         brief: (time, lv, boss) => time + ' · LV' + lv + ' · 보스 ' + boss,
-        perRun: '판당 ' + G,
-        perMinute: '분당 ' + G,
+        goldMark: G,
         blue: BL,
         // B 내역(R-043): LV 보상 · B 코인 칸
-        blueParts: { level: 'LV 보상', coin: BL + ' 코인', coinShort: '코인' },
+        blueParts: { level: 'LV 보상', coin: BL + ' 코인' },
         super: SC,
-        superCost: n => '출격 −' + n,
         details: '자세히',
         gold: {
           minute: '분 보상',
@@ -3132,8 +3505,9 @@ body[data-fx='low'] .nb-spark {
           cat: '고양이',
           total: '합계',
         },
-        actual: '실제로 받은 값(판당)',
-        goalsTitle: '목표까지 판 수',
+        actual: '실제로 받은 값(분당)',
+        perMinuteTitle: '분당 내역',
+        goalTimeTitle: '목표까지 플레이 시간',
         goals: {
           income: '수입 단계 전부',
           auto: auto.short,
@@ -3143,9 +3517,17 @@ body[data-fx='low'] .nb-spark {
           catUnlock: '고양이 모두 해금',
           catMax: '고양이 1마리 Lv5',
           permaMax: '영구 스택 전부 MAX',
+          buffRegen: () => buffs.regen.name + ' 버프 1번(' + buffs.cost('regen') + ')',
+          buffRevive: () => buffs.revive.name + ' 버프 1번(' + buffs.cost('revive') + ')',
         },
-        never: '불가',
-        runsOf: n => n + '판',
+        goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
+        // 플레이 시간 표기: 'n분' · 'n시간 m분'
+        duration: m =>
+          m === Infinity
+            ? '불가'
+            : m < 60
+              ? Math.ceil(m) + '분'
+              : Math.floor(m / 60) + '시간' + (Math.round(m % 60) ? ' ' + Math.round(m % 60) + '분' : ''),
         conditions: '조건',
         fields: {
           minutes: '분',
@@ -3191,8 +3573,54 @@ body[data-fx='low'] .nb-spark {
         run: n => '돌리기 · 판 ' + n + '개',
         stop: '멈추기',
         progress: (done, total) => done + ' / ' + total + '판',
-        stale: '값이나 조건이 바뀌었습니다 · 다시 돌려 보세요',
         none: "아직 돌린 판이 없습니다. 조건을 고르고 '돌리기'를 누르세요.",
+        // 돌리기 줄(R-068): 조건 한 줄 + 조건 칸 열기
+        condLine: (modes, crafts, launch, minutes, stagePlan, seeds) =>
+          [
+            modes,
+            '기체 ' + crafts,
+            launch,
+            minutes + '분',
+            stage.upper + ' ' + stagePlan,
+            '판 × ' + seeds,
+          ].join(' · '),
+        allModes: n => '모드 ' + n,
+        condOpen: '조건 ▴',
+        condClosed: '조건 ▾',
+        all: '모두',
+        // 옛 결과 칸: 결과를 돌린 값 · 조건이 지금과 다름
+        staleTitle: '⚠ 이 결과는 지금 값과 다른 값으로 돌렸습니다',
+        staleBase: (ran, now) =>
+          'balance.js 지금 값이 ' +
+          (ran && ran !== now ? ran + ' → ' + now + josa(now, '으로/로') + ' ' : '') +
+          '바뀜',
+        staleUnknown: '어느 값으로 돌렸는지 알 수 없는 옛 결과',
+        staleValue: (name, ran, now) => name + ': 결과 ' + ran + ' → 지금 ' + now,
+        staleSetting: (name, ran, now) => '조건 ' + name + ': 결과 ' + ran + ' → 지금 ' + now,
+        staleMore: n => '외 ' + n + '개',
+        rerun: '다시 돌리기',
+        // 모드 비교 한 표
+        compare: '모드 비교 · 평균',
+        cmp: {
+          time: '생존',
+          level: 'LV',
+          full: '끝까지',
+          ppm: point.name + '/분',
+          gpm: G + '/분',
+          bpm: BL + '/분',
+        },
+        same: '같음',
+        cmpNote:
+          '칸: 지금(작게) · 실험(보라) · 변화. 회색 변화는 판마다 흔들리는 범위 안. 생존 + = 모든 판이 끝까지.',
+        // 생존 곡선
+        survival: '생존 곡선 · 분마다 살아 있는 판',
+        legendReal: '기록',
+        legendSiege: '포위',
+        survHead: (n, avg) => '기록 ' + n + '판' + (n ? ' · 평균 ' + avg : ''),
+        survOld: '옛 값 기록 포함',
+        survNote:
+          '가로 = 분, 세로 = 그때 살아 있는 판 비율. 점선은 이 기기 기록(판이 끝난 시각). 봇은 사람보다 약합니다.',
+        detail: '기체별 · 자세히(' + stage.upper + ' · 보스 · 판당 ' + point.name + ' · 판당 ' + G + ')',
         cols: {
           craft: '기체',
           time: '생존',
@@ -3206,14 +3634,6 @@ body[data-fx='low'] .nb-spark {
           blue: BL,
         },
         average: '평균',
-        chart: '모드별 평균',
-        chartMetrics: {
-          time: '생존',
-          level: 'LV',
-          stage: stage.upper,
-          score: '판당 Point',
-          gold: '판당 ' + G,
-        },
         error: msg => '판이 멈췄습니다: ' + msg,
         timeout: '너무 오래 걸려 끊었습니다',
         note: '자동 조작은 사람보다 단순하게 피하므로 결과는 경향만 봅니다. 같은 판도 기기마다 몇 분 뒤 갈라질 수 있어 판 수를 늘려 평균으로 봅니다. 끝까지 = 길이 끝까지 버틴 판 수. 확정은 balance.js에 반영한 뒤 /test/에서 직접 플레이로 합니다.',
@@ -3249,15 +3669,34 @@ body[data-fx='low'] .nb-spark {
         paste: '시나리오 글 붙여 넣기',
         pasteHint: '에이전트가 대화로 준 시나리오 글(JSON)을 붙여 넣으세요',
         pasteOpen: '붙여 넣은 시나리오 열기',
+        // 옛 결과(R-068): 지금 상태 · 저장 목록
+        staleNote: '저장 · 글 복사에 옛 결과로 표시됩니다. 자동 판 탭에서 다시 돌리면 없어집니다.',
+        simRuns: n => '자동 판 ' + n + '판',
+        staleChip: '결과 · 옛 값',
+        trimmed: n =>
+          '저장 공간을 비우려고 오래된 시나리오 ' + n + '개의 자동 판 결과를 뺐습니다(바꾼 값은 그대로).',
       },
-      // 글 복사: 에이전트에게 넘기는 글
+      // 글 복사: 에이전트에게 넘기는 글(읽는 순서: 머리 → 옛 결과 → 바꾼 값 → 경고 → 경제 → 자동 판)
       text: {
         head: name => '[NEON 실험실] ' + name,
+        stale: (first, more) =>
+          '⚠ 자동 판 결과는 옛 값으로 돌린 것: ' +
+          first +
+          (more ? '(외 ' + more + '개)' : '') +
+          ' — 이 결과로 반영을 판단하지 않는다',
         meta: (version, balance, date) => '게임 ' + version + ' · 지금 값 ' + balance + ' · ' + date,
         changes: n => '바꾼 값 ' + n + '개',
         none: '바꾼 값 없음',
-        economy: source => '경제(' + source + ' · 판당 ' + G + ' 지금 → 실험)',
+        warnings: '경고',
+        economy: source => '경제(분당 · ' + source + ' · 지금 → 실험)',
+        // 판당 G 428 → 453(판 길이 25:10 · 기록 3판)
+        perRun: (pair, len, src) => '판당 ' + G + ' ' + pair + '(판 길이 ' + len + ' · ' + src + ')',
         sim: desc => '자동 판(' + desc + ' · 지금 → 실험)',
+        simStale: ' — ⚠ 옛 결과',
+        average: mode => modeName(mode) + ' 평균',
+        wobble: '흔들림',
+        survival: list => '생존 곡선: ' + list,
+        survAt: (m, a, b) => m + '분 ' + a + (b === null ? '' : ' → ' + b),
       },
     };
   })();
@@ -4984,6 +5423,7 @@ body[data-fx='low'] .nb-spark {
       (function (root) {
   'use strict';
   // 밸런스 실험실(R-037)의 순수 계산. 수치 목록 · 값 바꾸기 · 한 판 경제 계산 · 목표까지 판 수 · 적 배율 · 시나리오 파일.
+  // R-068: 지문 · 영향 태그 · 처치 Point · 자동 판 지표 · 흔들림 · 생존 곡선 · 해금 도달 · 옛 결과 판정 · 판 줄 압축 · 저장 한도.
   // 전역을 읽지 않는다: 모든 함수가 balance 객체를 인자로 받아, 값을 바꾼 묶음에도 같은 식을 쓴다.
   // 식은 progression.js(분당 G · 영구 스택 가격 · B 보상)와 engine.js(Stage 배율 · 출현 · 사수 재사격)를 그대로 옮겼다.
   // 입력은 바꾸지 않는다(기본 묶음은 얼어 있는 객체로 들어온다).
@@ -5111,29 +5551,159 @@ body[data-fx='low'] .nb-spark {
     return apply(base, changes).applied;
   }
 
-  // 경제 계산(economy · goals)이 읽는 경로
-  function inCalc(path) {
-    const p = String(path);
-    return (
-      p.startsWith('economy.') ||
-      p.startsWith('cats.unlock.') ||
-      p.startsWith('cats.levelCost.') ||
-      p.startsWith('cats.effect.supply.') ||
-      p === 'cats.maxLevel' ||
-      p === 'superCoin.every' ||
-      p === 'superLaunch.level' ||
-      /^modes\.[^.]+\.(goldBonus|bossGold|blue|blueCoin)$/.test(p)
-    );
+  // Infinity를 문자열 'Infinity'로 적는 JSON(비교 · 지문 · 파일 공통)
+  const infReplacer = (k, v) => (v === Infinity ? 'Infinity' : v);
+  const keyOf = v => JSON.stringify(v, infReplacer);
+
+  // ── 지문(R-068): HIDDEN을 뺀 balance 전체(문자열 포함)의 FNV-1a 32비트, 16진 8자리 ──
+  function fingerprint(balance) {
+    const o = {};
+    for (const k of Object.keys(balance)) if (!HIDDEN.includes(k)) o[k] = balance[k];
+    let h = 0x811c9dc5;
+    for (const ch of keyOf(o)) {
+      h ^= ch.charCodeAt(0);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h.toString(16).padStart(8, '0');
   }
-  // difficulty()가 읽는 경로
-  function inDifficulty(path) {
-    const p = String(path);
-    return (
-      /^modes\.[^.]+\.(spawn|hp|damage|fire|bulletSpeed|xp|score)$/.test(p) ||
-      /^stage\.(hp|damage|density|xp|score|speed|speedMax)$/.test(p) ||
-      /^spawn\.(interval|min|rate)$/.test(p) ||
-      /^shooter\.(reload|reloadStage|reloadMin)$/.test(p)
-    );
+
+  // ── 영향 태그(난이도 · 경제 · Point · 해금): 경로 규칙 표 ──
+  const IMPACTS = Object.freeze(['difficulty', 'economy', 'point', 'unlock']);
+  const POINT = [/^modes\.[^.]+\.score$/, /^enemies\.[^.]+\.score$/, /^stage\.score$/, /^score\./];
+  const UNLOCK = [/^unlock\./];
+  const ECON = [
+    /^economy\./,
+    /^modes\.[^.]+\.(goldBonus|bossGold|blue|blueCoin|auto|xp)$/,
+    /^cats\.(unlock|levelCost|maxLevel)(\.|$)/,
+    /^cats\.effect\.supply\./,
+    /^superCoin\./,
+    /^buffs\.[^.]+\.(b|s)$/,
+    /^superLaunch\.level$/,
+    /^stage\.xp$/,
+    /^level\./,
+  ];
+  // 난이도가 아닌 것(돈 · Point · 해금만 바꾸는 값)
+  const NOT_DIFF = [
+    /^economy\./,
+    /^modes\.[^.]+\.(goldBonus|bossGold|blue|blueCoin|score)$/,
+    /^cats\.(unlock|levelCost|maxLevel)(\.|$)/,
+    /^cats\.effect\.supply\./,
+    /^superCoin\./,
+    /^buffs\.[^.]+\.(b|s)$/,
+    /^unlock\./,
+    /^enemies\.[^.]+\.score$/,
+    /^stage\.score$/,
+    /^score\./,
+  ];
+  const matchAny = (list, p) => list.some(re => re.test(p));
+  function impacts(path) {
+    const p = String(path),
+      out = [];
+    if (!matchAny(NOT_DIFF, p)) out.push('difficulty');
+    if (matchAny(ECON, p)) out.push('economy');
+    if (matchAny(POINT, p)) out.push('point');
+    if (matchAny(UNLOCK, p)) out.push('unlock');
+    return out;
+  }
+
+  // ── 적 섞임 · 처치 Point(식) ──
+  function mixAt(balance, stage) {
+    const n = Math.max(1, Math.floor(stage)) - 1,
+      M = balance.spawn.mix,
+      split = M.splitter.base + Math.min(M.splitter.max, n * M.splitter.step),
+      shoot = M.shooter.base + Math.min(M.shooter.max, n * M.shooter.step),
+      run = M.runner;
+    return { chaser: Math.max(0, 1 - split - shoot - run), runner: run, shooter: shoot, splitter: split };
+  }
+  // 나온 적 하나(분열 자식 포함)가 주는 Point. 콤보 보너스는 최대로 본다. 보스 · 판 끝 시간 Point는 뺀다.
+  function pointPerKill(balance, mode, stage) {
+    const M = balance.modes[mode],
+      E = balance.enemies,
+      n = Math.max(1, Math.floor(stage)) - 1,
+      mul = (1 + balance.stage.score * n) * M.score,
+      combo = balance.score.comboMax,
+      one = kind => Math.round(E[kind].score * mul) + combo,
+      mix = mixAt(balance, stage);
+    let s = 0;
+    for (const k of Object.keys(mix))
+      s += mix[k] * (one(k) + (k === 'splitter' ? (E.splitter.split || 0) * one('runner') : 0));
+    return s;
+  }
+
+  // ── 자동 판 판 줄 압축(열 배열) ──
+  const RUN_COLS = Object.freeze([
+    'set',
+    'craft',
+    'mode',
+    'launch',
+    'seed',
+    'time',
+    'reason',
+    'level',
+    'stage',
+    'kills',
+    'score',
+    'bosses',
+    'autoPicks',
+    'gc',
+    'gh',
+    'manualCoins',
+    'blueCoins',
+    'sSpawned',
+  ]);
+  const TEXT_COLS = ['set', 'craft', 'mode', 'launch', 'reason'];
+  const text = v => (typeof v === 'string' ? v : '');
+  function packCell(run, col) {
+    if (TEXT_COLS.includes(col)) return text(run[col]);
+    if (col === 'time') return Math.round(num(run.time) * 100) / 100;
+    if (col === 'score') return Math.round(num(run.score));
+    if (col === 'gc') return num(run.autoGoldCoins?.capped);
+    if (col === 'gh') return num(run.autoGoldCoins?.chance);
+    return num(run[col]);
+  }
+  function packRuns(runs) {
+    const rows = [];
+    if (Array.isArray(runs))
+      for (const run of runs) {
+        const r = isObj(run) ? run : {};
+        rows.push(RUN_COLS.map(c => packCell(r, c)));
+      }
+    return { cols: [...RUN_COLS], rows };
+  }
+  function unpackRuns(packed) {
+    if (!isObj(packed) || !Array.isArray(packed.cols) || !Array.isArray(packed.rows)) return [];
+    const at = new Map();
+    packed.cols.forEach((c, i) => {
+      if (RUN_COLS.includes(c) && !at.has(c)) at.set(c, i);
+    });
+    const out = [];
+    for (const row of packed.rows) {
+      if (!Array.isArray(row)) continue;
+      const v = c => (at.has(c) ? row[at.get(c)] : undefined),
+        t = num(v('time'));
+      // 판 줄 모양은 lab.html runSim의 cb.done과 같은 순서
+      out.push({
+        set: text(v('set')),
+        craft: text(v('craft')),
+        mode: text(v('mode')),
+        launch: text(v('launch')),
+        seed: num(v('seed')),
+        time: t,
+        minutes: t / 60,
+        reason: text(v('reason')),
+        level: num(v('level')),
+        stage: num(v('stage')),
+        kills: num(v('kills')),
+        score: num(v('score')),
+        bosses: num(v('bosses')),
+        autoPicks: num(v('autoPicks')),
+        autoGoldCoins: { capped: num(v('gc')), chance: num(v('gh')) },
+        manualCoins: num(v('manualCoins')),
+        blueCoins: num(v('blueCoins')),
+        sSpawned: num(v('sSpawned')),
+      });
+    }
+    return out;
   }
 
   // ── 한 판 경제 ──
@@ -5247,7 +5817,120 @@ body[data-fx='low'] .nb-spark {
       supplyLv: record.cats?.supply || 0,
       actual: { gold: num(earned.gold), blue: num(earned.blue), super: num(earned.super) },
       record: { id: record.id, date: record.date, craft: record.craft },
+      score: num(record.score),
+      balance: typeof record.balance === 'string' ? record.balance : '',
     };
+  }
+
+  // ── 자동 판 판 줄 → 경제 입력(lab.html simAggregate와 같은 변환) ──
+  function runRow(balance, run, settings, tier) {
+    if (!isObj(run) || !own(balance.modes, run.mode)) return null;
+    return {
+      mode: run.mode,
+      launch: run.launch,
+      minutes: num(run.time) / 60,
+      level: run.level,
+      bosses: run.bosses,
+      manualCoins: run.manualCoins,
+      autoPicks: run.autoPicks,
+      autoGold: !!(settings && settings.autoGold) && !!balance.modes[run.mode].auto,
+      autoGoldCoins: run.autoGoldCoins,
+      blueCoins: run.blueCoins,
+      tier,
+      supplyLv: 0,
+      superCoins: run.sSpawned,
+    };
+  }
+  // 판 하나 + 끝까지 살았는지 · 분당 Point · G · B
+  function runRates(balance, run, settings, tier) {
+    const row = runRow(balance, run, settings, tier);
+    if (!row) return null;
+    const e = economy(balance, row),
+      min = num(run.time) / 60,
+      per = v => (min > 0 ? v / min : 0);
+    return {
+      ...run,
+      full: run.reason === 'time',
+      ppm: per(num(run.score)),
+      gpm: per(e.gold.total),
+      bpm: per(e.blue),
+    };
+  }
+  // 한 모드 · 한 묶음(지금/실험)의 판들 → 평균 · 분당(합 ÷ 합 분). 모르는 모드 판은 건너뛴다.
+  function modeMetrics(balance, runs, settings, tier) {
+    let n = 0,
+      t = 0,
+      lv = 0,
+      full = 0,
+      score = 0,
+      gold = 0,
+      blue = 0,
+      sc = 0,
+      st = 0,
+      boss = 0;
+    for (const r of Array.isArray(runs) ? runs : []) {
+      const row = runRow(balance, r, settings, tier);
+      if (!row) continue;
+      const e = economy(balance, row);
+      n++;
+      t += num(r.time);
+      lv += num(r.level);
+      st += num(r.stage);
+      boss += num(r.bosses);
+      score += r.score || 0;
+      gold += e.gold.total;
+      blue += e.blue;
+      sc += e.super;
+      if (r.reason === 'time') full++;
+    }
+    if (!n) return null;
+    const min = t / 60,
+      per = v => (min > 0 ? v / min : 0);
+    return {
+      n,
+      time: t / n,
+      full: full / n,
+      allFull: full === n,
+      level: lv / n,
+      stage: st / n,
+      bosses: boss / n,
+      score: score / n,
+      ppm: per(score),
+      gpm: per(gold),
+      bpm: per(blue),
+      spm: per(sc),
+    };
+  }
+
+  // ── 흔들림 판정: 같은 기체 · 시드끼리 짝지은 차이(실험 − 지금)의 평균이 표준오차 2배를 넘어야 '변화' ──
+  // value(run) → 숫자. 짝이 3개 미만이면 판정하지 않는다(sure = false).
+  function paired(nowRuns, expRuns, value) {
+    const key = r => r.craft + '|' + r.seed,
+      map = new Map((nowRuns || []).map(r => [key(r), r])),
+      d = [];
+    for (const r of expRuns || []) if (map.has(key(r))) d.push(value(r) - value(map.get(key(r))));
+    const n = d.length;
+    if (!n) return { n: 0, mean: 0, se: 0, same: true, sure: false };
+    const mean = d.reduce((s, x) => s + x, 0) / n,
+      sd = n > 1 ? Math.sqrt(d.reduce((s, x) => s + (x - mean) ** 2, 0) / (n - 1)) : 0,
+      se = sd / Math.sqrt(n),
+      same = d.every(x => Math.abs(x) < 1e-9);
+    return { n, mean, se, same, sure: !same && n >= 3 && Math.abs(mean) > 2 * se };
+  }
+
+  // ── 생존 곡선: t분(0..minutes)에 살아 있는 비율. 항목 { time, full } ──
+  function survival(list, minutes) {
+    const out = [];
+    for (let t = 0; t <= minutes; t++)
+      out.push(list.length ? list.filter(x => x.full || x.time >= t * 60 - 1e-6).length / list.length : NaN);
+    return out;
+  }
+
+  // ── 해금: 판 끝 값이 그 해금 조건을 모두 채우면 도달(조건이 모두 커지기만 하므로 끝 값으로 충분) ──
+  function unlockReach(balance, id, run) {
+    if (!own(balance.unlock, id) || !isObj(run)) return false;
+    const u = balance.unlock[id];
+    return num(run.time) >= num(u.time) && num(run.score) >= num(u.score) && num(run.level) >= num(u.level);
   }
 
   // 모드 · 출격 종류로 묶기. 모드 키 순서, 같은 모드는 일반 다음 S 출격.
@@ -5431,12 +6114,12 @@ body[data-fx='low'] .nb-spark {
     },
   ]);
 
-  // ── 목표까지 판 수 ──
-  // perRun: 판당 순수입 { gold, blue, super }. 통화마다 ceil(비용 ÷ 판당)의 최댓값, 벌 수 없으면 Infinity.
-  function goals(balance, perRun) {
+  // ── 목표 목록 · 목표까지 판 수 · 플레이 시간 ──
+  // 목표 10줄: 상점 · 고양이 · 영구 스택 8줄 + 버프 2줄(HP 회복 1번 B · 1회 부활 1번 S). 비용 { gold, blue, super }.
+  function goalList(balance) {
     const E = balance.economy,
       C = balance.cats,
-      p = perRun || {},
+      F = balance.buffs,
       // 영구 스택 전부 MAX(R-042): 스킬마다 k번째(0부터) 값 = price + step × k, MAX개
       perma = Object.values(E.perma).reduce((s, c) => {
         for (let k = 0; k < c.max; k++) s += c.price + c.step * k;
@@ -5454,9 +6137,18 @@ body[data-fx='low'] .nb-spark {
         { super: C.levelCost.reduce((s, c) => s + c.s, 0), blue: C.levelCost.reduce((s, c) => s + c.b, 0) },
       ],
       ['permaMax', { blue: perma }],
+      ['buffRegen', { blue: F.regen.b }],
+      ['buffRevive', { super: F.revive.s }],
     ];
-    return list.map(([id, c]) => {
-      const cost = { gold: c.gold || 0, blue: c.blue || 0, super: c.super || 0 };
+    return list.map(([id, c]) => ({
+      id,
+      cost: { gold: c.gold || 0, blue: c.blue || 0, super: c.super || 0 },
+    }));
+  }
+  // perRun: 판당 순수입 { gold, blue, super }. 통화마다 ceil(비용 ÷ 판당)의 최댓값, 벌 수 없으면 Infinity.
+  function goals(balance, perRun) {
+    const p = perRun || {};
+    return goalList(balance).map(({ id, cost }) => {
       let runs = 0;
       for (const k of ['gold', 'blue', 'super']) {
         if (!(cost[k] > 0)) continue;
@@ -5464,6 +6156,19 @@ body[data-fx='low'] .nb-spark {
         runs = Math.max(runs, per > 0 ? Math.ceil(cost[k] / per) : Infinity);
       }
       return { id, cost, runs };
+    });
+  }
+  // perMinute: 분당 순수입 { gold, blue, super }. 통화마다 비용 ÷ 분당의 최댓값(분), 벌 수 없으면 Infinity.
+  function goalMinutes(balance, perMinute) {
+    const p = perMinute || {};
+    return goalList(balance).map(({ id, cost }) => {
+      let minutes = 0;
+      for (const k of ['gold', 'blue', 'super']) {
+        if (!(cost[k] > 0)) continue;
+        const per = num(p[k]);
+        minutes = Math.max(minutes, per > 0 ? cost[k] / per : Infinity);
+      }
+      return { id, cost, minutes };
     });
   }
 
@@ -5492,15 +6197,25 @@ body[data-fx='low'] .nb-spark {
     const s = typeof v === 'string' ? v.trim().slice(0, NAME_MAX).trim() : '';
     return s || NAME_EMPTY;
   };
+  // 결과의 자동 판 판 줄(runs 객체 배열)을 열 배열(packed)로 바꾼다. results는 이미 사본이어야 한다.
+  function packResults(results) {
+    const sim = isObj(results) ? results.sim : null;
+    if (!isObj(sim) || !Array.isArray(sim.runs)) return false;
+    sim.packed = packRuns(sim.runs);
+    delete sim.runs;
+    return true;
+  }
   function makeScenario(input, base, meta) {
     const i = input || {},
       m = meta || {},
       changes = {},
-      from = {};
+      from = {},
+      results = isObj(i.results) ? jsonCopy(i.results) : null;
     for (const a of diff(base, i.changes)) {
       changes[a.path] = a.to;
       from[a.path] = a.from;
     }
+    packResults(results);
     return {
       format: FORMAT,
       schema: SCHEMA,
@@ -5512,12 +6227,31 @@ body[data-fx='low'] .nb-spark {
       base: from,
       rows: Array.isArray(i.rows) ? jsonCopy(i.rows.slice(0, ROWS_MAX)) : null,
       sim: isObj(i.sim) ? jsonCopy(i.sim) : null,
-      results: isObj(i.results) ? jsonCopy(i.results) : null,
+      results,
     };
   }
   // JSON에는 Infinity가 없어서 문자열 'Infinity'로 적는다.
+  // 압축된 판 줄(packed.rows)은 한 줄에 한 판, 줄 안은 공백 없이 쓴다(들여쓰기를 붙이면 크기가 다시 커진다).
   function toJSON(scenario) {
-    return JSON.stringify(scenario, (k, v) => (v === Infinity ? 'Infinity' : v), 2);
+    // 자리표시 글이 시나리오 안의 글(이름 등)과 겹치지 않게 접두를 늘린다
+    const plain = JSON.stringify(scenario, infReplacer) || '';
+    let tag = '@@neon-lab-rows-';
+    while (plain.includes(tag)) tag += '~';
+    const blocks = [],
+      mark = i => tag + i + '@@';
+    const out = JSON.stringify(
+      scenario,
+      function (k, v) {
+        if (v === Infinity) return 'Infinity';
+        if (k === 'rows' && Array.isArray(v) && Array.isArray(this.cols)) {
+          blocks.push(v.length ? '[\n' + v.map(r => JSON.stringify(r, infReplacer)).join(',\n') + ']' : '[]');
+          return mark(blocks.length - 1);
+        }
+        return v;
+      },
+      2,
+    );
+    return blocks.reduce((s, b, i) => s.split(JSON.stringify(mark(i))).join(b), out);
   }
   // 경로 → 값 맵에서 문자열 'Infinity'만 되돌린다.
   const revive = map => {
@@ -5570,7 +6304,120 @@ body[data-fx='low'] .nb-spark {
       sim: isObj(raw.sim) ? raw.sim : null,
       results: isObj(raw.results) ? raw.results : null,
     };
+    // 판 줄: 옛 파일(runs 객체 배열)은 그대로, 새 파일(packed 열 배열)은 runs로 풀어 준다.
+    const rs = scenario.results && scenario.results.sim;
+    if (isObj(rs) && !Array.isArray(rs.runs) && own(rs, 'packed')) {
+      rs.runs = unpackRuns(rs.packed);
+      delete rs.packed;
+    }
     return { ok: true, scenario, drift, missing, rejected };
+  }
+
+  // ── 실험실 저장 한도(R-068) ──
+  // store = { saved: [시나리오 JSON, 앞이 최신], draft: { scenario: JSON, ui } }. 길이 = JSON.stringify(store).length.
+  // 넘으면 ① 옛 형식(runs) 결과를 압축해 다시 쓰고 ② 그래도 넘으면 저장 목록 끝(오래된 것)부터,
+  // 마지막에 초안의 자동 판 결과(results)만 뺀다. 바꾼 값 · 이름 · 예시 줄 · 조건은 남긴다. 입력은 바꾸지 않는다.
+  const storeLength = s => JSON.stringify(s).length;
+  const hasResults = sc =>
+    isObj(sc.results) && Object.values(sc.results).some(v => v !== null && v !== undefined);
+  function rewrite(json, edit) {
+    if (typeof json !== 'string') return null;
+    let sc;
+    try {
+      sc = JSON.parse(json);
+    } catch {
+      return null;
+    }
+    if (!isObj(sc) || !edit(sc)) return null;
+    return toJSON(sc);
+  }
+  function storeFit(store, limit) {
+    if (!isObj(store) || storeLength(store) <= limit) return { store, dropped: 0 };
+    const out = { ...store },
+      hasSaved = Array.isArray(store.saved),
+      hasDraft = isObj(store.draft) && typeof store.draft.scenario === 'string';
+    if (hasSaved) out.saved = [...store.saved];
+    if (hasDraft) out.draft = { ...store.draft };
+    const pack = sc => packResults(sc.results);
+    if (hasSaved)
+      out.saved = out.saved.map(j => {
+        const r = rewrite(j, pack);
+        return r === null ? j : r;
+      });
+    if (hasDraft) {
+      const r = rewrite(out.draft.scenario, pack);
+      if (r !== null) out.draft.scenario = r;
+    }
+    const drop = sc => {
+      if (!hasResults(sc)) return false;
+      sc.results = null;
+      return true;
+    };
+    let dropped = 0;
+    if (hasSaved)
+      for (let i = out.saved.length - 1; i >= 0 && storeLength(out) > limit; i--) {
+        const r = rewrite(out.saved[i], drop);
+        if (r === null) continue;
+        out.saved[i] = r;
+        dropped++;
+      }
+    if (hasDraft && storeLength(out) > limit) {
+      const r = rewrite(out.draft.scenario, drop);
+      if (r !== null) {
+        out.draft.scenario = r;
+        dropped++;
+      }
+    }
+    return { store: out, dropped };
+  }
+
+  // ── 옛 결과 판정(R-068): 결과를 돌린 balance 지문 · 바꾼 값 · 조건을 지금과 비교 ──
+  const SIM_KEYS = Object.freeze([
+    'modes',
+    'crafts',
+    'launch',
+    'minutes',
+    'stage',
+    'rushTo',
+    'perMin',
+    'seeds',
+    'autoGold',
+  ]);
+  function simStatus(results, now) {
+    const o = now || {},
+      base = o.base,
+      names = { ran: '', now: base && typeof base.name === 'string' ? base.name : '' };
+    if (!isObj(results)) return { fresh: false, base: 'unknown', names, changes: [], settings: [] };
+    names.ran = typeof results.baseName === 'string' ? results.baseName : '';
+    const baseState =
+      typeof results.base !== 'string' ? 'unknown' : results.base === fingerprint(base) ? 'same' : 'changed';
+    // 결과 파일의 Infinity는 문자열로 남아 있을 수 있어 되돌려 비교한다
+    const ran = new Map(apply(base, revive(results.changes)).applied.map(a => [a.path, a.to])),
+      cur = new Map(apply(base, o.changes).applied.map(a => [a.path, a.to])),
+      order = new Map(entries(base).map((e, i) => [e.path, i])),
+      paths = [...new Set([...ran.keys(), ...cur.keys()])],
+      dflt = p => {
+        const v = get(base, p);
+        return v === undefined && isStartPath(base, p) ? 0 : v;
+      };
+    const changes = [];
+    for (const path of paths) {
+      const a = ran.has(path) ? ran.get(path) : dflt(path),
+        b = cur.has(path) ? cur.get(path) : dflt(path);
+      if (!Object.is(a, b)) changes.push({ path, ran: a, now: b });
+    }
+    const rank = p => (order.has(p) ? order.get(p) : order.size + paths.indexOf(p));
+    changes.sort((x, y) => rank(x.path) - rank(y.path));
+    const rs = isObj(results.settings) ? results.settings : {},
+      ns = isObj(o.settings) ? o.settings : {},
+      settings = SIM_KEYS.filter(k => keyOf(rs[k]) !== keyOf(ns[k]));
+    return {
+      fresh: baseState === 'same' && !changes.length && !settings.length,
+      base: baseState,
+      names,
+      changes,
+      settings,
+    };
   }
 
   // 기본 제공 시나리오(이름은 화면이 붙인다). '첫 실험'은 v5-2 밸런스에 반영돼 지웠다(R-038).
@@ -5582,23 +6429,40 @@ body[data-fx='low'] .nb-spark {
     SCHEMA,
     PRESETS,
     BUILTIN,
+    IMPACTS,
+    RUN_COLS,
+    SIM_KEYS,
     entries,
     get,
     isStartPath,
     check,
     apply,
     diff,
-    inCalc,
-    inDifficulty,
+    fingerprint,
+    impacts,
+    mixAt,
+    pointPerKill,
     economy,
     recordRow,
+    runRow,
+    runRates,
+    modeMetrics,
+    paired,
+    survival,
+    unlockReach,
     groupRows,
     summarize,
+    goalList,
     goals,
+    goalMinutes,
     difficulty,
+    packRuns,
+    unpackRuns,
     makeScenario,
     toJSON,
     parseScenario,
+    storeFit,
+    simStatus,
   };
   root.NeonLabCore = api;
   if (typeof module !== 'undefined') module.exports = api;
@@ -5912,7 +6776,17 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           TABS = ['values', 'difficulty', 'economy', 'sim', 'save'],
           SIM_MINUTES = [3, 5, 10, 15, 20],
           SIM_SEEDS = [1, 2, 3, 5, 10, 15],
-          SIM_STAGES = ['steady', 'rush', 'none'];
+          SIM_STAGES = ['steady', 'rush', 'none'],
+          // 판단용 임시값(ROADMAP '실험실 고도화' 임시값): 경고 · 색 · 기록 점선 · 저장 한도
+          REF_STAGE = 10, // 처치 Point 식의 기준 STAGE
+          WARN_RATIO = 0.2, // 처치 Point가 ±20% 넘게 바뀌면 경고
+          REACH_MIN = 2, // 자동 판 해금 도달 판 수가 2판 이상
+          REACH_PP = 0.2, // · 20%p 이상 달라지면 경고
+          FLAT_PCT = 3, // 3% 미만 변화는 회색
+          REAL_MIN = 3, // 지금 값 기록이 3판 이상이면 그것만 점선으로
+          STALE_LINES = 4, // 옛 결과 차이 목록 줄 수
+          STORE_LIMIT = 1e6, // 실험실 키 전체 글자 수(같은 주소 게임 저장을 막지 않게)
+          G_MARK = L.economy.goldMark;
 
         // ── 숫자 표기 ──
         const NF = [0, 1, 2, 3].map(d => new Intl.NumberFormat('ko-KR', { maximumFractionDigits: d }));
@@ -5974,10 +6848,14 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           open: new Set(),
           sim: cleanSim(DEFAULT_SIM),
           simResults: null,
-          simMetric: 'time',
+          sumOpen: true,
+          simOpen: true,
+          simDetail: false,
           notices: [],
           name: '',
         };
+        // 기록 출처: 경제 탭에서 '실제 주소 기록'을 고르면 실제 주소, 아니면 시험 경로(요약 · 생존 곡선 · 판 길이가 같이 씀)
+        const recSrc = () => (state.source === 'real' ? 'real' : 'test');
         const dirty = new Set(TABS);
         let valuesBuilt = false;
 
@@ -6065,13 +6943,17 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
         const store = readStore();
         if (!Array.isArray(store.saved)) store.saved = [];
         let storeOK = true;
+        // 키 전체를 STORE_LIMIT 안으로(넘으면 결과 압축 → 오래된 시나리오의 자동 판 결과부터 뺌, 바꾼 값은 그대로)
         function writeStore() {
+          const fit = Lab.storeFit(store, STORE_LIMIT);
+          if (fit.store !== store) Object.assign(store, fit.store);
           try {
             localStorage.setItem(STORE_KEY, JSON.stringify(store));
             storeOK = true;
           } catch {
             storeOK = false;
           }
+          if (fit.dropped) toast(L.save.trimmed(fit.dropped));
           return storeOK;
         }
         function scenarioNow(name) {
@@ -6097,8 +6979,9 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
                 tab: state.tab,
                 stage: state.stage,
                 source: state.source,
-                metric: state.simMetric,
                 name: state.name,
+                sumOpen: state.sumOpen,
+                simOpen: state.simOpen,
               },
             };
             writeStore();
@@ -6121,8 +7004,10 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           if (TABS.includes(ui.tab)) state.tab = ui.tab;
           if (Number.isFinite(ui.stage) && ui.stage >= 1) state.stage = Math.floor(ui.stage);
           if (['preset', 'test', 'real'].includes(ui.source)) state.source = ui.source;
-          if (['time', 'level', 'stage', 'gold'].includes(ui.metric)) state.simMetric = ui.metric;
           if (typeof ui.name === 'string') state.name = ui.name.slice(0, 60);
+          if (typeof ui.sumOpen === 'boolean') state.sumOpen = ui.sumOpen;
+          // 조건 칸: 결과가 있으면 접힌 채 시작
+          state.simOpen = typeof ui.simOpen === 'boolean' ? ui.simOpen : !state.simResults;
         })();
 
         // ── 공통 조각 ──
@@ -6248,6 +7133,372 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           return h + '</tbody></table>';
         }
 
+        // ── 판단용 공통(R-068): 변화 글자 · 자동 판 보기 · 경고 · 요약 칸 ──
+        const modeColor = m => 'var(--mode-' + m + ')';
+        const pctText = (d, pp) => (d > 0 ? '+' : '−') + Math.abs(Math.round(d)) + (pp ? '%p' : '%');
+        // 변화: 상대 %(pp면 %p). 흔들림 밖(sure)일 때만 초록 유리 · 빨강 불리, 3% 미만 · 흔들림 안은 회색, 같으면 '·'
+        function change(a, b, { pp = false, sure = true, same: none = false } = {}) {
+          if (!Number.isFinite(a) || !Number.isFinite(b)) return { text: '—', cls: 'flat', wobble: false };
+          const d = pp ? (b - a) * 100 : a ? ((b - a) / Math.abs(a)) * 100 : b ? 100 : 0;
+          if (none || Math.abs(d) < 0.5) return { text: '·', cls: 'flat', wobble: false };
+          return {
+            text: pctText(d, pp),
+            cls: !sure || Math.abs(d) < FLAT_PCT ? 'flat' : d > 0 ? 'good' : 'bad',
+            wobble: !sure,
+          };
+        }
+        const ppk = (B, m) => Lab.pointPerKill(B, m, REF_STAGE);
+        const DASH = { text: '—', cls: 'flat' };
+
+        // 자동 판 결과 보기(메모): 결과 · 바꾼 값 · 조건이 바뀔 때만 다시 계산한다
+        const SIG_KEYS = ['time', 'level', 'full', 'ppm', 'gpm', 'bpm'];
+        let simMemo = { key: '', view: null };
+        function simView() {
+          const r = state.simResults;
+          if (!validResults(r) || !r.runs.length) return null;
+          const key = keyOf([r.at, r.runs.length, r.errors.length, state.changes, state.sim, !!running]);
+          if (simMemo.key === key) return simMemo.view;
+          const s = r.settings,
+            tier = state.sim.tier,
+            two = r.sets.includes('exp'),
+            ranB = two ? Lab.apply(base, r.changes || {}).balance : base,
+            balOf = set => (set === 'exp' ? ranB : base),
+            rated = r.runs.map(run => Lab.runRates(balOf(run.set), run, s, tier)).filter(Boolean),
+            pick = (list, set, m) => list.filter(x => x.set === set && x.mode === m),
+            status = Lab.simStatus(r, { base, changes: state.changes, settings: state.sim }),
+            table = s.modes.map(m => {
+              const now = Lab.modeMetrics(base, pick(r.runs, 'now', m), s, tier),
+                exp = two ? Lab.modeMetrics(ranB, pick(r.runs, 'exp', m), s, tier) : null,
+                sig = {};
+              for (const k of SIG_KEYS)
+                sig[k] = Lab.paired(pick(rated, 'now', m), pick(rated, 'exp', m), x => +x[k]);
+              return {
+                mode: m,
+                now,
+                exp,
+                sig,
+                same: !!exp && SIG_KEYS.every(k => sig[k].n > 0 && sig[k].same),
+              };
+            });
+          simMemo = {
+            key,
+            view: { r, s, two, ranB, status, table, running: !!running, fresh: !running && status.fresh },
+          };
+          return simMemo.view;
+        }
+        // 맞는 자동 판(실험 묶음이 있고 지금 값 · 조건과 같음)의 그 모드 줄
+        const freshRow = (v, m) => (v && v.fresh && v.two ? v.table.find(x => x.mode === m && x.exp) : null);
+        const condText = s =>
+          L.sim.condLine(
+            s.modes.length === MODES.length
+              ? L.sim.allModes(MODES.length)
+              : s.modes.map(m => T.modeName(m)).join(' · '),
+            s.crafts.length,
+            L.sim.launches[s.launch],
+            s.minutes,
+            L.sim.stageText(s.stage, s.rushTo ?? Sim.RUSH.to, s.perMin ?? 1),
+            s.seeds,
+          );
+        // 옛 결과 차이 줄: 지문(balance.js 지금 값) → 바꾼 값 → 조건
+        const SET_NAMES = {
+          modes: L.sim.modes,
+          crafts: L.sim.crafts,
+          launch: L.sim.launch,
+          minutes: L.sim.minutes,
+          stage: L.sim.stagePlan,
+          rushTo: L.sim.rushTo,
+          perMin: L.sim.perMin,
+          seeds: L.sim.seeds,
+          autoGold: L.sim.autoGold,
+        };
+        function setValue(k, v) {
+          if (k === 'modes') return (v || []).map(m => T.modeName(m)).join('·');
+          if (k === 'crafts') return (v || []).map(c => T.craftName(c)).join('·');
+          if (k === 'launch') return L.sim.launches[v] || String(v);
+          if (k === 'minutes') return L.sim.minute(v);
+          if (k === 'stage') return L.sim.stages[v] || String(v);
+          if (k === 'seeds') return L.sim.seedsOf(v);
+          return raw(v);
+        }
+        function staleLines(st, ran, now) {
+          const out = [];
+          if (st.base === 'unknown') out.push(L.sim.staleUnknown);
+          else if (st.base === 'changed') out.push(L.sim.staleBase(st.names.ran, st.names.now));
+          for (const c of st.changes) out.push(L.sim.staleValue(L.label(c.path), raw(c.ran), raw(c.now)));
+          for (const k of st.settings)
+            out.push(L.sim.staleSetting(SET_NAMES[k] || k, setValue(k, ran[k]), setValue(k, now[k])));
+          return out;
+        }
+        function staleCard(lines, extra) {
+          return (
+            '<div class="stale" role="alert"><strong>' +
+            esc(L.sim.staleTitle) +
+            '</strong><ul>' +
+            lines
+              .slice(0, STALE_LINES)
+              .map(x => '<li>' + esc(x) + '</li>')
+              .join('') +
+            (lines.length > STALE_LINES
+              ? '<li>' + esc(L.sim.staleMore(lines.length - STALE_LINES)) + '</li>'
+              : '') +
+            '</ul>' +
+            extra +
+            '</div>'
+          );
+        }
+        // 이 기기 기록(경제 탭에서 고른 출처, 예시면 시험 경로): 모드 · 출격 종류의 줄
+        function recordRuns(mode, launch) {
+          const rec = state.records[recSrc()];
+          return rec && rec.status === 'ok'
+            ? rec.rows.filter(r => r.mode === mode && r.launch === launch)
+            : [];
+        }
+        // 생존 곡선의 기록 점선: 지금 값(balance 이름이 같음) 기록이 REAL_MIN판 이상이면 그것만, 아니면 전부
+        function realRuns(mode, launch) {
+          const all = recordRuns(mode, launch),
+            cur = all.filter(r => r.balance === base.name);
+          return cur.length >= REAL_MIN
+            ? { list: cur, old: false }
+            : { list: all, old: all.length > cur.length };
+        }
+        // 판 길이(분): 지금 = 기록 평균(없으면 예시 분), 실험 = 지금 × 자동 판 생존 변화(흔들림 밖일 때만)
+        function runLength(mode, launch, fallback) {
+          const list = recordRuns(mode, launch),
+            now = list.length ? list.reduce((s, r) => s + r.minutes, 0) / list.length : fallback,
+            v = simView(),
+            row = v && v.s.launch === launch ? freshRow(v, mode) : null,
+            k = row && row.now && row.now.time > 0 && row.sig.time.sure ? row.exp.time / row.now.time : 1;
+          return {
+            now,
+            exp: now * k,
+            k,
+            src: list.length ? L.economy.lenSrc.records(list.length) : L.economy.lenSrc.preset,
+          };
+        }
+        // 요약 G/분 · B/분: 경제 탭 줄 출처(예시 = 그 모드 일반 출격 예시 줄, 기록 = 그 모드 · 일반 묶음)의 분당 식
+        function econDelta(m) {
+          let rows = [];
+          if (state.source === 'preset') {
+            const r = state.rows.find(x => x.mode === m && x.launch === 'normal');
+            if (r) rows = [r];
+          } else {
+            const rec = state.records[state.source];
+            if (rec && rec.status === 'ok')
+              rows = rec.rows.filter(x => x.mode === m && x.launch === 'normal');
+          }
+          if (!rows.length) return null;
+          return { now: Lab.summarize(base, rows).perMinute, exp: Lab.summarize(exp(), rows).perMinute };
+        }
+
+        // 경고: 옛 결과 → 해금 → 순위 → 힌트. 식이 먼저, 맞는 자동 판이 있으면 근거를 덧붙인다
+        function warnings() {
+          const v = simView(),
+            E = exp(),
+            list = changeList(),
+            S = L.summary,
+            out = [];
+          if (v && !v.running && !v.fresh)
+            out.push({
+              kind: 'danger',
+              go: 'sim',
+              head: S.heads.stale,
+              text: S.stale(staleLines(v.status, v.s, state.sim).length),
+            });
+          if (!list.length) return out;
+          for (const id of Object.keys(base.unlock)) {
+            const u = base.unlock[id],
+              ue = E.unlock[id] || u,
+              from = u.from;
+            if (!base.modes[from]) continue;
+            const bits = [],
+              ca = S.unlockParts(u).join(' · '),
+              cb = S.unlockParts(ue).join(' · ');
+            let vote = 0;
+            if (ca !== cb) {
+              bits.push(S.condBit(ca, cb));
+              for (const k of ['time', 'score', 'level']) vote += Math.sign((ue[k] || 0) - (u[k] || 0));
+            }
+            if (u.score || ue.score) {
+              const k = ppk(E, from) / ppk(base, from);
+              if (Math.abs(k - 1) > WARN_RATIO) {
+                bits.push(S.pointBit(pctText((k - 1) * 100)));
+                vote += k < 1 ? 1 : -1;
+              }
+            }
+            if (v && v.fresh && v.two && v.s.modes.includes(from)) {
+              const n = v.r.runs.filter(r => r.set === 'now' && r.mode === from),
+                e = v.r.runs.filter(r => r.set === 'exp' && r.mode === from),
+                a = n.filter(r => Lab.unlockReach(base, id, r)).length,
+                b = e.filter(r => Lab.unlockReach(v.ranB, id, r)).length;
+              if (
+                n.length &&
+                e.length &&
+                Math.abs(a - b) >= REACH_MIN &&
+                Math.abs(a / n.length - b / e.length) >= REACH_PP
+              ) {
+                bits.push(S.reachBit(a, n.length, b, e.length));
+                vote += b / e.length < a / n.length ? 1 : -1;
+              }
+            }
+            if (bits.length)
+              out.push({
+                go: 'sim',
+                head: S.unlockHead(id),
+                text: S.unlock(
+                  S.unlockCond(from, S.unlockParts(u)),
+                  bits,
+                  S.dirs[vote > 0 ? 'harder' : vote < 0 ? 'easier' : 'changed'],
+                ),
+              });
+          }
+          // 순위: 기록 출처의 일반 · S 출격 TOP3가 있는 모드 중 같은 플레이 Point(식)가 크게 바뀐 모드
+          const rec = state.records[recSrc()],
+            hits = [];
+          for (const t of (rec && rec.top) || []) {
+            if (!base.modes[t.mode] || hits.some(h => h.mode === t.mode)) continue;
+            const k = ppk(E, t.mode) / ppk(base, t.mode);
+            if (Math.abs(k - 1) > WARN_RATIO) hits.push({ mode: t.mode, k });
+          }
+          if (hits.length)
+            out.push({
+              go: 'economy',
+              head: S.heads.rank,
+              text: S.rank(
+                hits.map(h => T.modeName(h.mode) + ' ' + pctText((h.k - 1) * 100)).join(' · '),
+                S.rankDirs[
+                  hits.every(h => h.k < 1) ? 'harder' : hits.every(h => h.k > 1) ? 'easier' : 'mixed'
+                ],
+              ),
+            });
+          if (!v && list.some(a => Lab.impacts(a.path).includes('difficulty')))
+            out.push({ kind: 'hint', go: 'sim', head: S.heads.hint, text: S.hint });
+          return out;
+        }
+
+        // 요약 칸 영향 표: 4줄 × 모드. 생존 · Point = 맞는 자동 판, 없으면 Point만 식(≈). G · B = 경제 줄 식
+        function impactCells(m) {
+          const v = simView(),
+            E = exp(),
+            row = freshRow(v, m),
+            sim = k =>
+              row ? change(row.now[k], row.exp[k], { sure: row.sig[k].sure, same: row.sig[k].same }) : null,
+            e = econDelta(m);
+          return {
+            time: sim('time') || DASH,
+            point: sim('ppm') || { ...change(ppk(base, m), ppk(E, m)), est: true },
+            gold: e ? change(e.now.gold, e.exp.gold) : DASH,
+            blue: e ? change(e.now.blue, e.exp.blue) : DASH,
+          };
+        }
+        function renderSummary() {
+          const list = changeList(),
+            counts = {},
+            warns = warnings(),
+            nw = warns.filter(w => w.kind !== 'hint').length,
+            open = state.sumOpen;
+          for (const a of list) for (const t of Lab.impacts(a.path)) counts[t] = (counts[t] || 0) + 1;
+          let h =
+            '<button type="button" class="sum-head" data-act="sum" aria-expanded="' +
+            open +
+            '"><span class="t">' +
+            esc(L.summary.title) +
+            '</span><span class="tg">' +
+            Lab.IMPACTS.filter(t => counts[t])
+              .map(
+                t => '<span class="tag t-' + t + '">' + esc(L.values.tags[t]) + ' ' + counts[t] + '</span>',
+              )
+              .join('') +
+            '</span>' +
+            (nw ? '<span class="w">⚠ ' + nw + '</span>' : '') +
+            '<span class="caret" aria-hidden="true">' +
+            (open ? '▴' : '▾') +
+            '</span></button>';
+          if (open) h += '<div class="sum-body">' + summaryBody(list, warns) + '</div>';
+          $('summary').innerHTML = h;
+        }
+        function summaryBody(list, warns) {
+          let h = warns.length
+            ? '<ul class="warns">' +
+              warns
+                .map(
+                  w =>
+                    '<li class="' +
+                    (w.kind || '') +
+                    '" data-go="' +
+                    w.go +
+                    '" role="link" tabindex="0"><b>' +
+                    esc(w.head) +
+                    '</b><span>' +
+                    esc(w.text) +
+                    '</span></li>',
+                )
+                .join('') +
+              '</ul>'
+            : '';
+          if (!list.length) return h + '<p class="note">' + esc(L.summary.empty) + '</p>';
+          const cells = MODES.map(m => impactCells(m));
+          h +=
+            '<table class="imp"><colgroup><col class="k" />' +
+            MODES.map(() => '<col />').join('') +
+            '</colgroup><thead><tr><th></th>' +
+            MODES.map(m => '<th style="color:' + modeColor(m) + '">' + esc(T.modeName(m)) + '</th>').join(
+              '',
+            ) +
+            '</tr></thead><tbody>';
+          for (const k of ['time', 'point', 'gold', 'blue'])
+            h +=
+              '<tr><th>' +
+              esc(L.summary.rows[k]) +
+              '</th>' +
+              cells
+                .map(
+                  c =>
+                    '<td class="' +
+                    c[k].cls +
+                    (c[k].est ? ' est' : '') +
+                    '">' +
+                    (c[k].est && c[k].text !== '·' ? '≈' : '') +
+                    esc(c[k].text) +
+                    '</td>',
+                )
+                .join('') +
+              '</tr>';
+          const v = simView(),
+            s = v && v.s;
+          h +=
+            '</tbody></table><p class="src">' +
+            (running
+              ? '<span id="sum-run">' +
+                esc(L.summary.srcRunning(running.finished(), running.total)) +
+                '</span>'
+              : '') +
+            esc(
+              (v && v.fresh && v.two
+                ? L.summary.srcSim(L.summary.simDesc(s.minutes, s.crafts.length, s.seeds))
+                : L.summary.srcNoSim) +
+                L.summary.srcEcon(L.economy.sources[state.source]) +
+                L.summary.srcColors,
+            ) +
+            '</p>';
+          return h;
+        }
+        $('summary').addEventListener('click', e => {
+          if (e.target.closest('[data-act="sum"]')) {
+            state.sumOpen = !state.sumOpen;
+            renderSummary();
+            return saveDraft();
+          }
+          const li = e.target.closest('li[data-go]');
+          if (li) setTab(li.dataset.go);
+        });
+        $('summary').addEventListener('keydown', e => {
+          const li = e.target.closest('li[data-go]');
+          if (li && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setTab(li.dataset.go);
+          }
+        });
+
         // ── 머리 · 탭 ──
         function syncChip() {
           const n = changeList().length,
@@ -6281,14 +7532,23 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           syncChip();
           for (const t of TABS) if (t !== 'values') dirty.add(t);
           if (valuesBuilt) syncValues();
+          renderSummary();
           renderActive();
           saveDraft();
         }
+        // 기록 · 결과처럼 여러 탭이 함께 쓰는 것이 바뀌었을 때: 요약과 열린 탭을 다시 그린다
+        function refreshAll() {
+          for (const t of TABS) if (t !== 'values') dirty.add(t);
+          renderSummary();
+          renderActive();
+        }
 
         // ── 값 탭 ──
+        // 영향 태그 4가지(R-068): 규칙은 lab-core IMPACTS(요약 · 글 복사와 같은 함수)
         const tags = path =>
-          (Lab.inCalc(path) ? '<span class="tag calc">' + esc(L.values.tagCalc) + '</span>' : '') +
-          (Lab.inDifficulty(path) ? '<span class="tag diff">' + esc(L.values.tagDifficulty) + '</span>' : '');
+          Lab.impacts(path)
+            .map(t => '<span class="tag t-' + t + '">' + esc(L.values.tags[t]) + '</span>')
+            .join('');
         function inputHTML(path, kind, aria) {
           if (kind === 'bool')
             return (
@@ -6600,10 +7860,17 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             db.close();
           }
           const records = list.map(r => Data.normalizeRecord(r)).filter(Boolean),
-            rows = records.map(r => Lab.recordRow(r, base)).filter(Boolean);
+            rows = records.map(r => Lab.recordRow(r, base)).filter(Boolean),
+            // 순위 TOP3(일반 · S 출격 각 3): 순위 경고가 쓴다
+            top = ['normal', 'super'].flatMap(kind =>
+              Data.ranking(records, kind)
+                .slice(0, 3)
+                .map(r => ({ mode: r.difficultyId, score: r.score, balance: r.balance })),
+            );
           return {
             status: rows.length ? 'ok' : 'none',
             rows,
+            top,
             n: rows.length,
             skipped: records.length - rows.length,
           };
@@ -6612,57 +7879,84 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           if (state.records[which]) return;
           state.records[which] = { status: 'loading' };
           readRecords(which)
-            .catch(() => ({ status: 'none', rows: [], n: 0, skipped: 0 }))
+            .catch(() => ({ status: 'none', rows: [], top: [], n: 0, skipped: 0 }))
             .then(res => {
               state.records[which] = res;
-              dirty.add('economy');
-              dirty.add('save');
-              if (state.tab === 'economy' || state.tab === 'save') renderActive();
+              refreshAll();
             });
         }
-        // 판 유형 줄: 예시 줄 하나씩, 또는 기록을 모드 · 출격으로 묶은 것
+        // 판 유형 줄: 예시 줄 하나씩, 또는 기록을 모드 · 출격으로 묶은 것. minutes = 판 길이의 예비값(기록이 없을 때)
         function econLines() {
           if (state.source === 'preset')
             return state.rows.map((r, i) => ({
               key: 'p' + i,
               index: i,
+              mode: r.mode,
+              launch: r.launch,
+              minutes: r.minutes,
               title: L.economy.presets[r.id] || L.economy.group(r.mode, r.launch),
               sub: L.economy.brief(time(r.minutes * 60), fmt(r.level, 0), fmt(r.bosses, 0)),
               rows: [r],
             }));
           const rec = state.records[state.source];
           if (!rec || rec.status !== 'ok') return [];
-          return Lab.groupRows(rec.rows, base).map(g => ({
-            key: g.key,
-            title: L.economy.group(g.mode, g.launch),
-            sub: L.economy.runs(
-              g.rows.length,
-              time((g.rows.reduce((s, r) => s + r.minutes, 0) / g.rows.length) * 60),
-            ),
-            rows: g.rows,
-          }));
+          return Lab.groupRows(rec.rows, base).map(g => {
+            const minutes = g.rows.reduce((s, r) => s + r.minutes, 0) / g.rows.length;
+            return {
+              key: g.key,
+              mode: g.mode,
+              launch: g.launch,
+              minutes,
+              title: L.economy.group(g.mode, g.launch),
+              sub: L.economy.runs(g.rows.length, time(minutes * 60)),
+              rows: g.rows,
+            };
+          });
         }
-        const pair = (a, b, d) =>
-          same(a, b)
-            ? '<b class="v-now">' + esc(fmt(a, d)) + '</b>'
-            : '<b class="v-now">' +
-              esc(fmt(a, d)) +
-              '</b><span class="arrow">→</span><b class="v-exp">' +
-              esc(fmt(b, d)) +
-              '</b>';
         const pairText = (a, b, d) => (same(a, b) ? fmt(a, d) : fmt(a, d) + ' → ' + fmt(b, d));
-        const width = (v, top) => Math.max(0, Math.min(100, (v / top) * 100)).toFixed(1);
-        const runsText = n => (n === Infinity ? L.economy.never : L.economy.runsOf(n));
-        const net = s => ({
-          gold: s.perRun.gold.total,
-          blue: s.perRun.blue,
-          super: s.perRun.super - s.perRun.superCost,
+        // 분당 순수입(S는 S 출격 비용을 뺀 값)
+        const perMin = (s, v) => (s.minutes > 0 ? (v * s.n) / s.minutes : 0);
+        const netPerMinute = s => ({
+          gold: s.perMinute.gold,
+          blue: s.perMinute.blue,
+          super: s.perMinute.super - perMin(s, s.perRun.superCost),
         });
-        function econCard(l, top, E) {
-          const a = l.now,
-            b = l.exp,
-            ga = a.perRun.gold.total,
-            gb = b.perRun.gold.total,
+        // 경제 줄 하나의 계산: 분당 지금 · 실험 + 판 길이 + 판당 G
+        function econLine(l, E) {
+          const now = Lab.summarize(base, l.rows),
+            ex = Lab.summarize(E, l.rows),
+            len = runLength(l.mode, l.launch, l.minutes);
+          return {
+            ...l,
+            now,
+            exp: ex,
+            pm: { now: netPerMinute(now), exp: netPerMinute(ex) },
+            len,
+            perRunGold: { now: now.perMinute.gold * len.now, exp: ex.perMinute.gold * len.exp },
+          };
+        }
+        function pmCell(label, a, b, d) {
+          const c = change(a, b);
+          return (
+            '<div><span class="k">' +
+            esc(label) +
+            '</span><b class="big v-now">' +
+            esc(Math.abs(a) > 1e-9 ? fmt(a, d) : '—') +
+            '</b>' +
+            (c.text !== '·' && c.text !== '—'
+              ? '<span class="to">→ ' +
+                esc(fmt(b, d)) +
+                ' <i class="' +
+                c.cls +
+                '">' +
+                esc(c.text) +
+                '</i></span>'
+              : '') +
+            '</div>'
+          );
+        }
+        function econCard(l, E) {
+          const { pm, len, perRunGold: g } = l,
             open = state.open.has(l.key);
           let h =
             '<article class="card" data-key="' +
@@ -6671,35 +7965,29 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             esc(l.title) +
             '</h3><span class="sub">' +
             esc(l.sub) +
-            '</span></div><div class="eco-main"><span class="k">' +
-            esc(L.economy.perRun) +
-            '</span>' +
-            pair(ga, gb, 0) +
-            '<span class="delta">' +
-            esc(deltaText(ga, gb)) +
-            '</span></div><div class="bars"><span class="k">' +
-            esc(L.economy.perMinute) +
-            '</span><span>' +
-            esc(L.now) +
-            '</span><div><div class="bar" style="width:' +
-            width(a.perMinute.gold, top) +
-            '%"></div></div><span class="val">' +
-            esc(fmt(a.perMinute.gold, 1)) +
-            '</span><span>' +
-            esc(L.exp) +
-            '</span><div><div class="bar exp" style="width:' +
-            width(b.perMinute.gold, top) +
-            '%"></div></div><span class="val">' +
-            esc(fmt(b.perMinute.gold, 1)) +
-            '</span></div><p class="eco-sub">' +
-            esc(L.economy.blue) +
+            '</span></div><div class="pm">' +
+            pmCell(L.economy.pm.gold, pm.now.gold, pm.exp.gold, 1) +
+            pmCell(L.economy.pm.blue, pm.now.blue, pm.exp.blue, 2) +
+            pmCell(L.economy.pm.super, pm.now.super, pm.exp.super, 2) +
+            '</div><p class="len">' +
+            esc(L.economy.perRunGold) +
             ' ' +
-            esc(pairText(a.perRun.blue, b.perRun.blue)) +
+            esc(fmt(g.now, 0)) +
+            (Math.abs(g.now - g.exp) > 0.5 ? ' → <b class="v-exp">' + esc(fmt(g.exp, 0)) + '</b>' : '') +
             ' · ' +
-            esc(L.economy.super) +
+            esc(L.economy.runLength) +
             ' ' +
-            esc(pairText(a.perRun.super, b.perRun.super)) +
-            (a.perRun.superCost ? ' (' + esc(L.economy.superCost(fmt(a.perRun.superCost))) + ')' : '') +
+            esc(time(len.now * 60)) +
+            '<span class="tagsrc">' +
+            esc(len.src) +
+            '</span>' +
+            (len.k !== 1
+              ? ' → ' +
+                esc(time(len.exp * 60)) +
+                '<span class="tagsrc">' +
+                esc(L.economy.lenSrc.sim(change(1, len.k).text)) +
+                '</span>'
+              : '') +
             '</p><button type="button" class="btn small" data-act="toggle" aria-expanded="' +
             open +
             '">' +
@@ -6708,79 +7996,91 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           if (open) h += econDetail(l, E);
           return h + '</article>';
         }
+        const goalName = id => {
+          const g = L.economy.goals[id];
+          return typeof g === 'function' ? g() : g || id;
+        };
         function econDetail(l, E) {
-          const a = l.now.perRun,
-            b = l.exp.perRun,
-            row = (name, x, y, cls = '') =>
+          const a = l.now,
+            b = l.exp,
+            row = (name, x, y, d, cls = '') =>
               '<tr class="' +
               cls +
               '"><td>' +
               esc(name) +
               '</td><td>' +
-              esc(fmt(x, 1)) +
+              esc(fmt(x, d)) +
               '</td><td class="' +
               (same(x, y) ? '' : 'v-exp') +
               '">' +
-              esc(fmt(y, 1)) +
-              '</td></tr>';
-          let h =
-            '<table class="grid2"><thead><tr><th>' +
-            esc(L.economy.perRun) +
-            '</th><th>' +
-            esc(L.now) +
-            '</th><th>' +
-            esc(L.exp) +
-            '</th></tr></thead><tbody>';
+              esc(fmt(y, d)) +
+              '</td></tr>',
+            head = title =>
+              '<table class="grid2"><thead><tr><th>' +
+              esc(title) +
+              '</th><th>' +
+              esc(L.now) +
+              '</th><th>' +
+              esc(L.exp) +
+              '</th></tr></thead><tbody>';
+          // 분당 내역: G 항목별 · 합계 · B(LV 보상 · B 코인)
+          let h = head(L.economy.perMinuteTitle);
           for (const k of ['minute', 'boss', 'coin', 'autoGoldCapped', 'autoGoldChance', 'cat'])
-            if (a.gold[k] || b.gold[k]) h += row(L.economy.gold[k], a.gold[k], b.gold[k]);
-          h += row(L.economy.gold.total, a.gold.total, b.gold.total, 'total');
-          // B 내역(R-043): B 코인 칸이 있을 때만 LV 보상 · B 코인 줄
-          if (a.blueCoin || b.blueCoin)
-            h +=
-              row(L.economy.blue + ' ' + L.economy.blueParts.level, a.blueLevel, b.blueLevel) +
-              row(L.economy.blueParts.coin, a.blueCoin, b.blueCoin);
+            if (a.perRun.gold[k] || b.perRun.gold[k])
+              h += row(
+                L.economy.gold[k] + ' ' + G_MARK,
+                perMin(a, a.perRun.gold[k]),
+                perMin(b, b.perRun.gold[k]),
+                1,
+              );
+          h += row(L.economy.gold.total + ' ' + G_MARK, a.perMinute.gold, b.perMinute.gold, 1, 'total');
+          h += row(
+            L.economy.blueParts.level + ' ' + L.economy.blue,
+            perMin(a, a.perRun.blueLevel),
+            perMin(b, b.perRun.blueLevel),
+            2,
+          );
+          if (a.perRun.blueCoin || b.perRun.blueCoin)
+            h += row(L.economy.blueParts.coin, perMin(a, a.perRun.blueCoin), perMin(b, b.perRun.blueCoin), 2);
           h += '</tbody></table>';
-          const act = l.now.actual;
+          // 목표까지 플레이 시간: 이 줄의 분당 값으로만 모을 때
+          const ga = Lab.goalMinutes(base, l.pm.now),
+            gb = Lab.goalMinutes(E, l.pm.exp),
+            dur = L.economy.duration;
+          h += head(L.economy.goalTimeTitle);
+          ga.forEach((g, i) => {
+            const x = dur(g.minutes),
+              y = dur(gb[i].minutes);
+            h +=
+              '<tr><td>' +
+              esc(goalName(g.id)) +
+              '</td><td>' +
+              esc(x) +
+              '</td><td class="' +
+              (x === y ? '' : 'v-exp') +
+              '">' +
+              esc(y) +
+              '</td></tr>';
+          });
+          h += '</tbody></table><p class="src">' + esc(L.economy.goalNote) + '</p>';
+          const act = a.actual;
           if (act)
             h +=
               '<p class="eco-sub">' +
               esc(L.economy.actual) +
               ': ' +
-              esc(fmt(act.gold, 1)) +
-              ' G · ' +
+              esc(fmt(perMin(a, act.gold), 1)) +
+              ' ' +
+              esc(G_MARK) +
+              ' · ' +
               esc(L.economy.blue) +
               ' ' +
-              esc(fmt(act.blue, 1)) +
+              esc(fmt(perMin(a, act.blue), 2)) +
               ' · ' +
               esc(L.economy.super) +
               ' ' +
-              esc(fmt(act.super, 1)) +
+              esc(fmt(perMin(a, act.super), 2)) +
               '</p>';
-          const ga = Lab.goals(base, net(l.now)),
-            gb = Lab.goals(E, net(l.exp));
-          h +=
-            '<table class="grid2"><thead><tr><th>' +
-            esc(L.economy.goalsTitle) +
-            '</th><th>' +
-            esc(L.now) +
-            '</th><th>' +
-            esc(L.exp) +
-            '</th></tr></thead><tbody>' +
-            ga
-              .map(
-                (g, i) =>
-                  '<tr><td>' +
-                  esc(L.economy.goals[g.id] || g.id) +
-                  '</td><td>' +
-                  esc(runsText(g.runs)) +
-                  '</td><td class="' +
-                  (gb[i].runs === g.runs ? '' : 'v-exp') +
-                  '">' +
-                  esc(runsText(gb[i].runs)) +
-                  '</td></tr>',
-              )
-              .join('') +
-            '</tbody></table>';
           if (l.index !== undefined) h += condHTML(state.rows[l.index], l.index);
           return h;
         }
@@ -6838,14 +8138,9 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             h += '<p class="warn">' + esc(L.economy.unsupported) + '</p>';
           else if (rec.status === 'none') h += '<p class="warn">' + esc(L.economy.noRecords) + '</p>';
           else h += '<p class="note">' + esc(L.economy.recordNote(rec.n, rec.skipped)) + '</p>';
-          const lines = econLines().map(l => ({
-              ...l,
-              now: Lab.summarize(base, l.rows),
-              exp: Lab.summarize(E, l.rows),
-            })),
-            top = Math.max(1e-9, ...lines.flatMap(l => [l.now.perMinute.gold, l.exp.perMinute.gold]));
-          if (lines.length) h += legend();
-          for (const l of lines) h += econCard(l, top, E);
+          const lines = econLines().map(l => econLine(l, E));
+          if (lines.length) h += '<p class="note">' + esc(L.economy.note) + '</p>' + legend();
+          for (const l of lines) h += econCard(l, E);
           if (src === 'preset')
             h +=
               '<div class="btns"><button type="button" class="btn small" data-act="reset-rows">' +
@@ -6858,8 +8153,8 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           const src = e.target.closest('[data-act="source"] button');
           if (src) {
             state.source = src.dataset.v;
-            renderEconomy();
-            dirty.add('save');
+            loadRecords(recSrc());
+            refreshAll();
             return saveDraft();
           }
           const card = e.target.closest('[data-key]');
@@ -6895,6 +8190,7 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
         });
         function rowsChanged() {
           dirty.add('save');
+          renderSummary();
           renderEconomy();
           saveDraft();
         }
@@ -6904,10 +8200,6 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           fallbackMode = false,
           workerURL = null,
           paintQueued = false;
-        const simKey = () => {
-          const { tier, ...rest } = state.sim;
-          return keyOf({ c: state.changes, s: rest });
-        };
         const jobCount = () =>
           state.sim.modes.length * state.sim.crafts.length * state.sim.seeds * (changeList().length ? 2 : 1);
         // 작업자(Web Worker) 안에서 도는 코드: lab-sim 원문 뒤에 붙는다(바깥 변수를 쓰지 않는다)
@@ -7138,8 +8430,10 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
                       autoGold: s.autoGold,
                     },
                   });
+          // base · baseName: 돌린 때 balance.js 지문(R-068 옛 결과 판정)
           const results = {
-            key: simKey(),
+            base: Lab.fingerprint(base),
+            baseName: base.name,
             settings: { ...s, modes: [...s.modes], crafts: [...s.crafts] },
             changes: { ...state.changes },
             sets,
@@ -7149,6 +8443,7 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             at: Date.now(),
           };
           state.simResults = results;
+          state.simOpen = false;
           const balances = { now: base };
           if (sets.length > 1) balances.exp = exp();
           const cb = {
@@ -7184,10 +8479,8 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             },
             end() {
               running = null;
-              dirty.add('save');
               saveDraft();
-              if (state.tab === 'sim') renderSim();
-              else dirty.add('sim');
+              refreshAll();
             },
           };
           running = startPool(jobs, balances, cb);
@@ -7195,7 +8488,7 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             fallbackMode = true;
             running = startLocal(jobs, balances, cb);
           }
-          renderSim();
+          refreshAll();
         }
         function paintSim() {
           if (state.tab !== 'sim') return dirty.add('sim');
@@ -7212,6 +8505,8 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           if (!box || !running) return;
           box.querySelector('.progress > div').style.width = (running.progress() * 100).toFixed(1) + '%';
           box.querySelector('.note').textContent = L.sim.progress(running.finished(), running.total);
+          const sum = $('sum-run');
+          if (sum) sum.textContent = L.summary.srcRunning(running.finished(), running.total);
         }
         // 판 결과를 모드 · 기체 · 묶음(지금/실험)별로 더한다. 판당 G는 그 판을 돌린 값 묶음의 경제 규칙으로.
         function simAggregate(r) {
@@ -7342,45 +8637,207 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           }
           return '<table class="res">' + head + '<tbody>' + body + '</tbody></table>';
         }
+        // 모드 비교 한 표의 값 표기
+        const CMP_SHOW = {
+          time: (v, x) => (Number.isFinite(v) ? time(v) + (x.allFull ? '+' : '') : '—'),
+          level: v => fmt(v, 0),
+          full: v => (Number.isFinite(v) ? Math.round(v * 100) + '%' : '—'),
+          ppm: v => big(v),
+          gpm: v => fmt(v, 1),
+          bpm: v => fmt(v, 2),
+        };
+        // 모드 비교 · 평균: 줄 = 모드, 칸 = 지금(작게) · 실험(보라) · 변화(흔들림 안은 회색)
+        function compareTable(v) {
+          let h =
+            '<article class="card"><h3>' +
+            esc(L.sim.compare) +
+            '</h3><table class="cmp"><colgroup><col class="m" />' +
+            SIG_KEYS.map(() => '<col />').join('') +
+            '</colgroup><thead><tr><th></th>' +
+            SIG_KEYS.map(k => '<th>' + esc(L.sim.cmp[k]) + '</th>').join('') +
+            '</tr></thead><tbody>';
+          for (const row of v.table) {
+            const a = row.now,
+              b = row.exp;
+            if (!a && !b) continue;
+            h +=
+              '<tr><th style="color:' +
+              modeColor(row.mode) +
+              '">' +
+              esc(T.modeName(row.mode)) +
+              (row.same ? '<small class="flat">' + esc(L.sim.same) + '</small>' : '') +
+              '</th>';
+            for (const k of SIG_KEYS) {
+              if (!a) {
+                h += '<td>—</td>';
+                continue;
+              }
+              if (!b || row.same) {
+                h += '<td><b class="n">' + esc(CMP_SHOW[k](a[k], a)) + '</b></td>';
+                continue;
+              }
+              const c = change(a[k], b[k], {
+                pp: k === 'full',
+                sure: row.sig[k].sure,
+                same: row.sig[k].same,
+              });
+              h +=
+                '<td><s>' +
+                esc(CMP_SHOW[k](a[k], a)) +
+                '</s><b>' +
+                esc(CMP_SHOW[k](b[k], b)) +
+                '</b><i class="' +
+                c.cls +
+                '">' +
+                esc(c.text) +
+                '</i></td>';
+            }
+            h += '</tr>';
+          }
+          return h + '</tbody></table><p class="src">' + esc(L.sim.cmpNote) + '</p></article>';
+        }
+        // 생존 곡선 한 칸(168×104): 가로 0~길이(분) · 세로 0~100%, 포위 세로선
+        function survSVG(lines, minutes) {
+          const W = 168,
+            H = 104,
+            l = 26,
+            r = 6,
+            t = 8,
+            b = 16,
+            X = m => l + (m / minutes) * (W - l - r),
+            Y = v => t + (1 - v) * (H - t - b),
+            step = minutes <= 5 ? 1 : minutes <= 20 ? 5 : 10,
+            siege = base.siege.interval / 60;
+          let s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">';
+          for (const f of [0, 0.5, 1])
+            s +=
+              '<line class="grid" x1="' +
+              l +
+              '" x2="' +
+              (W - r) +
+              '" y1="' +
+              Y(f) +
+              '" y2="' +
+              Y(f) +
+              '" /><text x="' +
+              (l - 4) +
+              '" y="' +
+              (Y(f) + 3) +
+              '" text-anchor="end">' +
+              Math.round(f * 100) +
+              '%</text>';
+          if (siege > 0)
+            for (let m = siege; m < minutes; m += siege)
+              s +=
+                '<line class="siege" x1="' +
+                X(m).toFixed(1) +
+                '" x2="' +
+                X(m).toFixed(1) +
+                '" y1="' +
+                t +
+                '" y2="' +
+                (H - b) +
+                '" />';
+          for (let m = 0; m <= minutes; m += step)
+            s +=
+              '<text x="' + X(m).toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle">' + m + '</text>';
+          for (const [cls, vs] of lines)
+            if (vs && vs.some(Number.isFinite))
+              s +=
+                '<path class="' +
+                cls +
+                '" d="' +
+                vs
+                  .map(
+                    (v, i) =>
+                      (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(Number.isFinite(v) ? v : 0).toFixed(1),
+                  )
+                  .join(' ') +
+                '" />';
+          return s + '</svg>';
+        }
+        // 생존 곡선: 모드마다 작은 그래프. 기록 점선 = 기록 출처 · 같은 모드 · 같은 출격(판이 끝난 시각)
+        function survivalCard(v) {
+          const S = v.s,
+            runs = set => m =>
+              v.r.runs
+                .filter(r => r.set === set && r.mode === m)
+                .map(r => ({ time: r.time, full: r.reason === 'time' }));
+          let h =
+            '<article class="card"><h3>' +
+            esc(L.sim.survival) +
+            '</h3><div class="legend"><span><i></i>' +
+            esc(L.now) +
+            '</span>' +
+            (v.two ? '<span><i class="exp"></i>' + esc(L.exp) + '</span>' : '') +
+            '<span><i class="real"></i>' +
+            esc(L.sim.legendReal) +
+            '</span><span><i class="siege"></i>' +
+            esc(L.sim.legendSiege) +
+            '</span></div><div class="surv-grid' +
+            (S.modes.length === 1 ? ' one' : '') +
+            '">';
+          for (const m of S.modes) {
+            const real = realRuns(m, S.launch),
+              realList = real.list.map(r => ({ time: r.minutes * 60, full: r.minutes >= S.minutes })),
+              avg = real.list.length ? real.list.reduce((x, r) => x + r.minutes, 0) / real.list.length : 0;
+            h +=
+              '<div class="surv"><h4><span style="color:' +
+              modeColor(m) +
+              '">' +
+              esc(T.modeName(m)) +
+              '</span><small>' +
+              esc(
+                L.sim.survHead(real.list.length, time(avg * 60)) + (real.old ? ' · ' + L.sim.survOld : ''),
+              ) +
+              '</small></h4>' +
+              survSVG(
+                [
+                  ['real', realList.length ? Lab.survival(realList, S.minutes) : null],
+                  ['now', Lab.survival(runs('now')(m), S.minutes)],
+                  ['exp', v.two ? Lab.survival(runs('exp')(m), S.minutes) : null],
+                ],
+                S.minutes,
+              ) +
+              '</div>';
+          }
+          return h + '</div><p class="src">' + esc(L.sim.survNote) + '</p></article>';
+        }
         function renderSimResults() {
           const host = $('sim-results');
           if (!host) return;
-          const r = state.simResults;
-          if (!validResults(r) || (!r.runs.length && !running)) {
-            host.innerHTML = '<p class="note">' + esc(L.sim.none) + '</p>';
+          const r = state.simResults,
+            v = simView();
+          if (!v) {
+            host.innerHTML =
+              validResults(r) && r.errors.length
+                ? '<p class="warn">' + esc(L.sim.error(r.errors[0])) + '</p>'
+                : '<p class="note">' + esc(L.sim.none) + '</p>';
             return;
           }
-          const two = r.sets.includes('exp'),
-            cells = simAggregate(r),
-            s = r.settings;
           let h = '';
-          if (!running && r.key !== simKey()) h += '<p class="warn">' + esc(L.sim.stale) + '</p>';
+          if (!v.running && !v.fresh)
+            h += staleCard(
+              staleLines(v.status, v.s, state.sim),
+              '<div class="btns"><button type="button" class="btn primary" data-act="run">' +
+                esc(L.sim.rerun) +
+                '</button></div>',
+            );
           if (r.errors.length) h += '<p class="warn">' + esc(L.sim.error(r.errors[0])) + '</p>';
-          if (two) h += legend();
-          if (s.modes.length > 1) {
-            const metric = state.simMetric,
-              val = (m, set) => {
-                const v = avgOf(cells[m] && cells[m]['*'] && cells[m]['*'][set], metric);
-                return metric === 'time' ? v / 60 : v;
-              };
-            h +=
-              '<article class="card"><h3>' +
-              esc(L.sim.chart) +
-              '</h3><div class="seg" data-act="metric">' +
-              Object.keys(L.sim.chartMetrics)
-                .map(k => segBtn(k, L.sim.chartMetrics[k], metric === k))
-                .join('') +
-              '</div>' +
-              lineChart(
-                s.modes.map(m => T.modeName(m)),
-                two
-                  ? [s.modes.map(m => val(m, 'now')), s.modes.map(m => val(m, 'exp'))]
-                  : [s.modes.map(m => val(m, 'now'))],
-              ) +
-              '</article>';
-          }
-          for (const m of s.modes)
-            if (cells[m]) h += '<div class="card">' + simTable(m, cells[m], s.crafts, two) + '</div>';
+          h += compareTable(v) + survivalCard(v);
+          // 기체별 · 자세히: 모드마다 지금 · 실험 두 표(R-037 그대로)
+          const cells = simAggregate(r);
+          h +=
+            '<details class="fold card"' +
+            (state.simDetail ? ' open' : '') +
+            '><summary>' +
+            esc(L.sim.detail) +
+            '</summary>' +
+            v.s.modes
+              .filter(m => cells[m])
+              .map(m => '<div>' + simTable(m, cells[m], v.s.crafts, v.two) + '</div>')
+              .join('') +
+            '</details>';
           host.innerHTML = h;
         }
         // 직접 입력 칸(STAGE N · n, 길이). 바뀌면 change 처리기가 정리해 다시 그린다
@@ -7394,86 +8851,27 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           '"' +
           off +
           ' /></label>';
+        // 위: 돌리기 줄(조건 한 줄 + 조건 칸 열기 + 돌리기). 조건 칸은 결과가 있으면 접힌 채
         function renderSim() {
           const s = state.sim,
             off = running ? ' disabled' : '',
             field = (label, html) =>
               '<div><span class="field-label">' + esc(label) + '</span>' + html + '</div>',
-            seg = (key, list, isOn, label) =>
+            seg = (key, list, isOn, label, lead = '') =>
               '<div class="seg" data-key="' +
               key +
               '">' +
+              lead +
               list.map(v => segBtn(v, label(v), isOn(v), off)).join('') +
               '</div>';
           let h =
-            '<div class="card">' +
-            field(
-              L.sim.modes,
-              seg(
-                'modes',
-                MODES,
-                v => s.modes.includes(v),
-                v => T.modeName(v),
-              ),
-            ) +
-            field(
-              L.sim.crafts,
-              seg(
-                'crafts',
-                CRAFTS,
-                v => s.crafts.includes(v),
-                v => T.craftName(v),
-              ),
-            ) +
-            field(
-              L.sim.launch,
-              seg(
-                'launch',
-                ['normal', 'super'],
-                v => s.launch === v,
-                v => L.sim.launches[v],
-              ),
-            ) +
-            field(
-              L.sim.stagePlan,
-              seg(
-                'stage',
-                SIM_STAGES,
-                v => s.stage === v,
-                v => L.sim.stages[v],
-              ) +
-                (s.stage === 'none'
-                  ? ''
-                  : '<div class="num-row">' +
-                    (s.stage === 'rush' ? numField('sim-rush', L.sim.rushTo, s.rushTo, off) : '') +
-                    numField('sim-per', L.sim.perMin, s.perMin, off) +
-                    '</div>'),
-            ) +
-            field(
-              L.sim.minutes,
-              seg('minutes', SIM_MINUTES, v => s.minutes === v, L.sim.minute) +
-                '<div class="num-row">' +
-                numField('sim-minutes', L.sim.minutesIn, s.minutes, off) +
-                '</div>',
-            ) +
-            field(
-              L.sim.seeds,
-              seg('seeds', SIM_SEEDS, v => s.seeds === v, L.sim.seedsOf),
-            ) +
-            field(
-              L.sim.autoGold,
-              seg('autoGold', [true, false], v => s.autoGold === v, raw),
-            ) +
-            field(
-              L.sim.tier,
-              seg(
-                'tier',
-                Array.from({ length: base.economy.incomeMax + 1 }, (x, i) => i),
-                v => s.tier === v,
-                String,
-              ),
-            ) +
-            '</div><div class="btns">' +
+            '<div class="card runbar"><p class="cond-line">' +
+            esc(condText(s)) +
+            '</p><div class="btns"><button type="button" class="btn small" data-act="cond" aria-expanded="' +
+            state.simOpen +
+            '">' +
+            esc(state.simOpen ? L.sim.condOpen : L.sim.condClosed) +
+            '</button>' +
             (running
               ? '<button type="button" class="btn" data-act="stop">' + esc(L.sim.stop) + '</button>'
               : '<button type="button" class="btn primary" data-act="run">' +
@@ -7481,7 +8879,85 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
                 '</button>') +
             '</div><div id="sim-progress"' +
             (running ? '' : ' hidden') +
-            '><div class="progress"><div></div></div><p class="note"></p></div>' +
+            '><div class="progress"><div></div></div><p class="note"></p></div></div>';
+          if (state.simOpen)
+            h +=
+              '<div class="card">' +
+              field(
+                L.sim.modes,
+                seg(
+                  'modes',
+                  MODES,
+                  v => s.modes.includes(v),
+                  v => T.modeName(v),
+                  '<button type="button" data-act="all" aria-pressed="' +
+                    (s.modes.length === MODES.length) +
+                    '"' +
+                    off +
+                    '>' +
+                    esc(L.sim.all) +
+                    '</button>',
+                ),
+              ) +
+              field(
+                L.sim.crafts,
+                seg(
+                  'crafts',
+                  CRAFTS,
+                  v => s.crafts.includes(v),
+                  v => T.craftName(v),
+                ),
+              ) +
+              field(
+                L.sim.launch,
+                seg(
+                  'launch',
+                  ['normal', 'super'],
+                  v => s.launch === v,
+                  v => L.sim.launches[v],
+                ),
+              ) +
+              field(
+                L.sim.stagePlan,
+                seg(
+                  'stage',
+                  SIM_STAGES,
+                  v => s.stage === v,
+                  v => L.sim.stages[v],
+                ) +
+                  (s.stage === 'none'
+                    ? ''
+                    : '<div class="num-row">' +
+                      (s.stage === 'rush' ? numField('sim-rush', L.sim.rushTo, s.rushTo, off) : '') +
+                      numField('sim-per', L.sim.perMin, s.perMin, off) +
+                      '</div>'),
+              ) +
+              field(
+                L.sim.minutes,
+                seg('minutes', SIM_MINUTES, v => s.minutes === v, L.sim.minute) +
+                  '<div class="num-row">' +
+                  numField('sim-minutes', L.sim.minutesIn, s.minutes, off) +
+                  '</div>',
+              ) +
+              field(
+                L.sim.seeds,
+                seg('seeds', SIM_SEEDS, v => s.seeds === v, L.sim.seedsOf),
+              ) +
+              field(
+                L.sim.autoGold,
+                seg('autoGold', [true, false], v => s.autoGold === v, raw),
+              ) +
+              field(
+                L.sim.tier,
+                seg(
+                  'tier',
+                  Array.from({ length: base.economy.incomeMax + 1 }, (x, i) => i),
+                  v => s.tier === v,
+                  String,
+                ),
+              ) +
+              '</div>';
+          h +=
             (fallbackMode ? '<p class="note">' + esc(L.sim.fallback) + '</p>' : '') +
             '<div id="sim-results"></div><p class="note">' +
             esc(L.sim.note) +
@@ -7490,17 +8966,29 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           renderSimResults();
           updateProgress();
         }
+        // 조건이 바뀜: 판 수 · 옛 결과 판정이 달라지므로 요약도 다시
+        function simChanged() {
+          dirty.add('save');
+          dirty.add('economy');
+          renderSummary();
+          renderSim();
+          saveDraft();
+        }
         $('tab-sim').addEventListener('click', e => {
           if (e.target.closest('[data-act="run"]')) return runSim();
           if (e.target.closest('[data-act="stop"]')) {
             if (running) running.stop();
             return;
           }
-          const m = e.target.closest('[data-act="metric"] button');
-          if (m) {
-            state.simMetric = m.dataset.v;
-            renderSimResults();
+          if (e.target.closest('[data-act="cond"]')) {
+            state.simOpen = !state.simOpen;
+            renderSim();
             return saveDraft();
+          }
+          if (e.target.closest('[data-act="all"]')) {
+            if (running) return;
+            state.sim.modes = MODES.slice();
+            return simChanged();
           }
           const b = e.target.closest('.seg[data-key] button');
           if (!b || running) return;
@@ -7518,18 +9006,21 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           } else if (key === 'autoGold') s.autoGold = v === 'true';
           else if (key === 'launch' || key === 'stage') s[key] = v;
           else s[key] = Number(v);
-          dirty.add('save');
-          renderSim();
-          saveDraft();
+          simChanged();
         });
-
+        // 기체별 · 자세히 접는 칸: 다시 그려도 열린 채로
+        $('tab-sim').addEventListener(
+          'toggle',
+          e => {
+            if (e.target.matches('details.fold')) state.simDetail = e.target.open;
+          },
+          true,
+        );
         $('tab-sim').addEventListener('change', e => {
           const key = { 'sim-rush': 'rushTo', 'sim-per': 'perMin', 'sim-minutes': 'minutes' }[e.target.id];
           if (!key || running) return;
           state.sim = cleanSim({ ...state.sim, [key]: e.target.value });
-          dirty.add('save');
-          renderSim();
-          saveDraft();
+          simChanged();
         });
 
         // ── 저장 탭 ──
@@ -7544,15 +9035,23 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             .map((json, i) => {
               const r = parsedSaved(json);
               if (!r.ok) return '';
-              const sc = r.scenario;
+              const sc = r.scenario,
+                res = sc.results && sc.results.sim,
+                n = validResults(res) ? res.runs.length : 0,
+                // 그 시나리오의 바꾼 값 · 조건 · 지금 지문과 비교(R-068)
+                old =
+                  n > 0 &&
+                  !Lab.simStatus(res, { base, changes: sc.changes, settings: cleanSim(sc.sim) }).fresh;
               return (
                 '<div class="saved-item"><div><b>' +
                 esc(sc.name) +
                 '</b><small>' +
                 esc(
                   (sc.savedAt ? dateText(sc.savedAt) + ' · ' : '') +
-                    L.changed(Object.keys(sc.changes).length),
+                    L.changed(Object.keys(sc.changes).length) +
+                    (n ? ' · ' + L.save.simRuns(n) : ''),
                 ) +
+                (old ? '<span class="chip-old">' + esc(L.save.staleChip) + '</span>' : '') +
                 '</small></div><div class="btns"><button type="button" class="btn small" data-act="open" data-i="' +
                 i +
                 '">' +
@@ -7586,10 +9085,18 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
               '</button></div></article>';
           }
           for (const n of state.notices) h += '<p class="warn">' + esc(n) + '</p>';
+          const v = simView();
           h +=
             '<h2>' +
             esc(L.save.current) +
-            '</h2><div class="card"><label><span class="field-label">' +
+            '</h2>' +
+            (v && !v.running && !v.fresh
+              ? staleCard(
+                  staleLines(v.status, v.s, state.sim),
+                  '<p class="note">' + esc(L.save.staleNote) + '</p>',
+                )
+              : '') +
+            '<div class="card"><label><span class="field-label">' +
             esc(L.save.name) +
             '</span><input class="text" id="s-name" maxlength="60" autocomplete="off" value="' +
             esc(state.name) +
@@ -7765,85 +9272,132 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           toast(ok ? L.save.copied : L.save.copyFail);
         }
 
-        // ── 글 복사: 바꾼 값 목록 + 핵심 결과(에이전트가 balance.js에 반영할 때 본다) ──
+        // ── 글 복사: 에이전트가 읽는 순서(머리 → 옛 결과 → 바꾼 값 → 경고 → 경제 분당 → 자동 판) ──
+        // 변화 글자: '+6%', 흔들림 안이면 '+3%, 흔들림'
+        const changeNote = c =>
+          c.text === '·' || c.text === '—' ? '' : c.text + (c.wobble ? ', ' + L.text.wobble : '');
         function exportText() {
           const list = changeList(),
-            out = [
-              L.text.head(state.name || Lab.makeScenario({}, base, {}).name),
-              L.text.meta(VERSION, base.name, dateText(Date.now())),
-              list.length ? L.text.changes(list.length) : L.text.none,
-            ];
-          for (const a of list)
-            out.push('- ' + a.path + ' (' + L.label(a.path) + '): ' + raw(a.from) + ' → ' + raw(a.to));
+            v = simView(),
+            stale = v && !v.running && !v.fresh ? staleLines(v.status, v.s, state.sim) : null,
+            out = [L.text.head(state.name || Lab.makeScenario({}, base, {}).name)];
+          if (stale) out.push(L.text.stale(stale[0], stale.length - 1));
+          out.push(
+            L.text.meta(VERSION, base.name, dateText(Date.now())),
+            list.length ? L.text.changes(list.length) : L.text.none,
+          );
+          for (const a of list) {
+            const t = Lab.impacts(a.path).map(x => L.values.tags[x]);
+            out.push(
+              '- ' +
+                a.path +
+                ' (' +
+                L.label(a.path) +
+                '): ' +
+                raw(a.from) +
+                ' → ' +
+                raw(a.to) +
+                (t.length ? ' [' + t.join(' · ') + ']' : ''),
+            );
+          }
+          const warns = warnings();
+          if (warns.length) {
+            out.push('', L.text.warnings);
+            for (const w of warns) out.push('- ' + w.head + ': ' + w.text);
+          }
           const E = exp(),
             lines = econLines();
           if (list.length && lines.length) {
             out.push('', L.text.economy(L.economy.sources[state.source]));
-            for (const l of lines) {
-              const a = Lab.summarize(base, l.rows),
-                b = Lab.summarize(E, l.rows);
+            for (const raw0 of lines) {
+              const l = econLine(raw0, E),
+                pm = (k, d) => pairText(l.pm.now[k], l.pm.exp[k], d);
               out.push(
                 '- ' +
                   l.title +
                   ' (' +
                   l.sub +
                   '): ' +
-                  pairText(a.perRun.gold.total, b.perRun.gold.total, 0) +
-                  ' · ' +
-                  L.economy.perMinute +
-                  ' ' +
-                  pairText(a.perMinute.gold, b.perMinute.gold, 1) +
-                  ' · ' +
-                  L.economy.blue +
-                  ' ' +
-                  pairText(a.perRun.blue, b.perRun.blue, 1) +
-                  (a.perRun.blueCoin || b.perRun.blueCoin
-                    ? ' (' +
-                      L.economy.blueParts.coinShort +
-                      ' ' +
-                      pairText(a.perRun.blueCoin, b.perRun.blueCoin, 2) +
-                      ')'
-                    : ''),
+                  [
+                    L.economy.pm.gold + ' ' + pm('gold', 1),
+                    L.economy.pm.blue + ' ' + pm('blue', 2),
+                    L.economy.pm.super + ' ' + pm('super', 2),
+                    L.text.perRun(
+                      pairText(l.perRunGold.now, l.perRunGold.exp, 0),
+                      time(l.len.now * 60) + (l.len.k !== 1 ? ' → ' + time(l.len.exp * 60) : ''),
+                      l.len.src +
+                        (l.len.k !== 1 ? ' · ' + L.economy.lenSrc.sim(change(1, l.len.k).text) : ''),
+                    ),
+                  ].join(' · '),
               );
             }
           }
-          const r = state.simResults;
-          if (validResults(r) && r.runs.length) {
-            const s = r.settings,
-              cells = simAggregate(r),
-              two = r.sets.includes('exp'),
-              desc = [
-                s.modes.map(m => T.modeName(m)).join('·'),
-                s.crafts.map(c => T.craftName(c)).join('·'),
-                L.sim.launches[s.launch],
-                L.sim.minute(s.minutes),
-                L.sim.stageText(s.stage, s.rushTo ?? Sim.RUSH.to, s.perMin ?? 1),
-                L.sim.seedsOf(s.seeds),
-              ].join(' · ');
-            out.push('', L.text.sim(desc) + (r.key !== simKey() ? ' — ' + L.sim.stale : ''));
-            for (const m of s.modes)
-              for (const c of [...s.crafts, '*']) {
-                const cell = cells[m] && cells[m][c];
+          if (v) {
+            const s = v.s,
+              cells = simAggregate(v.r);
+            out.push('', L.text.sim(condText(s)) + (stale ? L.text.simStale : ''));
+            for (const row of v.table) {
+              const a = row.now,
+                b = row.exp;
+              if (!a) continue;
+              const parts = SIG_KEYS.map(k => {
+                const x = CMP_SHOW[k](a[k], a);
+                if (!b || row.same) return L.sim.cmp[k] + ' ' + x;
+                const c = change(a[k], b[k], {
+                    pp: k === 'full',
+                    sure: row.sig[k].sure,
+                    same: row.sig[k].same,
+                  }),
+                  note = changeNote(c),
+                  y = CMP_SHOW[k](b[k], b);
+                return L.sim.cmp[k] + ' ' + (x === y ? x : x + ' → ' + y) + (note ? '(' + note + ')' : '');
+              });
+              out.push('- ' + L.text.average(row.mode) + ': ' + parts.join(' · '));
+              // 생존 곡선: 5분마다(길이 안만)
+              const surv = set =>
+                  Lab.survival(
+                    v.r.runs
+                      .filter(r => r.set === set && r.mode === row.mode)
+                      .map(r => ({ time: r.time, full: r.reason === 'time' })),
+                    s.minutes,
+                  ),
+                sn = surv('now'),
+                se = v.two ? surv('exp') : null,
+                pct = x => (Number.isFinite(x) ? Math.round(x * 100) + '%' : '—'),
+                marks = [5, 10, 15, 20].filter(m => m <= s.minutes);
+              // 길이가 5의 배수가 아니면 끝 분도(3분 판이면 3분)
+              if (s.minutes % 5 && s.minutes < 20) marks.push(s.minutes);
+              if (marks.length)
+                out.push(
+                  '  ' +
+                    L.text.survival(
+                      marks
+                        .map(m =>
+                          L.text.survAt(m, pct(sn[m]), se && pct(se[m]) !== pct(sn[m]) ? pct(se[m]) : null),
+                        )
+                        .join(' · '),
+                    ),
+                );
+              for (const c of s.crafts) {
+                const cell = cells[row.mode] && cells[row.mode][c];
                 if (!cell) continue;
                 out.push(
-                  '- ' +
-                    T.modeName(m) +
-                    ' · ' +
-                    (c === '*' ? L.sim.average : T.craftName(c)) +
+                  '  · ' +
+                    T.craftName(c) +
                     ': ' +
                     simFields
                       .map(([k, d]) => {
-                        const a = simValue(cell.now, k, d),
-                          b = two ? simValue(cell.exp, k, d) : a;
-                        return L.sim.cols[k] + ' ' + (a === b ? a : a + ' → ' + b);
+                        const x = simValue(cell.now, k, d),
+                          y = v.two ? simValue(cell.exp, k, d) : x;
+                        return L.sim.cols[k] + ' ' + (x === y ? x : x + ' → ' + y);
                       })
                       .join(' · '),
                 );
               }
+            }
           }
           return out.join('\n');
         }
-
         // ── 시작 ──
         $('sub').textContent = L.sub(VERSION, base.name);
         document.querySelector('.tabs').addEventListener('click', e => {
@@ -7856,7 +9410,10 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           setTab('values');
         });
         syncChip();
+        renderSummary();
         setTab(state.tab);
+        // 기록 출처를 처음부터 읽는다(요약 순위 경고 · 생존 곡선 기록 점선 · 판 길이)
+        loadRecords(recSrc());
       })();
     </script>
   </body>

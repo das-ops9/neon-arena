@@ -6163,6 +6163,43 @@ return Plotly;
       tabs: { values: '값', difficulty: '난이도', economy: '경제', sim: '자동 판', save: '저장' },
       now: '지금',
       exp: '실험',
+      // 요약 칸(R-068): 모든 탭 맨 위. 경고 줄 · 영향 표(4줄 × 모드) · 출처 한 줄
+      summary: {
+        title: '요약',
+        rows: { time: '생존', point: point.name, gold: G + '/분', blue: BL + '/분' },
+        empty: '바꾼 값이 없습니다. 값 탭에서 바꾸면 여기에 영향이 보입니다.',
+        heads: { stale: '옛 결과', rank: ranking.name, hint: '자동 판' },
+        stale: n => '자동 판 결과가 지금 값과 다릅니다(차이 ' + n + '개) · 자동 판 탭에서 다시 돌리기 ›',
+        hint: '생존은 자동 판을 돌리면 보입니다 ›',
+        unlockHead: mode => modeName(mode) + ' 해금',
+        // (Hard 한 판 500,000 Point) 처치 Point −36%(식) · 자동 판 도달 9/9 → 5/9 → 더 어려워짐
+        unlockParts: u =>
+          [
+            u.time ? timeString(u.time) : '',
+            u.score ? num(u.score) + ' ' + point.name : '',
+            u.level ? levelShort(u.level) : '',
+          ].filter(Boolean),
+        unlockCond: (from, parts) => modeName(from) + ' 한 판 ' + parts.join(' · '),
+        unlock: (cond, bits, dir) => '(' + cond + ') ' + bits.join(' · ') + ' → ' + dir,
+        pointBit: d => '처치 ' + point.name + ' ' + d + '(식)',
+        condBit: (a, b) => '조건 ' + a + ' → ' + b,
+        reachBit: (a, n, b, m) => '자동 판 도달 ' + a + '/' + n + ' → ' + b + '/' + m,
+        dirs: { harder: '더 어려워짐', easier: '더 쉬워짐', changed: '바뀜' },
+        rank: (list, dir) =>
+          'TOP3 기록의 모드에서 같은 플레이 ' +
+          point.name +
+          ' ' +
+          list +
+          '(식) → 새 판이 옛 TOP3를 넘기 ' +
+          dir,
+        rankDirs: { harder: '어려움', easier: '쉬움', mixed: '모드마다 다름' },
+        simDesc: (minutes, crafts, seeds) => minutes + '분 · 기체 ' + crafts + ' · 판 × ' + seeds,
+        srcSim: desc => '생존 · ' + point.name + ': 자동 판(' + desc + '). ',
+        srcNoSim: '생존: 자동 판을 돌리면 보입니다. ≈ ' + point.name + ': 처치 ' + point.name + ' 식. ',
+        srcRunning: (done, total) => '자동 판 도는 중 ' + done + '/' + total + '. ',
+        srcEcon: source => G + ' · ' + BL + ': ' + source + ' 줄 식. ',
+        srcColors: '초록 유리 · 빨강 불리 · 회색은 판마다 흔들리는 범위 안.',
+      },
       groups,
       rows,
       column,
@@ -6173,8 +6210,8 @@ return Plotly;
         onlyChanged: '바꾼 값만',
         resetAll: '모두 되돌리기',
         reset: '되돌리기',
-        tagCalc: '경제',
-        tagDifficulty: '난이도',
+        // 영향 태그(R-068): 값 탭 줄 · 요약 칸 · 글 복사가 같은 이름(규칙은 lab-core IMPACTS)
+        tags: { difficulty: '난이도', economy: '경제', point: point.name, unlock: '해금' },
         note: "값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다.",
         was: v => '지금 ' + v,
         invalid: '0 이상의 숫자',
@@ -6210,6 +6247,19 @@ return Plotly;
         reading: '기록을 읽는 중…',
         presetNote:
           "예시 숫자입니다. '자세히'에서 조건을 바꿀 수 있고, 기록을 고르면 이 폰의 실제 판으로 바뀝니다.",
+        // 분당이 기준(R-068). 판 길이 = 이 기기 기록 평균(없으면 예시), 실험은 자동 판 생존 변화 비율만큼
+        note:
+          '분당 ' +
+          G +
+          ' · ' +
+          BL +
+          ' · ' +
+          SC +
+          '가 기준입니다. 판당 = 분당 × 판 길이. 판 길이는 이 기기 기록 평균(없으면 예시)이고, 실험 값의 판 길이는 자동 판 생존 변화만큼 늘거나 줄입니다.',
+        pm: { gold: G + ' / 분', blue: BL + ' / 분', super: SC + ' / 분' },
+        perRunGold: '판당 ' + G,
+        runLength: '판 길이',
+        lenSrc: { records: n => '기록 ' + n + '판', preset: '예시', sim: d => '자동 판 ' + d },
         recordNote: (n, skipped) =>
           '이 폰의 기록 ' +
           n +
@@ -6231,13 +6281,11 @@ return Plotly;
         group: (mode, launch) => modeName(mode) + (launch === 'super' ? ' · ' + SC + ' 출격' : ''),
         runs: (n, time) => n + '판 · 평균 ' + time,
         brief: (time, lv, boss) => time + ' · LV' + lv + ' · 보스 ' + boss,
-        perRun: '판당 ' + G,
-        perMinute: '분당 ' + G,
+        goldMark: G,
         blue: BL,
         // B 내역(R-043): LV 보상 · B 코인 칸
-        blueParts: { level: 'LV 보상', coin: BL + ' 코인', coinShort: '코인' },
+        blueParts: { level: 'LV 보상', coin: BL + ' 코인' },
         super: SC,
-        superCost: n => '출격 −' + n,
         details: '자세히',
         gold: {
           minute: '분 보상',
@@ -6248,8 +6296,9 @@ return Plotly;
           cat: '고양이',
           total: '합계',
         },
-        actual: '실제로 받은 값(판당)',
-        goalsTitle: '목표까지 판 수',
+        actual: '실제로 받은 값(분당)',
+        perMinuteTitle: '분당 내역',
+        goalTimeTitle: '목표까지 플레이 시간',
         goals: {
           income: '수입 단계 전부',
           auto: auto.short,
@@ -6259,9 +6308,17 @@ return Plotly;
           catUnlock: '고양이 모두 해금',
           catMax: '고양이 1마리 Lv5',
           permaMax: '영구 스택 전부 MAX',
+          buffRegen: () => buffs.regen.name + ' 버프 1번(' + buffs.cost('regen') + ')',
+          buffRevive: () => buffs.revive.name + ' 버프 1번(' + buffs.cost('revive') + ')',
         },
-        never: '불가',
-        runsOf: n => n + '판',
+        goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
+        // 플레이 시간 표기: 'n분' · 'n시간 m분'
+        duration: m =>
+          m === Infinity
+            ? '불가'
+            : m < 60
+              ? Math.ceil(m) + '분'
+              : Math.floor(m / 60) + '시간' + (Math.round(m % 60) ? ' ' + Math.round(m % 60) + '분' : ''),
         conditions: '조건',
         fields: {
           minutes: '분',
@@ -6307,8 +6364,54 @@ return Plotly;
         run: n => '돌리기 · 판 ' + n + '개',
         stop: '멈추기',
         progress: (done, total) => done + ' / ' + total + '판',
-        stale: '값이나 조건이 바뀌었습니다 · 다시 돌려 보세요',
         none: "아직 돌린 판이 없습니다. 조건을 고르고 '돌리기'를 누르세요.",
+        // 돌리기 줄(R-068): 조건 한 줄 + 조건 칸 열기
+        condLine: (modes, crafts, launch, minutes, stagePlan, seeds) =>
+          [
+            modes,
+            '기체 ' + crafts,
+            launch,
+            minutes + '분',
+            stage.upper + ' ' + stagePlan,
+            '판 × ' + seeds,
+          ].join(' · '),
+        allModes: n => '모드 ' + n,
+        condOpen: '조건 ▴',
+        condClosed: '조건 ▾',
+        all: '모두',
+        // 옛 결과 칸: 결과를 돌린 값 · 조건이 지금과 다름
+        staleTitle: '⚠ 이 결과는 지금 값과 다른 값으로 돌렸습니다',
+        staleBase: (ran, now) =>
+          'balance.js 지금 값이 ' +
+          (ran && ran !== now ? ran + ' → ' + now + josa(now, '으로/로') + ' ' : '') +
+          '바뀜',
+        staleUnknown: '어느 값으로 돌렸는지 알 수 없는 옛 결과',
+        staleValue: (name, ran, now) => name + ': 결과 ' + ran + ' → 지금 ' + now,
+        staleSetting: (name, ran, now) => '조건 ' + name + ': 결과 ' + ran + ' → 지금 ' + now,
+        staleMore: n => '외 ' + n + '개',
+        rerun: '다시 돌리기',
+        // 모드 비교 한 표
+        compare: '모드 비교 · 평균',
+        cmp: {
+          time: '생존',
+          level: 'LV',
+          full: '끝까지',
+          ppm: point.name + '/분',
+          gpm: G + '/분',
+          bpm: BL + '/분',
+        },
+        same: '같음',
+        cmpNote:
+          '칸: 지금(작게) · 실험(보라) · 변화. 회색 변화는 판마다 흔들리는 범위 안. 생존 + = 모든 판이 끝까지.',
+        // 생존 곡선
+        survival: '생존 곡선 · 분마다 살아 있는 판',
+        legendReal: '기록',
+        legendSiege: '포위',
+        survHead: (n, avg) => '기록 ' + n + '판' + (n ? ' · 평균 ' + avg : ''),
+        survOld: '옛 값 기록 포함',
+        survNote:
+          '가로 = 분, 세로 = 그때 살아 있는 판 비율. 점선은 이 기기 기록(판이 끝난 시각). 봇은 사람보다 약합니다.',
+        detail: '기체별 · 자세히(' + stage.upper + ' · 보스 · 판당 ' + point.name + ' · 판당 ' + G + ')',
         cols: {
           craft: '기체',
           time: '생존',
@@ -6322,14 +6425,6 @@ return Plotly;
           blue: BL,
         },
         average: '평균',
-        chart: '모드별 평균',
-        chartMetrics: {
-          time: '생존',
-          level: 'LV',
-          stage: stage.upper,
-          score: '판당 Point',
-          gold: '판당 ' + G,
-        },
         error: msg => '판이 멈췄습니다: ' + msg,
         timeout: '너무 오래 걸려 끊었습니다',
         note: '자동 조작은 사람보다 단순하게 피하므로 결과는 경향만 봅니다. 같은 판도 기기마다 몇 분 뒤 갈라질 수 있어 판 수를 늘려 평균으로 봅니다. 끝까지 = 길이 끝까지 버틴 판 수. 확정은 balance.js에 반영한 뒤 /test/에서 직접 플레이로 합니다.',
@@ -6365,15 +6460,34 @@ return Plotly;
         paste: '시나리오 글 붙여 넣기',
         pasteHint: '에이전트가 대화로 준 시나리오 글(JSON)을 붙여 넣으세요',
         pasteOpen: '붙여 넣은 시나리오 열기',
+        // 옛 결과(R-068): 지금 상태 · 저장 목록
+        staleNote: '저장 · 글 복사에 옛 결과로 표시됩니다. 자동 판 탭에서 다시 돌리면 없어집니다.',
+        simRuns: n => '자동 판 ' + n + '판',
+        staleChip: '결과 · 옛 값',
+        trimmed: n =>
+          '저장 공간을 비우려고 오래된 시나리오 ' + n + '개의 자동 판 결과를 뺐습니다(바꾼 값은 그대로).',
       },
-      // 글 복사: 에이전트에게 넘기는 글
+      // 글 복사: 에이전트에게 넘기는 글(읽는 순서: 머리 → 옛 결과 → 바꾼 값 → 경고 → 경제 → 자동 판)
       text: {
         head: name => '[NEON 실험실] ' + name,
+        stale: (first, more) =>
+          '⚠ 자동 판 결과는 옛 값으로 돌린 것: ' +
+          first +
+          (more ? '(외 ' + more + '개)' : '') +
+          ' — 이 결과로 반영을 판단하지 않는다',
         meta: (version, balance, date) => '게임 ' + version + ' · 지금 값 ' + balance + ' · ' + date,
         changes: n => '바꾼 값 ' + n + '개',
         none: '바꾼 값 없음',
-        economy: source => '경제(' + source + ' · 판당 ' + G + ' 지금 → 실험)',
+        warnings: '경고',
+        economy: source => '경제(분당 · ' + source + ' · 지금 → 실험)',
+        // 판당 G 428 → 453(판 길이 25:10 · 기록 3판)
+        perRun: (pair, len, src) => '판당 ' + G + ' ' + pair + '(판 길이 ' + len + ' · ' + src + ')',
         sim: desc => '자동 판(' + desc + ' · 지금 → 실험)',
+        simStale: ' — ⚠ 옛 결과',
+        average: mode => modeName(mode) + ' 평균',
+        wobble: '흔들림',
+        survival: list => '생존 곡선: ' + list,
+        survAt: (m, a, b) => m + '분 ' + a + (b === null ? '' : ' → ' + b),
       },
     };
   })();
