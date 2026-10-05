@@ -263,10 +263,10 @@
   }
 }
 /* 세로 전체 화면(설정 '전체 화면'): 삼성 인터넷은 앞 카메라 자리를 화면 밖 흰 띠로 비워 두지만, 바로 아래는
-   로고 줄이 카메라에 너무 붙어 보인다. 위 안전 영역을 최소 8px 둔다(R-053, 편집장: 0은 너무 가깝고 28px는 너무 멂 → 30%) */
+   로고 줄이 카메라에 너무 붙어 보인다. 위 안전 영역을 최소 9px 둔다(R-053, 편집장: 0은 너무 가깝고 28px는 너무 멂 → 30% → 1px 더) */
 @media (orientation: portrait) {
   :root:fullscreen {
-    --safe-t: max(env(safe-area-inset-top, 0px), 8px);
+    --safe-t: max(env(safe-area-inset-top, 0px), 9px);
   }
 }
 
@@ -440,6 +440,12 @@ ul {
   .nb-spark {
     animation: none !important;
   }
+}
+/* 게임 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, app.js가 body[data-fx]를 정한다) */
+body[data-fx='low'] .nb-shine,
+body[data-fx='low'] .nb-aura,
+body[data-fx='low'] .nb-spark {
+  animation: none !important;
 }
 
       /* NEON ARENA v4 화면 부품. 배치는 모두 흐름·그리드로 하고 고정 좌표를 쓰지 않는다(UI 계약).
@@ -905,6 +911,10 @@ ul {
   .title-start::after {
     animation: none;
   }
+}
+/* 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, 편집장 A) */
+body[data-fx='low'] .title-start::after {
+  animation: none;
 }
 /* 가로 화면(높이 520px 이하, '깨지지 않음'만): 그림 왼쪽 | 로고 · START 오른쪽 */
 @media (orientation: landscape) and (max-height: 520px) {
@@ -2525,6 +2535,13 @@ p.cat-note {
     display: none;
   }
 }
+/* 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, 편집장 A) */
+body[data-fx='low'] .alert--shine {
+  animation: none;
+}
+body[data-fx='low'] .alert--shine::after {
+  display: none;
+}
 .alert--next {
   opacity: 0.45;
   font-size: min(0.9375rem, 16px);
@@ -2583,6 +2600,10 @@ p.cat-note {
   .se {
     animation: none;
   }
+}
+/* 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, 편집장 A) */
+body[data-fx='low'] .se {
+  animation: none;
 }
 .notice {
   max-width: 100%;
@@ -2669,6 +2690,10 @@ body[data-pad='left'] .action-row {
   .action.is-flash::after {
     animation: none;
   }
+}
+/* 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, 편집장 A) */
+body[data-fx='low'] .action.is-flash::after {
+  animation: none;
 }
 .action--dash {
   color: var(--cyan);
@@ -2779,6 +2804,14 @@ body[data-pad='left'] .action-row {
   .intro-title::after {
     display: none;
   }
+}
+/* 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, 편집장 A) */
+body[data-fx='low'] .intro-title,
+body[data-fx='low'] .intro-count.is-pop {
+  animation: none;
+}
+body[data-fx='low'] .intro-title::after {
+  display: none;
 }
 .overlay {
   position: fixed;
@@ -3546,17 +3579,17 @@ body[data-fx='low'] .boss-warn.is-on {
       globalThis.NEON_NS = "-test";
     </script>
     <script>
-      // 오프닝(R-058, I-02): 이 기기에서 4단계 빌드를 처음 열 때 한 번, 인트로 화면 위 약 5초(시간표는 ui.css).
+      // 오프닝(R-058, I-02): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 5초(시간표는 ui.css).
       // 첫 화면을 그리기 전에 여기서 정한다(app.js는 문서 끝이라 기다리면 인트로 화면이 먼저 보였다가 바뀐다).
-      // 조건은 app.js 설정 읽기와 같다: ?debug 아님 · 설정 openingSeen 없음 · '흔들림 · 번쩍임 줄이기' · 기기 '동작 줄이기' 아님.
-      // 화면을 누르면 바로 끝, 끝은 START 등장(open-fade)이 끝날 때. 본 것으로 적기(openingSeen)는 app.js
+      // 조건은 app.js 설정 읽기와 같다: ?debug 아님 · '흔들림 · 번쩍임 줄이기' 꺼짐 · 기기 '동작 줄이기' 아님.
+      // 화면을 누르면 바로 끝(그 터치가 첫 소리도 깨운다), 끝은 START 등장(open-fade)이 끝날 때
       (() => {
         try {
           if (/[?&]debug\b/.test(location.search)) return;
           const ns = typeof globalThis.NEON_NS === 'string' ? globalThis.NEON_NS : '',
             p = JSON.parse(localStorage.getItem('neon-endless-prefs-v2' + ns) || 'null'),
             reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-          if (p?.openingSeen === true || (p ? p.motion !== true : false) || reduced) return;
+          if ((p ? p.motion !== true : false) || reduced) return;
           const screen = document.getElementById('title-screen'),
             end = () => screen.classList.remove('is-opening');
           screen.classList.add('is-opening');
@@ -13370,7 +13403,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.5.0',
+  const VERSION = '4.5.1',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -21047,8 +21080,6 @@ let prefs = {
     vibrate: true,
     // 대시 · 충격파 버튼 위치(R-031): 'center'(기본) | 'right' | 'left'. 이 기기 설정(백업 대상 아님)
     pad: 'center',
-    // 오프닝(R-058): 이 기기에서 한 번 판단했으면 true(보였든 안 보였든). 이 기기 설정
-    openingSeen: false,
     auto: false,
     autoGold: false,
     craft: 'striker',
@@ -21066,7 +21097,6 @@ try {
     prefs.numbers = p.numbers !== false;
     prefs.vibrate = p.vibrate !== false;
     prefs.pad = ['center', 'right', 'left'].includes(p.pad) ? p.pad : 'center';
-    prefs.openingSeen = p.openingSeen === true;
     prefs.auto = p.auto === true;
     prefs.autoGold = p.autoGold === true;
     if (Neon.CRAFTS[p.craft]) prefs.craft = p.craft;
@@ -21075,12 +21105,15 @@ try {
   const old = JSON.parse(localStorage.getItem('neon-arena-last-signal-v1' + NS) || 'null');
   legacy = Number(old?.best) || 0;
 } catch {}
-// 오프닝(R-058, I-02): 연출(별 → 고양이 → 로고 → START, 소리 없음)은 shell.html이 첫 화면 전에 같은 조건으로 붙인다.
-// 여기서는 인트로 화면을 연 기기를 '판단함'으로 적는다(보였든 줄이기라 안 보였든 다음부터 없음)
-if (titleOn && !prefs.openingSeen) {
-  prefs.openingSeen = true;
-  savePrefs();
+// 오프닝(R-058, I-02): 앱을 열 때마다 인트로 화면 위 약 5초(별 → 고양이 → 로고 → START). shell.html이 첫 화면 전에 붙인다.
+// 첫 소리(R-051 · Q97, R-060): 브라우저는 손짓 전에 소리를 막는다. 그래서 문서를 읽자마자 손짓 듣기를 걸어 첫 터치
+// (오프닝을 건너뛰는 터치 포함)가 늘 소리 장치를 깨우고 지금 곡을 튼다(손짓이 있어야 다시 켜지는 아이폰도 이 길로).
+// 첫 손짓이 START면 곧바로 대기실 곡으로 넘어간다. 부팅 끝에는 손짓 없이도 한 번 깨워 본다(브라우저가 허락하면 바로 음악)
+function wakeSound() {
+  if (prefs.music || prefs.sfx) NeonMusic.unlock();
 }
+for (const type of ['pointerup', 'touchend', 'click', 'keydown'])
+  document.addEventListener(type, wakeSound, { capture: true, passive: true });
 // 버튼 위치는 body의 data-pad로 HUD 배치 규칙(ui.css)을 고른다
 function applyPad() {
   if (document.body.dataset.pad !== prefs.pad) document.body.dataset.pad = prefs.pad;
@@ -22387,14 +22420,7 @@ function bind() {
   window.addEventListener('pagehide', checkpoint);
   window.addEventListener('pagehide', () => NeonMusic.suspend());
   window.addEventListener('pageshow', () => NeonMusic.resume());
-  // 첫 소리(R-051, Q97): 브라우저는 손짓 전에 소리를 막는다. 인트로 화면은 조용히 시작하고, 손짓마다 소리 장치를
-  // 깨워 지금 곡을 튼다(손짓이 있어야 다시 켜지는 아이폰도 이 길로). 첫 손짓이 START면 곧바로 대기실 곡으로 넘어간다
   $('boss-warn').addEventListener('animationend', hideBossWarn);
-  const wakeSound = () => {
-    if (prefs.music || prefs.sfx) NeonMusic.unlock();
-  };
-  for (const type of ['pointerup', 'touchend', 'click', 'keydown'])
-    document.addEventListener(type, wakeSound, { capture: true, passive: true });
   // 버튼 · 탭 소리(R-055): 메뉴 · 창의 누름. 전투 HUD · 레벨업 카드 · 코인 칸(강화 · 코인 소리) · 출격(판 시작 소리)은 뺀다
   const NO_TAP = '#hud, #upgrade-cards, #upgrade-coin, #start, #replay, #prep-launch';
   document.addEventListener(
@@ -23284,6 +23310,8 @@ async function boot() {
   if (titleOn) $('title-start').focus({ preventScroll: true });
   // 배경음악(R-051): 켜져 있으면 잠시 뒤 곡을 하나씩 미리 만든다(인트로 → 대기실 → 전투)
   NeonMusic.setEnabled(prefs.music && !MUSIC_OFF);
+  // 손짓 없이 한 번 깨워 본다(R-060): 허락하는 브라우저면 인트로 곡이 만들어지는 대로 나오고, 막으면 첫 터치를 기다린다
+  if (prefs.music && !MUSIC_OFF) NeonMusic.unlock();
   if (DEBUG)
     window.__neon = {
       g,

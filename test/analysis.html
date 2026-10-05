@@ -256,10 +256,10 @@
   }
 }
 /* 세로 전체 화면(설정 '전체 화면'): 삼성 인터넷은 앞 카메라 자리를 화면 밖 흰 띠로 비워 두지만, 바로 아래는
-   로고 줄이 카메라에 너무 붙어 보인다. 위 안전 영역을 최소 8px 둔다(R-053, 편집장: 0은 너무 가깝고 28px는 너무 멂 → 30%) */
+   로고 줄이 카메라에 너무 붙어 보인다. 위 안전 영역을 최소 9px 둔다(R-053, 편집장: 0은 너무 가깝고 28px는 너무 멂 → 30% → 1px 더) */
 @media (orientation: portrait) {
   :root:fullscreen {
-    --safe-t: max(env(safe-area-inset-top, 0px), 8px);
+    --safe-t: max(env(safe-area-inset-top, 0px), 9px);
   }
 }
 
@@ -433,6 +433,12 @@ ul {
   .nb-spark {
     animation: none !important;
   }
+}
+/* 게임 설정 '흔들림 · 번쩍임 줄이기'도 같다(R-056, app.js가 body[data-fx]를 정한다) */
+body[data-fx='low'] .nb-shine,
+body[data-fx='low'] .nb-aura,
+body[data-fx='low'] .nb-spark {
+  animation: none !important;
 }
 
     </style>
