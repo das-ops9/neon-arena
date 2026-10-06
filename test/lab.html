@@ -703,18 +703,44 @@ body[data-fx='low'] .nb-spark {
         gap: 8px;
         align-items: center;
       }
-      .v-check {
+      /* 찾기 칩(R-069): 영향 칩 4개(여럿 고르면 그중 하나라도) + '바꾼 값만'(그리고) */
+      .chips {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        min-height: 40px;
-        font-size: var(--fs-sm);
-        color: var(--ink-2);
+        flex-wrap: wrap;
+        gap: 6px;
       }
-      .v-check input {
-        width: 20px;
-        height: 20px;
-        accent-color: var(--violet);
+      .chip {
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line-strong);
+        background: var(--bg-raise);
+        color: var(--ink-2);
+        font-size: var(--fs-sm);
+      }
+      .chip[aria-pressed='true'] {
+        font-weight: 700;
+      }
+      .chip.t-difficulty[aria-pressed='true'] {
+        border-color: var(--blue);
+        color: var(--blue);
+        background: var(--blue-deep);
+      }
+      .chip.t-economy[aria-pressed='true'] {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: var(--gold-deep);
+      }
+      .chip.t-point[aria-pressed='true'] {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: var(--cyan-deep);
+      }
+      .chip.t-unlock[aria-pressed='true'],
+      .chip.only[aria-pressed='true'] {
+        border-color: var(--violet);
+        color: var(--exp);
+        background: var(--violet-deep);
       }
       .group {
         border: 1px solid var(--line);
@@ -799,6 +825,56 @@ body[data-fx='low'] .nb-spark {
         color: var(--violet);
         background: var(--violet-deep);
       }
+      /* 뜻 줄(R-069): 이름을 누르면 '뜻 · 단위 · 방향'. 표는 그 줄 아래 한 줄 */
+      [data-desc] {
+        cursor: pointer;
+      }
+      .v-name[data-desc] b::after,
+      th[data-desc]::after {
+        content: ' ▾';
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .v-name[aria-expanded='true'] b::after,
+      th[data-desc][aria-expanded='true']::after {
+        content: ' ▴';
+      }
+      .v-desc {
+        grid-column: 1 / -1;
+        padding: 6px 8px;
+        border-radius: var(--r-sm);
+        background: var(--bg-raise);
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+        line-height: 1.45;
+        word-break: keep-all;
+      }
+      .dir {
+        font-weight: 700;
+      }
+      .dir.hard {
+        color: var(--bad);
+      }
+      .dir.easy,
+      .dir.more {
+        color: var(--good);
+      }
+      .dir.cost,
+      .dir.less {
+        color: var(--gold);
+      }
+      table.matrix tr.desc td {
+        padding: 0 0 8px;
+      }
+      /* 그래프 칩에서 건너온 줄: 1초 보라 테두리 */
+      .v-row.flash {
+        box-shadow: 0 0 0 2px var(--exp);
+        border-radius: var(--r-sm);
+      }
+      tr.flash > th,
+      tr.flash > td {
+        background: var(--violet-deep);
+      }
       .matrix-wrap {
         overflow-x: auto;
       }
@@ -817,7 +893,7 @@ body[data-fx='low'] .nb-spark {
         color: var(--ink-2);
         font-weight: 600;
         text-align: center;
-        overflow-wrap: anywhere;
+        overflow-wrap: normal;
       }
       table.matrix tbody th {
         text-align: left;
@@ -921,6 +997,85 @@ body[data-fx='low'] .nb-spark {
       }
       table.nums tr.exp-row td.same {
         color: var(--muted);
+      }
+      /* 난이도 탭(R-069): 도구 줄 · 모드 토글 · 식 줄 · 들어간 값 칩 */
+      /* 폰 폭(약 352px)에서 축 두 개 + 기체가 한 줄, 모드 6개가 한 줄 */
+      .dtools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      .dtools .seg {
+        gap: 4px;
+      }
+      .dtools .seg button {
+        padding: 0 10px;
+        font-size: var(--fs-xs);
+      }
+      .craftsel {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+      }
+      .craftsel select {
+        min-height: 36px;
+        padding: 0 4px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--line-strong);
+        background: var(--bg-raise);
+        color: var(--ink);
+        font-size: var(--fs-xs);
+      }
+      .mdots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      /* 모드 토글: 글자 = 그 모드 선 색(범례 겸용), 숨긴 모드는 흐리게 */
+      .mdots button {
+        min-height: 32px;
+        padding: 0 7px;
+        border-radius: 999px;
+        border: 1px solid currentColor;
+        background: var(--bg-raise);
+        font-size: var(--fs-2xs);
+        font-weight: 700;
+      }
+      .mdots button[aria-pressed='false'] {
+        opacity: 0.4;
+        border-color: var(--line-strong);
+        font-weight: 400;
+      }
+      .formula {
+        font-size: var(--fs-xs);
+        color: var(--ink-2);
+        line-height: 1.45;
+        word-break: keep-all;
+      }
+      .vchips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .vchips button {
+        min-height: 28px;
+        padding: 0 8px;
+        border-radius: 6px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface-2);
+        color: var(--cyan);
+        font-size: var(--fs-2xs);
+      }
+      svg.chart path.mline {
+        fill: none;
+        stroke-width: 1.8;
+      }
+      svg.chart path.mline.dash {
+        stroke-dasharray: 5 3;
       }
       /* 경제 */
       .eco-head {
@@ -1475,19 +1630,19 @@ body[data-fx='low'] .nb-spark {
     <main>
       <section class="card sum" id="summary" aria-label="요약"></section>
       <section id="tab-values" role="tabpanel">
-        <p class="note">값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다.</p>
+        <p class="note">값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다. 이름을 누르면 뜻 · 단위 · 방향이 보입니다.</p>
         <div class="v-tools">
           <input
             class="text"
             type="search"
             id="v-search"
-            placeholder="찾기 · 이름이나 키"
+            placeholder="찾기 · 이름 · 뜻 · 키(예: 보스, 체력)"
             autocomplete="off"
             enterkeyhint="search"
           />
           <button type="button" class="btn small" id="v-reset">모두 되돌리기</button>
         </div>
-        <label class="v-check"><input type="checkbox" id="v-only" />바꾼 값만</label>
+        <div class="chips" id="v-chips" role="group" aria-label="찾기 칩"></div>
         <div id="v-groups"></div>
       </section>
       <section id="tab-difficulty" role="tabpanel" hidden></section>
@@ -3149,7 +3304,7 @@ body[data-fx='low'] .nb-spark {
         auto: auto.short,
         goldBonus: '분당 ' + G + '+',
         bossGold: '보스 ' + G,
-        blue: 'LV10 ' + BL,
+        blue: 'LV10마다 ' + BL,
         blueCoin: BL + ' 코인 확률',
         fan: '부채꼴',
         burst: '연속',
@@ -3203,7 +3358,7 @@ body[data-fx='low'] .nb-spark {
         speed: '회전 속도',
         max: '최대 개수',
         damage: '피해',
-        hit: '판정 크기',
+        hit: '칼날 판정 크기',
         hitCooldown: '같은 적 재타격(초)',
       },
       stage: {
@@ -3225,7 +3380,7 @@ body[data-fx='low'] .nb-spark {
       spawn: {
         first: '첫 출현(초)',
         interval: '출현 간격(초)',
-        rate: '출현량 배율',
+        rate: '맵 출현 배율',
         min: '간격 바닥(초)',
         radius: '출현 거리',
         born: '예고(초)',
@@ -3280,7 +3435,7 @@ body[data-fx='low'] .nb-spark {
       siege: {
         interval: '간격(초)',
         warn: '예고(초)',
-        perStep: '스텝당 수',
+        perStep: '한 번에 나오는 수',
         sides: '방향 수',
         shotDelay: '사수 첫 사격(초)',
         shotStep: '사수마다 +(초)',
@@ -3365,6 +3520,298 @@ body[data-fx='low'] .nb-spark {
         return names[group][p[1]] + ' ' + (Number(p[2]) + 1);
       return names[group]?.[rest] || rest || group;
     }
+    // 값마다 뜻 · 단위 · 방향(R-069, 값 탭에서 이름을 누르면). 경로 무늬의 *는 한 마디.
+    // 방향: hard 올리면 어려워짐 · easy 쉬워짐 · more 더 받음 · cost 비싸짐 · less 덜 받음 · '' 없음(크기 · 위치 · 순서).
+    // 새 balance 값을 더하면 여기에도 한 줄(없으면 npm test가 빠진 경로를 알려 준다).
+    const ST = stage.name,
+      PT = point.name,
+      SHOT = enemies.shooter.name,
+      HZ = enemies.hazard.name,
+      DASH = abilities.dash,
+      NOVA = abilities.nova,
+      MORE_HIT = '물리 상한에 닿은 뒤 스택마다 탄 피해 +(기체 피해 × 값)',
+      UNLOCK_ALL = '(조건을 모두 채우면 해금)';
+    const desc = {
+      'modes.*.spawn': ['적 출현량 배율(초당 나오는 적 수에 곱함)', '배', 'hard'],
+      'modes.*.hp': ['모든 적 HP에 곱하는 배율', '배', 'hard'],
+      'modes.*.damage': ['적 피해 배율(몸통 · 탄환 모두)', '배', 'hard'],
+      'modes.*.fire': [SHOT + ' · 보스 사격 빈도 배율(재사격 시간 ÷ 값)', '배', 'hard'],
+      'modes.*.bulletSpeed': ['적 탄환 속도 배율', '배', 'hard'],
+      'modes.*.xp': ['처치 XP 배율(레벨업이 빨라짐)', '배', 'easy'],
+      'modes.*.score': ['처치 ' + PT + '에 곱하는 배율(콤보 보너스는 그대로)', '배', 'more'],
+      'modes.*.defenseCap': [
+        skillName('vital') + ' · ' + skillName('shield') + '를 고를 수 있는 횟수(∞ = 제한 없음)',
+        '회',
+        'easy',
+      ],
+      'modes.*.choices': ['레벨업 때 보이는 카드 수', '개', 'easy'],
+      'modes.*.auto': [auto.short + '(' + auto.name + ')를 쓸 수 있는 모드', '켜기/끄기', ''],
+      'modes.*.goldBonus': ['분당 ' + G + '에 더하는 모드 보너스', G, 'more'],
+      'modes.*.bossGold': ['보스 1마리 처치 ' + G, G, 'more'],
+      'modes.*.blue': ['실제 LV가 ' + BL + ' 받는 LV 간격만큼 오를 때마다 받는 ' + BL, BL, 'more'],
+      'modes.*.blueCoin': ['레벨업 코인 칸이 ' + BL + ' 코인이 될 확률', '확률(0~1)', 'more'],
+      'modes.*.fan': [SHOT + ' 일부(부채꼴 ' + SHOT + ' 간격마다)가 양옆 2발을 더 쏨', '켜기/끄기', 'hard'],
+      'modes.*.burst': [
+        SHOT + ' 일부(연속 ' + SHOT + ' 간격마다)가 조금 뒤 한 발 더 쏨',
+        '켜기/끄기',
+        'hard',
+      ],
+      'modes.*.bossSide': [
+        '보스 일부(양옆 탄 보스 간격마다)가 조준 탄 양옆 2발을 더 쏨',
+        '켜기/끄기',
+        'hard',
+      ],
+      'unlock.*.score': ['앞 모드 한 판에서 넘어야 할 ' + PT + UNLOCK_ALL, PT, 'hard'],
+      'unlock.*.time': ['앞 모드 한 판에서 버텨야 할 시간' + UNLOCK_ALL, '초', 'hard'],
+      'unlock.*.level': ['앞 모드 한 판에서 도달할 LV' + UNLOCK_ALL, 'LV', 'hard'],
+      'crafts.*.hp': ['기체 최대 HP', 'HP', 'easy'],
+      'crafts.*.speed': ['기체 이동 속도', '거리/초', 'easy'],
+      'crafts.*.damage': ['내 탄환 1발 기본 피해(' + skillName('power') + ' 스택 전)', 'HP', 'easy'],
+      'crafts.*.fire': ['내 탄환 발사 간격(작을수록 빠름)', '초', 'hard'],
+      'crafts.*.dash': [DASH + ' 재충전 시간', '초', 'hard'],
+      'crafts.*.shield': ['시작 보호막(HP보다 먼저 피해를 받음)', 'HP', 'easy'],
+      'crafts.*.start.*': ['출격 때 더하는 시작 스택(회복 · XP 효과 없음)', '스택', 'easy'],
+      'player.r': ['기체 충돌 반경(클수록 잘 맞음)', '거리', 'hard'],
+      'player.magnet': ['XP 보석을 끌어오는 기본 범위', '거리', 'easy'],
+      'player.crit': ['기본 치명타 확률', '확률(0~1)', 'easy'],
+      'player.critScale': ['치명타 피해 배율', '배', 'easy'],
+      'player.hurtInvuln': ['맞은 뒤 무적 시간', '초', 'easy'],
+      'player.shieldDelay': ['안 맞은 지 이만큼 지나야 보호막이 다시 참', '초', 'hard'],
+      'player.shieldRegen': ['보호막 초당 재생(+ ' + skillName('shield') + ' 스택)', 'HP/초', 'easy'],
+      'player.choiceHeal': ['레벨업 때 스킬을 고르면 회복하는 HP', 'HP', 'easy'],
+      'level.base': ['다음 LV까지 필요한 XP 기본(기본 + (LV − 1) × 증가)', 'XP', 'hard'],
+      'level.step': ['LV마다 늘어나는 필요 XP', 'XP', 'hard'],
+      'shot.speed': ['내 탄환 속도', '거리/초', 'easy'],
+      'shot.ttl': ['내 탄환 수명(멀리 가는 시간)', '초', 'easy'],
+      'shot.spread': ['여러 발일 때 탄 사이 각도', '라디안', ''],
+      'shot.muzzle': ['탄이 출발하는 기체 앞 거리', '거리', ''],
+      'dash.time': [DASH + ' 돌진 시간', '초', ''],
+      'dash.invuln': [DASH + ' 무적 시간', '초', 'easy'],
+      'dash.speed': [DASH + ' 돌진 속도', '거리/초', ''],
+      'dash.min': [
+        DASH + ' 재충전 바닥(' + skillName('speed') + '로 줄어도 이 아래로는 안 감)',
+        '초',
+        'hard',
+      ],
+      'nova.damage': [NOVA + ' 기본 피해', 'HP', 'easy'],
+      'nova.radius': [NOVA + ' 기본 범위', '거리', 'easy'],
+      'nova.cooldown': [NOVA + ' 기본 재충전', '초', 'hard'],
+      'nova.push': [NOVA + '에 맞은 적을 밀어내는 거리', '거리', 'easy'],
+      'orbit.radius': ['칼날이 도는 반경(충돌 · 그림 같은 값)', '거리', ''],
+      'orbit.speed': ['칼날 회전 속도', '라디안/초', 'easy'],
+      'orbit.max': ['칼날 최대 개수', '개', 'easy'],
+      'orbit.damage': ['칼날 기본 피해(+ LV + 스택 × 스택당)', 'HP', 'easy'],
+      'orbit.hit': ['칼날이 적을 맞히는 판정 반경', '거리', 'easy'],
+      'orbit.hitCooldown': ['같은 적을 다시 때리기까지', '초', 'hard'],
+      'skills.*.overflow': [MORE_HIT, '비율', 'easy'],
+      'skills.power.damage': ['스택마다 더하는 탄 피해(기체 피해 × 값)', '비율', 'easy'],
+      'skills.rapid.rate': ['스택마다 발사 속도 +(간격 ÷ (1 + 값 × 스택))', '비율', 'easy'],
+      'skills.rapid.minFire': ['발사 간격 바닥(이 아래로는 안 감)', '초', 'hard'],
+      'skills.multi.max': ['한 번에 쏘는 최대 발 수', '발', 'easy'],
+      'skills.pierce.max': ['탄 하나가 뚫는 최대 적 수', '마리', 'easy'],
+      'skills.speed.step': ['스택마다 이동 속도 +', '거리/초', 'easy'],
+      'skills.speed.max': ['이동 속도 상한', '거리/초', 'easy'],
+      'skills.speed.dash': ['스택마다 ' + DASH + ' 재충전 −(재충전 ÷ (1 + 값 × 스택))', '비율', 'easy'],
+      'skills.magnet.step': ['스택마다 수집 범위 +', '거리', 'easy'],
+      'skills.magnet.max': ['수집 범위 상한', '거리', 'easy'],
+      'skills.magnet.xp': ['고를 때 받는 XP(모드 XP 배율 곱)', 'XP', 'easy'],
+      'skills.orbit.step': ['스택마다 칼날 피해 +', 'HP', 'easy'],
+      'skills.vital.hp': ['스택마다 최대 HP +', 'HP', 'easy'],
+      'skills.vital.heal': ['고를 때 회복', 'HP', 'easy'],
+      'skills.nova.damage': ['스택마다 ' + NOVA + ' 피해 +', 'HP', 'easy'],
+      'skills.nova.radius': ['스택마다 ' + NOVA + ' 범위 +', '거리', 'easy'],
+      'skills.nova.radiusMax': [NOVA + ' 범위 상한', '거리', 'easy'],
+      'skills.nova.cooldown': ['스택마다 ' + NOVA + ' 재충전 −', '초', 'easy'],
+      'skills.nova.cooldownMin': [NOVA + ' 재충전 바닥', '초', 'hard'],
+      'skills.crit.step': ['스택마다 치명타 확률 +', '확률(0~1)', 'easy'],
+      'skills.crit.max': ['치명타 확률 상한', '확률(0~1)', 'easy'],
+      'skills.crit.overflow': ['확률 상한에 닿은 뒤 스택마다 치명타 배율 +', '배', 'easy'],
+      'skills.shield.amount': ['스택마다 최대 보호막 +', 'HP', 'easy'],
+      'skills.shield.regen': ['스택마다 보호막 초당 재생 +', 'HP/초', 'easy'],
+      'stage.hp': [ST + '마다 적 HP에 더하는 몫: 1 + 값 × (' + ST + ' − 1)', '배/' + ST, 'hard'],
+      'stage.damage': [ST + '마다 적 피해에 더하는 몫: 1 + 값 × (' + ST + ' − 1)', '배/' + ST, 'hard'],
+      'stage.density': [
+        ST + '마다 출현 빈도에 더하는 몫: 간격 ÷ (1 + 값 × (' + ST + ' − 1))',
+        '배/' + ST,
+        'hard',
+      ],
+      'stage.xp': [ST + '마다 처치 XP에 더하는 몫', '배/' + ST, 'easy'],
+      'stage.score': [ST + '마다 처치 ' + PT + '에 더하는 몫', '배/' + ST, 'more'],
+      'stage.speed': [ST + '마다 적 이동 속도에 더하는 몫(상한까지)', '배/' + ST, 'hard'],
+      'stage.speedMax': ['적 이동 속도 배율 상한', '배', 'hard'],
+      'stage.autoLevel': ['실제 LV가 이만큼 오를 때마다 ' + ST + ' 최소 +1(자동 승격)', 'LV', 'easy'],
+      'boss.every': ['보스 웨이브가 나오는 ' + ST + ' 간격(이 수의 배수)', ST, 'easy'],
+      'boss.base': ['보스 웨이브 기본 수', '마리', 'hard'],
+      'boss.per': ['보스 수가 1 느는 ' + ST + ' 간격(수 = 기본 + floor(' + ST + ' ÷ 값))', ST, 'easy'],
+      'boss.alive': ['보스가 동시에 있을 수 있는 수', '마리', 'hard'],
+      'spawn.first': ['판 시작 뒤 첫 출현', '초', 'easy'],
+      'spawn.interval': ['기본 출현 간격', '초', 'easy'],
+      'spawn.rate': ['맵 넓이만큼 늘린 출현 배율', '배', 'hard'],
+      'spawn.min': ['출현 간격 바닥', '초', 'easy'],
+      'spawn.radius': ['기체에서 적이 나오는 거리(실제 게임은 화면 크기로 다시 정함)', '거리', ''],
+      'spawn.born': ['나온 적이 움직이지 않고 맞지 않는 예고 시간', '초', 'easy'],
+      'spawn.mix.*.base': ['이 적이 나올 기본 비율', '비율', 'hard'],
+      'spawn.mix.*.step': [ST + '마다 이 적 비율에 더하는 몫', '비율', 'hard'],
+      'spawn.mix.*.max': [ST + '로 더하는 비율의 상한', '비율', 'hard'],
+      'spawn.mix.runner': [
+        enemies.runner.name + '가 나올 비율(고정, 나머지는 ' + enemies.chaser.name + ')',
+        '비율',
+        '',
+      ],
+      'hazard.fromStage': [HZ + '가 나오기 시작하는 ' + ST, ST, 'easy'],
+      'hazard.first': ['첫 ' + HZ + ' 시점', '초', 'easy'],
+      'hazard.interval': [HZ + ' 기본 간격(값 − ' + ST + ' × 감소, 바닥까지)', '초', 'easy'],
+      'hazard.step': [ST + '마다 줄어드는 간격', '초', 'hard'],
+      'hazard.min': [HZ + ' 간격 바닥', '초', 'easy'],
+      'hazard.max': [HZ + ' 동시 최대', '개', 'hard'],
+      'hazard.offset': ['기체에서 ' + HZ + '까지 거리', '거리', ''],
+      'hazard.r': [HZ + ' 반경', '거리', 'hard'],
+      'hazard.delay': [HZ + '가 터지기까지', '초', 'easy'],
+      'hazard.damage': [HZ + ' 피해', 'HP', 'hard'],
+      'enemies.*.r': ['적 크기(반경)', '거리', ''],
+      'enemies.*.hp': ['적 기본 HP(모드 · ' + ST + ' 배율 전)', 'HP', 'hard'],
+      'enemies.*.speed': ['적 이동 속도', '거리/초', 'hard'],
+      'enemies.*.damage': ['부딪힐 때 피해(탄환은 × 적 탄환 피해 배율)', 'HP', 'hard'],
+      'enemies.*.xp': ['처치 XP', 'XP', 'easy'],
+      'enemies.*.score': ['처치 ' + PT + '(모드 · ' + ST + ' 배율 전)', PT, 'more'],
+      'enemies.*.split': [
+        enemies.splitter.name + '가 죽을 때 나오는 ' + enemies.runner.name + ' 수',
+        '마리',
+        'hard',
+      ],
+      'shooter.near': [SHOT + '가 유지하는 가까운 거리', '거리', ''],
+      'shooter.far': [SHOT + '가 유지하는 먼 거리', '거리', ''],
+      'shooter.reload': [SHOT + ' 기본 재사격 간격', '초', 'easy'],
+      'shooter.reloadStage': [ST + '마다 재사격이 빨라지는 몫', '배/' + ST, 'hard'],
+      'shooter.reloadMin': ['재사격 간격 바닥', '초', 'easy'],
+      'shooter.shotSpeed': [SHOT + ' 탄 속도(모드 탄속 배율 곱)', '거리/초', 'hard'],
+      'shooter.fanEvery': ['이 수의 배수 번째 ' + SHOT + '가 부채꼴로 쏨(부채꼴 모드)', '마리', 'easy'],
+      'shooter.fanAngle': ['부채꼴 양옆 탄 각도', '라디안', ''],
+      'shooter.burstEvery': ['이 수의 배수 번째 ' + SHOT + '가 연속으로 쏨(연속 모드)', '마리', 'easy'],
+      'shooter.burstDelay': ['연속 사격 두 발 사이', '초', ''],
+      'bossAttack.near': ['보스가 이보다 멀면 다가옴', '거리', ''],
+      'bossAttack.ringSpeed': ['원형 탄 속도', '거리/초', 'hard'],
+      'bossAttack.ringSpin': ['원형 탄이 퍼지며 도는 정도', '라디안', ''],
+      'bossAttack.aimSpeed': ['조준 탄 · 3단계 부채꼴 탄 속도', '거리/초', 'hard'],
+      'bossAttack.sideEvery': ['이 수의 배수 번째 보스가 양옆 탄을 쏨(보스 양옆 모드)', '마리', 'easy'],
+      'bossAttack.sideAngle': ['양옆 탄 각도', '라디안', ''],
+      'bossAttack.reload': ['1단계 사격 간격(원형 탄 + 조준 1발)', '초', 'easy'],
+      'bossAttack.ring': ['1단계 원형 탄 수', '발', 'hard'],
+      'bossAttack.phase2': ['체력이 이 비율 아래면 2단계', '비율', 'hard'],
+      'bossAttack.reload2': ['2단계 사격 간격(두 겹 원 + 조준 1발)', '초', 'easy'],
+      'bossAttack.ring2': ['2단계 원 한 겹 탄 수', '발', 'hard'],
+      'bossAttack.slowSpeed': ['2단계 느린 원 속도', '거리/초', 'hard'],
+      'bossAttack.phase3': ['체력이 이 비율 아래면 3단계', '비율', 'hard'],
+      'bossAttack.reload3': ['3단계 사격 간격(원형 탄 + 조준 부채꼴)', '초', 'easy'],
+      'bossAttack.ring3': ['3단계 원형 탄 수', '발', 'hard'],
+      'bossAttack.fan': ['3단계 조준 부채꼴 탄 수', '발', 'hard'],
+      'bossAttack.fanAngle': ['3단계 부채꼴 탄 사이 각도', '라디안', ''],
+      'hostile.damage': ['적 탄환 피해 = 쏜 적의 피해 × 값', '배', 'hard'],
+      'hostile.ttl': ['적 탄환 수명', '초', 'hard'],
+      'hostile.firstShot': [SHOT + ' · 보스 첫 사격(나온 뒤 값 + 0~1초)', '초', 'easy'],
+      'caps.enemies': ['동시에 있을 수 있는 적', '마리', 'hard'],
+      'caps.hostiles': ['동시에 있을 수 있는 적 탄환', '발', 'hard'],
+      'caps.bullets': ['동시에 있을 수 있는 내 탄환', '발', 'easy'],
+      'caps.gems': ['동시에 있을 수 있는 XP 보석(넘으면 첫 보석에 XP를 더함)', '개', ''],
+      'score.comboWindow': ['처치가 이 시간 안에 이어지면 콤보', '초', 'more'],
+      'score.comboStep': ['콤보마다 처치 보너스 +', PT, 'more'],
+      'score.comboMax': ['처치 보너스 상한(모드 배율 없음)', PT, 'more'],
+      'siege.interval': ['포위 간격(전투 시계)', '초', 'easy'],
+      'siege.warn': ['포위 예고', '초', 'easy'],
+      'siege.perStep': ['스텝마다 나오는 포위 적(적 상한 미만일 때)', '마리', 'hard'],
+      'siege.sides': ['포위해 오는 방향 수', '개', 'hard'],
+      'siege.shotDelay': ['포위 ' + SHOT + ' 첫 사격(+ 앞선 ' + SHOT + ' 수 × 늦춤)', '초', 'easy'],
+      'siege.shotStep': ['포위 ' + SHOT + '마다 첫 사격이 늦어지는 시간', '초', 'easy'],
+      'siege.speedStep': ['회차마다 포위 적 속도 +(1 + 값 × (회차 − 1))', '배', 'hard'],
+      'siege.speedMax': ['포위 적 속도 배율 상한', '배', 'hard'],
+      'map.width': ['맵 가로', '거리', ''],
+      'map.height': ['맵 세로', '거리', ''],
+      'superLaunch.stage': [SC + ' 출격 시작 ' + ST, ST, 'hard'],
+      'superLaunch.level': [SC + ' 출격 시작 LV(' + BL + '는 이 LV 뒤부터)', 'LV', 'easy'],
+      'superLaunch.picks': [SC + ' 출격 준비에서 배분하는 스킬 수', '개', 'easy'],
+      'economy.goldBase': ['분당 ' + G + ' 기본(+ 수입 단계, 상한까지)', G, 'more'],
+      'economy.goldMax': ['분당 ' + G + ' 상한(모드 보너스는 따로 더함)', G, 'more'],
+      'economy.blueEvery': [BL + '를 받는 실제 LV 간격', 'LV', 'less'],
+      'economy.coinChoice': ['레벨업 코인 1개 ' + G, G, 'more'],
+      'economy.coinChoiceBlue': ['레벨업 ' + BL + ' 코인 1개 ' + BL, BL, 'more'],
+      'economy.incomePrice': ['수입 단계 하나 가격', G, 'cost'],
+      'economy.incomeMax': ['수입 단계 수(단계마다 분당 ' + G + ' +1)', '단계', 'more'],
+      'economy.autoPrice': [auto.short + '(' + auto.name + ') 가격', G, 'cost'],
+      'economy.scGold': [SC + ' 1개 만들기 ' + G, G, 'cost'],
+      'economy.scBlue': [SC + ' 1개 만들기 ' + BL, BL, 'cost'],
+      'economy.notePerChar': ['한 줄 남기기 글자당 ' + G, G, 'cost'],
+      'economy.noteMax': ['한 줄 남기기 최대 글자 수', '글자', ''],
+      'economy.autoGoldPrice': ['자동 ' + G + ' 습득 가격(' + auto.short + '를 먼저 사야 함)', G, 'cost'],
+      'economy.autoGoldChance': [
+        auto.short + '가 고를 때 스킬 대신 레벨업 코인을 받을 확률',
+        '확률(0~1)',
+        'more',
+      ],
+      'economy.autoGoldCapped': ['카드가 모두 MAX일 때 코인을 받을 확률(1 = 항상)', '확률(0~1)', 'more'],
+      'economy.perma.*.max': ['영구 스택으로 살 수 있는 최대 수', '스택', 'more'],
+      'economy.perma.*.price': ['영구 스택 첫 가격', BL, 'cost'],
+      'economy.perma.*.step': ['영구 스택 살 때마다 오르는 가격', BL, 'cost'],
+      'cats.maxLevel': ['고양이 최대 Lv', 'Lv', ''],
+      'cats.unlock.*': ['고양이 해금(Lv1) 비용', SC, 'cost'],
+      'cats.levelCost.*.s': ['그 Lv로 올리는 비용 중 ' + SC + '(' + BL + '와 함께 냄)', SC, 'cost'],
+      'cats.levelCost.*.b': ['그 Lv로 올리는 비용 중 ' + BL + '(' + SC + '와 함께 냄)', BL, 'cost'],
+      'cats.effect.engineer.*': ['그 Lv 효과: 기체 시작 스킬마다 더하는 스택', '스택', 'easy'],
+      'cats.effect.supply.*': ['그 Lv 효과: 분당 ' + G + ' +', G, 'more'],
+      'cats.effect.pilot.*': ['그 Lv 효과: ' + DASH + ' 재충전 감소 비율', '비율', 'easy'],
+      'superCoin.every': ['전투 시계 이 간격마다 기체 근처에 1개(' + modeName('insane') + ')', '초', 'less'],
+      'superCoin.near': ['시간마다 나오는 코인의 가까운 거리', '거리', ''],
+      'superCoin.far': ['시간마다 나오는 코인의 먼 거리', '거리', ''],
+      'superCoin.r': ['코인 크기(기체가 닿아야 주움)', '거리', 'more'],
+      'superCoin.margin': ['맵 가장자리에서 떨어지는 거리', '거리', ''],
+      'superCoin.levelChance': ['레벨업마다 맵 어딘가에 나올 확률', '확률(0~1)', 'more'],
+      'superCoin.bossMax': ['보스 웨이브를 다 잡을 때 나오는 판당 최대', '개', 'more'],
+      'buffs.regen.b': [buffs.regen.name + ' 버프 비용(켜 두면 출격할 때마다)', BL, 'cost'],
+      'buffs.regen.hp': [buffs.regen.name + ' 버프 초당 회복', 'HP/초', 'easy'],
+      'buffs.revive.s': [buffs.revive.name + ' 버프 비용(켜 두면 출격할 때마다)', SC, 'cost'],
+      'buffs.revive.hp': ['부활 때 최대 HP의 이 비율로 일어남', '비율', 'easy'],
+      'buffs.revive.invuln': ['부활 뒤 무적 시간', '초', 'easy'],
+      'healZone.first': ['첫 회복 구역 시점(전투 시계)', '초', 'hard'],
+      'healZone.every': ['회복 구역 간격', '초', 'hard'],
+      'healZone.life': ['회복 구역 유지 시간', '초', 'easy'],
+      'healZone.sizes.*': ['반지름 = 보스 반지름 × 값(셋 중 하나)', '배', 'easy'],
+      'healZone.hp': ['안에 있으면 초당 회복', 'HP/초', 'easy'],
+      'healZone.margin': ['맵 가장자리에서 떨어지는 거리', '거리', ''],
+    };
+    // 정확한 키가 먼저, 아니면 마디 수가 같은 무늬 중 글자 마디(* 아닌 것)가 많은 것
+    const descPatterns = Object.keys(desc)
+      .filter(k => k.includes('*'))
+      .map(k => ({ k, p: k.split('.'), fixed: k.split('.').filter(x => x !== '*').length }))
+      .sort((a, b) => b.fixed - a.fixed);
+    function describe(path) {
+      const s = String(path),
+        p = s.split('.');
+      let hit = Object.prototype.hasOwnProperty.call(desc, s) ? desc[s] : null;
+      if (!hit) {
+        const m = descPatterns.find(
+          d => d.p.length === p.length && d.p.every((x, i) => x === '*' || x === p[i]),
+        );
+        hit = m ? desc[m.k] : null;
+      }
+      return hit ? { text: hit[0], unit: hit[1], dir: hit[2] } : null;
+    }
+    // 찾기 별칭(R-069): 찾는 말 → 같이 맞는 말(소문자). 한 글자 말(g · b · s)은 따로 떨어진 글자로만 맞는다.
+    const aliases = {
+      체력: ['hp'],
+      점수: ['point'],
+      포인트: ['point'],
+      골드: ['g', 'gold'],
+      돈: ['g', 'gold'],
+      블루: ['b', 'blue'],
+      스타: ['s', 'supercoin'],
+      쿨: ['재충전'],
+      쿨타임: ['재충전'],
+      총알: ['탄'],
+      탄환: ['탄'],
+      경험치: ['xp'],
+      레벨: ['lv', 'level'],
+      어려움: ['난이도'],
+      보상: ['경제'],
+    };
     return {
       title: '밸런스 실험실',
       sub: (version, balance) => 'NEON ARENA ' + version + ' · 지금 값 ' + balance,
@@ -3414,14 +3861,28 @@ body[data-fx='low'] .nb-spark {
       column,
       rowName,
       label,
+      desc,
+      describe,
+      aliases,
       values: {
-        search: '찾기 · 이름이나 키',
+        search: '찾기 · 이름 · 뜻 · 키(예: 보스, 체력)',
         onlyChanged: '바꾼 값만',
+        // 찾기 칩(R-069): 영향 칩은 여럿 고르면 그중 하나라도, '바꾼 값만'은 그리고
+        chipsLabel: '찾기 칩',
+        // 뜻 줄: '뜻 · 단위 배 · 올리면 어려워짐'(이름을 누르면 펼침)
+        unit: u => '단위 ' + u,
+        dirs: {
+          hard: '올리면 어려워짐',
+          easy: '올리면 쉬워짐',
+          more: '올리면 더 받음',
+          cost: '올리면 비싸짐',
+          less: '올리면 덜 받음',
+        },
         resetAll: '모두 되돌리기',
         reset: '되돌리기',
         // 영향 태그(R-068): 값 탭 줄 · 요약 칸 · 글 복사가 같은 이름(규칙은 lab-core IMPACTS)
         tags: { difficulty: '난이도', economy: '경제', point: point.name, unlock: '해금' },
-        note: "값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다.",
+        note: "값을 바꾸면 '난이도' · '경제'는 바로 바뀌고, '자동 판'은 다시 돌리면 바뀝니다. 칸을 비우면 지금 값으로 돌아갑니다. 이름을 누르면 뜻 · 단위 · 방향이 보입니다.",
         was: v => '지금 ' + v,
         invalid: '0 이상의 숫자',
         on: '켬',
@@ -3429,28 +3890,123 @@ body[data-fx='low'] .nb-spark {
         empty: '찾는 값이 없습니다',
         resetConfirm: n => '바꾼 값 ' + n + '개를 모두 지금 값으로 되돌릴까요?',
       },
-      difficulty: {
-        note: '모드마다 적이 얼마나 센지 지금 값과 실험 값으로 비교합니다. Stage를 고르면 그 Stage 기준입니다.',
-        stage: stage.name,
-        metrics: {
-          hp: '적 HP 배율',
-          damage: '적 피해 배율',
-          spawnPerSec: '초당 출현',
-          shotsPerSec: '사수 1마리 초당 사격',
-          bulletSpeed: '적 탄속 배율',
-          xp: '처치 XP 배율',
-          point: '처치 Point 배율',
-        },
-        speed: (a, b) => '적 이동 속도(모든 모드 같음) ×' + a + (a === b ? '' : ' → ×' + b),
-        method: '계산 방법',
-        formulas: [
-          'n = Stage − 1',
-          '적 HP = 모드 HP × (1 + Stage마다 적 HP+ × n). 피해 · XP · Point도 같은 꼴',
-          '초당 출현 = 모드 출현 × 출현량 배율 ÷ max(간격 바닥, 출현 간격 ÷ (1 + Stage마다 출현+ × n))',
-          '사수 초당 사격 = 모드 사격 ÷ max(재사격 바닥, 재사격 ÷ (1 + Stage마다 재사격 빨라짐 × n))',
-          '적 탄속은 모드 값 그대로. 적 이동 속도는 모든 모드가 같다',
-        ],
-      },
+      // 난이도 탭(R-069): 가로축 STAGE(모드 색 선) · 가로축 모드(그 Stage), 그래프마다 식 한 줄 + 들어간 값 칩
+      difficulty: (() => {
+        const n = '(' + ST + ' − 1)',
+          // 들어간 값 칩: label = 칩 글자, find = 값 탭 찾기 칸에 넣는 말(그 줄의 키)
+          v = (label, find) => ({ label, find });
+        return {
+          note: '모드마다 적이 얼마나 센지 지금 값과 실험 값으로 비교합니다.',
+          axis: { stage: '가로축 ' + stage.upper, mode: '가로축 모드' },
+          craft: '기체',
+          modesNote: '모드 이름을 누르면 그 선을 숨기거나 보입니다. 실선 = 지금, 점선 = 실험.',
+          modeNote: ST + '를 고르면 그 ' + ST + ' 기준입니다. 처치 시간 · 초당 위험은 고른 기체 기준입니다.',
+          stage: stage.name,
+          metrics: {
+            killTime: '처치 시간(초) · 로그 눈금',
+            threat: '초당 들어오는 위험',
+            pointKill: '처치 ' + PT + '(적 1마리)',
+            hp: '적 HP 배율',
+            damage: '적 피해 배율',
+            spawnPerSec: '초당 출현',
+            shotsPerSec: SHOT + ' 1마리 초당 사격',
+            bulletSpeed: '적 탄속 배율',
+            xp: '처치 XP 배율',
+            point: '처치 ' + PT + ' 배율',
+          },
+          // 가로축 모드의 처치 시간은 로그 눈금이 아니므로 이름만
+          modeMetric: { killTime: '처치 시간(초)' },
+          formula: {
+            killTime:
+              '평균 적 HP ÷ 내 초당 피해. 내 피해는 기준 빌드: LV = 자동 승격 간격 × ' +
+              n +
+              ', 레벨업마다 화력 · 속사 · 다연발 · 치명타를 차례로(영구 스택 · 고양이 · 칼날 없음).',
+            threat:
+              '초당 출현 × (평균 적 피해 + ' +
+              SHOT +
+              ' 비율 × ' +
+              SHOT +
+              '가 잡히기 전 쏘는 탄 피해). 동시 적 상한 · 보스 · ' +
+              HZ +
+              ' · 포위는 뺌.',
+            pointKill:
+              '종류 비율 × 반올림(적 ' +
+              PT +
+              ' × ' +
+              ST +
+              ' 배율 × 모드 ' +
+              PT +
+              ') + 콤보 최대. ' +
+              enemies.splitter.name +
+              '는 나오는 ' +
+              enemies.runner.name +
+              '까지.',
+            hp: '모드 HP × (1 + ' + ST + '마다 적 HP+ × ' + n + ').',
+            damage: '모드 피해 × (1 + ' + ST + '마다 적 피해+ × ' + n + '). 탄환은 × 적 탄환 피해 배율.',
+            spawnPerSec:
+              '모드 출현 × 맵 출현 배율 ÷ max(간격 바닥, 출현 간격 ÷ (1 + ' +
+              ST +
+              '마다 출현+ × ' +
+              n +
+              ')).',
+            shotsPerSec:
+              '모드 사격 ÷ max(재사격 바닥, 재사격 ÷ (1 + ' + ST + '마다 재사격 빨라짐 × ' + n + ')).',
+            bulletSpeed: '모드 탄속 그대로(' + ST + '로 바뀌지 않음).',
+            xp: '모드 XP × (1 + ' + ST + '마다 XP+ × ' + n + ').',
+            point:
+              '모드 ' + PT + ' × (1 + ' + ST + '마다 ' + PT + '+ × ' + n + '). 콤보 보너스는 곱하지 않음.',
+          },
+          inputs: {
+            killTime: [
+              v('모드 HP', 'modes.hp'),
+              v(ST + '마다 적 HP +', 'stage.hp'),
+              v('적 HP', 'enemies.hp'),
+              v('기체 피해', 'crafts.damage'),
+              v('발사 간격', 'crafts.fire'),
+              v(skillName('power') + ' 스택마다', 'skills.power'),
+              v('자동 승격 LV 간격', 'stage.autolevel'),
+            ],
+            threat: [
+              v('모드 출현', 'modes.spawn'),
+              v('모드 피해', 'modes.damage'),
+              v('모드 사격', 'modes.fire'),
+              v(ST + '마다 출현 +', 'stage.density'),
+              v(ST + '마다 적 피해 +', 'stage.damage'),
+              v(SHOT + ' 비율', 'spawn.mix.shooter'),
+              v('적 탄환 피해 배율', 'hostile.damage'),
+            ],
+            pointKill: [
+              v('모드 ' + PT, 'modes.score'),
+              v(ST + '마다 ' + PT + ' +', 'stage.score'),
+              v('적 ' + PT, 'enemies.score'),
+              v('콤보 보너스 상한', 'score.combomax'),
+            ],
+            hp: [v('모드 HP', 'modes.hp'), v(ST + '마다 적 HP +', 'stage.hp')],
+            damage: [
+              v('모드 피해', 'modes.damage'),
+              v(ST + '마다 적 피해 +', 'stage.damage'),
+              v('적 탄환 피해 배율', 'hostile.damage'),
+            ],
+            spawnPerSec: [
+              v('모드 출현', 'modes.spawn'),
+              v('맵 출현 배율', 'spawn.rate'),
+              v('출현 간격', 'spawn.interval'),
+              v('간격 바닥', 'spawn.min'),
+              v(ST + '마다 출현 +', 'stage.density'),
+            ],
+            shotsPerSec: [
+              v('모드 사격', 'modes.fire'),
+              v('재사격', 'shooter.reload'),
+              v('재사격 바닥', 'shooter.reloadmin'),
+              v(ST + '마다 재사격 빨라짐', 'shooter.reloadstage'),
+            ],
+            bulletSpeed: [v('모드 탄속', 'modes.bulletspeed')],
+            xp: [v('모드 XP', 'modes.xp'), v(ST + '마다 XP +', 'stage.xp')],
+            point: [v('모드 ' + PT, 'modes.score'), v(ST + '마다 ' + PT + ' +', 'stage.score')],
+          },
+          speed: (a, b) => '적 이동 속도(모든 모드 같음) ×' + a + (a === b ? '' : ' → ×' + b),
+        };
+      })(),
       economy: {
         sources: { preset: '예시', test: '시험 경로 기록', real: '실제 주소 기록' },
         reading: '기록을 읽는 중…',
@@ -3533,9 +4089,9 @@ body[data-fx='low'] .nb-spark {
           minutes: '분',
           level: 'LV',
           bosses: '보스',
-          manualCoins: '손 코인',
-          autoPicks: auto.short + ' 횟수',
-          capShare: '모두 최대 비율',
+          manualCoins: '직접 고른 코인',
+          autoPicks: auto.short + ' 선택 수',
+          capShare: '카드 모두 MAX 비율',
           autoGold: '자동 ' + G,
           tier: '수입 단계',
           supplyLv: cats.supply.name + ' Lv',
@@ -3544,11 +4100,11 @@ body[data-fx='low'] .nb-spark {
         method: '계산 방법',
         formulas: [
           '분 보상 = 전투 1분마다 min(분당 G 상한, 분당 G 기본 + 수입 단계) + 모드 분당 G+',
-          '보스 = 처치 수 × 그 모드의 보스 G. 레벨업 코인 = 손으로 고른 코인 × 레벨업 코인 G',
-          '자동 G = AUTO 횟수 × (모두 최대 비율 × 확률(스킬 모두 최대) + 나머지 × 확률) × 레벨업 코인 G',
+          '보스 = 처치 수 × 그 모드의 보스 G. 레벨업 코인 = 직접 고른 코인 × 레벨업 코인 G',
+          '자동 G = AUTO 선택 수 × (카드 모두 MAX 비율 × 확률(스킬 모두 최대) + 나머지 × 확률) × 레벨업 코인 G',
           '고양이 = 전투 1분마다 보급관 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
           'S = Insane에서 ' + coins.s.ko + ' 간격마다 1개(줍는다고 가정). S 출격은 1개를 쓴다',
-          '기록 줄은 실제 받은 값에서 수입 단계 · 모두 최대 비율을 거꾸로 구해 다시 계산한다',
+          '기록 줄은 실제 받은 값에서 수입 단계 · 카드 모두 MAX 비율을 거꾸로 구해 다시 계산한다',
         ],
       },
       sim: {
@@ -5424,6 +5980,7 @@ body[data-fx='low'] .nb-spark {
   'use strict';
   // 밸런스 실험실(R-037)의 순수 계산. 수치 목록 · 값 바꾸기 · 한 판 경제 계산 · 목표까지 판 수 · 적 배율 · 시나리오 파일.
   // R-068: 지문 · 영향 태그 · 처치 Point · 자동 판 지표 · 흔들림 · 생존 곡선 · 해금 도달 · 옛 결과 판정 · 판 줄 압축 · 저장 한도.
+  // R-069: 기준 빌드 · 내 화력 · 처치 시간 · 초당 위험 · STAGE 줄.
   // 전역을 읽지 않는다: 모든 함수가 balance 객체를 인자로 받아, 값을 바꾼 묶음에도 같은 식을 쓴다.
   // 식은 progression.js(분당 G · 영구 스택 가격 · B 보상)와 engine.js(Stage 배율 · 출현 · 사수 재사격)를 그대로 옮겼다.
   // 입력은 바꾸지 않는다(기본 묶음은 얼어 있는 객체로 들어온다).
@@ -6192,6 +6749,114 @@ body[data-fx='low'] .nb-spark {
     };
   }
 
+  // ── 기준 빌드 · 내 화력 · 처치 시간 · 초당 위험(R-069) ──
+  // 기준 빌드: STAGE에 맞는 LV(자동 승격 식을 거꾸로)까지 공격 스킬 4개를 차례로 1씩 고른 빌드.
+  const OFFENSE = Object.freeze(['power', 'rapid', 'multi', 'crit']);
+  function refBuild(balance, craft, stage) {
+    const level = Math.max(1, balance.stage.autoLevel * (Math.max(1, Math.floor(Number(stage) || 1)) - 1)),
+      stacks = { ...(balance.crafts[craft].start || {}) };
+    for (let i = 0; i < level - 1; i++) {
+      const id = OFFENSE[i % OFFENSE.length];
+      stacks[id] = (stacks[id] || 0) + 1;
+    }
+    return { level, stacks };
+  }
+  // 물리 상한에 닿는 스택 수(engine.js CAPS 식 그대로)
+  function skillCaps(balance, craft) {
+    const S = balance.skills,
+      c = balance.crafts[craft],
+      P = balance.player;
+    return {
+      multi: S.multi.max - 1,
+      pierce: S.pierce.max,
+      orbit: balance.orbit.max,
+      magnet: Math.ceil((S.magnet.max - P.magnet) / S.magnet.step),
+      crit: Math.ceil((S.crit.max - P.crit) / S.crit.step),
+      rapid: Math.ceil((c.fire / S.rapid.minFire - 1) / S.rapid.rate),
+      speed: Math.ceil((S.speed.max - c.speed) / S.speed.step),
+    };
+  }
+  // engine.js recalculate의 공격 부분 그대로(넘친 스택은 피해 +). dps = 한 발 기대 피해 × 발 수 ÷ 발사 간격.
+  function firepower(balance, craft, stacks) {
+    const S = balance.skills,
+      c = balance.crafts[craft],
+      P = balance.player,
+      cap = skillCaps(balance, craft),
+      st = stacks || {},
+      u = id => st[id] || 0,
+      extra = (n, max) => Math.max(0, n - max);
+    const damage =
+        c.damage *
+        (1 +
+          S.power.damage * u('power') +
+          S.multi.overflow * extra(u('multi'), cap.multi) +
+          S.pierce.overflow * extra(u('pierce'), cap.pierce) +
+          S.rapid.overflow * extra(u('rapid'), cap.rapid) +
+          S.speed.overflow * extra(u('speed'), cap.speed) +
+          S.magnet.overflow * extra(u('magnet'), cap.magnet)),
+      fire = Math.max(S.rapid.minFire, c.fire / (1 + S.rapid.rate * u('rapid'))),
+      multi = Math.min(S.multi.max, 1 + u('multi')),
+      crit = Math.min(S.crit.max, P.crit + S.crit.step * u('crit')),
+      critScale = P.critScale + S.crit.overflow * extra(u('crit'), cap.crit);
+    return {
+      damage,
+      fire,
+      multi,
+      crit,
+      critScale,
+      dps: (damage * multi * (1 + crit * (critScale - 1))) / fire,
+    };
+  }
+  // 나온 적 하나의 평균(섞임 비율 × 모드 배율 × STAGE 배율). bullet = 사수 탄 하나 피해, volley = 사격 한 번의 평균 탄 수.
+  function enemyAvg(balance, mode, stage) {
+    const M = balance.modes[mode],
+      E = balance.enemies,
+      n = Math.max(1, Math.floor(stage)) - 1,
+      R = balance.stage,
+      mix = mixAt(balance, stage);
+    let hp = 0,
+      dmg = 0;
+    for (const k of Object.keys(mix)) {
+      hp += mix[k] * E[k].hp;
+      dmg += mix[k] * E[k].damage;
+    }
+    return {
+      hp: hp * M.hp * (1 + R.hp * n),
+      damage: dmg * M.damage * (1 + R.damage * n),
+      shooterShare: mix.shooter,
+      shooterHp: E.shooter.hp * M.hp * (1 + R.hp * n),
+      bullet: E.shooter.damage * M.damage * (1 + R.damage * n) * balance.hostile.damage,
+      volley: 1 + (M.fan ? 2 / balance.shooter.fanEvery : 0) + (M.burst ? 1 / balance.shooter.burstEvery : 0),
+    };
+  }
+  // 평균 적 하나를 기준 빌드로 잡는 데 걸리는 초
+  function killTime(balance, mode, craft, stage) {
+    const b = refBuild(balance, craft, stage);
+    return enemyAvg(balance, mode, stage).hp / firepower(balance, craft, b.stacks).dps;
+  }
+  // 초당 위험: 초당 나오는 적 × (몸 피해 + 사수 몫 × 사수가 살아 있는 동안 쏘는 탄 피해)
+  function threat(balance, mode, craft, stage) {
+    const d = difficulty(balance, mode, stage),
+      a = enemyAvg(balance, mode, stage),
+      dps = firepower(balance, craft, refBuild(balance, craft, stage).stacks).dps,
+      life = a.shooterHp / dps;
+    return d.spawnPerSec * (a.damage + a.shooterShare * d.shotsPerSec * a.volley * a.bullet * life);
+  }
+  // 난이도 그래프 가로축 STAGE 줄. 모르는 metric은 NaN 줄.
+  const SERIES = Object.freeze({
+    killTime: (b, mode, craft, s) => killTime(b, mode, craft, s),
+    threat: (b, mode, craft, s) => threat(b, mode, craft, s),
+    point: (b, mode, craft, s) => pointPerKill(b, mode, s),
+    hp: (b, mode, craft, s) => difficulty(b, mode, s).hp,
+    damage: (b, mode, craft, s) => difficulty(b, mode, s).damage,
+    spawn: (b, mode, craft, s) => difficulty(b, mode, s).spawnPerSec,
+  });
+  function stageSeries(balance, mode, metric, stages, craft) {
+    const list = Array.isArray(stages) ? stages : [],
+      f = own(SERIES, metric) ? SERIES[metric] : null;
+    return list.map(s => (f ? f(balance, mode, craft, s) : NaN));
+  }
+
   // ── 시나리오 파일 ──
   const cleanName = v => {
     const s = typeof v === 'string' ? v.trim().slice(0, NAME_MAX).trim() : '';
@@ -6456,6 +7121,14 @@ body[data-fx='low'] .nb-spark {
     goals,
     goalMinutes,
     difficulty,
+    OFFENSE,
+    refBuild,
+    skillCaps,
+    firepower,
+    enemyAvg,
+    killTime,
+    threat,
+    stageSeries,
     packRuns,
     unpackRuns,
     makeScenario,
@@ -6841,6 +7514,10 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           tab: 'values',
           search: '',
           onlyChanged: false,
+          chips: new Set(), // 값 탭 영향 칩(R-069): 여럿 고르면 그중 하나라도
+          axis: 'stage', // 난이도 가로축(R-069): 'stage' | 'mode'
+          shown: MODES.slice(), // 가로축 STAGE에서 보이는 모드 선
+          craft: CRAFTS[0], // 처치 시간 · 초당 위험의 기체
           stage: 1,
           source: 'preset',
           rows: presetRows(),
@@ -6982,6 +7659,10 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
                 name: state.name,
                 sumOpen: state.sumOpen,
                 simOpen: state.simOpen,
+                axis: state.axis,
+                shown: state.shown,
+                craft: state.craft,
+                chips: [...state.chips],
               },
             };
             writeStore();
@@ -7008,6 +7689,14 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           if (typeof ui.sumOpen === 'boolean') state.sumOpen = ui.sumOpen;
           // 조건 칸: 결과가 있으면 접힌 채 시작
           state.simOpen = typeof ui.simOpen === 'boolean' ? ui.simOpen : !state.simResults;
+          if (ui.axis === 'mode') state.axis = 'mode';
+          if (Array.isArray(ui.shown)) {
+            const shown = MODES.filter(m => ui.shown.includes(m));
+            if (shown.length) state.shown = shown;
+          }
+          if (CRAFTS.includes(ui.craft)) state.craft = ui.craft;
+          if (Array.isArray(ui.chips))
+            for (const t of ui.chips) if (Lab.IMPACTS.includes(t)) state.chips.add(t);
         })();
 
         // ── 공통 조각 ──
@@ -7549,6 +8238,80 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           Lab.impacts(path)
             .map(t => '<span class="tag t-' + t + '">' + esc(L.values.tags[t]) + '</span>')
             .join('');
+        // 찾기 글(R-069): 이름 + 키 + 뜻 + 태그 이름(소문자). 태그 이름과 같은 말(예 '난이도')은 그 칩과 같은 줄을 찾는다
+        const searchText = (words, path) => {
+          const d = L.describe(path);
+          return [...words, d ? d.text : '', ...Lab.impacts(path).map(t => L.values.tags[t])]
+            .join(' ')
+            .toLowerCase();
+        };
+        // 이름(목록 .v-name · 표 줄 머리 th)을 누르면 뜻 줄을 펼침/접음. 여럿 펼칠 수 있고 초안에는 남기지 않는다
+        const descAttrs = path =>
+          ' data-desc="' + esc(path) + '" role="button" tabindex="0" aria-expanded="false"';
+        function descHTML(path) {
+          const d = L.describe(path);
+          if (!d) return '';
+          return (
+            esc(d.text) +
+            ' · ' +
+            esc(L.values.unit(d.unit)) +
+            (d.dir ? ' · <span class="dir ' + d.dir + '">' + esc(L.values.dirs[d.dir]) + '</span>' : '')
+          );
+        }
+        function toggleDesc(el) {
+          const open = el.getAttribute('aria-expanded') !== 'true';
+          el.setAttribute('aria-expanded', open ? 'true' : 'false');
+          if (el.tagName === 'TH') {
+            const tr = el.parentElement,
+              next = tr.nextElementSibling;
+            if (next && next.classList.contains('desc')) next.remove();
+            if (open)
+              tr.insertAdjacentHTML(
+                'afterend',
+                '<tr class="desc"><td colspan="' +
+                  tr.children.length +
+                  '"><div class="v-desc">' +
+                  descHTML(el.dataset.desc) +
+                  '</div></td></tr>',
+              );
+            return;
+          }
+          const row = el.closest('.v-row'),
+            old = row.querySelector('.v-desc');
+          if (old) old.remove();
+          if (open)
+            row.insertAdjacentHTML(
+              'beforeend',
+              '<div class="v-desc">' + descHTML(el.dataset.desc) + '</div>',
+            );
+        }
+        // 찾는 말 하나 → 검사 함수. 별칭(L.aliases)이 맞아도 된다. 한 글자 영문 · 숫자(g · b · s)는 떨어진 글자로만 맞는다
+        function wordTest(w) {
+          const tests = [w, ...(has(L.aliases, w) ? L.aliases[w] : [])].map(c => {
+            if (!/^[a-z0-9]$/.test(c)) return s => s.includes(c);
+            const re = new RegExp('(^|[^a-z0-9])' + c + '([^a-z0-9]|$)');
+            return s => re.test(s);
+          });
+          return s => tests.some(f => f(s));
+        }
+        // 찾기 칩: 영향 4개 + '바꾼 값만'
+        const CHIPS = [...Lab.IMPACTS, 'only'];
+        function renderChips() {
+          $('v-chips').innerHTML = CHIPS.map(id => {
+            const only = id === 'only';
+            return (
+              '<button type="button" class="chip ' +
+              (only ? 'only' : 't-' + id) +
+              '" data-chip="' +
+              id +
+              '" aria-pressed="' +
+              (only ? state.onlyChanged : state.chips.has(id)) +
+              '">' +
+              esc(only ? L.values.onlyChanged : L.values.tags[id]) +
+              '</button>'
+            );
+          }).join('');
+        }
         function inputHTML(path, kind, aria) {
           if (kind === 'bool')
             return (
@@ -7596,14 +8359,22 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
             '</tr></thead><tbody>';
           for (const k of keys) {
             const rowName = L.rowName(g, k),
-              search = [rowName, g + '.' + k, ...names, ...cols.map(c => g + '.' + c + '.' + k)].join(' ');
+              first = g + '.' + cols[0] + '.' + k,
+              search = searchText(
+                [rowName, g + '.' + k, ...names, ...cols.map(c => g + '.' + c + '.' + k)],
+                first,
+              );
             h +=
               '<tr data-search="' +
-              esc(search.toLowerCase()) +
-              '"><th>' +
+              esc(search) +
+              '" data-tags="' +
+              Lab.impacts(first).join(' ') +
+              '"><th' +
+              descAttrs(first) +
+              '>' +
               esc(rowName) +
               '<br />' +
-              tags(g + '.' + cols[0] + '.' + k) +
+              tags(first) +
               '</th>';
             cols.forEach((c, i) => {
               const path = g + '.' + c + '.' + k,
@@ -7633,8 +8404,12 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
               '<div class="v-row" data-cell="' +
               esc(e.path) +
               '" data-search="' +
-              esc((label + ' ' + e.path).toLowerCase()) +
-              '"><div class="v-name"><b>' +
+              esc(searchText([label, e.path], e.path)) +
+              '" data-tags="' +
+              Lab.impacts(e.path).join(' ') +
+              '"><div class="v-name"' +
+              descAttrs(e.path) +
+              '><b>' +
               esc(label) +
               tags(e.path) +
               '</b><small>' +
@@ -7668,7 +8443,8 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
         }
         function syncValues() {
           const host = $('v-groups'),
-            q = state.search.trim().toLowerCase(),
+            words = state.search.trim().toLowerCase().split(/\s+/).filter(Boolean).map(wordTest),
+            filtering = words.length > 0 || state.onlyChanged || state.chips.size > 0,
             counts = {};
           for (const cell of host.querySelectorAll('[data-cell]')) {
             const path = cell.dataset.cell,
@@ -7693,23 +8469,42 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
               was.setAttribute('aria-label', L.values.reset);
             }
           }
+          // 찾는 말은 모두 맞아야 하고(그리고), 영향 칩은 그중 하나라도, '바꾼 값만'은 그리고
           let shown = 0;
           for (const row of host.querySelectorAll('[data-search]')) {
             const cells = row.hasAttribute('data-cell') ? [row] : [...row.querySelectorAll('[data-cell]')],
+              rowTags = (row.dataset.tags || '').split(' '),
               ok =
-                (!q || row.dataset.search.includes(q)) &&
+                words.every(t => t(row.dataset.search)) &&
+                (!state.chips.size || rowTags.some(t => state.chips.has(t))) &&
                 (!state.onlyChanged || cells.some(c => c.classList.contains('changed')));
             row.classList.toggle('hide', !ok);
             if (ok) shown++;
           }
+          for (const d of host.querySelectorAll('tr.desc'))
+            d.classList.toggle('hide', d.previousElementSibling.classList.contains('hide'));
           for (const det of host.querySelectorAll('details.group')) {
             const n = counts[det.dataset.group] || 0,
               any = !!det.querySelector('[data-search]:not(.hide)');
             det.querySelector('.g-count').textContent = n ? L.changed(n) : '';
             det.classList.toggle('hide', !any);
-            if ((q || state.onlyChanged) && any) det.open = true;
+            if (filtering && any) det.open = true;
           }
           $('v-empty').classList.toggle('hide', shown > 0);
+        }
+        // 난이도 그래프의 값 칩(R-069): 값 탭으로 가서 찾기 칸에 그 키를 넣고 그 줄로 + 1초 보라 테두리
+        function gotoValue(find) {
+          state.search = find;
+          $('v-search').value = find;
+          state.chips.clear();
+          state.onlyChanged = false;
+          renderChips();
+          setTab('values');
+          const row = $('v-groups').querySelector('[data-search]:not(.hide)');
+          if (!row) return;
+          row.scrollIntoView({ block: 'center' });
+          row.classList.add('flash');
+          setTimeout(() => row.classList.remove('flash'), 1000);
         }
         function setChange(path, value) {
           if (value === null || Object.is(value, baseValue(path))) delete state.changes[path];
@@ -7745,15 +8540,30 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           const tog = e.target.closest('.tog');
           if (tog) return setChange(tog.dataset.path, !currentValue(tog.dataset.path));
           const was = e.target.closest('.was');
-          if (was) setChange(was.dataset.reset, null);
+          if (was) return setChange(was.dataset.reset, null);
+          const name = e.target.closest('[data-desc]');
+          if (name) toggleDesc(name);
+        });
+        $('v-groups').addEventListener('keydown', e => {
+          const name = e.target.closest('[data-desc]');
+          if (!name || (e.key !== 'Enter' && e.key !== ' ')) return;
+          e.preventDefault();
+          toggleDesc(name);
         });
         $('v-search').addEventListener('input', e => {
           state.search = e.target.value;
           syncValues();
         });
-        $('v-only').addEventListener('change', e => {
-          state.onlyChanged = e.target.checked;
+        $('v-chips').addEventListener('click', e => {
+          const b = e.target.closest('[data-chip]');
+          if (!b) return;
+          const id = b.dataset.chip;
+          if (id === 'only') state.onlyChanged = !state.onlyChanged;
+          else if (state.chips.has(id)) state.chips.delete(id);
+          else state.chips.add(id);
+          renderChips();
           syncValues();
+          saveDraft();
         });
         $('v-reset').addEventListener('click', () => {
           const n = changeList().length;
@@ -7762,56 +8572,232 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
           changed();
         });
 
-        // ── 난이도 탭: 모드별 적 배율(지금 · 실험) ──
+        // ── 난이도 탭(R-069): 가로축 STAGE(모드 색 선, 기본) · 가로축 모드(고른 Stage) ──
+        // 그래프마다 식 한 줄 + 들어간 값 칩(누르면 값 탭 그 줄로). 처치 시간 · 초당 위험은 고른 기체의 기준 빌드
+        const D_STAGES = Array.from({ length: 60 }, (x, i) => i + 1), // 임시값: STAGE 1~60
+          D_TICKS = [1, 10, 20, 30, 40, 50, 60],
+          STAGE_METRICS = ['killTime', 'threat', 'pointKill', 'hp', 'damage', 'spawnPerSec'],
+          MODE_METRICS = [
+            'hp',
+            'damage',
+            'spawnPerSec',
+            'shotsPerSec',
+            'bulletSpeed',
+            'xp',
+            'point',
+            'killTime',
+            'threat',
+            'pointKill',
+          ],
+          // 화면 지표 → lab-core stageSeries 지표
+          SERIES_OF = {
+            killTime: 'killTime',
+            threat: 'threat',
+            pointKill: 'point',
+            hp: 'hp',
+            damage: 'damage',
+            spawnPerSec: 'spawn',
+          };
+        // 한 모드 · 한 Stage의 지표(가로축 모드)
+        function dValue(B, m, st, k) {
+          if (k === 'killTime') return Lab.killTime(B, m, state.craft, st);
+          if (k === 'threat') return Lab.threat(B, m, state.craft, st);
+          if (k === 'pointKill') return Lab.pointPerKill(B, m, st);
+          return Lab.difficulty(B, m, st)[k];
+        }
+        const secText = v => (v >= 1 ? fmt(v, v >= 10 ? 0 : 1) : String(+v.toPrecision(1))) + 's';
+        // 가로축 STAGE 그래프(340×150): 모드 색 선, 지금 실선 · 실험 점선(다를 때만). log면 로그 눈금
+        function stageChart(series, log, fmtY) {
+          const W = 340,
+            H = 150,
+            l = 40,
+            r = 10,
+            t = 10,
+            b = 20,
+            vals = series.flatMap(s => [...s.now, ...(s.exp || [])]).filter(v => Number.isFinite(v) && v > 0);
+          if (!vals.length) return '';
+          const lo = log ? Math.pow(10, Math.floor(Math.log10(Math.min(...vals)))) : 0;
+          let hi = log ? Math.pow(10, Math.ceil(Math.log10(Math.max(...vals)))) : niceMax(Math.max(...vals));
+          if (log && hi <= lo) hi = lo * 10;
+          const f = v =>
+              log ? (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) : v / hi,
+            X = i => l + (i / (D_STAGES.length - 1)) * (W - l - r),
+            Y = v => t + (1 - f(Number.isFinite(v) ? Math.max(v, log ? lo : 0) : log ? lo : 0)) * (H - t - b),
+            ticks = log
+              ? Array.from({ length: Math.round(Math.log10(hi / lo)) + 1 }, (x, i) => lo * Math.pow(10, i))
+              : [0, hi / 2, hi];
+          let s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">';
+          for (const v of ticks) {
+            const y = Y(v).toFixed(1);
+            s +=
+              '<line class="grid" x1="' +
+              l +
+              '" x2="' +
+              (W - r) +
+              '" y1="' +
+              y +
+              '" y2="' +
+              y +
+              '" /><text x="' +
+              (l - 5) +
+              '" y="' +
+              (Number(y) + 3) +
+              '" text-anchor="end">' +
+              esc(fmtY(v)) +
+              '</text>';
+          }
+          for (const st of D_TICKS) {
+            const i = D_STAGES.indexOf(st);
+            if (i >= 0)
+              s +=
+                '<text x="' +
+                X(i).toFixed(1) +
+                '" y="' +
+                (H - 5) +
+                '" text-anchor="middle">' +
+                st +
+                '</text>';
+          }
+          const line = (vs, m, dash) =>
+            '<path class="mline' +
+            (dash ? ' dash' : '') +
+            '" style="stroke:' +
+            modeColor(m) +
+            '" d="' +
+            vs.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ') +
+            '" />';
+          for (const sr of series)
+            s += line(sr.now, sr.mode, false) + (sr.exp ? line(sr.exp, sr.mode, true) : '');
+          return s + '</svg>';
+        }
+        // 그래프 카드: 제목 · 식 한 줄 · 들어간 값 칩 · 본문
+        const dCard = (k, title, body) =>
+          '<article class="card"><h3>' +
+          esc(title) +
+          '</h3><p class="formula">' +
+          esc(L.difficulty.formula[k]) +
+          '</p><div class="vchips">' +
+          L.difficulty.inputs[k]
+            .map(c => '<button type="button" data-find="' + esc(c.find) + '">' + esc(c.label) + '</button>')
+            .join('') +
+          '</div>' +
+          body +
+          '</article>';
         function renderDifficulty() {
           const E = exp(),
-            st = state.stage,
-            names = MODES.map(m => T.modeName(m)),
-            now = MODES.map(m => Lab.difficulty(base, m, st)),
-            ex = MODES.map(m => Lab.difficulty(E, m, st));
+            two = changeList().length > 0,
+            D = L.difficulty;
           let h =
             '<p class="note">' +
-            esc(L.difficulty.note) +
-            '</p><div><span class="field-label">' +
-            esc(L.difficulty.stage) +
-            '</span><div class="seg" data-act="stage">' +
-            [1, 10, 30, 60].map(s => segBtn(s, s, st === s)).join('') +
-            '<input class="num" id="d-stage" type="text" inputmode="numeric" style="width:76px" value="' +
-            st +
-            '" aria-label="' +
-            esc(L.difficulty.stage) +
-            '" /></div></div>' +
-            legend();
-          for (const k of Object.keys(L.difficulty.metrics)) {
-            const a = now.map(d => d[k]),
-              b = ex.map(d => d[k]),
-              diff = a.some((v, i) => !same(v, b[i]));
+            esc(D.note) +
+            '</p><div class="dtools"><div class="seg" data-act="axis">' +
+            segBtn('stage', D.axis.stage, state.axis === 'stage') +
+            segBtn('mode', D.axis.mode, state.axis === 'mode') +
+            '</div><label class="craftsel">' +
+            esc(D.craft) +
+            ' <select id="d-craft">' +
+            CRAFTS.map(
+              c =>
+                '<option value="' +
+                c +
+                '"' +
+                (c === state.craft ? ' selected' : '') +
+                '>' +
+                esc(T.craftName(c)) +
+                '</option>',
+            ).join('') +
+            '</select></label></div>';
+          if (state.axis === 'stage') {
             h +=
-              '<article class="card"><h3>' +
-              esc(L.difficulty.metrics[k]) +
-              '</h3>' +
-              lineChart(names, diff ? [a, b] : [a]) +
-              numsTable(names, a, diff ? b : null) +
-              '</article>';
+              '<div class="mdots" data-act="shown">' +
+              MODES.map(
+                m =>
+                  '<button type="button" data-v="' +
+                  m +
+                  '" aria-pressed="' +
+                  state.shown.includes(m) +
+                  '" style="color:' +
+                  modeColor(m) +
+                  '">' +
+                  esc(T.modeName(m)) +
+                  '</button>',
+              ).join('') +
+              '</div><p class="src">' +
+              esc(D.modesNote) +
+              '</p>';
+            const modes = MODES.filter(m => state.shown.includes(m));
+            for (const k of STAGE_METRICS) {
+              const series = modes.map(m => {
+                const now = Lab.stageSeries(base, m, SERIES_OF[k], D_STAGES, state.craft),
+                  ex = two ? Lab.stageSeries(E, m, SERIES_OF[k], D_STAGES, state.craft) : null;
+                return { mode: m, now, exp: ex && ex.some((v, i) => !same(v, now[i])) ? ex : null };
+              });
+              h += dCard(
+                k,
+                D.metrics[k],
+                stageChart(series, k === 'killTime', k === 'killTime' ? secText : v => fmt(v)),
+              );
+            }
+          } else {
+            const st = state.stage,
+              names = MODES.map(m => T.modeName(m));
+            h +=
+              '<div><span class="field-label">' +
+              esc(D.stage) +
+              '</span><div class="seg" data-act="stage">' +
+              [1, 10, 30, 60].map(s => segBtn(s, s, st === s)).join('') +
+              '<input class="num" id="d-stage" type="text" inputmode="numeric" style="width:76px" value="' +
+              st +
+              '" aria-label="' +
+              esc(D.stage) +
+              '" /></div></div>' +
+              legend() +
+              '<p class="src">' +
+              esc(D.modeNote) +
+              '</p>';
+            for (const k of MODE_METRICS) {
+              const a = MODES.map(m => dValue(base, m, st, k)),
+                b = MODES.map(m => dValue(E, m, st, k)),
+                diff = a.some((v, i) => !same(v, b[i]));
+              h += dCard(
+                k,
+                (D.modeMetric && D.modeMetric[k]) || D.metrics[k],
+                lineChart(names, diff ? [a, b] : [a]) + numsTable(names, a, diff ? b : null),
+              );
+            }
+            const sNow = Lab.difficulty(base, MODES[0], st).speed,
+              sExp = Lab.difficulty(E, MODES[0], st).speed;
+            h += '<p class="note">' + esc(D.speed(fmt(sNow), fmt(sExp))) + '</p>';
           }
-          h +=
-            '<p class="note">' +
-            esc(L.difficulty.speed(fmt(now[0].speed), fmt(ex[0].speed))) +
-            '</p>' +
-            method(L.difficulty.method, L.difficulty.formulas);
           $('tab-difficulty').innerHTML = h;
         }
         $('tab-difficulty').addEventListener('click', e => {
-          const b = e.target.closest('[data-act="stage"] button');
+          const chip = e.target.closest('.vchips button[data-find]');
+          if (chip) return gotoValue(chip.dataset.find);
+          const b = e.target.closest('[data-act] button');
           if (!b) return;
-          state.stage = Number(b.dataset.v);
+          const act = b.closest('[data-act]').dataset.act;
+          if (act === 'axis') state.axis = b.dataset.v === 'mode' ? 'mode' : 'stage';
+          else if (act === 'stage') state.stage = Number(b.dataset.v);
+          else if (act === 'shown') {
+            const m = b.dataset.v,
+              on = state.shown.includes(m);
+            // 적어도 한 모드는 보인다
+            if (on && state.shown.length === 1) return;
+            state.shown = on
+              ? state.shown.filter(x => x !== m)
+              : MODES.filter(x => x === m || state.shown.includes(x));
+          } else return;
           renderDifficulty();
           saveDraft();
         });
         $('tab-difficulty').addEventListener('change', e => {
-          if (e.target.id !== 'd-stage') return;
-          const v = Math.floor(Number(e.target.value));
-          state.stage = Number.isFinite(v) ? Math.min(999, Math.max(1, v)) : 1;
+          if (e.target.id === 'd-craft') {
+            if (CRAFTS.includes(e.target.value)) state.craft = e.target.value;
+          } else if (e.target.id === 'd-stage') {
+            const v = Math.floor(Number(e.target.value));
+            state.stage = Number.isFinite(v) ? Math.min(999, Math.max(1, v)) : 1;
+          } else return;
           renderDifficulty();
           saveDraft();
         });
@@ -9406,9 +10392,10 @@ globalThis.LAB_SOURCES = { siege: "(function (root) {\n  'use strict';\n  // 포
         });
         $('changed').addEventListener('click', () => {
           state.onlyChanged = true;
-          $('v-only').checked = true;
+          renderChips();
           setTab('values');
         });
+        renderChips();
         syncChip();
         renderSummary();
         setTab(state.tab);
