@@ -11162,6 +11162,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fan: false,
         burst: false,
         bossSide: false,
+        tier: 1,
+        // Stage 기울기(모드별): 공통 Stage 규칙의 계수. 체력 · 피해 · 출현 · 이동 속도를 모드마다 따로 정한다
+        stage: { hp: 1, damage: 0.15, density: 0.15, speed: 0.04 },
+        // 시간 압박(모드별): from분이 지나면 분마다 체력 · 피해 · 출현을 더한다(0 = 없음). 극한 구간
+        late: { from: 20, hp: 0, damage: 0, density: 0 },
       },
       hard: {
         spawn: 1.1,
@@ -11181,6 +11186,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fan: false,
         burst: false,
         bossSide: false,
+        tier: 1.5,
+        // Stage 기울기(모드별): 공통 Stage 규칙의 계수. 체력 · 피해 · 출현 · 이동 속도를 모드마다 따로 정한다
+        stage: { hp: 1, damage: 0.15, density: 0.15, speed: 0.04 },
+        // 시간 압박(모드별): from분이 지나면 분마다 체력 · 피해 · 출현을 더한다(0 = 없음). 극한 구간
+        late: { from: 20, hp: 0, damage: 0, density: 0 },
       },
       extream: {
         spawn: 1.15,
@@ -11200,6 +11210,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fan: true,
         burst: false,
         bossSide: false,
+        tier: 2,
+        // Stage 기울기(모드별): 공통 Stage 규칙의 계수. 체력 · 피해 · 출현 · 이동 속도를 모드마다 따로 정한다
+        stage: { hp: 1, damage: 0.15, density: 0.15, speed: 0.04 },
+        // 시간 압박(모드별): from분이 지나면 분마다 체력 · 피해 · 출현을 더한다(0 = 없음). 극한 구간
+        late: { from: 20, hp: 0, damage: 0, density: 0 },
       },
       super: {
         spawn: 1.4,
@@ -11219,6 +11234,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fan: true,
         burst: false,
         bossSide: false,
+        tier: 3,
+        // Stage 기울기(모드별): 공통 Stage 규칙의 계수. 체력 · 피해 · 출현 · 이동 속도를 모드마다 따로 정한다
+        stage: { hp: 1, damage: 0.15, density: 0.15, speed: 0.04 },
+        // 시간 압박(모드별): from분이 지나면 분마다 체력 · 피해 · 출현을 더한다(0 = 없음). 극한 구간
+        late: { from: 20, hp: 0, damage: 0, density: 0 },
       },
       ultra: {
         spawn: 1.5,
@@ -11238,6 +11258,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fan: true,
         burst: true,
         bossSide: false,
+        tier: 4,
+        // Stage 기울기(모드별): 공통 Stage 규칙의 계수. 체력 · 피해 · 출현 · 이동 속도를 모드마다 따로 정한다
+        stage: { hp: 1, damage: 0.15, density: 0.15, speed: 0.04 },
+        // 시간 압박(모드별): from분이 지나면 분마다 체력 · 피해 · 출현을 더한다(0 = 없음). 극한 구간
+        late: { from: 20, hp: 0, damage: 0, density: 0 },
       },
       insane: {
         spawn: 1.8,
@@ -11257,6 +11282,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         fan: true,
         burst: true,
         bossSide: true,
+        tier: 5,
+        // Stage 기울기(모드별): 공통 Stage 규칙의 계수. 체력 · 피해 · 출현 · 이동 속도를 모드마다 따로 정한다
+        stage: { hp: 1, damage: 0.15, density: 0.15, speed: 0.04 },
+        // 시간 압박(모드별): from분이 지나면 분마다 체력 · 피해 · 출현을 더한다(0 = 없음). 극한 구간
+        late: { from: 20, hp: 0, damage: 0, density: 0 },
       },
     },
     // 해금: from 모드의 한 판이 조건을 모두 채우면 열린다(time 초 · score Point · level LV). Easy·Hard는 처음부터.
@@ -11319,15 +11349,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     // 방어 한도를 쓰는 스킬
     defense: ['vital', 'shield'],
-    // Stage n: 1 + 값 × (n − 1). 적 속도는 speedMax에서 멈춘다.
+    // Stage n: 1 + 모드 값 × (n − 1)(체력 · 피해 · 출현 · 속도, modes.*.stage). 적 속도는 speedMax에서 멈춘다.
     // 자동 승격(R-022): Stage 최소값 = 1 + floor(실제 LV ÷ autoLevel). 지금 Stage가 낮으면 한 칸씩 올린다(보스 규칙 같음).
+    // 공통 Stage 규칙(모두 모드에 같이 적용): 처치 XP · 처치 Point 배율, 이동 속도 상한, 자동 승격 주기.
+    // 체력 · 피해 · 출현 · 이동 속도 기울기는 모드마다(modes.*.stage), 시간 압박은 modes.*.late.
     stage: {
-      hp: 1,
-      damage: 0.15,
-      density: 0.15,
       xp: 0.1,
       score: 0.03,
-      speed: 0.04,
       speedMax: 2,
       autoLevel: 5,
     },
@@ -13099,17 +13127,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'skills.crit.overflow': ['확률 상한에 닿은 뒤 스택마다 치명타 배율 +', '배', 'easy'],
       'skills.shield.amount': ['스택마다 최대 보호막 +', 'HP', 'easy'],
       'skills.shield.regen': ['스택마다 보호막 초당 재생 +', 'HP/초', 'easy'],
-      'stage.hp': [ST + '마다 적 HP에 더하는 몫: 1 + 값 × (' + ST + ' − 1)', '배/' + ST, 'hard'],
-      'stage.damage': [ST + '마다 적 피해에 더하는 몫: 1 + 값 × (' + ST + ' − 1)', '배/' + ST, 'hard'],
-      'stage.density': [
+      'modes.*.stage.hp': [ST + '마다 적 HP에 더하는 몫: 1 + 값 × (' + ST + ' − 1)', '배/' + ST, 'hard'],
+      'modes.*.stage.damage': [
+        ST + '마다 적 피해에 더하는 몫: 1 + 값 × (' + ST + ' − 1)',
+        '배/' + ST,
+        'hard',
+      ],
+      'modes.*.stage.density': [
         ST + '마다 출현 빈도에 더하는 몫: 간격 ÷ (1 + 값 × (' + ST + ' − 1))',
         '배/' + ST,
         'hard',
       ],
       'stage.xp': [ST + '마다 처치 XP에 더하는 몫', '배/' + ST, 'easy'],
       'stage.score': [ST + '마다 처치 ' + PT + '에 더하는 몫', '배/' + ST, 'more'],
-      'stage.speed': [ST + '마다 적 이동 속도에 더하는 몫(상한까지)', '배/' + ST, 'hard'],
+      'modes.*.stage.speed': [ST + '마다 적 이동 속도에 더하는 몫(상한까지)', '배/' + ST, 'hard'],
       'stage.speedMax': ['적 이동 속도 배율 상한', '배', 'hard'],
+      'modes.*.tier': [
+        '단계(1 = 쉬움 · 5 = 가장 어려움). 표시와 순서 검사용이라 게임 수치에는 쓰지 않는다',
+        '단계',
+        'hard',
+      ],
+      'modes.*.late.from': ['이 시간(분)이 지나면 이 모드의 시간 압박이 시작한다(극한 구간)', '분', 'hard'],
+      'modes.*.late.hp': ['시간 압박: 시작 뒤 1분마다 적 HP에 더하는 몫(0 = 없음)', '배/분', 'hard'],
+      'modes.*.late.damage': ['시간 압박: 시작 뒤 1분마다 적 피해에 더하는 몫(0 = 없음)', '배/분', 'hard'],
+      'modes.*.late.density': ['시간 압박: 시작 뒤 1분마다 출현에 더하는 몫(0 = 없음)', '배/분', 'hard'],
       'stage.autoLevel': ['실제 LV가 이만큼 오를 때마다 ' + ST + ' 최소 +1(자동 승격)', 'LV', 'easy'],
       'boss.every': ['보스 웨이브가 나오는 ' + ST + ' 간격(이 수의 배수)', ST, 'easy'],
       'boss.base': ['보스 웨이브 기본 수', '마리', 'hard'],
@@ -13369,6 +13410,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return {
           note: '모드마다 적이 얼마나 센지 지금 값과 실험 값으로 비교합니다.',
           axis: { stage: '가로축 ' + stage.upper, mode: '가로축 모드' },
+          factor: {
+            title: '3요소 · 모드별',
+            note: '단계(표시용) · 기본 배율(모드 칸) · Stage 기울기(모드마다: 체력 · 피해 · 출현 · 속도) · 시간 압박(시작 뒤 분마다). 줄을 누르면 그 모드를 강조합니다.',
+            cols: [
+              '모드 · 단계',
+              '기본 · 체력 · 피해 · 출현',
+              'Stage 기울기 · 체력 · 피해 · 출현 · 속도',
+              '시간 압박 · 시작 분 · 체력 · 피해 · 출현',
+            ],
+            tier: n => '단계 ' + n,
+          },
+          time: {
+            title: '시간 곡선(시간 압박)',
+            note: '체력 배율이 분마다 어떻게 오르는지. 회색 띠 = 목표 구간 10~20분. 시작 분은 모드마다 다르다.',
+            axis: '분',
+          },
+          rawFold: '자세히 · 원자료 식(초당 출현 · 적 HP · 피해)',
           craft: '기체',
           modesNote: '모드 이름을 누르면 그 선을 숨기거나 보입니다. 실선 = 지금, 점선 = 실험.',
           modeNote: ST + '를 고르면 그 ' + ST + ' 기준입니다. 처치 시간 · 초당 위험은 고른 기체 기준입니다.',
@@ -13430,7 +13488,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           inputs: {
             killTime: [
               v('모드 HP', 'modes.hp'),
-              v(ST + '마다 적 HP +', 'stage.hp'),
+              v(ST + '마다 적 HP +', 'modes.*.stage.hp'),
               v('적 HP', 'enemies.hp'),
               v('기체 피해', 'crafts.damage'),
               v('발사 간격', 'crafts.fire'),
@@ -13441,8 +13499,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               v('모드 출현', 'modes.spawn'),
               v('모드 피해', 'modes.damage'),
               v('모드 사격', 'modes.fire'),
-              v(ST + '마다 출현 +', 'stage.density'),
-              v(ST + '마다 적 피해 +', 'stage.damage'),
+              v(ST + '마다 출현 +', 'modes.*.stage.density'),
+              v(ST + '마다 적 피해 +', 'modes.*.stage.damage'),
               v(SHOT + ' 비율', 'spawn.mix.shooter'),
               v('적 탄환 피해 배율', 'hostile.damage'),
             ],
@@ -13452,10 +13510,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               v('적 ' + PT, 'enemies.score'),
               v('콤보 보너스 상한', 'score.combomax'),
             ],
-            hp: [v('모드 HP', 'modes.hp'), v(ST + '마다 적 HP +', 'stage.hp')],
+            hp: [v('모드 HP', 'modes.hp'), v(ST + '마다 적 HP +', 'modes.*.stage.hp')],
             damage: [
               v('모드 피해', 'modes.damage'),
-              v(ST + '마다 적 피해 +', 'stage.damage'),
+              v(ST + '마다 적 피해 +', 'modes.*.stage.damage'),
               v('적 탄환 피해 배율', 'hostile.damage'),
             ],
             spawnPerSec: [
@@ -13463,7 +13521,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               v('맵 출현 배율', 'spawn.rate'),
               v('출현 간격', 'spawn.interval'),
               v('간격 바닥', 'spawn.min'),
-              v(ST + '마다 출현 +', 'stage.density'),
+              v(ST + '마다 출현 +', 'modes.*.stage.density'),
             ],
             shotsPerSec: [
               v('모드 사격', 'modes.fire'),
@@ -13479,7 +13537,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         };
       })(),
       economy: {
-        sources: { preset: '예시', test: '시험 경로 기록', real: '실제 주소 기록' },
+        sources: { preset: '예시', test: '시험 경로 기록', real: '실제 주소 기록', file: '백업 파일' },
+        fileChoose: '백업 파일 고르기',
+        fileNote:
+          '백업 파일(데이터 탭에서 내보낸 것)의 판 기록만 읽습니다. 파일은 이 화면 안에서만 읽고 어디에도 올라가지 않습니다.',
+        fileBad: '백업 파일을 읽지 못했습니다. 데이터 탭에서 내보낸 백업인지 확인하세요.',
+        fileCount: n => '백업 파일에서 ' + n + '판을 읽었습니다.',
         reading: '기록을 읽는 중…',
         presetNote:
           "예시 숫자입니다. '자세히'에서 조건을 바꿀 수 있고, 기록을 고르면 이 폰의 실제 판으로 바뀝니다.",
@@ -13596,6 +13659,73 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         seeds: '판 수',
         seedsOf: n => '× ' + n,
         autoGold: '자동 ' + G,
+        control: '대조군(흔들림 재기)',
+        bandsTitle: '길이 분포(목표 구간 10 · 20분)',
+        bandsNote:
+          '판이 끝난 시각의 비율. 목표는 대부분의 판이 10~20분 사이에 끝나는 것. 20분 뒤 탈락을 보려면 길이를 20분 이상으로 돌리세요.',
+        bandsCols: ['모드', '10분 전', '10~20분', '20분 뒤', '끝까지'],
+        tierWarn: (hi, lo, th, tl) =>
+          hi + '(단계 ' + th + ')이 ' + lo + '(단계 ' + tl + ')보다 더 오래 버팀. 단계 순서가 뒤집혔습니다',
+        tierOk: '단계 순서가 맞습니다(흔들림 밖에서 뒤집힌 모드가 없습니다).',
+        hurtTitle: '피해 출처(모드별)',
+        hurtNote:
+          '맞은 피해를 출처별로 나눈 비율. 마지막 피해 = 쓰러진 판에서 맨 마지막으로 맞은 출처(가장 많은 것).',
+        hurtCols: ['모드', '접촉', '탄', '바닥', '기타', '마지막 피해'],
+        hurtName: { contact: '몸통', projectile: '탄', floor: '바닥', other: '기타' },
+        paceTitle: '페이스(살아 있는 판의 평균 LV · STAGE)',
+        paceNote: '판 시간에 따른 평균 레벨과 STAGE. 판이 끝나 빠진 판은 그 시간의 평균에서 빠진다.',
+        paceCols: ['모드', 'LV 5분', 'LV 10분', 'LV 15분', 'LV 20분', 'STAGE 10분', 'STAGE 20분'],
+        compareTitle: '실력 격차',
+        compareNote: '같은 조건에서 두 실력을 나란히. 끝까지 = 길이 끝까지 버틴 비율, 평균 = 생존 평균(분).',
+        compareCols: ['모드', '끝까지', '평균', '끝까지(다른 실력)', '평균(다른 실력)', '차이(끝까지)'],
+        recordTitle: '실제 기록과 비교(이 기기)',
+        recordNote:
+          '이 기기의 실제 기록(같은 모드 · 출격)과 봇 결과의 탈락 시각 비교. 기록에는 끝까지 버틴 판이 없어 탈락 시각만 본다.',
+        recordCols: [
+          '모드',
+          '기록 판',
+          '기록 평균',
+          '봇 평균',
+          '기록 10분 전',
+          '봇 10분 전',
+          '기록 10~20분',
+          '봇 10~20분',
+        ],
+        recordNone: '이 기기에 같은 모드 기록이 없습니다.',
+        presetLabel: '느낌 확인',
+        sensButton: '영향 순위(3요소 ±20%)',
+        sensTitle: '영향 순위(3요소 값 하나씩 ±20%)',
+        sensNote:
+          '한 값만 바꾸고 나머지는 지금 값으로 돌린 결과. 위가 가장 큰 영향. 흔들림 안의 차이는 노이즈일 수 있습니다. 모드 하나 · 기체 3 · 판 수 최대 5.',
+        sensCols: ['값', '지금', '+20%', '끝까지 +', '끝까지 −', '평균 +', '평균 −', '영향'],
+        sensNames: {
+          hp: '기본 체력',
+          damage: '기본 피해',
+          spawn: '기본 출현',
+          'stage.hp': 'Stage 체력',
+          'stage.damage': 'Stage 피해',
+          'stage.density': 'Stage 출현',
+          'stage.speed': 'Stage 속도',
+          'late.hp': '시간 압박 체력',
+          'late.damage': '시간 압박 피해',
+          'late.density': '시간 압박 출현',
+        },
+        noiseTitle: '흔들림',
+        noiseSame: n =>
+          '사실상 같은 값으로 ' +
+          n +
+          '판을 돌렸지만 지금 값과 결과가 모두 같았습니다. 이 판 수에서는 흔들림이 보이지 않습니다.',
+        noiseNote:
+          '흔들림 = 같은 설정 판들의 표준편차. 최소 차이 = 판 수가 같은 두 묶음을 비교할 때 잡히는 차이(2표준오차). 이보다 작은 차이는 노이즈일 수 있습니다.',
+        noiseCols: ['모드', '판', '생존 흔들림', '생존 최소 차이', '끝까지 흔들림', '끝까지 최소 차이'],
+        noiseControl: (n, sd, csd) =>
+          '대조군(같은 판을 값만 0.1% 바꿔 돌림, ' +
+          n +
+          '쌍): 짝 차이의 흔들림은 생존 ' +
+          sd +
+          '분 · 끝까지 ' +
+          csd +
+          '%p. 작은 값 변화에도 판이 갈라진다는 뜻입니다.',
         tier: '수입 단계',
         // 실력 봇(봇 플레이): 지금 봇 = 예전 규칙 · 일반 · 전문가 = 실력 설정(Stage는 게임 기본, 고르기는 무작위)
         profile: '실력',
@@ -13637,6 +13767,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         watch: '관전 열기',
         watchNote: '지금 조건의 판을 게임 화면에서 봅니다(시험 경로에서만 열립니다).',
         run: n => '돌리기 · 판 ' + n + '개',
+        // 예상 시간: 이 PC에서 한 판 1분(게임 시간)을 약 0.4초로 잡고 작업자 수로 나눈 값. 기기마다 다르다
+        eta: sec => '예상 ' + (sec >= 60 ? Math.round(sec / 60) + '분' : sec + '초') + '(이 PC 기준 추정)',
         stop: '멈추기',
         progress: (done, total) => done + ' / ' + total + '판',
         none: "아직 돌린 판이 없습니다. 조건을 고르고 '돌리기'를 누르세요.",
@@ -13688,7 +13820,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         survHead: (n, avg) => '기록 ' + n + '판' + (n ? ' · 평균 ' + avg : ''),
         survOld: '옛 값 기록 포함',
         survNote:
-          '가로 = 분, 세로 = 그때 살아 있는 판 비율. 점선은 이 기기 기록(판이 끝난 시각). 봇은 사람보다 약합니다.',
+          '가로 = 분, 세로 = 그때 살아 있는 판 비율. 점선은 이 기기 기록(판이 끝난 시각). 봇 결과는 경향으로만 읽습니다.',
         detail: '기체별 · 자세히(' + stage.upper + ' · 보스 · 판당 ' + point.name + ' · 판당 ' + G + ')',
         cols: {
           craft: '기체',
@@ -14580,16 +14712,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }
     return out;
   }
-  function stageRules(stage) {
+  // Stage 규칙(3요소): 체력 · 피해 · 출현 · 이동 속도는 모드(prof.stage)의 기울기, 처치 XP · Point와 속도 상한은 공통(B.stage).
+  // 시간 압박(prof.late)은 전투 시계(time, 초)가 from분을 넘은 뒤 분마다 더한다. 값이 0이면 곱하기 1(예전과 같다).
+  function stageRules(stage, prof = null, time = 0) {
     const n = Math.max(1, Math.floor(Number(stage) || 1)) - 1,
-      R = B.stage;
+      G = B.stage,
+      S = (prof || DIFFICULTIES.easy).stage,
+      L = (prof || DIFFICULTIES.easy).late,
+      over = Math.max(0, Number(time) / 60 - L.from);
     return {
-      hp: 1 + R.hp * n,
-      damage: 1 + R.damage * n,
-      density: 1 + R.density * n,
-      xp: 1 + R.xp * n,
-      score: 1 + R.score * n,
-      speed: Math.min(R.speedMax, 1 + R.speed * n),
+      hp: (1 + S.hp * n) * (1 + L.hp * over),
+      damage: (1 + S.damage * n) * (1 + L.damage * over),
+      density: (1 + S.density * n) * (1 + L.density * over),
+      xp: 1 + G.xp * n,
+      score: 1 + G.score * n,
+      speed: Math.min(G.speedMax, 1 + S.speed * n),
     };
   }
   class Game {
@@ -14860,7 +14997,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       this.emit('stage', {
         to: this.stage,
-        rules: stageRules(this.stage),
+        rules: stageRules(this.stage, this.profile, this.time),
         hp: this.p.hp,
         level: this.p.level,
         skills: { ...this.upgrades },
@@ -14915,7 +15052,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (kind === 'boss' && this.enemies.filter(e => !e.dead && e.kind === 'boss').length >= B.boss.alive)
         return null;
       const s = STATS[kind] || STATS.chaser,
-        rules = stageRules(originStage),
+        rules = stageRules(originStage, this.profile, this.time),
         a = this.rng() * TAU;
       if (x === undefined) {
         x = clamp(this.p.x + Math.cos(a) * this.spawnRadius, 40, W - 40);
@@ -15491,7 +15628,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           this.emit(ev.type, ev);
         }
       const p = this.p,
-        rules = stageRules(this.stage);
+        rules = stageRules(this.stage, this.profile, this.time);
       this.contextClock -= dt;
       if (!this.contextCache || this.contextClock <= 0) {
         this.abilityContext('dash', true);
@@ -15748,7 +15885,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           h.done = true;
           this.emit('hazard', { x: h.x, y: h.y, r: h.r });
           if (dist(h, p) < h.r + p.r)
-            this.hurt(HZ.damage * stageRules(h.stage).damage * this.profile.damage, {
+            this.hurt(HZ.damage * stageRules(h.stage, this.profile, this.time).damage * this.profile.damage, {
               kind: 'hazard',
               stage: h.stage,
               attack: 'floor',
