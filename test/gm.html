@@ -11136,7 +11136,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-5',
+    name: 'v5-6',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 장갑 강화·재생 실드를 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
@@ -11854,7 +11854,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const pctOf = v => Math.round(v * 100);
   // 출격 버프 id(R-062): balance buffs 키 순서(from 제외)
   const buffList = () => Object.keys(B().buffs).filter(k => k !== 'from');
-  // 회복 구역(R-061): '전투 1분부터 1분마다 맵 어딘가에 30초 동안 생기는 초록 원. 안에 있으면 HP가 1초에 1씩 찬다'
+  // 회복 구역(R-061): '전투 1분부터 1분마다 맵 어딘가에 30초 동안 생기는 초록 원. 안에 있으면 HP가 1초에 healZone.hp씩 찬다'(숫자는 balance.js)
   const healZoneText = () => {
     const h = B().healZone;
     return (
@@ -14617,7 +14617,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.6.2',
+  const VERSION = '4.6.3',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -18494,7 +18494,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 1회 부활(R-062): 흔들림 · 금빛 고리 길이(초) · 불꽃 수 [보통, 가볍게]
     reviveShake: [5, 0.25],
     revive: { sec: 0.6, sparks: [30, 8] },
-    // 회복 구역(R-061): 채움 · 테두리 투명도 [밖, 안] · 끝 깜빡임(남은 초 · 초당 횟수) · '+1' 글자 크기 · 수명(초)
+    // 회복 구역(R-061): 채움 · 테두리 투명도 [밖, 안] · 끝 깜빡임(남은 초 · 초당 횟수) · '+N'(healZone.hp) 글자 크기 · 수명(초)
     zone: { fill: [0.11, 0.2], line: [0.8, 1], blink: 5, hz: 4, size: 28, life: 0.8 },
   };
   const TAU = Math.PI * 2;
@@ -18847,7 +18847,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       compact(this.heals);
       const p = g.p;
-      // 회복 '+1'(R-061): 기체가 회복 구역 안에서 회복하는 동안 전투 시계 1초마다 하나(설정 '치명타 숫자'와 별개)
+      // 회복 '+N'(R-061, N = healZone.hp): 기체가 회복 구역 안에서 회복하는 동안 전투 시계 1초마다 하나(설정 '치명타 숫자'와 별개)
       const zone = g.zone,
         inZone = !!zone && Neon.dist(zone, p) < zone.r,
         sec = Math.floor(g.time);

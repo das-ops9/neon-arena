@@ -4301,7 +4301,7 @@ return Plotly;
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-5',
+    name: 'v5-6',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 장갑 강화·재생 실드를 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
@@ -5019,7 +5019,7 @@ return Plotly;
   const pctOf = v => Math.round(v * 100);
   // 출격 버프 id(R-062): balance buffs 키 순서(from 제외)
   const buffList = () => Object.keys(B().buffs).filter(k => k !== 'from');
-  // 회복 구역(R-061): '전투 1분부터 1분마다 맵 어딘가에 30초 동안 생기는 초록 원. 안에 있으면 HP가 1초에 1씩 찬다'
+  // 회복 구역(R-061): '전투 1분부터 1분마다 맵 어딘가에 30초 동안 생기는 초록 원. 안에 있으면 HP가 1초에 healZone.hp씩 찬다'(숫자는 balance.js)
   const healZoneText = () => {
     const h = B().healZone;
     return (
