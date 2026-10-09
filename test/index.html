@@ -13597,12 +13597,36 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         seedsOf: n => '× ' + n,
         autoGold: '자동 ' + G,
         tier: '수입 단계',
+        // 실력 봇(봇 플레이): 지금 봇 = 예전 규칙 · 일반 · 전문가 = 실력 설정(Stage는 게임 기본, 고르기는 무작위)
+        profile: '실력',
+        profiles: { basic: '지금 봇', normal: '일반', expert: '전문가' },
+        stageAutoNote: '게임 기본(LV에 따라 자동 승격)',
+        profileNote:
+          '일반 · 전문가는 Stage를 게임 기본(LV에 따라 자동)으로만 올리고, 레벨업 카드는 무작위로 고릅니다. 지금 봇은 예전 규칙 그대로입니다.',
+        loadout: '출격 설정',
+        loadoutSet: '바꾸기',
+        loadoutLine: (perma, cats, buffs) => '영구 스택 ' + perma + ' · 고양이 ' + cats + ' · 버프 ' + buffs,
+        loadoutTitle: '출격 설정',
+        loadoutNote: '스킬 · 고양이 · 버프만 넣습니다. 재화(G · B · S)는 봇이 쓰지 않습니다.',
+        loadoutImport: '백업 파일 가져오기',
+        loadoutImportNote: '백업의 영구 스택 · 고양이 · 동반만 읽습니다. 파일은 어디에도 올라가지 않습니다.',
+        loadoutImported: '백업에서 가져왔습니다.',
+        loadoutBad: '백업 파일을 읽지 못했습니다.',
+        loadoutPerma: '영구 스택(성장 탭)',
+        loadoutCompanion: '동반',
+        loadoutNone: '없음',
+        loadoutBuffs: '출격 버프(Super 이상)',
+        loadoutClear: '새 플레이어로 비우기',
+        loadoutOk: '적용',
+        loadoutCancel: '취소',
+        watch: '관전 열기',
+        watchNote: '지금 조건의 판을 게임 화면에서 봅니다(시험 경로에서만 열립니다).',
         run: n => '돌리기 · 판 ' + n + '개',
         stop: '멈추기',
         progress: (done, total) => done + ' / ' + total + '판',
         none: "아직 돌린 판이 없습니다. 조건을 고르고 '돌리기'를 누르세요.",
         // 돌리기 줄(R-068): 조건 한 줄 + 조건 칸 열기
-        condLine: (modes, crafts, launch, minutes, stagePlan, seeds) =>
+        condLine: (modes, crafts, launch, minutes, stagePlan, seeds, profile) =>
           [
             modes,
             '기체 ' + crafts,
@@ -13610,7 +13634,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             minutes + '분',
             stage.upper + ' ' + stagePlan,
             '판 × ' + seeds,
-          ].join(' · '),
+            profile,
+          ]
+            .filter(Boolean)
+            .join(' · '),
         allModes: n => '모드 ' + n,
         condOpen: '조건 ▴',
         condClosed: '조건 ▾',
