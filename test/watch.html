@@ -9773,7 +9773,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           // 들어간 값 칩: label = 칩 글자, find = 값 탭 찾기 칸에 넣는 말(그 줄의 키)
           v = (label, find) => ({ label, find });
         return {
-          note: '모드마다 적이 얼마나 센지 지금 값과 실험 값으로 비교합니다.',
+          note: '모드마다 적이 얼마나 센지 지금 값과 실험 값으로 비교합니다. 값 칩이나 요약 줄을 누르면 관련 그래프만 진하게 보입니다.',
+          hl: {
+            value: (label, n) => '강조 · ' + label + ' — 이 값을 쓰는 그래프 ' + n + '개',
+            metric: (label, n) => '강조 · ' + label + ' 관련 그래프 ' + n + '개',
+            goValue: '값 탭에서 보기 ›',
+            off: '끄기 ×',
+          },
           axis: { stage: '가로축 ' + stage.upper, mode: '가로축 모드' },
           factor: {
             title: '3요소 · 모드별',
