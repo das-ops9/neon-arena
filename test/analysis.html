@@ -4311,7 +4311,7 @@ return Plotly;
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-7',
+    name: 'v5-8',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 장갑 강화·재생 실드를 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
@@ -4566,11 +4566,11 @@ return Plotly;
       min: 4,
       max: 3,
       offset: 120,
-      r: 100,
+      r: 150,
       growEvery: 10,
       grow: 0.1,
       growMax: 5,
-      delay: 2,
+      delay: 1.5,
       more: [10, 15],
       gap: 1,
       damage: 25,
