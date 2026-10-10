@@ -3045,11 +3045,11 @@ body[data-pad='left'] .action-row {
 body[data-fx='low'] .action.is-flash::after {
   animation: none;
 }
-/* 가리킴(R-073 · R-076): 튜토리얼 줄이 가리키는 버튼(STAGE · 대시 · 충격파)이 --point-n번 살짝 커지고 안쪽 시안
-   고리가 같이 빛난다(0.6초 × 5, transform · opacity만). 줄이기 · 기기 '동작 줄이기'면 없음.
-   횟수를 바꾸면 app.js TIP_RUN.points(첫 판 대시 차례 = STAGE 가리킴이 끝난 뒤)도 함께 */
+/* 가리킴(R-073 · R-076 · R-077): 튜토리얼 줄이 가리키는 버튼(STAGE · 대시 · 충격파)이 --point-n번 살짝 커지고 안쪽 시안
+   고리가 같이 빛난다(0.6초 × 10, transform · opacity만). 줄이기 · 기기 '동작 줄이기'면 없음.
+   횟수를 바꾸면 app.js TIP_RUN.points(첫 판 대시 차례 = STAGE 가리킴이 끝난 뒤, 1 + 0.6 × 횟수)도 함께 */
 .is-point {
-  --point-n: 5;
+  --point-n: 10;
   position: relative;
   animation: point-pop 0.6s var(--ease) var(--point-n);
 }
@@ -14985,7 +14985,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.7.1',
+  const VERSION = '4.7.2',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -24562,7 +24562,7 @@ let coach = null,
   resultTipId = null;
 // 줄이 가리키는 버튼 · 할 일 칩 시간(초, 임시값: ROADMAP 6단계 '임시값'): 전투 chips초면 칩이 끝남 · 이동 입력 move초면
 // 이동 ✓ · 줄 흐려짐 fade초 · 셋 다 ✓면 done초 뒤 접힘 · 첫 판 가리킴 차례 [전투 시계 초, 버튼](대시는 STAGE 가리킴
-// 0.6초 × 5(ui.css --point-n)가 끝난 뒤, R-076)
+// 0.6초 × 10(ui.css --point-n)가 끝난 뒤, R-076 · R-077)
 const TIP_POINT = { stage: 'stage-button', dash: 'dash-button', nova: 'nova-button' },
   TIP_RUN = {
     chips: 30,
@@ -24571,7 +24571,7 @@ const TIP_POINT = { stage: 'stage-button', dash: 'dash-button', nova: 'nova-butt
     done: 1.4,
     points: [
       [1, 'stage-button'],
-      [4, 'dash-button'],
+      [7, 'dash-button'],
     ],
   };
 function tipsOn() {
@@ -24639,7 +24639,7 @@ function doneChip(id) {
       .querySelector('[data-task="' + id + '"]')
       ?.classList.add('is-done');
 }
-// 가리킴: 버튼이 다섯 번 살짝 커지고 안쪽 시안 고리가 같이 빛난다(ui.css .is-point, 줄이기면 없음)
+// 가리킴: 버튼이 열 번 살짝 커지고 안쪽 시안 고리가 같이 빛난다(ui.css .is-point, 줄이기면 없음)
 function point(id) {
   const el = id && $(id);
   if (!el || !prefs.motion) return;
