@@ -105,6 +105,14 @@
   --heal: var(--sk-vital);
   /* GM 실험 칸 표시(R-065, 시험 경로에만) */
   --gm: var(--pink);
+  /* 튜토리얼 · 팁(R-073): TIP 줄 · 할 일 칩 · 가리킴. 플레이어 쪽 색(시안) */
+  --tip: var(--cyan);
+  /* 탭 새 소식 점(R-074): 모바일 새 소식 관례의 빨강 */
+  --dot: var(--danger);
+  /* 고양이 비행사 소품 · 배지 색(R-075): 정비사 미오 렌치 · 보급관 토토 상자 · 조종사 루나 고글 · 종이비행기 */
+  --cat-engineer: var(--orange);
+  --cat-supply: #e3b277;
+  --cat-pilot: #7fd4ff;
 
   /* 모드 배지(badges.js, 모양은 그 파일): 색 · 판 위(tone) · 판 아래(tone2) · 글자 */
   --mode-easy: #52ead1;
@@ -178,8 +186,10 @@
   --cv-hurt: var(--pink);
   --cv-dash: var(--cyan);
   --cv-nova: var(--lilac);
-  --cv-hazard: var(--lilac);
-  --cv-hazard-fuse: #d8bdff;
+  /* 붕괴 구역(R-072) = 빨강(바닥의 큰 원 · 차오름으로 작은 적 탄과 구분) → 마지막에 노랗게 → 흰 섬광. 회복 구역 초록과 짝 */
+  --cv-hazard: #ff4060;
+  --cv-hazard-hot: var(--shine);
+  --cv-hazard-flash: var(--white);
   --cv-shield: #65baff;
   --cv-shield-max: #9fdcff;
   --cv-number: var(--gold);
@@ -1425,6 +1435,7 @@ body[data-fx='low'] .title-start::after {
   padding-bottom: calc(var(--safe-b) + var(--edge-bottom));
 }
 .tab {
+  position: relative;
   display: grid;
   justify-items: center;
   align-content: center;
@@ -1433,6 +1444,17 @@ body[data-fx='low'] .title-start::after {
   color: var(--muted);
   font-size: var(--fs-2xs);
   font-weight: 700;
+}
+/* 탭 새 소식 점(R-074: 성장 = 살 수 있는 영구 강화 · 기록 = 백업 뒤 20판): 아이콘 오른쪽 위 8px 빨강 + 탭 바 색 2px 테 */
+.tab-dot {
+  position: absolute;
+  top: 9px;
+  left: calc(50% + 7px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 0 2px var(--bg);
 }
 .tab svg {
   width: 20px;
@@ -1829,6 +1851,8 @@ body[data-fx='low'] .title-start::after {
   --cat-c: var(--muted);
 }
 .cat-icon {
+  /* 배지 원 바탕 = 이 상자의 면 색(카드 면 위 흰빛 3%) */
+  --cat-bg: color-mix(in srgb, var(--white) 3.14%, var(--surface));
   display: grid;
   place-items: center;
   width: 52px;
@@ -1838,9 +1862,43 @@ body[data-fx='low'] .title-start::after {
   color: var(--cat-c);
   background: color-mix(in srgb, var(--white) 3.14%, transparent);
 }
+/* 고양이 그림 3종(R-075): 얼굴 선 = 카드 상태 색(--cat-c), 소품 · 배지 = 고양이 색(--cat-p, 잠김은 회색) */
 .cat-icon svg {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
+}
+.cat-prop {
+  color: var(--cat-p, currentColor);
+}
+.cat-badge {
+  fill: var(--cat-bg, var(--surface));
+}
+.cat-icon--engineer {
+  --cat-p: var(--cat-engineer);
+}
+.cat-icon--supply {
+  --cat-p: var(--cat-supply);
+}
+.cat-icon--pilot {
+  --cat-p: var(--cat-pilot);
+}
+.cat-card--locked .cat-icon {
+  --cat-p: var(--muted);
+}
+/* 성장 탭 히든 칸 '동반 …' 앞 동반 고양이 그림(20px, 동반이 없으면 없음) */
+.cat-mini {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  vertical-align: -5px;
+}
+.cat-mini svg {
+  width: 100%;
+  height: 100%;
+}
+.hidden-entry .cat-mini {
+  --cat-bg: var(--violet-deep);
 }
 .cat-main {
   min-width: 0;
@@ -2647,6 +2705,56 @@ body[data-gm] .menu-top {
   font-style: italic;
   color: var(--pink);
 }
+/* 할 일 칩(H-TASK, R-073): 첫 판 세로 화면에서 보스 줄 다음 줄(덩어리 밖에 보이는 줄), 없으면 접힌다.
+   해 보면 ✓ · 시안 → 0.8초 뒤 흐려진다(자리는 남아 옆 칩이 흔들리지 않음). 줄 끝은 is-out으로 흐려진 뒤 숨김(app.js).
+   가로 화면은 그리지 않는다(아래 가로 규칙). 움직임은 opacity만 */
+.hud-tasks {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px -8px 0;
+  transition: opacity 0.5s var(--ease);
+}
+.hud-tasks.is-out {
+  opacity: 0;
+}
+.task {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 11px 3px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tip) 45%, transparent);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  color: var(--ink);
+  font-size: min(0.75rem, 12.75px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.task i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--tip);
+}
+.task.is-done {
+  border-color: var(--tip);
+  color: var(--tip);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease) 0.8s;
+}
+.task.is-done i {
+  height: 6px;
+  border: 0;
+  border-left: 2px solid var(--tip);
+  border-bottom: 2px solid var(--tip);
+  border-radius: 0;
+  transform: translateY(-2px) rotate(-45deg);
+}
 /* 알림 묶음(R-030 · 보완 5 · R-064). 세로: 위 덩어리 아래 위쪽 1/3에 최신이 맨 위(옛 크기의 약 85%),
    지난 것은 약 70% · 흐리게 아래로 최대 2개. 위치는 설정 '알림 위치'(body[data-alerts]: 가운데 · 기본 | 왼쪽 | 오른쪽).
    묶음 아래 끝은 '화면 세로 가운데 − 56px'(기준선)보다 위다. 지난 알림이 넘으면 숨긴다(app.js checkAlertLine).
@@ -2662,6 +2770,13 @@ body[data-gm] .menu-top {
   padding-inline: var(--sp-3);
   /* 위 여백(--edge-top)으로 HUD가 내려간 만큼 빼서 알림 자리는 그대로 둔다(R-047) */
   padding-top: clamp(4px, calc(var(--vh-full) * 0.05 - var(--edge-top)), 48px);
+}
+/* 할 일 칩 줄(R-073)이 보이는 동안(첫 판 세로 30초)은 그 높이(약 34px)만큼 알림 위 여백을 덜어, 알림이 크게 내려가지
+   않고 묶음 아래 끝이 기준선 위에 남는다(가장 작은 화면 · 글자 150%에서도) */
+@media not all and (orientation: landscape) and (max-height: 520px) {
+  .hud:has(.hud-tasks:not([hidden])) .hud-alerts {
+    padding-top: clamp(4px, calc(var(--vh-full) * 0.05 - var(--edge-top) - 34px), 48px);
+  }
 }
 body[data-alerts='left'] .hud-alerts {
   justify-items: start;
@@ -2703,6 +2818,23 @@ body[data-fx='low'] .alert {
 .alert--violet {
   border-color: var(--violet);
   color: var(--violet-ink);
+}
+/* 튜토리얼 줄(R-073, 알림 종류 'tip'): 시안 테두리 + 앞에 작은 'TIP' 표(글자는 terms.js → data-k) */
+.alert--tip {
+  border-color: var(--tip);
+  border-width: 1.5px;
+}
+.alert--tip::before {
+  content: attr(data-k);
+  display: inline-block;
+  margin-right: 7px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--tip) 18%, transparent);
+  color: var(--tip);
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
 }
 /* S 코인 줍기(R-044): 금색 큰 글자(약 1.4배, 알림 묶음에서 85%) + 빛줄기 한 번(transform · opacity만).
    가로는 아래 가로 .alert 규칙이 크기를 되돌린다 */
@@ -2913,6 +3045,43 @@ body[data-pad='left'] .action-row {
 body[data-fx='low'] .action.is-flash::after {
   animation: none;
 }
+/* 가리킴(R-073): 튜토리얼 줄이 가리키는 버튼(STAGE · 대시 · 충격파)이 두 번 살짝 커지고 안쪽 시안 고리가 두 번
+   빛난다(0.6초 × 2, transform · opacity만). 줄이기 · 기기 '동작 줄이기'면 없음 */
+.is-point {
+  position: relative;
+  animation: point-pop 0.6s var(--ease) 2;
+}
+.is-point::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 2px solid var(--tip);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--tip) 40%, transparent);
+  opacity: 0;
+  animation: point-ring 0.6s var(--ease) 2;
+  pointer-events: none;
+}
+@keyframes point-pop {
+  45% {
+    transform: scale(1.06);
+  }
+}
+@keyframes point-ring {
+  45% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-point,
+  .is-point::before {
+    animation: none;
+  }
+}
+body[data-fx='low'] .is-point,
+body[data-fx='low'] .is-point::before {
+  animation: none;
+}
 .action--dash {
   color: var(--cyan);
   border-color: color-mix(in srgb, var(--cyan) 66.67%, transparent);
@@ -3060,6 +3229,33 @@ body[data-fx='low'] .intro-title::after {
   font-size: var(--fs-xl);
   font-weight: 800;
 }
+/* 팁 줄(R-073 · R-074): 레벨업 창 제목 아래(첫 레벨업 · 첫 B) · 결과 화면 보상 아래 한 자리. 'TIP' 표 + 한 줄 */
+.tip-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 5px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid color-mix(in srgb, var(--tip) 38%, transparent);
+  background: color-mix(in srgb, var(--tip) 6%, transparent);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+}
+.tip-line b {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--tip) 18%, transparent);
+  color: var(--tip);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+}
 .choice-list {
   display: grid;
   gap: var(--sp-2);
@@ -3150,6 +3346,15 @@ body[data-fx='low'] .intro-title::after {
   display: grid;
   gap: var(--sp-2);
 }
+/* 결과 화면 주요 버튼 한 줄(R-074 결과 화면 조율, 편집장 a): 다시 도전 넓게 | 메뉴로 */
+.overlay-actions--row {
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+}
+/* 결과 화면 칸 사이(R-074, 화면 배치 원칙): 기준 폰(높이 802)에서 8px이라 버프 줄 · NEW BEST가 함께 떠도 한 화면에 들어가고,
+   키 큰 화면은 남는 높이를 간격으로 고르게 나눠 12px까지 넓어진다 */
+#result .overlay-panel {
+  gap: clamp(var(--sp-2), calc((var(--vh-full) - 722px) / 10), var(--sp-3));
+}
 .result-head {
   display: grid;
   justify-items: center;
@@ -3235,6 +3440,38 @@ body[data-fx='low'] .result-score.is-best::after {
 .note-editor p {
   font-size: var(--fs-2xs);
   color: var(--muted);
+}
+/* 한 줄 남기기 두 줄(R-074): 머리(제목 · 안내 | '건너뛰기' 글자 버튼) / 입력 + 남기기 버튼 */
+.note-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.note-head label {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.note-head label .muted {
+  font-weight: 500;
+  font-size: var(--fs-2xs);
+}
+.note-head .link-btn {
+  padding: 0 4px;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.note-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+}
+.note-row input,
+.note-row .btn {
+  min-height: var(--tap);
+}
+.note-row .btn {
+  padding-inline: var(--sp-3);
 }
 
 /* ── 게임 셸: 캔버스 · 비네트 · 조이스틱 · 대화상자 ── */
@@ -3447,6 +3684,26 @@ body[data-fx='low'] .boss-warn.is-on {
   width: 24px;
   height: 24px;
   accent-color: var(--cyan);
+}
+/* 설정 창 두 묶음(R-073): 화면 | 소리 · 진동. 줄 44px · 가는 선(384×802에서 시험 경로 GM 줄까지 스크롤 없이) */
+.setting-list {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+.setting-list .setting-row {
+  min-height: var(--tap);
+  border-bottom: 1px solid var(--line);
+}
+.setting-list + .setting-list {
+  margin-top: -4px;
+}
+/* 버튼 줄 3칸(전체 화면 · 도움말 · 팁 다시 보기): 좁거나 글자가 크면 두 줄로 */
+.btn-row--3 {
+  grid-template-columns: repeat(auto-fit, minmax(5.8em, 1fr));
+}
+.btn-row--3 .btn {
+  padding-inline: 6px;
+  white-space: nowrap;
 }
 /* 도움말(O-HELP, R-005): 접는 칸 5개. 창은 화면 높이 안에서 스크롤(.dialog), 칸 제목 44px */
 .help-body {
@@ -3727,6 +3984,10 @@ body[data-fx='low'] .boss-warn.is-on {
   .hud-boss .bar {
     height: 4px;
   }
+  /* 할 일 칩(R-073)은 가로 화면에 그리지 않는다(덩어리 한 줄 높이를 지킴, 30초가 지나면 본 것으로 침) */
+  .hud-tasks {
+    display: none;
+  }
   /* 가로 HUD는 위 여백 · 줄 간격을 줄여 알림이 기준선(화면 세로 가운데 − 56px) 위에 들어가게 한다 */
   .hud {
     row-gap: 3px;
@@ -3978,7 +4239,8 @@ body[data-fx='low'] .boss-warn.is-on {
               stroke="currentColor"
               stroke-width="1.6"
             /></svg
-          ><span>성장</span></button
+          ><span>성장</span
+          ><i class="tab-dot" id="grow-dot" hidden aria-hidden="true"></i></button
         ><button class="tab" data-tab="shop">
           <svg viewBox="0 0 20 20" aria-hidden="true">
             <path d="M10 2l7 4v8l-7 4-7-4V6z" fill="none" stroke="currentColor" stroke-width="1.6" />
@@ -3992,7 +4254,7 @@ body[data-fx='low'] .boss-warn.is-on {
               stroke-width="1.8"
               stroke-linecap="round"
             /></svg
-          ><span>기록</span>
+          ><span>기록</span><i class="tab-dot" id="rec-dot" hidden aria-hidden="true"></i>
         </button>
       </nav>
     </section>
@@ -4152,6 +4414,8 @@ body[data-fx='low'] .boss-warn.is-on {
           </div>
           <span class="hud-cell hud-chain num" id="combo" data-area="H-CHAIN" hidden></span>
         </div>
+        <!-- 할 일 칩(H-TASK, R-073): 첫 판 세로 화면 30초. 보스 줄 다음 줄, 없으면 접힌다(가로는 그리지 않음) -->
+        <div class="hud-tasks" id="hud-tasks" data-area="H-TASK" hidden aria-hidden="true"></div>
       </header>
       <!-- 알림 묶음(R-030 · R-064): 최신이 맨 위, 지난 것은 아래로(app.js notify가 요소를 만들고 뺀다). 읽어 주기는 #announcer -->
       <div class="hud-alerts" id="alerts" data-area="H-ALERT" aria-hidden="true"></div>
@@ -4183,6 +4447,8 @@ body[data-fx='low'] .boss-warn.is-on {
       <div class="overlay-panel" data-area="O-LEVEL">
         <div class="eyebrow" id="upgrade-kicker">LEVEL UP</div>
         <h2 id="upgrade-title">강화 하나를 고르세요</h2>
+        <!-- 첫 레벨업 · 첫 B(R-073): 제목 바로 아래 TIP 한 줄(카드 앞이라 고르기 전에 읽힌다) -->
+        <p class="tip-line" id="upgrade-tip" hidden></p>
         <div class="choice-list" id="upgrade-cards"></div>
         <button class="choice-coin" id="upgrade-coin">대신 코인 +1 G 받기</button>
         <p class="overlay-note" id="upgrade-sub">고르는 동안 전투가 멈춥니다.</p>
@@ -4220,7 +4486,9 @@ body[data-fx='low'] .boss-warn.is-on {
         <p class="buff-line" id="result-buffs" hidden></p>
         <div class="reward-row" id="result-coins"></div>
         <p class="result-unlock" id="result-unlock" role="status" hidden></p>
-        <div class="overlay-actions">
+        <!-- 다음 판 팁 한 자리(R-074): 보상 · 해금 줄 아래, 주요 버튼 바로 위('다시 도전' 직전에 읽힘) -->
+        <p class="tip-line" id="result-tip" hidden></p>
+        <div class="overlay-actions overlay-actions--row">
           <button class="btn btn--primary" id="replay">다시 도전</button
           ><button class="btn" id="result-menu">메뉴로</button>
         </div>
@@ -4229,22 +4497,23 @@ body[data-fx='low'] .boss-warn.is-on {
           <ul class="stack-list" id="result-build"></ul>
         </details>
         <div class="result-analysis" id="result-analysis"></div>
+        <!-- 한 줄 남기기 두 줄(R-074 결과 화면 조율): 머리(제목 · 안내 | 건너뛰기 글자 버튼) / 입력 + 남기기, 아래 작은 글자 -->
         <section class="note-editor" aria-label="기록 한 줄 저장">
-          <label for="result-note"
-            >한 줄 남기기 <span class="muted">선택 · 최대 15자 · 글자당 10 G</span></label
-          >
-          <input
-            id="result-note"
-            type="text"
-            autocomplete="off"
-            placeholder="이번 판의 한마디"
-            aria-describedby="note-cost"
-          />
-          <p id="note-cost">0자 · 0 G</p>
-          <div class="btn-row">
-            <button class="btn btn--gold btn--sm" id="note-save">한 줄 남기기</button
-            ><button class="btn btn--ghost btn--sm" id="note-skip">건너뛰기</button>
+          <div class="note-head">
+            <label for="result-note"
+              >한 줄 남기기 <span class="muted">선택 · 최대 15자 · 글자당 10 G</span></label
+            ><button class="link-btn" id="note-skip">건너뛰기</button>
           </div>
+          <div class="note-row">
+            <input
+              id="result-note"
+              type="text"
+              autocomplete="off"
+              placeholder="이번 판의 한마디"
+              aria-describedby="note-cost"
+            /><button class="btn btn--gold btn--sm" id="note-save">한 줄 남기기</button>
+          </div>
+          <p id="note-cost">0자 · 0 G</p>
         </section>
         <div class="tool-row">
           <button class="btn btn--sm" id="export-log">분석 로그 저장</button
@@ -4257,55 +4526,64 @@ body[data-fx='low'] .boss-warn.is-on {
     <dialog id="settings-dialog" class="dialog" data-area="O-SETTINGS" aria-labelledby="settings-title">
       <div class="eyebrow">SETTINGS</div>
       <h2 id="settings-title">화면 · 소리 설정</h2>
-      <label class="setting-row" for="view-setting"
-        >시야<select id="view-setting">
-          <option value="wide">넓게 · 기본</option>
-          <option value="standard">표준</option>
-        </select></label
-      >
-      <label class="setting-row" for="pad-setting"
-        >버튼 위치<select id="pad-setting">
-          <option value="center">가운데 · 기본</option>
-          <option value="right">오른쪽</option>
-          <option value="left">왼쪽</option>
-        </select></label
-      >
-      <label class="setting-row" for="alert-setting"
-        >알림 위치<select id="alert-setting">
-          <option value="center">가운데 · 기본</option>
-          <option value="left">왼쪽</option>
-          <option value="right">오른쪽</option>
-        </select></label
-      >
-      <label class="setting-row" for="quality-setting"
-        >이펙트<select id="quality-setting">
-          <option value="auto">자동</option>
-          <option value="high">풍부하게</option>
-          <option value="low">가볍게</option>
-        </select></label
-      >
-      <label class="setting-row" for="music-setting"
-        >음악<input type="checkbox" id="music-setting"
-      /></label>
-      <label class="setting-row" for="sound-setting"
-        >효과음<input type="checkbox" id="sound-setting"
-      /></label>
-      <label class="setting-row" for="motion-setting"
-        >흔들림 · 번쩍임 줄이기<input type="checkbox" id="motion-setting"
-      /></label>
-      <label class="setting-row" for="numbers-setting"
-        >치명타 숫자<input type="checkbox" id="numbers-setting"
-      /></label>
-      <label class="setting-row" for="vibrate-setting"
-        >진동<input type="checkbox" id="vibrate-setting"
-      /></label>
-      <!-- GM 버튼 숨기기(R-065): 시험 경로(/test/)에서만 보이는 줄 -->
-      <label class="setting-row" for="gm-hide-setting" id="gm-hide-row" hidden
-        >GM 버튼 숨기기<input type="checkbox" id="gm-hide-setting"
-      /></label>
-      <div class="btn-row">
+      <!-- 두 묶음(R-073 설정 창 조율): 화면 | 소리 · 진동, 줄 44px · 가는 선. 384×802에서 스크롤 없이 -->
+      <div class="setting-list" role="group" aria-label="화면">
+        <label class="setting-row" for="view-setting"
+          >시야<select id="view-setting">
+            <option value="wide">넓게 · 기본</option>
+            <option value="standard">표준</option>
+          </select></label
+        >
+        <label class="setting-row" for="pad-setting"
+          >버튼 위치<select id="pad-setting">
+            <option value="center">가운데 · 기본</option>
+            <option value="right">오른쪽</option>
+            <option value="left">왼쪽</option>
+          </select></label
+        >
+        <label class="setting-row" for="alert-setting"
+          >알림 위치<select id="alert-setting">
+            <option value="center">가운데 · 기본</option>
+            <option value="left">왼쪽</option>
+            <option value="right">오른쪽</option>
+          </select></label
+        >
+        <label class="setting-row" for="quality-setting"
+          >이펙트<select id="quality-setting">
+            <option value="auto">자동</option>
+            <option value="high">풍부하게</option>
+            <option value="low">가볍게</option>
+          </select></label
+        >
+        <label class="setting-row" for="motion-setting"
+          >흔들림 · 번쩍임 줄이기<input type="checkbox" id="motion-setting"
+        /></label>
+        <label class="setting-row" for="numbers-setting"
+          >치명타 숫자<input type="checkbox" id="numbers-setting"
+        /></label>
+        <label class="setting-row" for="tips-setting"
+          >팁 보기<input type="checkbox" id="tips-setting"
+        /></label>
+      </div>
+      <div class="setting-list" role="group" aria-label="소리 · 진동">
+        <label class="setting-row" for="music-setting"
+          >음악<input type="checkbox" id="music-setting"
+        /></label>
+        <label class="setting-row" for="sound-setting"
+          >효과음<input type="checkbox" id="sound-setting"
+        /></label>
+        <label class="setting-row" for="vibrate-setting"
+          >진동<input type="checkbox" id="vibrate-setting"
+        /></label>
+        <!-- GM 버튼 숨기기(R-065): 시험 경로(/test/)에서만 보이는 줄 -->
+        <label class="setting-row" for="gm-hide-setting" id="gm-hide-row" hidden
+          >GM 버튼 숨기기<input type="checkbox" id="gm-hide-setting"
+        /></label>
+      </div>
+      <div class="btn-row btn-row--3">
         <button class="btn btn--sm" id="fullscreen">전체 화면</button
-        ><button class="btn btn--sm" id="help">도움말</button>
+        ><button class="btn btn--sm" id="help">도움말</button
+        ><button class="btn btn--sm" id="tips-again">팁 다시 보기</button>
       </div>
       <p class="overlay-note" id="render-note"></p>
       <button class="btn btn--primary" id="close-settings">설정 완료</button>
@@ -11136,7 +11414,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-6',
+    name: 'v5-7',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 장갑 강화·재생 실드를 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
@@ -11379,17 +11657,25 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         runner: 0.2,
       },
     },
-    // 위험 지대: fromStage부터, 간격 = max(min, interval − Stage × step)초, 동시에 max개, 기체에서 offset 거리
+    // 붕괴 구역(R-072): fromStage부터 묶음 간격 = max(min, interval − Stage × step)초, 첫 묶음은 first초 시계.
+    // 반경 = r × (1 + grow × min(growMax, floor(생길 때 Stage ÷ growEvery))). 기체에서 offset 거리(맵 가장자리 100 안,
+    // 밖이면 방향을 다시 뽑음) · delay초 예고. 한 묶음 = 1 + (전투 시계가 more의 분을 지난 수)개를 gap초 간격으로
+    // 하나씩(각각 그때 기체 기준). 동시에 max개(터진 뒤 0.5초 포함). 피해 = damage × Stage 피해 × 모드 피해
     hazard: {
       fromStage: 2,
       first: 9,
       interval: 11,
       step: 0.55,
       min: 4,
-      max: 8,
-      offset: 100,
-      r: 85,
-      delay: 1.65,
+      max: 3,
+      offset: 120,
+      r: 100,
+      growEvery: 10,
+      grow: 0.1,
+      growMax: 5,
+      delay: 2,
+      more: [10, 15],
+      gap: 1,
       damage: 25,
     },
     // 적 기본값. split: 죽을 때 나오는 돌격 수
@@ -11845,12 +12131,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     shooter: { name: '사수', short: '사수' },
     splitter: { name: '분열체', short: '분열' },
     boss: { name: '보스', short: '보스' },
-    hazard: { name: '위험 지대', short: '위험 지대' },
+    hazard: { name: '붕괴 구역', short: '붕괴 구역' },
     unknown: { name: '미상', short: '미상' },
   };
   const enemyName = kind => (enemies[kind] || enemies.unknown).name;
-  // 고양이 비행사(1단계 R-026에서 화면에 나온다. 이름은 임시, 3단계에서 확정)
-  // 고양이 비행사(R-026). 이름 · 그림은 임시(3단계에서 확정). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
   const pctOf = v => Math.round(v * 100);
   // 출격 버프 id(R-062): balance buffs 키 순서(from 제외)
   const buffList = () => Object.keys(B().buffs).filter(k => k !== 'from');
@@ -11881,11 +12165,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '번)'
     );
   };
+  // 고양이 비행사(R-026 · R-075). 이름 = 역할 + 이름 한 꼴(이름 규칙 3, 모든 화면 같음 — 내부 id · 저장 키는 그대로).
+  // 그림은 view.js catIcon(고양이마다 귀 · 무늬 · 소품 배지). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
   const cats = {
-    engineer: { name: '정비사', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
-    supply: { name: '보급관', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
+    engineer: { name: '정비사 미오', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
+    supply: { name: '보급관 토토', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
     pilot: {
-      name: '조종사',
+      name: '조종사 루나',
       effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
       value: v => '−' + pctOf(v) + '%',
     },
@@ -11979,6 +12265,36 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
   };
 
+  // ── 튜토리얼 · 팁(R-073 · R-074, I-63~I-66 · I-41): 처음 겪는 사건마다 한 줄 · 결과 팁 · 할 일 칩 · 탭 점 ──
+  // 줄 고르기(무리 · 판당 줄 수 · '봤다')는 coach.js, 문구는 여기 하나. lines의 id = coach.js LINES · HEAD.
+  // 이름 대신 보이는 모양으로 쓴다(이름은 도움말). k: 줄 앞 작은 표(창 머리글처럼 장식 영어, 이름 규칙 1 예외)
+  const tips = {
+    k: 'TIP',
+    lines: {
+      boss: '보스는 체력이 줄면 더 세집니다',
+      hazard: '붉은 원이 가득 차면 터집니다',
+      siege: '붉은 화살표가 뜨면 포위가 옵니다',
+      heal: '초록 원 안에서 HP가 찹니다',
+      stage:
+        stage.name +
+        josa(stage.name, '을/를') +
+        ' 올리면 ' +
+        point.name +
+        josa(point.name, '이/가') +
+        ' 커집니다',
+      dash: abilities.dash + ' 중에는 잠깐 무적입니다',
+      nova: abilities.nova + josa(abilities.nova, '은/는') + ' 가까운 탄환을 지웁니다',
+      levelup: '고른 스킬은 이번 판에만 남습니다',
+      blue: BL + josa(BL, '은/는') + ' 성장 탭에서 스킬을 사는 데 씁니다',
+    },
+    // 첫 판 할 일 칩(H-TASK): 키 = 칩 id(이동 · STAGE · 대시)
+    chips: { move: '끌어서 이동', stage: stage.upper + ' 올리기', dash: abilities.dash },
+    again: '팁 다시 보기',
+    againDone: '다음 판부터',
+    // 탭 새 소식 점(R-074) 읽기 이름
+    dot: '새 소식',
+  };
+
   // ── 전투 알림(R-030 · R-064). 알림 묶음 하나로 보인다(app.js notify) ──
   // 들어오는 알림은 모두 바로 맨 위(최신)에 보이고 지난 것은 작고 흐리게 아래로 밀린다(보이는 수 ui.alertStack.max).
   // 같은 문구는 하나로, 같은 종류의 보통 알림은 새 것이 그 줄을 대신한다. 각 알림은 sec초 뒤 사라진다.
@@ -12060,6 +12376,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           : buffs.tag + ' 재화 부족 · 꺼짐',
     },
     revive: { major: true, tone: 'gold', sec: 4, text: () => buffs.revive.name },
+    // 튜토리얼 줄(R-073): 시안 테두리 + 앞에 작은 표(k). 설명을 담으므로 '짧게' 규칙의 예외, 4초(coach.js RULE.sec)
+    tip: { tone: 'tip', sec: 4, k: () => tips.k, text: id => tips.lines[id] || '' },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -12279,6 +12597,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       numbers: '치명타 숫자',
       // 진동(R-048, 이 기기 설정, 기본 켜짐). 진동을 지원하지 않는 브라우저(아이폰)는 조용히 건너뜀
       vibrate: '진동',
+      // 튜토리얼 · 팁(R-073, 이 기기 설정, 기본 켜짐): 끄면 TIP 줄 · 할 일 칩 · 결과 팁이 모두 꺼진다(탭 점은 그대로)
+      tips: '팁 보기',
+      tipsAgain: tips.again,
+      // 두 묶음의 읽기 이름(R-073 설정 창 조율)
+      groupScreen: '화면',
+      groupSound: '소리 · 진동',
       fullscreen: '전체 화면',
       help: '도움말',
       done: '설정 완료',
@@ -12657,7 +12981,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       entry: '히든',
       // 잠김 줄은 모드 잠김 칩과 같은 꼴('🔒 조건', 자물쇠는 여기 한 번)
       entryLocked: () => '🔒 ' + modeName(B().cats.hiddenFrom) + ' 1판',
-      // 해금 뒤 성장 탭 칸(보완 10, 문구 임시): '히든 · 고양이 비행사' + '동반 정비사 Lv3'
+      // 해금 뒤 성장 탭 칸(보완 10): '히든 · 고양이 비행사' + 동반 고양이 그림 · '동반 정비사 미오 Lv3'
       entryOpen: '히든 · 고양이 비행사',
       entryCompanion: (id, lv) => (id ? '동반 ' + cats[id].name + ' Lv' + lv : '동반 없음'),
       title: '히든 탭 · 고양이 비행사',
@@ -12749,7 +13073,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // ── 분석 페이지(analysis.html) 이름. 적 · 스킬 · 능력 이름은 게임 화면과 같은 것을 쓴다 ──
   const analysis = {
-    // 피격 종류(로그 키 그대로): floor = 위험 지대가 터지는 피해
+    // 피격 종류(로그 키 그대로): floor = 붕괴 구역이 터지는 피해
     attacks: { contact: '접촉', projectile: '탄환', floor: '폭발', other: '기타' },
     title: mode => modeName(mode) + ' · 런 기록',
   };
@@ -12891,10 +13215,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         interval: '간격(초)',
         step: stage.name + '마다 간격 −',
         min: '간격 바닥(초)',
-        max: '동시 최대',
+        max: '동시 최대(터진 뒤 포함)',
         offset: '기체에서 거리',
         r: '반경',
+        growEvery: '커지는 ' + stage.name + ' 간격',
+        grow: '커지는 비율',
+        growMax: '커지는 최대 횟수',
         delay: '터지기까지(초)',
+        more: '개수가 느는 분',
+        gap: '순차 간격(초)',
         damage: '피해',
       },
       shooter: {
@@ -13170,15 +13499,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         '비율',
         '',
       ],
-      'hazard.fromStage': [HZ + '가 나오기 시작하는 ' + ST, ST, 'easy'],
-      'hazard.first': ['첫 ' + HZ + ' 시점', '초', 'easy'],
-      'hazard.interval': [HZ + ' 기본 간격(값 − ' + ST + ' × 감소, 바닥까지)', '초', 'easy'],
+      'hazard.fromStage': [HZ + josa(HZ, '이/가') + ' 나오기 시작하는 ' + ST, ST, 'easy'],
+      'hazard.first': ['첫 ' + HZ + ' 묶음 시점(전투 시계)', '초', 'easy'],
+      'hazard.interval': [HZ + ' 묶음 기본 간격(값 − ' + ST + ' × 감소, 바닥까지)', '초', 'easy'],
       'hazard.step': [ST + '마다 줄어드는 간격', '초', 'hard'],
-      'hazard.min': [HZ + ' 간격 바닥', '초', 'easy'],
-      'hazard.max': [HZ + ' 동시 최대', '개', 'hard'],
-      'hazard.offset': ['기체에서 ' + HZ + '까지 거리', '거리', ''],
-      'hazard.r': [HZ + ' 반경', '거리', 'hard'],
-      'hazard.delay': [HZ + '가 터지기까지', '초', 'easy'],
+      'hazard.min': [HZ + ' 묶음 간격 바닥', '초', 'easy'],
+      'hazard.max': [HZ + ' 동시 최대(터진 뒤 0.5초 포함). 넘으면 그 하나는 건너뛴다', '개', 'hard'],
+      'hazard.offset': ['기체에서 ' + HZ + ' 중심까지 거리(맵 가장자리 밖이면 방향을 다시 뽑음)', '거리', ''],
+      'hazard.r': [HZ + ' 기본 반경(커지기 전)', '거리', 'hard'],
+      'hazard.growEvery': [ST + josa(ST, '이/가') + ' 이 값만큼 오를 때마다 반경이 한 번 커진다', ST, 'easy'],
+      'hazard.grow': ['한 번 커질 때 기본 반경에 더하는 비율', '비율', 'hard'],
+      'hazard.growMax': ['반경이 커지는 최대 횟수', '회', 'hard'],
+      'hazard.delay': [HZ + josa(HZ, '이/가') + ' 터지기까지(예고)', '초', 'easy'],
+      'hazard.more.*': ['전투 시계가 이 분을 지나면 한 묶음 개수 +1', '분', 'easy'],
+      'hazard.gap': ['한 묶음 안에서 하나씩 놓는 간격(각각 그때 기체 기준)', '초', ''],
       'hazard.damage': [HZ + ' 피해', 'HP', 'hard'],
       'enemies.*.r': ['적 크기(반경)', '거리', ''],
       'enemies.*.hp': ['적 기본 HP(모드 · ' + ST + ' 배율 전)', 'HP', 'hard'],
@@ -13642,7 +13976,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '분 보상 = 전투 1분마다 min(분당 G 상한, 분당 G 기본 + 수입 단계) + 모드 분당 G+',
           '보스 = 처치 수 × 그 모드의 보스 G. 레벨업 코인 = 직접 고른 코인 × 레벨업 코인 G',
           '자동 G = AUTO 선택 수 × (카드 모두 MAX 비율 × 확률(스킬 모두 최대) + 나머지 × 확률) × 레벨업 코인 G',
-          '고양이 = 전투 1분마다 보급관 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
+          '고양이 = 전투 1분마다 ' + cats.supply.name + ' 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
           'S = Insane에서 ' + coins.s.ko + ' 간격마다 1개(줍는다고 가정). S 출격은 1개를 쓴다',
           '기록 줄은 실제 받은 값에서 수입 단계 · 카드 모두 MAX 비율을 거꾸로 구해 다시 계산한다',
         ],
@@ -13762,7 +14096,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         loadoutCompanionOn: '동반으로 적용',
         loadoutCompanionOff: '동반으로 고르지 않아 적용 안 됨',
         loadoutAlways: '항상 적용',
-        loadoutSupplyNote: '보급관은 G만 올려 판 생존에는 영향이 없습니다.',
+        loadoutSupplyNote:
+          cats.supply.name + josa(cats.supply.name, '은/는') + ' G만 올려 판 생존에는 영향이 없습니다.',
         loadoutNone: '없음',
         loadoutEmpty:
           '설정 없음 · 새 플레이어로 시작(판 중 고른 스킬만 쌓임). 백업을 가져오면 그 상태로 시작',
@@ -13974,6 +14309,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
                 b.healZone.hp +
                 '씩 찹니다.',
             ],
+            [
+              enemies.hazard.name,
+              '붉은 원이 가득 차면 그 자리가 터집니다. 원 밖으로 피하거나 ' +
+                abilities.dash +
+                '(잠깐 무적)' +
+                josa(abilities.dash, '으로/로') +
+                ' 지나갑니다.',
+            ],
           ],
         },
       },
@@ -14055,7 +14398,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '재화와 기록은 이 브라우저에만 저장됩니다. 기록 탭에서 가끔 백업해 두세요.',
           '성장 탭에서 ' + BL + '로 스킬을 사 두면 모든 기체가 더 강하게 출격합니다.',
           '초록 원(회복 구역) 안에 있으면 HP가 찹니다.',
-          '포위는 ' + siegeMin + '분마다 사방에서 몰려옵니다. 화면 가장자리가 붉어지면 대비하세요.',
+          '포위는 ' +
+            siegeMin +
+            '분마다 사방에서 몰려옵니다. 화면 네 변 가운데에 붉은 화살표가 뜨면 대비하세요.',
           stage.name +
             ' ' +
             b.boss.every +
@@ -14232,9 +14577,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               b.siege.interval / 60 +
               '분마다 네 방향에서 한꺼번에 몰려오고, 회차마다 조금씩 빨라진다. ' +
               b.siege.warn +
-              '초 전에 화면 가장자리에 붉은 표시가 뜬다.',
+              '초 전에 화면 네 변 가운데에 붉은 화살표가 뜬다.',
           },
-          { term: enemies.hazard.name, desc: '보라색 원이 차오르면 그 자리에 피해가 터진다.' },
+          {
+            term: enemies.hazard.name,
+            desc:
+              '붉은 원이 가득 차면 그 자리가 터진다. ' +
+              stage.name +
+              ' ' +
+              b.hazard.growEvery +
+              '마다 커지고(최대 ' +
+              b.hazard.growMax +
+              '번), 전투 ' +
+              b.hazard.more.map((m, i) => m + '분부터 ' + (i + 2) + '개').join(' · ') +
+              '가 ' +
+              b.hazard.gap +
+              '초 간격으로 생긴다.',
+          },
           { term: '회복 구역', desc: healZoneText() + '. 방향 표시는 없다.' },
           {
             term: level.short + ' · XP',
@@ -14367,9 +14726,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               b.cats.maxLevel +
               '까지 키운다. 동반 1마리와 Lv' +
               b.cats.maxLevel +
-              ' 고양이의 효과가 출격 순간 적용된다(정비사: 기체 시작 스킬 스택, 보급관: 분당 ' +
+              ' 고양이의 효과가 출격 순간 적용된다(' +
+              cats.engineer.name +
+              ': 기체 시작 스킬 스택, ' +
+              cats.supply.name +
+              ': 분당 ' +
               G +
-              ', 조종사: ' +
+              ', ' +
+              cats.pilot.name +
+              ': ' +
               abilities.dash +
               ' 재충전).',
           },
@@ -14447,6 +14812,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     goldExtra,
     bossGoldText,
     blueCoinModes,
+    tips,
     alerts,
     ui,
     msg,
@@ -14617,7 +14983,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.6.3',
+  const VERSION = '4.7.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -14755,6 +15121,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       a ^= a + Math.imul(a ^ (a >>> 7), a | 61);
       return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
     }
+    // 붕괴 구역 난수(R-072): 붕괴 구역 방향만 쓰는 줄(시드에서 따로). 개수 · 위치를 바꿔도 적 · 카드 순서가 그대로다.
+    hazardRng() {
+      let a = (this.hazardSeed = (this.hazardSeed + 0x6d2b79f5) >>> 0);
+      a = Math.imul(a ^ (a >>> 15), a | 1);
+      a ^= a + Math.imul(a ^ (a >>> 7), a | 61);
+      return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
+    }
     // 맵 전역 무작위 점: 가장자리 margin 안쪽에 고르게
     mapPoint(margin) {
       return {
@@ -14886,6 +15259,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.sCoinNext = this.difficultyId === S_COIN.mode ? S_COIN.every : Infinity;
       // 맵 물건(R-061): 물건 난수 · 회복 구역(지금 하나 · 번호 · 다음 시각) · 회복한 양 · 보스 S 수
       this.itemSeed = (this.initialSeed ^ 0x2c1b3c6d) >>> 0;
+      // 붕괴 구역(R-072): 전용 난수 · 이번 묶음에 남은 개수 · 다음 하나까지 남은 초
+      this.hazardSeed = (this.initialSeed ^ 0x5bd1e995) >>> 0;
+      this.hazardLeft = 0;
+      this.hazardGap = 0;
       this.zone = null;
       this.zoneSerial = 0;
       this.zoneNext = HEAL.first;
@@ -15039,6 +15416,39 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         coin = { id: ++this.sCoinSerial, x: at.x, y: at.y, r: S_COIN.r };
       this.sCoins.push(coin);
       this.emit('s_spawn', { id: coin.id, x: coin.x, y: coin.y, src });
+    }
+    // 붕괴 구역 하나(R-072): 기체에서 offset 거리, 방향은 붕괴 구역 난수. 자리가 맵 가장자리 100 밖이면 방향을 다시
+    // 뽑고(최대 4번) 그래도 밖이면(구석) 맵 가운데 쪽 방향으로 놓는다 → 벽 · 구석에서도 거리가 지켜진다.
+    // 마지막으로 가장자리 100 안에 잘라 붙인다(기체가 맵 끝에 붙어 있을 때만 몇 px). 반경은 생길 때 Stage로(0.01 단위)
+    spawnHazard() {
+      const HZ = B.hazard,
+        p = this.p,
+        inside = (x, y) => x >= 100 && x <= W - 100 && y >= 100 && y <= H - 100;
+      let x = p.x,
+        y = p.y;
+      for (let i = 0; i < 4; i++) {
+        const a = this.hazardRng() * TAU;
+        x = p.x + Math.cos(a) * HZ.offset;
+        y = p.y + Math.sin(a) * HZ.offset;
+        if (inside(x, y)) break;
+      }
+      if (!inside(x, y)) {
+        const a = Math.atan2(H / 2 - p.y, W / 2 - p.x);
+        x = p.x + Math.cos(a) * HZ.offset;
+        y = p.y + Math.sin(a) * HZ.offset;
+      }
+      const grow = Math.min(HZ.growMax, Math.floor(this.stage / HZ.growEvery)),
+        r = Math.round(HZ.r * (1 + HZ.grow * grow) * 100) / 100;
+      this.hazards.push({
+        x: clamp(x, 100, W - 100),
+        y: clamp(y, 100, H - 100),
+        r,
+        timer: HZ.delay,
+        fuse: HZ.delay,
+        done: false,
+        stage: this.stage,
+      });
+      this.emit('warning', { r });
     }
     // 회복 구역(R-061): 맵 아무 곳에 life초 동안 하나(동시 1개). 반지름 = 보스 반지름 × sizes 중 하나
     spawnZone() {
@@ -15746,20 +16156,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         }
       }
       if (p.shotCD <= 0) this.fire();
+      // 붕괴 구역(R-072): 묶음 시계가 다 되면 이번 묶음 개수(전투 시계가 more의 분을 지날 때마다 +1)를 정하고
+      // gap초 간격으로 하나씩 놓는다(각각 그때 기체 기준, 남은 순번은 다음 묶음이 오면 버림). 동시 max개를 넘으면 그 하나는 건너뜀
       this.hazardClock -= dt;
       const HZ = B.hazard;
-      if (this.stage >= HZ.fromStage && this.hazardClock <= 0 && this.hazards.length < HZ.max) {
+      if (this.stage >= HZ.fromStage && this.hazardClock <= 0) {
         this.hazardClock = Math.max(HZ.min, HZ.interval - this.stage * HZ.step);
-        const a = this.rng() * TAU;
-        this.hazards.push({
-          x: clamp(p.x + Math.cos(a) * HZ.offset, 100, W - 100),
-          y: clamp(p.y + Math.sin(a) * HZ.offset, 100, H - 100),
-          r: HZ.r,
-          timer: HZ.delay,
-          done: false,
-          stage: this.stage,
-        });
-        this.emit('warning');
+        this.hazardLeft = 1 + HZ.more.filter(m => this.time / 60 >= m).length;
+        this.hazardGap = 0;
+      }
+      if (this.hazardLeft > 0) {
+        this.hazardGap -= dt;
+        if (this.hazardGap <= 0) {
+          this.hazardLeft--;
+          this.hazardGap += HZ.gap;
+          if (this.hazards.length < HZ.max) this.spawnHazard();
+        }
       }
       const orbitPositions = [];
       for (let i = 0; i < p.orbits; i++) {
@@ -18453,7 +18865,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     'dash',
     'nova',
     'hazard',
-    'hazard-fuse',
+    'hazard-hot',
+    'hazard-flash',
     'shield',
     'shield-max',
     'number',
@@ -18496,8 +18909,35 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     revive: { sec: 0.6, sparks: [30, 8] },
     // 회복 구역(R-061): 채움 · 테두리 투명도 [밖, 안] · 끝 깜빡임(남은 초 · 초당 횟수) · '+N'(healZone.hp) 글자 크기 · 수명(초)
     zone: { fill: [0.11, 0.2], line: [0.8, 1], blink: 5, hz: 4, size: 28, life: 0.8 },
+    // 붕괴 구역(R-072): 예고 채움 투명도 · 가운데 차오르는 원 투명도 [보통, 달아오름] · 달아오르는 마지막 초 ·
+    // 테두리 [굵기, 투명도] · 섬광(최고 투명도 · 유지 · 빠짐 · 노랑 → 흰빛 초 · 줄이기 최고 투명도) ·
+    // 흰 고리(초 · 커지는 비율 · 굵기 시작 → 끝 · 투명도) · 터진 뒤 테두리가 사라지는 초
+    hazard: {
+      fill: 0.08,
+      core: [0.24, 0.6],
+      hot: 0.25,
+      line: [2, 0.95],
+      flash: { peak: 0.9, hold: 0.12, fade: 0.18, tint: 0.1, low: 0.35 },
+      ring: { sec: 0.35, grow: 0.3, width: [4, 1], alpha: 0.9 },
+      fade: 0.5,
+    },
   };
   const TAU = Math.PI * 2;
+  // 두 색(0xrrggbb) 사이 k(0~1)
+  const mixColor = (a, b, k) =>
+    [16, 8, 0].reduce((c, s) => {
+      const x = (a >> s) & 255;
+      return c | (Math.round(x + (((b >> s) & 255) - x) * k) << s);
+    }, 0);
+  const hex = c => '#' + c.toString(16).padStart(6, '0');
+  // 붕괴 구역 예고 진행: [차오름 0~1, 달아오름 0~1]. 예고 길이는 엔진이 놓을 때 정한 fuse(balance hazard.delay)
+  function hazardHeat(h) {
+    const fuse = h.fuse || root.NeonBalance.hazard.delay;
+    return [
+      Math.min(1, Math.max(0, 1 - h.timer / fuse)),
+      Math.min(1, Math.max(0, 1 - h.timer / FX.hazard.hot)),
+    ];
+  }
   // 회복 구역 가운데 '+'(팔 길이 9 · 두께 4)
   const PLUS = [-2, -9, 2, -9, 2, -2, 9, -2, 9, 2, 2, 2, 2, 9, -2, 9, -2, 2, -9, 2, -9, -2, -2, -2];
   function compact(items) {
@@ -18515,6 +18955,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.time = 0;
       this.particles = [];
       this.rings = [];
+      // 붕괴 구역이 터진 자리(R-072): { x, y, r, t: 터진 뒤 초 } — 섬광 · 흰 고리
+      this.bursts = [];
       this.numbers = [];
       // 회복 '+1'(R-061): { x, y, life } · 마지막으로 띄운 전투 시계 초
       this.heals = [];
@@ -18543,9 +18985,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         this.app.stage.addChild(this.world);
         this.bg = new PIXI.Graphics();
         this.world.addChild(this.bg);
-        // 바닥 층(R-061): 회복 구역. 기체 · 적 · 효과 아래
+        // 바닥 층(R-061 · R-072): 회복 구역 · 붕괴 구역 예고. 기체 · 적 · 효과 아래
         this.floor = new PIXI.Graphics();
         this.world.addChild(this.floor);
+        // 붕괴 구역 섬광(R-072): 바닥 바로 위 '더하기 섞기' 스프라이트(밝게 비추고 아래 개체를 가리지 않음)
+        this.flashes = new PIXI.Container();
+        this.world.addChild(this.flashes);
         this.applyTheme('easy');
         this.fx = new PIXI.Graphics();
         this.overlay = new PIXI.Graphics();
@@ -18697,17 +19142,33 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       );
       this.textures.scoin = this.app.renderer.generateTexture({ target: coin, resolution: 2 });
       coin.destroy({ children: true });
+      // 붕괴 구역 섬광(R-072): 256px 방사형 흰빛 한 장(가운데 하얗고 가장자리 옅게, 끝은 또렷).
+      // 프레임마다 그라디언트를 만들지 않고 색(tint) · 투명도 · 크기만 바꿔 쓴다
+      const glow = document.createElement('canvas');
+      glow.width = glow.height = 256;
+      const c = glow.getContext('2d'),
+        grad = c.createRadialGradient(128, 128, 0, 128, 128, 128);
+      for (const [at, a] of [
+        [0, 1],
+        [0.55, 0.85],
+        [0.97, 0.5],
+        [1, 0],
+      ])
+        grad.addColorStop(at, 'rgba(255,255,255,' + a + ')');
+      c.fillStyle = grad;
+      c.fillRect(0, 0, 256, 256);
+      this.textures.hazardFlash = PIXI.Texture.from(glow);
     }
     sprite(key) {
       const s = new PIXI.Sprite(this.textures[key]);
       s.anchor.set(0.5);
       return s;
     }
-    pool(key, i, texture) {
+    pool(key, i, texture, parent = this.world) {
       const arr = this.pools[key] || (this.pools[key] = []);
       if (!arr[i]) {
         arr[i] = this.sprite(texture);
-        this.world.addChild(arr[i]);
+        parent.addChild(arr[i]);
       }
       const s = arr[i];
       s.texture = this.textures[texture];
@@ -18789,8 +19250,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           this.burst(e.x, e.y, P.nova, quality ? 30 : 8, true);
           this.kick(FX.novaShake);
         }
-        if (e.type === 'hazard')
-          this.rings.push({ x: e.x, y: e.y, r: e.r, life: 0.5, max: 0.5, color: P.hazard });
+        // 붕괴 구역이 터짐(R-072): 섬광 · 흰 고리(동시 최대는 엔진 hazard.max라 따로 상한을 두지 않음)
+        if (e.type === 'hazard') this.bursts.push({ x: e.x, y: e.y, r: e.r, t: 0 });
         // 1회 부활(R-062): 충격파 반경의 금빛 고리 + 불꽃 + 흔들림
         if (e.type === 'revive') {
           const R = FX.revive;
@@ -18805,6 +19266,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     clear() {
       this.particles.length = 0;
       this.rings.length = 0;
+      this.bursts.length = 0;
       this.numbers.length = 0;
       this.heals.length = 0;
       this.healSec = -1;
@@ -18836,6 +19298,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       compact(this.particles);
       for (const r of this.rings) r.life -= dt;
       compact(this.rings);
+      let w = 0;
+      for (const b of this.bursts) if ((b.t += dt) < FX.hazard.fade) this.bursts[w++] = b;
+      this.bursts.length = w;
       for (const n of this.numbers) {
         n.y -= dt * 35;
         n.life -= dt;
@@ -18911,7 +19376,42 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           .poly(PLUS.map((v, i) => v + (i % 2 ? zone.y : zone.x)))
           .fill({ color: P.heal, alpha: 0.85 * k });
       }
+      // 붕괴 구역 예고(R-072, 바닥 층): 옅은 빨강 채움 + 가운데서 차오르는 원(마지막 hot초는 노랗게 달아오름) + 테두리.
+      // 터진 뒤에는 테두리만 fade초에 걸쳐 사라진다
+      const HF = FX.hazard;
+      for (const h of g.hazards) {
+        if (h.done) {
+          const k = Math.max(0, 1 + h.timer / HF.fade);
+          if (k > 0)
+            this.floor
+              .circle(h.x, h.y, h.r)
+              .stroke({ color: P.hazard, width: HF.line[0], alpha: HF.line[1] * k });
+          continue;
+        }
+        const [fill, heat] = hazardHeat(h);
+        this.floor.circle(h.x, h.y, h.r).fill({ color: P.hazard, alpha: HF.fill });
+        if (fill > 0)
+          this.floor.circle(h.x, h.y, h.r * fill).fill({
+            color: heat > 0 ? mixColor(P.hazard, P.hazardHot, heat) : P.hazard,
+            alpha: HF.core[0] + (HF.core[1] - HF.core[0]) * heat,
+          });
+        this.floor.circle(h.x, h.y, h.r).stroke({ color: P.hazard, width: HF.line[0], alpha: HF.line[1] });
+      }
+      // 섬광: 터진 원 안을 노랑 → 흰빛으로 밝힌다(hold초 유지 → fade초에 빠짐, 줄이기면 옅게)
       let j = 0;
+      const FL = HF.flash;
+      for (const b of this.bursts) {
+        if (b.t >= FL.hold + FL.fade) continue;
+        const s = this.pool('flashes', j++, 'hazardFlash', this.flashes),
+          top = pref.motion ? FL.peak : FL.low;
+        s.blendMode = 'add';
+        s.position.set(b.x, b.y);
+        s.scale.set(b.r / 128);
+        s.tint = mixColor(P.hazardHot, P.hazardFlash, Math.min(1, b.t / FL.tint));
+        s.alpha = b.t < FL.hold ? top : top * Math.max(0, 1 - (b.t - FL.hold) / FL.fade);
+      }
+      this.hideAfter('flashes', j);
+      j = 0;
       for (const e of g.enemies) {
         if (
           Math.abs(e.x - this.cam.x) > (this.width / z) * 0.6 + 80 ||
@@ -18975,16 +19475,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         s.rotation = a;
       }
       this.hideAfter('blades', j);
-      for (const h of g.hazards) {
-        this.fx
-          .circle(h.x, h.y, h.r)
-          .fill({ color: P.hazard, alpha: h.done ? 0.12 : 0.035 })
-          .stroke({ color: P.hazard, width: 1.5, alpha: 0.75 });
-        if (!h.done)
-          this.fx
-            .circle(h.x, h.y, h.r * Math.max(0, 1 - h.timer / 1.65))
-            .stroke({ color: P.hazardFuse, width: 1.5 });
-      }
+      // 붕괴 구역 흰 고리(R-072, 기체 위): 터진 원에서 grow만큼 커지며 가늘어지고 옅어진다. 줄이기면 없음
+      const RG = HF.ring;
+      if (pref.motion)
+        for (const b of this.bursts) {
+          if (b.t >= RG.sec) continue;
+          const k = b.t / RG.sec;
+          this.fx.circle(b.x, b.y, b.r * (1 + RG.grow * k)).stroke({
+            color: P.hazardFlash,
+            width: RG.width[0] + (RG.width[1] - RG.width[0]) * k,
+            alpha: RG.alpha * (1 - k),
+          });
+        }
       // 보호막 표시 원(Q57: 반지름 26 → 52, 보이는 것만. 보호막은 피해를 먼저 받는 양이라 범위 판정이 없다)
       // 가득 참(R-056, I-15): 가득 찬 동안 밝은 테두리, 가득 차는 순간 한 번 반짝(판 첫 프레임 · 줄이기면 없음)
       const full = p.maxShield > 0 && p.shield >= p.maxShield - 0.01,
@@ -19172,12 +19674,37 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c.fillStyle = S.gem2d;
         c.fillRect(b.x - 3, b.y - 3, 6, 6);
       }
+      // 붕괴 구역(R-072, 기본 그래픽): 테두리 + 가운데 차오르는 원 채움, 터지면 원 하나로 섬광(고리 없음)
+      const HF = FX.hazard;
+      c.lineWidth = HF.line[0];
       for (const h of g.hazards) {
+        const [fill, heat] = h.done ? [0, 0] : hazardHeat(h),
+          k = h.done ? Math.max(0, 1 + h.timer / HF.fade) : 1;
+        if (fill > 0) {
+          c.fillStyle = hex(mixColor(this.pal.hazard, this.pal.hazardHot, heat));
+          c.globalAlpha = HF.core[0] + (HF.core[1] - HF.core[0]) * heat;
+          c.beginPath();
+          c.arc(h.x, h.y, h.r * fill, 0, Math.PI * 2);
+          c.fill();
+        }
         c.strokeStyle = S.hazard;
+        c.globalAlpha = HF.line[1] * k;
         c.beginPath();
         c.arc(h.x, h.y, h.r, 0, Math.PI * 2);
         c.stroke();
       }
+      const FL = HF.flash;
+      c.fillStyle = S.hazardFlash;
+      for (const b of this.bursts) {
+        if (b.t >= FL.hold + FL.fade) continue;
+        const top = FL.low;
+        c.globalAlpha = b.t < FL.hold ? top : top * Math.max(0, 1 - (b.t - FL.hold) / FL.fade);
+        c.beginPath();
+        c.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.globalAlpha = 1;
+      c.lineWidth = 0.6;
       // Insane S 코인(기본 그래픽): 보라 원 + S
       c.textAlign = 'center';
       c.textBaseline = 'middle';
@@ -20405,6 +20932,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ? '<button class="hidden-entry is-open" id="hidden-open"><strong>' +
           H.entryOpen +
           '</strong><small>' +
+          (companion ? catFace(companion[0], 'cat-mini') : '') +
           esc(H.entryCompanion(...(companion || []))) +
           ' ›</small></button>'
       : '<div class="hidden-entry"><strong>' +
@@ -20413,9 +20941,64 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           esc(H.entryLocked()) +
           '</small></div>';
   }
-  // 고양이 얼굴(임시 그림, 3단계에서 확정)
-  const catIcon = () =>
-    '<span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 9.5 6 4l4 3h4l4-3 1 5.5V14a7 7 0 0 1-14 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9.4" cy="12.6" r="1.1" fill="currentColor"/><circle cx="14.6" cy="12.6" r="1.1" fill="currentColor"/><path d="M11 15.6h2l-1 1.1z" fill="currentColor"/></svg></span>';
+  // 고양이 비행사 얼굴(R-075, 24 그리드 · 선 1.5): 미오 = 뾰족 귀 · 이마 줄무늬 · 배지 렌치, 토토 = 둥근 귀 · 통통한 볼 ·
+  // 배지 상자, 루나 = 높은 귀 · 이마 고글 · 배지 종이비행기. 얼굴 선은 currentColor(카드 상태 색 --cat-c), 소품 · 배지는
+  // 고양이 색(.cat-prop = --cat-p, ui.css). 오른쪽 아래 배지 원(.cat-badge) 바탕은 놓인 면의 색(--cat-bg)이라 얼굴 선을 덮는다.
+  // 그림 원본은 design/v5-stage6/build.cjs ICONS
+  const CAT_FACE =
+      'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"',
+    CAT_PROP =
+      'class="cat-prop" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"',
+    // 눈 두 개(높이 y) + 코(높이 nose)
+    catEyes = (y, nose) =>
+      '<circle cx="8" cy="' +
+      y +
+      '" r="1.05" fill="currentColor"/><circle cx="13" cy="' +
+      y +
+      '" r="1.05" fill="currentColor"/><path d="M9.7 ' +
+      nose +
+      'h1.6l-.8.9z" fill="currentColor"/>',
+    catBadge = glyph =>
+      '<g ' + CAT_PROP + '><circle class="cat-badge" cx="18.6" cy="18.6" r="4.6"/>' + glyph + '</g>',
+    CAT_SVG = {
+      engineer:
+        '<path ' +
+        CAT_FACE +
+        ' d="M3.6 10 4.4 3.6l4.2 3h3.8l4.2-3 .8 6.4v3.2a6.9 6.9 0 0 1-13.8 0z"/><path ' +
+        CAT_FACE +
+        ' d="M9 7.9v1.4M10.5 7.6v1.7M12 7.9v1.4"/>' +
+        catEyes(12.3, 14.9) +
+        catBadge('<path d="M16.6 20.6l2.7-2.7"/><path d="M18.9 16.3a1.7 1.7 0 1 0 2.4 2.4"/>'),
+      supply:
+        '<path ' +
+        CAT_FACE +
+        ' d="M3.6 10.4C3.4 7.4 4.1 4.8 5.8 4.5c1.2-.2 2.2 1.3 2.9 2.3h3.6c.7-1 1.7-2.5 2.9-2.3 1.7.3 2.4 2.9 2.2 5.9v2.9a6.9 6.9 0 0 1-13.8 0z"/><path ' +
+        CAT_FACE +
+        ' d="M5.3 14.6c.6.5 1.4.6 2 .3M15.7 14.6c-.6.5-1.4.6-2 .3"/>' +
+        catEyes(12, 14.6) +
+        catBadge(
+          '<path d="M18.6 15.7l2.6 1.4v2.9l-2.6 1.4-2.6-1.4v-2.9z"/><path d="M16 17.1l2.6 1.4 2.6-1.4M18.6 18.5v2.9"/>',
+        ),
+      pilot:
+        '<path ' +
+        CAT_FACE +
+        ' d="M3.8 10.6 4.2 2.8l4.6 3.9h3.4l4.6-3.9.4 7.8v3a6.9 6.9 0 0 1-13.8 0z"/>' +
+        catEyes(13.2, 15.7) +
+        '<g ' +
+        CAT_PROP +
+        '><circle cx="8.3" cy="9.1" r="1.8"/><circle cx="12.7" cy="9.1" r="1.8"/><path d="M3.9 9.1h2.6M10.1 9.1h.8M14.5 9.1h2.6"/></g>' +
+        catBadge('<path d="M15.7 18.8l5.7-2.8-2.4 5.6-1.2-2z"/><path d="M17.8 19.6l3.6-3.6"/>'),
+    };
+  // 그림만(cls: 'cat-mini' = 성장 탭 히든 칸 동반 줄 20px) · 카드 상자(52px, 그림 40px)
+  const catFace = (id, cls = '') =>
+    '<span class="' +
+    (cls ? cls + ' ' : '') +
+    'cat-icon--' +
+    id +
+    '" aria-hidden="true"><svg viewBox="0 0 24 24">' +
+    (CAT_SVG[id] || CAT_SVG.engineer) +
+    '</svg></span>';
+  const catIcon = id => catFace(id, 'cat-icon');
   // info = { cats: { id: 레벨 }, companion, sc, blue, ready, effects(NeonProgress.catEffects 결과) }
   function hiddenPage(info) {
     const H = TV.hidden,
@@ -20484,7 +21067,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         '<article class="cat-card cat-card--' +
         state +
         '">' +
-        catIcon() +
+        catIcon(id) +
         '<div class="cat-main"><h3>' +
         cat.name +
         (lv >= 1 ? ' <small>' + H.level(lv) + '</small>' : '') +
@@ -22336,7 +22919,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     comp: { threshold: -14, ratio: 4 },
     echo: { delay: 0.11, feedback: 0.28, wet: 0.35 },
     // 같은 소리 사이 최소 간격(초)
-    gap: { shoot: 0.08, kill: 0.05, hurt: 0.12, coin: 0.08, boss: 1.5, bossdown: 0.3, tap: 0.05 },
+    gap: {
+      shoot: 0.08,
+      kill: 0.05,
+      hurt: 0.12,
+      coin: 0.08,
+      boss: 1.5,
+      bossdown: 0.3,
+      tap: 0.05,
+      hazard: 0.25,
+    },
     voices: 14, // 동시에 울리는 소리 상한. 넘으면 skippable 소리만 건너뛴다
     skippable: ['shoot', 'kill', 'tap'],
   };
@@ -22364,6 +22956,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       n(0.16, 0.14, 0, 'lowpass', 2500, 300),
     ],
     dash: [n(0.24, 0.16, 0, 'bandpass', 500, 4200, 2.5), o('sine', 300, 1100, 0.2, 0.08)],
+    // 붕괴 구역이 터짐(R-072, 샘플 밖 새 소리): 짧은 '쾅' = 잡음 대역 1800 → 300Hz + 낮은 쿵 120 → 40Hz, 피격보다 작게
+    hazard: [n(0.3, 0.11, 0, 'bandpass', 1800, 300, 1.2), o('sine', 120, 40, 0.32, 0.13)],
     nova: [
       o('sine', 140, 28, 0.7, 0.45),
       n(0.6, 0.24, 0, 'lowpass', 4000, 120),
@@ -22518,6 +23112,154 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 
     </script>
+    <!-- 튜토리얼 · 팁 판정(R-073 · R-074, src/coach.js) -->
+    <script>
+      (function (root) {
+  'use strict';
+  // 튜토리얼 판정(R-073 · R-074). 판 안에서 띄울 튜토리얼 줄 고르기(무리 순 · 판당 줄 수 · 한 번에 한 줄 · '봤다'),
+  // 결과 화면 팁 한 줄 판정, 기록 · 성장 탭 점 판정만 한다.
+  // 순수 로직만 두고 저장(prefs.tips) · 화면 · 알림 · 사건 읽기는 app.js가 맡는다.
+
+  // first 첫 판 줄 수 · budget 그 뒤 판당 줄 수 · delay 사건 뒤 띄우기까지 · fresh 사건 뒤 버리기까지
+  // seen 맨 위로 이만큼 보이면 '봤다' · sec 한 줄이 보이는 시간(모두 초)
+  const RULE = Object.freeze({ first: 4, budget: 3, delay: 0.8, fresh: 6, seen: 1.2, sec: 4 });
+  // 줄 무리: 0 위험 · 1 회복 · 2 조작(작을수록 먼저)
+  const LINES = Object.freeze({ boss: 0, hazard: 0, siege: 0, heal: 1, stage: 2, dash: 2, nova: 2 });
+  // 레벨업 창 머리 줄(판당 줄 수에 세지 않음)
+  const HEAD = Object.freeze(['levelup', 'blue']);
+  const SEEN_KEYS = Object.freeze([...Object.keys(LINES), ...HEAD, 'chips']);
+
+  const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+  // 저장된 tips를 믿을 수 있는 꼴로. 모르는 키는 버린다.
+  function clean(raw) {
+    const r = isObj(raw) ? raw : {};
+    const seenRaw = isObj(r.seen) ? r.seen : {};
+    const seen = {};
+    for (const k of SEEN_KEYS) if (has(seenRaw, k) && seenRaw[k] === 1) seen[k] = 1;
+    const backup = typeof r.backup === 'number' && Number.isFinite(r.backup) && r.backup >= 0 ? r.backup : 0;
+    const growB = Number.isInteger(r.growB) && r.growB >= 0 ? r.growB : 0;
+    return { on: r.on !== false, seen, backup, growB };
+  }
+
+  // 전체 초기화 뒤: 팁 보기 켜고 끔만 남긴다
+  const fresh = s => clean({ on: isObj(s) ? s.on : undefined });
+  // 팁 다시 보기: 본 표시만 지운다
+  const again = s => ({ ...s, seen: {} });
+  // 할 일 칩을 아직 안 봤으면 첫 판
+  const isFirst = s => !s.seen.chips;
+
+  // 한 판의 튜토리얼 줄 진행. state.seen을 그대로 고쳐 쓴다(앱이 그 state를 저장하면 반영).
+  class Session {
+    constructor(state) {
+      if (!isObj(state.seen)) state.seen = {};
+      this.state = state;
+      this.first = isFirst(state);
+      this.budget = this.first ? RULE.first : RULE.budget;
+      this.posted = 0;
+      this.active = null;
+      this.pending = [];
+      this.stopped = false;
+    }
+
+    // 사건이 생겼을 때 그 줄을 기다리는 줄에 넣는다
+    offer(id, clock) {
+      const s = this.state;
+      if (this.stopped || !s.on || !has(LINES, id) || s.seen[id]) return;
+      if (this.pending.some(p => p.id === id)) return;
+      if (this.active && this.active.id === id) return;
+      if (this.first && LINES[id] === 2) return;
+      this.pending.push({ id, at: clock + RULE.delay, until: clock + RULE.fresh });
+    }
+
+    // 다른 길로 본 것으로 칠 때(예: 이미 STAGE를 눌렀음)
+    retire(id) {
+      this.state.seen[id] = 1;
+      this.pending = this.pending.filter(p => p.id !== id);
+    }
+
+    // 지금 띄울 줄 하나(없으면 null)
+    next(clock) {
+      const s = this.state;
+      if (this.stopped || !s.on) return null;
+      if (this.active) {
+        if (clock < this.active.at + RULE.sec) return null;
+        this.active = null;
+      }
+      this.pending = this.pending.filter(p => clock <= p.until && !s.seen[p.id]);
+      const ready = this.pending
+        .filter(p => clock >= p.at)
+        .sort((a, b) => LINES[a.id] - LINES[b.id] || a.at - b.at);
+      for (const p of ready) {
+        this.pending = this.pending.filter(q => q !== p);
+        if (LINES[p.id] !== 0 && this.posted >= this.budget) continue;
+        this.active = { id: p.id, at: clock, top: 0 };
+        this.posted++;
+        return p.id;
+      }
+      return null;
+    }
+
+    // 보이는 줄이 맨 위였던 시간을 쌓아 '봤다'가 된 순간 그 id를 한 번 돌려준다
+    tick(dt, clock, top) {
+      const a = this.active;
+      if (!a || !top || this.state.seen[a.id]) return null;
+      if (!(dt > 0) || clock >= a.at + RULE.sec) return null;
+      a.top += dt;
+      if (a.top < RULE.seen) return null;
+      this.state.seen[a.id] = 1;
+      return a.id;
+    }
+
+    // 판이 끝나거나 팁 다시 보기를 눌렀을 때
+    stop() {
+      this.stopped = true;
+      this.pending = [];
+      this.active = null;
+    }
+  }
+
+  // 결과 화면 팁: 손 STAGE 0 → 'stage', 대시 0 → 'dash', 탄 피해가 가장 크면 'nova', 아니면 null
+  function resultTip(summary) {
+    if (!isObj(summary)) return null;
+    const changes = Array.isArray(summary.stageChanges) ? summary.stageChanges : [];
+    const hand = changes.filter(c => !(c && c.auto)).length;
+    if (hand === 0) return 'stage';
+    const dash = isObj(summary.abilities) ? Number(summary.abilities.dash) : 0;
+    if (!(dash > 0)) return 'dash';
+    const byAttack = {};
+    const damage = isObj(summary.damage) ? summary.damage : {};
+    for (const key of Object.keys(damage)) {
+      const v = damage[key];
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      const cut = key.indexOf('/');
+      const attack = cut < 0 ? key : key.slice(cut + 1);
+      byAttack[attack] = (byAttack[attack] || 0) + v;
+    }
+    // 탄(projectile)이 attack 중 가장 클 때만(다른 어느 attack보다 엄격히 큼)
+    const shot = byAttack.projectile || 0;
+    let other = 0;
+    for (const k of Object.keys(byAttack)) if (k !== 'projectile') other = Math.max(other, byAttack[k]);
+    return shot > 0 && shot > other ? 'nova' : null;
+  }
+
+  // 탭 점: 기록(백업 뒤 기록 20판 이상) · 성장(살 수 있는 영구 스킬이 있고 B가 그 뒤 늘었음)
+  function dots({ records, backup, blue, growB, prices } = {}) {
+    const recs = Array.isArray(records) ? records : [];
+    const since = typeof backup === 'number' && Number.isFinite(backup) ? backup : 0;
+    const rec = recs.filter(r => r && r.date > since).length >= 20;
+    const list = Array.isArray(prices) ? prices : [];
+    const canBuy = list.some(p => typeof p === 'number' && Number.isFinite(p) && p <= blue);
+    return { rec, grow: canBuy && blue > growB };
+  }
+
+  const api = { RULE, LINES, HEAD, clean, fresh, again, isFirst, Session, resultTip, dots };
+  root.NeonCoach = api;
+  if (typeof module !== 'undefined') module.exports = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+    </script>
     <!-- GM 실험 칸(R-065): gm.html 빌드에만 src/gm.js가 들어간다(index.html은 빈칸) -->
     <script>
       
@@ -22627,6 +23369,8 @@ let prefs = {
     // GM 실험 칸(R-065): 시험 경로의 기록 탭 GM 버튼 숨기기 · GM 화면의 일반 출격 시작 STAGE
     gmHide: false,
     gmStage: 1,
+    // 튜토리얼 · 팁(R-073 · R-074): 팁 보기 · 본 줄 · 마지막 백업 시각 · 성장 탭을 볼 때의 B. 이 기기 설정(백업 대상 아님)
+    tips: NeonCoach.clean(null),
     craft: 'striker',
     mode: 'easy',
   },
@@ -22648,6 +23392,7 @@ try {
     prefs.buffs = Object.fromEntries(NeonProgress.BUFFS.map(id => [id, p.buffs?.[id] === true]));
     prefs.gmHide = p.gmHide === true;
     prefs.gmStage = Math.min(999, Math.max(1, Math.floor(Number(p.gmStage) || 1)));
+    prefs.tips = NeonCoach.clean(p.tips);
     if (Neon.CRAFTS[p.craft]) prefs.craft = p.craft;
     if (Neon.DIFFICULTIES[p.mode]) prefs.mode = p.mode;
   }
@@ -22721,7 +23466,17 @@ function notify(type, ...args) {
   text('announcer', t);
   alertQ.list = alertQ.list.filter(x => !hit.includes(x));
   const el = !fx && hit.length ? hit.shift().el : null;
-  alertQ.list.unshift({ type, text: t, major, tone: a.tone || '', fx, until: alertClock + a.sec, el });
+  // k: 줄 앞 작은 표(튜토리얼 줄 'TIP', R-073). CSS가 data-k로 그린다
+  alertQ.list.unshift({
+    type,
+    text: t,
+    major,
+    tone: a.tone || '',
+    fx,
+    k: a.k ? a.k() : '',
+    until: alertClock + a.sec,
+    el,
+  });
   renderAlerts([...hit, ...alertQ.list.splice(T.ui.alertStack.max)]);
 }
 function tickAlerts() {
@@ -22753,6 +23508,10 @@ function renderAlerts(gone = []) {
       (a.tone ? ' alert--' + a.tone : '') +
       (a.fx && !i ? ' alert--' + a.fx : '');
     if (a.el.className !== cls) a.el.className = cls;
+    if ((a.el.dataset.k || '') !== a.k) {
+      if (a.k) a.el.dataset.k = a.k;
+      else delete a.el.dataset.k;
+    }
     if (host.children[i] !== a.el) host.insertBefore(a.el, host.children[i] || null);
   });
   checkAlertLine();
@@ -22991,6 +23750,7 @@ async function refreshRecords() {
   renderModeBest();
   if (page === 'rec') renderRecordsPage();
   text('storage-note', !store.db && !store.storageOK ? T.msg.storageFull : '');
+  if (g.mode === 'menu') renderDots();
 }
 
 // launch: 일반 출격은 비워 두고, S 출격은 { type: 'super', launchId, prep }.
@@ -23081,6 +23841,8 @@ async function begin(launch = {}) {
     if (buffs.length) notify('buffOn', buffs);
     const skipped = (started.skipped || []).filter(s => s.reason !== 'mode').map(s => s.id);
     if (skipped.length) notify('buffSkip', skipped);
+    // 튜토리얼(R-073): 일반 출격 · 팁 보기면 이 판의 줄 진행(첫 판은 할 일 칩 · 가리킴)
+    startTips(sc);
     sfx('start');
   } finally {
     starting = false;
@@ -23165,6 +23927,7 @@ function syncMode() {
   $('hud').hidden = ['title', 'menu', 'paused', 'ended'].includes(displayMode);
   if (!$('hud').hidden) checkAlertLine();
   $('upgrade').hidden = displayMode !== 'upgrade';
+  if (displayMode !== 'upgrade') closeUpgradeTip();
   $('intro').hidden = displayMode !== 'intro';
   $('paused').hidden = displayMode !== 'paused' || !!document.querySelector('dialog[open]');
   $('result').hidden = displayMode !== 'ended';
@@ -23181,6 +23944,9 @@ function renderUpgrade() {
   clearInput();
   upgradeStarted = performance.now();
   text('upgrade-kicker', T.msg.upgradeKicker(g.p.level));
+  // 첫 레벨업(R-073): 제목 아래 TIP 줄. 지난 창의 줄은 여기서 닫는다(연달아 뜨는 레벨업 창)
+  closeUpgradeTip();
+  if (coach && !prefs.tips.seen.levelup) upgradeTip('levelup');
   // 숫자키 안내는 키보드 기기만(터치가 주 입력이면 뺀다, R-066)
   text('upgrade-sub', T.ui.upgrade.sub(!matchMedia('(pointer:coarse)').matches));
   // 카드는 화면의 스킬 순서로 보여 주고, 1·2·3 키도 이 순서를 따른다(엔진의 뽑기 순서는 그대로)
@@ -23345,8 +24111,12 @@ function renderResultUnlock() {
 function showResult() {
   clearInput();
   if (!lastResult) {
+    stopTips();
     const session = recorder,
       r = makeRecord();
+    // 다음 판 팁(R-074, I-41): 판 중 쌓인 요약(손 STAGE · 대시 · attack별 피해)으로 STAGE → 대시 → 충격파 중 하나.
+    // 일반 출격 · 팁 보기일 때만, 없으면 숨김(그 자리는 I-57 고양이 한마디가 정해지면 함께 쓴다)
+    resultTipId = r.launch?.type !== 'super' && tipsOn() ? NeonCoach.resultTip(session?.summary) : null;
     lastResult = r;
     resultUnlockSound = false;
     g.onEvent = null;
@@ -23411,6 +24181,8 @@ function showResult() {
   $('result-build').innerHTML = V.stackList(r.stacks, r.skills);
   $('result-analysis').innerHTML = V.analysisSummary(r);
   renderResultCoins();
+  if (resultTipId) tipLine($('result-tip'), resultTipId);
+  else $('result-tip').hidden = true;
   $('result-note').value = r.note || '';
   $('result-note').disabled = !!r.note;
   const editor = $('result-note').closest('.note-editor');
@@ -23425,6 +24197,7 @@ function goMenu() {
   siegeEdgeUntil = 0;
   hideBossWarn();
   stopBest();
+  stopTips();
   clearAlerts();
   g.enemies = [];
   g.bullets = [];
@@ -23523,6 +24296,10 @@ function settingsDialog() {
   $('pad-setting').value = prefs.pad;
   $('alert-setting').value = prefs.alertPos;
   $('gm-hide-setting').checked = prefs.gmHide;
+  $('tips-setting').checked = prefs.tips.on;
+  // '팁 다시 보기'는 창을 열 때마다 다시 누를 수 있다(누르면 '다음 판부터'로 잠김)
+  $('tips-again').disabled = false;
+  text('tips-again', T.tips.again);
   $('settings-dialog').showModal();
 }
 function resize() {
@@ -23624,6 +24401,209 @@ function sfx(id) {
     NeonSfx.play(id);
   } catch {}
 }
+// ── 튜토리얼(R-073, I-63~I-66): 줄 고르기 · 판당 줄 수 · '봤다'는 coach.js(NeonCoach), 문구는 terms.js tips.
+// 여기서는 엔진 이벤트 · 상태를 읽기만 해서 사건을 넘기고(판 진행 · 난수에 닿지 않음), 알림 묶음의 TIP 줄 ·
+// 할 일 칩(H-TASK) · 버튼 가리킴 · 레벨업 창 머리 줄을 그린다. 일반 출격 · 설정 '팁 보기'일 때만
+// (S 출격 · GM 화면 없음, ?debug는 끄고 ?debug&tips면 켬). 본 표시는 기기 설정 prefs.tips(백업 아님):
+// coach가 prefs.tips.seen을 그대로 고쳐 쓰고, 봤다가 생길 때 저장한다.
+let coach = null,
+  // 이 판: 손 STAGE 수 · 20초 판정 · 이동 입력 초 · 화면에 들어온 회복 구역 번호 ·
+  // 할 일 칩({ move, stage, dash: 했음 }, 첫 판만) · 칩 줄을 그렸는지(세로) · 칩 줄을 접을 알림 시계 · 가리킬 차례
+  tipRun = null,
+  // 레벨업 창 머리 줄: { id, at: 보이기 시작한 시각(ms) } | null
+  tipHead = null,
+  // 결과 화면 다음 판 팁(R-074): 판이 끝날 때 그 판 기록으로 정한 줄 id | null
+  resultTipId = null;
+// 줄이 가리키는 버튼 · 할 일 칩 시간(초, 임시값: ROADMAP 6단계 '임시값'): 전투 chips초면 칩이 끝남 · 이동 입력 move초면
+// 이동 ✓ · 줄 흐려짐 fade초 · 셋 다 ✓면 done초 뒤 접힘 · 첫 판 가리킴 차례 [전투 시계 초, 버튼]
+const TIP_POINT = { stage: 'stage-button', dash: 'dash-button', nova: 'nova-button' },
+  TIP_RUN = {
+    chips: 30,
+    move: 0.4,
+    fade: 0.6,
+    done: 1.4,
+    points: [
+      [1, 'stage-button'],
+      [2.2, 'dash-button'],
+    ],
+  };
+function tipsOn() {
+  return prefs.tips.on && !GM && (!DEBUG || /[?&]tips\b/.test(location.search));
+}
+const isLandscape = () => matchMedia('(orientation: landscape) and (max-height: 520px)').matches;
+// 판 시작: 일반 출격이고 팁 보기면 새 판 진행. 첫 판(할 일 칩을 아직 안 봄)이고 세로면 칩 3개 + 가리킴 차례
+function startTips(sc) {
+  stopTips();
+  if (sc || !tipsOn()) return;
+  coach = new NeonCoach.Session(prefs.tips);
+  const drawn = coach.first && !isLandscape();
+  tipRun = {
+    hand: 0,
+    at20: false,
+    move: 0,
+    zone: 0,
+    chips: coach.first ? { move: false, stage: false, dash: false } : null,
+    drawn,
+    end: 0,
+    points: drawn ? TIP_RUN.points.slice() : [],
+  };
+  if (drawn) renderChips();
+}
+// 판 끝 · 메뉴 · 팁 끄기 · 팁 다시 보기: 이 판에는 더 띄우지 않는다
+function stopTips() {
+  coach?.stop();
+  coach = null;
+  tipRun = null;
+  hideChips();
+  closeUpgradeTip(false);
+}
+function renderChips(done = {}) {
+  const row = $('hud-tasks');
+  row.innerHTML = Object.entries(T.tips.chips)
+    .map(
+      ([id, label]) =>
+        '<span class="task' +
+        (done[id] ? ' is-done' : '') +
+        '" data-task="' +
+        id +
+        '"><i></i>' +
+        V.esc(label) +
+        '</span>',
+    )
+    .join('');
+  row.classList.remove('is-out');
+  row.hidden = false;
+  checkAlertLine();
+}
+function hideChips() {
+  const row = $('hud-tasks');
+  if (row.hidden) return;
+  row.hidden = true;
+  row.textContent = '';
+  checkAlertLine();
+}
+// 칩 하나를 했음: ✓ · 시안, CSS가 0.8초 뒤 흐린다(자리는 남음)
+function doneChip(id) {
+  const R = tipRun;
+  if (!R?.chips || R.chips[id] || R.end) return;
+  R.chips[id] = true;
+  if (R.drawn)
+    $('hud-tasks')
+      .querySelector('[data-task="' + id + '"]')
+      ?.classList.add('is-done');
+}
+// 가리킴: 버튼이 두 번 살짝 커지고 안쪽 시안 고리가 두 번 빛난다(ui.css .is-point, 줄이기면 없음)
+function point(id) {
+  const el = id && $(id);
+  if (!el || !prefs.motion) return;
+  el.classList.remove('is-point');
+  void el.offsetWidth;
+  el.classList.add('is-point');
+}
+// 사건 → 줄 후보(읽기만). 붕괴 구역 · 보스 · 포위 예고 · 피격(대시) · 탄 피격 + 충격파 준비(충격파) · 손 STAGE · 대시
+function tipEvent(e) {
+  const at = alertClock;
+  if (e.type === 'warning') coach.offer('hazard', at);
+  else if (e.type === 'boss') coach.offer('boss', at);
+  else if (e.type === 'siege_warn') coach.offer('siege', at);
+  else if (e.type === 'hurt') {
+    if (e.healthDamage > 0) coach.offer('dash', at);
+    if (e.source?.attack === 'projectile' && g.p.novaCD <= 0) coach.offer('nova', at);
+  } else if (e.type === 'stage' && !e.auto) {
+    tipRun.hand++;
+    doneChip('stage');
+  } else if (e.type === 'dash') doneChip('dash');
+}
+// 전투가 흐르는 프레임마다(알림 시계 뒤): 이동 칩 · 가리킴 차례 · 20초 STAGE · 회복 구역 · 줄 띄우기 · '봤다' · 칩 끝
+function tickTips(dt) {
+  const R = tipRun;
+  if (R.chips && !R.chips.move && !R.end) {
+    const i = input();
+    if (Math.hypot(i.x, i.y) > 0.3 && (R.move += dt) >= TIP_RUN.move) doneChip('move');
+  }
+  while (R.points.length && g.time >= R.points[0][0]) point(R.points.shift()[1]);
+  // STAGE 줄: 전투 20초에 그 판 손 STAGE가 0이면 후보, 이미 눌렀으면 본 것으로
+  if (!R.at20 && g.time >= 20) {
+    R.at20 = true;
+    if (R.hand) {
+      coach.retire('stage');
+      savePrefs();
+    } else coach.offer('stage', alertClock);
+  }
+  // 회복 구역: 구역 가운데가 화면 안에 처음 들어왔을 때(생김만으로는 화면 밖일 수 있다)
+  const z = g.zone,
+    v = g.view;
+  if (z && v && z.id !== R.zone && Math.abs(z.x - v.x) < v.hw && Math.abs(z.y - v.y) < v.hh) {
+    R.zone = z.id;
+    coach.offer('heal', alertClock);
+  }
+  const id = coach.next(alertClock);
+  if (id) {
+    notify('tip', id);
+    point(TIP_POINT[id]);
+  }
+  if (coach.tick(dt, alertClock, alertQ.list[0]?.type === 'tip')) savePrefs();
+  // 할 일 칩 끝: 전투 chips초(남은 칩도 흐려짐) 또는 셋 다 ✓(마지막 칩이 흐려진 뒤) → 줄이 접히고 본 것으로
+  if (R.chips && !R.end) {
+    const timeUp = g.time >= TIP_RUN.chips;
+    if (timeUp || Object.values(R.chips).every(Boolean)) {
+      R.end = alertClock + (timeUp ? TIP_RUN.fade : TIP_RUN.done);
+      if (timeUp && R.drawn) $('hud-tasks').classList.add('is-out');
+      prefs.tips.seen.chips = 1;
+      savePrefs();
+    }
+  }
+  if (R.end && alertClock >= R.end) hideChips();
+}
+// 팁 줄(.tip-line): 'TIP' 표 + 그 줄 문구. 레벨업 창 머리 · 결과 화면이 같이 쓴다
+function tipLine(el, id) {
+  el.innerHTML = '<b>' + V.esc(T.tips.k) + '</b><span>' + V.esc(T.tips.lines[id]) + '</span>';
+  el.hidden = false;
+}
+// 레벨업 창 머리 줄(첫 레벨업 · 첫 B): 제목 바로 아래. 줄이 나온 뒤 창이 RULE.seen초 이상 떠 있었으면 본 것으로
+function upgradeTip(id) {
+  tipLine($('upgrade-tip'), id);
+  tipHead = { id, at: performance.now() };
+}
+function closeUpgradeTip(mark = true) {
+  if (!tipHead) return;
+  if (mark && performance.now() - tipHead.at >= NeonCoach.RULE.seen * 1000) {
+    prefs.tips.seen[tipHead.id] = 1;
+    savePrefs();
+  }
+  tipHead = null;
+  $('upgrade-tip').hidden = true;
+}
+// 탭 새 소식 점(R-074, I-42 · I-43): 기록 = 마지막 백업 내보내기 뒤 기록 20판 이상, 성장 = 살 수 있는 영구 강화가 있고
+// 성장 탭을 마지막으로 본 뒤 B가 늘었음(판정은 coach.js dots). 팁 보기와 무관하고 GM 화면도 같다.
+// 기준 B(tips.growB): 성장 · 히든 탭을 보고 있으면 지금 B, B가 줄면(구매 · 고양이 · S 제작) 함께 내린다
+function renderDots() {
+  const w = wallet(),
+    t = prefs.tips,
+    growB = page === 'grow' || page === 'hidden' ? w.blue : Math.min(t.growB, w.blue);
+  if (growB !== t.growB) {
+    t.growB = growB;
+    savePrefs();
+  }
+  const d = NeonCoach.dots({
+    records,
+    backup: t.backup,
+    blue: w.blue,
+    growB,
+    prices: NeonProgress.SKILLS.map(id => NeonProgress.permaPrice(id, w.perma[id] || 0)),
+  });
+  setDot('grow', d.grow);
+  setDot('rec', d.rec);
+}
+// 점은 탭 아이콘 오른쪽 위(ui.css .tab-dot), 읽기 이름에 '새 소식'. 바뀔 때만 쓴다
+function setDot(tab, on) {
+  const dot = $(tab + '-dot');
+  if (dot.hidden === !on) return;
+  dot.hidden = !on;
+  const btn = dot.closest('.tab');
+  if (on) btn.setAttribute('aria-label', btn.querySelector('span').textContent + ' · ' + T.tips.dot);
+  else btn.removeAttribute('aria-label');
+}
 // 판 보상: 시작 때 고정한 판 id로 요청한다. 판이 바뀐 뒤 늦게 도착한 결과는 지난 판 합계에 넣지 않는다.
 // 요청은 rewards 한 줄로 이어 처리한다. 결과 저장은 이 줄을 기다린 뒤 획득 합계를 읽으므로
 // 판이 끝나는 순간에 처리 중이던 보상도 그 판 기록에 들어간다.
@@ -23653,6 +24633,11 @@ function awardLevel(id, level) {
       if (!$('upgrade').hidden) {
         text('upgrade-kicker', T.msg.upgradeKickerBlue(g.p.level, r.blue));
         text('announcer', T.msg.blueAnnounce(r.blue));
+        // 첫 B(R-073): 같은 자리를 B 줄로(레벨업 줄이 함께면 B 줄, 레벨업 줄은 다음 기회)
+        if (coach && !prefs.tips.seen.blue) {
+          closeUpgradeTip();
+          upgradeTip('blue');
+        }
       } else {
         const every = BAL.economy.blueEvery;
         notify('blue', r.blue, Math.floor(level / every) * every);
@@ -23716,7 +24701,10 @@ function events() {
   renderer.events(list, prefs.quality === 'low' || autoLow ? 0 : 1);
   for (const e of list) {
     const manualLevel = e.type === 'level' && !autoEnabled();
-    if (['dash', 'nova', 'hurt', 'kill', 'end', 'shoot', 'stage', 'bossdown'].includes(e.type) || manualLevel)
+    if (
+      ['dash', 'nova', 'hurt', 'kill', 'end', 'shoot', 'stage', 'bossdown', 'hazard'].includes(e.type) ||
+      manualLevel
+    )
       sfx(e.type);
     // 진동(R-055): 피격(보호막이 다 막아도) · 레벨업 창(AUTO가 아닐 때)
     if (e.type === 'hurt') vibrate(T.ui.vibe.hurt);
@@ -23760,6 +24748,7 @@ function events() {
       notify(type, e.to, boss);
       if (boss === 'now') bossNoticeUntil = alertClock + T.alerts[type].sec;
     }
+    if (coach) tipEvent(e);
   }
 }
 function loop(ms) {
@@ -23821,6 +24810,7 @@ function loop(ms) {
   if (g.mode === 'playing' && !frozen) {
     alertClock += dt;
     tickAlerts();
+    if (coach && tipRun) tickTips(dt);
   }
   hudClock += dt;
   if (hudClock >= 0.1 && g.mode !== 'menu' && !frozen) {
@@ -23982,6 +24972,9 @@ function bind() {
     prefs.pad = $('pad-setting').value;
     prefs.alertPos = $('alert-setting').value;
     prefs.gmHide = $('gm-hide-setting').checked;
+    // 팁 보기(R-073): 끄면 지금 판의 TIP 줄 · 할 일 칩 · 가리킴도 바로 멈춘다(결과 팁은 tipsOn으로)
+    prefs.tips.on = $('tips-setting').checked;
+    if (!prefs.tips.on) stopTips();
     applyPad();
     applyFx();
     applyAlerts();
@@ -24006,6 +24999,19 @@ function bind() {
     $('settings-dialog').close();
   };
   $('settings-dialog').addEventListener('close', restoreModal);
+  // 팁 다시 보기(R-073): 본 표시만 지운다(팁 보기 · 점 기준은 그대로). 다음 판이 첫 판(칩)부터, 지금 판에는 더 띄우지 않는다
+  $('tips-again').onclick = () => {
+    prefs.tips = NeonCoach.again(prefs.tips);
+    savePrefs();
+    stopTips();
+    $('tips-again').disabled = true;
+    text('tips-again', T.tips.againDone);
+  };
+  // 가리킴이 끝나면 지운다(다음 가리킴이 처음부터)
+  for (const id of Object.values(TIP_POINT))
+    $(id).addEventListener('animationend', e => {
+      if (e.animationName === 'point-pop') e.currentTarget.classList.remove('is-point');
+    });
   $('close-detail').onclick = () => $('detail-dialog').close();
   $('detail-export').onclick = () => exportRecord(selectedRecord);
   $('detail-analysis').onclick = () => openAnalysis(selectedRecord);
@@ -24395,6 +25401,7 @@ function refreshProfileUI() {
   if (lastResult) renderResultCoins();
   if (profile.storageLimited) text('storage-note', profile.storageReason || T.msg.storageLimited);
   if (g.mode !== 'menu') return;
+  renderDots();
   if (!profile.isUnlocked(selectedDifficulty)) selectedDifficulty = 'easy';
   const badgeHost = $('mode-badge');
   if (badgeHost.dataset.mode !== selectedDifficulty) {
@@ -24741,6 +25748,10 @@ async function exportBackup() {
     file = NeonBackup.makeBackup(p, await store.all(), { app: Neon.VERSION });
   text('data-status', T.msg.backup.exported(file.records.length));
   download('NEON-backup-' + new Date().toISOString().slice(0, 10) + '.json', file, $('data-status'));
+  // 기록 탭 점 기준(R-074): 이 백업 뒤에 생긴 기록만 센다
+  prefs.tips.backup = Date.now();
+  savePrefs();
+  renderDots();
 }
 async function onBackupFiles(files) {
   const parsed = [];
@@ -24815,6 +25826,11 @@ async function confirmReset() {
     await rewards;
     const r =
       mode === 'reset' ? await profile.resetAll(historyMeta()) : await profile.undoReset(historyMeta());
+    // 전체 초기화면 튜토리얼도 처음부터(팁 보기 켜고 끔만 남김, R-073). 되돌리기는 건드리지 않는다
+    if (mode === 'reset' && r.ok) {
+      prefs.tips = NeonCoach.fresh(prefs.tips);
+      savePrefs();
+    }
     lastResult = null;
     await refreshRecords();
     refreshProfileUI();
@@ -25027,6 +26043,28 @@ async function boot() {
       title(on) {
         titleOn = !!on;
         syncMode();
+      },
+      // 튜토리얼 화면 상태(R-073 · R-074, 배치 검사 W2용 — ?debug는 팁이 꺼져 있어 직접 그린다):
+      // 'hud' = 할 일 칩 3개(이동 ✓) + TIP 줄(붕괴 구역) + STAGE 가리킴(빛난 순간에 고정) ·
+      // 'level' = 떠 있는 레벨업 창 머리 TIP 줄 · 'result' = 결과 화면 팁 줄(대시) · 'dots' = 성장 · 기록 탭 점
+      tipsDemo(kind) {
+        if (kind === 'result') {
+          resultTipId = 'dash';
+          tipLine($('result-tip'), 'dash');
+        }
+        if (kind === 'dots') {
+          setDot('grow', true);
+          setDot('rec', true);
+        }
+        if (kind === 'hud') {
+          renderChips({ move: true });
+          notify('tip', 'hazard');
+          const el = $('stage-button');
+          el.classList.add('is-point');
+          el.style.animationDelay = '-0.27s';
+          el.style.animationPlayState = 'paused';
+        }
+        if (kind === 'level' && !$('upgrade').hidden) upgradeTip('levelup');
       },
     };
   requestAnimationFrame(loop);

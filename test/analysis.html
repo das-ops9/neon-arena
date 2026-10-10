@@ -98,6 +98,14 @@
   --heal: var(--sk-vital);
   /* GM 실험 칸 표시(R-065, 시험 경로에만) */
   --gm: var(--pink);
+  /* 튜토리얼 · 팁(R-073): TIP 줄 · 할 일 칩 · 가리킴. 플레이어 쪽 색(시안) */
+  --tip: var(--cyan);
+  /* 탭 새 소식 점(R-074): 모바일 새 소식 관례의 빨강 */
+  --dot: var(--danger);
+  /* 고양이 비행사 소품 · 배지 색(R-075): 정비사 미오 렌치 · 보급관 토토 상자 · 조종사 루나 고글 · 종이비행기 */
+  --cat-engineer: var(--orange);
+  --cat-supply: #e3b277;
+  --cat-pilot: #7fd4ff;
 
   /* 모드 배지(badges.js, 모양은 그 파일): 색 · 판 위(tone) · 판 아래(tone2) · 글자 */
   --mode-easy: #52ead1;
@@ -171,8 +179,10 @@
   --cv-hurt: var(--pink);
   --cv-dash: var(--cyan);
   --cv-nova: var(--lilac);
-  --cv-hazard: var(--lilac);
-  --cv-hazard-fuse: #d8bdff;
+  /* 붕괴 구역(R-072) = 빨강(바닥의 큰 원 · 차오름으로 작은 적 탄과 구분) → 마지막에 노랗게 → 흰 섬광. 회복 구역 초록과 짝 */
+  --cv-hazard: #ff4060;
+  --cv-hazard-hot: var(--shine);
+  --cv-hazard-flash: var(--white);
   --cv-shield: #65baff;
   --cv-shield-max: #9fdcff;
   --cv-number: var(--gold);
@@ -4301,7 +4311,7 @@ return Plotly;
     return Object.freeze(o);
   };
   const BALANCE = deepFreeze({
-    name: 'v5-6',
+    name: 'v5-7',
     // 모드: 키 순서 = 화면 순서 = 해금 순서. 배율은 적에게 곱한다.
     // defenseCap: 장갑 강화·재생 실드를 '준비+획득'으로 고를 수 있는 횟수(Infinity = 없음)
     // auto: 자동 강화 사용 · goldBonus: 분당 G 추가 · bossGold: 보스 1마리 처치 G(R-002 · R-036) · blue: 실제 LV10마다 B
@@ -4544,17 +4554,25 @@ return Plotly;
         runner: 0.2,
       },
     },
-    // 위험 지대: fromStage부터, 간격 = max(min, interval − Stage × step)초, 동시에 max개, 기체에서 offset 거리
+    // 붕괴 구역(R-072): fromStage부터 묶음 간격 = max(min, interval − Stage × step)초, 첫 묶음은 first초 시계.
+    // 반경 = r × (1 + grow × min(growMax, floor(생길 때 Stage ÷ growEvery))). 기체에서 offset 거리(맵 가장자리 100 안,
+    // 밖이면 방향을 다시 뽑음) · delay초 예고. 한 묶음 = 1 + (전투 시계가 more의 분을 지난 수)개를 gap초 간격으로
+    // 하나씩(각각 그때 기체 기준). 동시에 max개(터진 뒤 0.5초 포함). 피해 = damage × Stage 피해 × 모드 피해
     hazard: {
       fromStage: 2,
       first: 9,
       interval: 11,
       step: 0.55,
       min: 4,
-      max: 8,
-      offset: 100,
-      r: 85,
-      delay: 1.65,
+      max: 3,
+      offset: 120,
+      r: 100,
+      growEvery: 10,
+      grow: 0.1,
+      growMax: 5,
+      delay: 2,
+      more: [10, 15],
+      gap: 1,
       damage: 25,
     },
     // 적 기본값. split: 죽을 때 나오는 돌격 수
@@ -5010,12 +5028,10 @@ return Plotly;
     shooter: { name: '사수', short: '사수' },
     splitter: { name: '분열체', short: '분열' },
     boss: { name: '보스', short: '보스' },
-    hazard: { name: '위험 지대', short: '위험 지대' },
+    hazard: { name: '붕괴 구역', short: '붕괴 구역' },
     unknown: { name: '미상', short: '미상' },
   };
   const enemyName = kind => (enemies[kind] || enemies.unknown).name;
-  // 고양이 비행사(1단계 R-026에서 화면에 나온다. 이름은 임시, 3단계에서 확정)
-  // 고양이 비행사(R-026). 이름 · 그림은 임시(3단계에서 확정). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
   const pctOf = v => Math.round(v * 100);
   // 출격 버프 id(R-062): balance buffs 키 순서(from 제외)
   const buffList = () => Object.keys(B().buffs).filter(k => k !== 'from');
@@ -5046,11 +5062,13 @@ return Plotly;
       '번)'
     );
   };
+  // 고양이 비행사(R-026 · R-075). 이름 = 역할 + 이름 한 꼴(이름 규칙 3, 모든 화면 같음 — 내부 id · 저장 키는 그대로).
+  // 그림은 view.js catIcon(고양이마다 귀 · 무늬 · 소품 배지). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
   const cats = {
-    engineer: { name: '정비사', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
-    supply: { name: '보급관', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
+    engineer: { name: '정비사 미오', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
+    supply: { name: '보급관 토토', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
     pilot: {
-      name: '조종사',
+      name: '조종사 루나',
       effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
       value: v => '−' + pctOf(v) + '%',
     },
@@ -5144,6 +5162,36 @@ return Plotly;
       : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
   };
 
+  // ── 튜토리얼 · 팁(R-073 · R-074, I-63~I-66 · I-41): 처음 겪는 사건마다 한 줄 · 결과 팁 · 할 일 칩 · 탭 점 ──
+  // 줄 고르기(무리 · 판당 줄 수 · '봤다')는 coach.js, 문구는 여기 하나. lines의 id = coach.js LINES · HEAD.
+  // 이름 대신 보이는 모양으로 쓴다(이름은 도움말). k: 줄 앞 작은 표(창 머리글처럼 장식 영어, 이름 규칙 1 예외)
+  const tips = {
+    k: 'TIP',
+    lines: {
+      boss: '보스는 체력이 줄면 더 세집니다',
+      hazard: '붉은 원이 가득 차면 터집니다',
+      siege: '붉은 화살표가 뜨면 포위가 옵니다',
+      heal: '초록 원 안에서 HP가 찹니다',
+      stage:
+        stage.name +
+        josa(stage.name, '을/를') +
+        ' 올리면 ' +
+        point.name +
+        josa(point.name, '이/가') +
+        ' 커집니다',
+      dash: abilities.dash + ' 중에는 잠깐 무적입니다',
+      nova: abilities.nova + josa(abilities.nova, '은/는') + ' 가까운 탄환을 지웁니다',
+      levelup: '고른 스킬은 이번 판에만 남습니다',
+      blue: BL + josa(BL, '은/는') + ' 성장 탭에서 스킬을 사는 데 씁니다',
+    },
+    // 첫 판 할 일 칩(H-TASK): 키 = 칩 id(이동 · STAGE · 대시)
+    chips: { move: '끌어서 이동', stage: stage.upper + ' 올리기', dash: abilities.dash },
+    again: '팁 다시 보기',
+    againDone: '다음 판부터',
+    // 탭 새 소식 점(R-074) 읽기 이름
+    dot: '새 소식',
+  };
+
   // ── 전투 알림(R-030 · R-064). 알림 묶음 하나로 보인다(app.js notify) ──
   // 들어오는 알림은 모두 바로 맨 위(최신)에 보이고 지난 것은 작고 흐리게 아래로 밀린다(보이는 수 ui.alertStack.max).
   // 같은 문구는 하나로, 같은 종류의 보통 알림은 새 것이 그 줄을 대신한다. 각 알림은 sec초 뒤 사라진다.
@@ -5225,6 +5273,8 @@ return Plotly;
           : buffs.tag + ' 재화 부족 · 꺼짐',
     },
     revive: { major: true, tone: 'gold', sec: 4, text: () => buffs.revive.name },
+    // 튜토리얼 줄(R-073): 시안 테두리 + 앞에 작은 표(k). 설명을 담으므로 '짧게' 규칙의 예외, 4초(coach.js RULE.sec)
+    tip: { tone: 'tip', sec: 4, k: () => tips.k, text: id => tips.lines[id] || '' },
   };
 
   // ── 정적 화면 문구(shell.html의 {{ui.…}} 자리) ──
@@ -5444,6 +5494,12 @@ return Plotly;
       numbers: '치명타 숫자',
       // 진동(R-048, 이 기기 설정, 기본 켜짐). 진동을 지원하지 않는 브라우저(아이폰)는 조용히 건너뜀
       vibrate: '진동',
+      // 튜토리얼 · 팁(R-073, 이 기기 설정, 기본 켜짐): 끄면 TIP 줄 · 할 일 칩 · 결과 팁이 모두 꺼진다(탭 점은 그대로)
+      tips: '팁 보기',
+      tipsAgain: tips.again,
+      // 두 묶음의 읽기 이름(R-073 설정 창 조율)
+      groupScreen: '화면',
+      groupSound: '소리 · 진동',
       fullscreen: '전체 화면',
       help: '도움말',
       done: '설정 완료',
@@ -5822,7 +5878,7 @@ return Plotly;
       entry: '히든',
       // 잠김 줄은 모드 잠김 칩과 같은 꼴('🔒 조건', 자물쇠는 여기 한 번)
       entryLocked: () => '🔒 ' + modeName(B().cats.hiddenFrom) + ' 1판',
-      // 해금 뒤 성장 탭 칸(보완 10, 문구 임시): '히든 · 고양이 비행사' + '동반 정비사 Lv3'
+      // 해금 뒤 성장 탭 칸(보완 10): '히든 · 고양이 비행사' + 동반 고양이 그림 · '동반 정비사 미오 Lv3'
       entryOpen: '히든 · 고양이 비행사',
       entryCompanion: (id, lv) => (id ? '동반 ' + cats[id].name + ' Lv' + lv : '동반 없음'),
       title: '히든 탭 · 고양이 비행사',
@@ -5914,7 +5970,7 @@ return Plotly;
 
   // ── 분석 페이지(analysis.html) 이름. 적 · 스킬 · 능력 이름은 게임 화면과 같은 것을 쓴다 ──
   const analysis = {
-    // 피격 종류(로그 키 그대로): floor = 위험 지대가 터지는 피해
+    // 피격 종류(로그 키 그대로): floor = 붕괴 구역이 터지는 피해
     attacks: { contact: '접촉', projectile: '탄환', floor: '폭발', other: '기타' },
     title: mode => modeName(mode) + ' · 런 기록',
   };
@@ -6056,10 +6112,15 @@ return Plotly;
         interval: '간격(초)',
         step: stage.name + '마다 간격 −',
         min: '간격 바닥(초)',
-        max: '동시 최대',
+        max: '동시 최대(터진 뒤 포함)',
         offset: '기체에서 거리',
         r: '반경',
+        growEvery: '커지는 ' + stage.name + ' 간격',
+        grow: '커지는 비율',
+        growMax: '커지는 최대 횟수',
         delay: '터지기까지(초)',
+        more: '개수가 느는 분',
+        gap: '순차 간격(초)',
         damage: '피해',
       },
       shooter: {
@@ -6335,15 +6396,20 @@ return Plotly;
         '비율',
         '',
       ],
-      'hazard.fromStage': [HZ + '가 나오기 시작하는 ' + ST, ST, 'easy'],
-      'hazard.first': ['첫 ' + HZ + ' 시점', '초', 'easy'],
-      'hazard.interval': [HZ + ' 기본 간격(값 − ' + ST + ' × 감소, 바닥까지)', '초', 'easy'],
+      'hazard.fromStage': [HZ + josa(HZ, '이/가') + ' 나오기 시작하는 ' + ST, ST, 'easy'],
+      'hazard.first': ['첫 ' + HZ + ' 묶음 시점(전투 시계)', '초', 'easy'],
+      'hazard.interval': [HZ + ' 묶음 기본 간격(값 − ' + ST + ' × 감소, 바닥까지)', '초', 'easy'],
       'hazard.step': [ST + '마다 줄어드는 간격', '초', 'hard'],
-      'hazard.min': [HZ + ' 간격 바닥', '초', 'easy'],
-      'hazard.max': [HZ + ' 동시 최대', '개', 'hard'],
-      'hazard.offset': ['기체에서 ' + HZ + '까지 거리', '거리', ''],
-      'hazard.r': [HZ + ' 반경', '거리', 'hard'],
-      'hazard.delay': [HZ + '가 터지기까지', '초', 'easy'],
+      'hazard.min': [HZ + ' 묶음 간격 바닥', '초', 'easy'],
+      'hazard.max': [HZ + ' 동시 최대(터진 뒤 0.5초 포함). 넘으면 그 하나는 건너뛴다', '개', 'hard'],
+      'hazard.offset': ['기체에서 ' + HZ + ' 중심까지 거리(맵 가장자리 밖이면 방향을 다시 뽑음)', '거리', ''],
+      'hazard.r': [HZ + ' 기본 반경(커지기 전)', '거리', 'hard'],
+      'hazard.growEvery': [ST + josa(ST, '이/가') + ' 이 값만큼 오를 때마다 반경이 한 번 커진다', ST, 'easy'],
+      'hazard.grow': ['한 번 커질 때 기본 반경에 더하는 비율', '비율', 'hard'],
+      'hazard.growMax': ['반경이 커지는 최대 횟수', '회', 'hard'],
+      'hazard.delay': [HZ + josa(HZ, '이/가') + ' 터지기까지(예고)', '초', 'easy'],
+      'hazard.more.*': ['전투 시계가 이 분을 지나면 한 묶음 개수 +1', '분', 'easy'],
+      'hazard.gap': ['한 묶음 안에서 하나씩 놓는 간격(각각 그때 기체 기준)', '초', ''],
       'hazard.damage': [HZ + ' 피해', 'HP', 'hard'],
       'enemies.*.r': ['적 크기(반경)', '거리', ''],
       'enemies.*.hp': ['적 기본 HP(모드 · ' + ST + ' 배율 전)', 'HP', 'hard'],
@@ -6807,7 +6873,7 @@ return Plotly;
           '분 보상 = 전투 1분마다 min(분당 G 상한, 분당 G 기본 + 수입 단계) + 모드 분당 G+',
           '보스 = 처치 수 × 그 모드의 보스 G. 레벨업 코인 = 직접 고른 코인 × 레벨업 코인 G',
           '자동 G = AUTO 선택 수 × (카드 모두 MAX 비율 × 확률(스킬 모두 최대) + 나머지 × 확률) × 레벨업 코인 G',
-          '고양이 = 전투 1분마다 보급관 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
+          '고양이 = 전투 1분마다 ' + cats.supply.name + ' 효과. B = LV10마다 모드 B(S 출격은 시작 LV 뒤부터)',
           'S = Insane에서 ' + coins.s.ko + ' 간격마다 1개(줍는다고 가정). S 출격은 1개를 쓴다',
           '기록 줄은 실제 받은 값에서 수입 단계 · 카드 모두 MAX 비율을 거꾸로 구해 다시 계산한다',
         ],
@@ -6927,7 +6993,8 @@ return Plotly;
         loadoutCompanionOn: '동반으로 적용',
         loadoutCompanionOff: '동반으로 고르지 않아 적용 안 됨',
         loadoutAlways: '항상 적용',
-        loadoutSupplyNote: '보급관은 G만 올려 판 생존에는 영향이 없습니다.',
+        loadoutSupplyNote:
+          cats.supply.name + josa(cats.supply.name, '은/는') + ' G만 올려 판 생존에는 영향이 없습니다.',
         loadoutNone: '없음',
         loadoutEmpty:
           '설정 없음 · 새 플레이어로 시작(판 중 고른 스킬만 쌓임). 백업을 가져오면 그 상태로 시작',
@@ -7139,6 +7206,14 @@ return Plotly;
                 b.healZone.hp +
                 '씩 찹니다.',
             ],
+            [
+              enemies.hazard.name,
+              '붉은 원이 가득 차면 그 자리가 터집니다. 원 밖으로 피하거나 ' +
+                abilities.dash +
+                '(잠깐 무적)' +
+                josa(abilities.dash, '으로/로') +
+                ' 지나갑니다.',
+            ],
           ],
         },
       },
@@ -7220,7 +7295,9 @@ return Plotly;
           '재화와 기록은 이 브라우저에만 저장됩니다. 기록 탭에서 가끔 백업해 두세요.',
           '성장 탭에서 ' + BL + '로 스킬을 사 두면 모든 기체가 더 강하게 출격합니다.',
           '초록 원(회복 구역) 안에 있으면 HP가 찹니다.',
-          '포위는 ' + siegeMin + '분마다 사방에서 몰려옵니다. 화면 가장자리가 붉어지면 대비하세요.',
+          '포위는 ' +
+            siegeMin +
+            '분마다 사방에서 몰려옵니다. 화면 네 변 가운데에 붉은 화살표가 뜨면 대비하세요.',
           stage.name +
             ' ' +
             b.boss.every +
@@ -7397,9 +7474,23 @@ return Plotly;
               b.siege.interval / 60 +
               '분마다 네 방향에서 한꺼번에 몰려오고, 회차마다 조금씩 빨라진다. ' +
               b.siege.warn +
-              '초 전에 화면 가장자리에 붉은 표시가 뜬다.',
+              '초 전에 화면 네 변 가운데에 붉은 화살표가 뜬다.',
           },
-          { term: enemies.hazard.name, desc: '보라색 원이 차오르면 그 자리에 피해가 터진다.' },
+          {
+            term: enemies.hazard.name,
+            desc:
+              '붉은 원이 가득 차면 그 자리가 터진다. ' +
+              stage.name +
+              ' ' +
+              b.hazard.growEvery +
+              '마다 커지고(최대 ' +
+              b.hazard.growMax +
+              '번), 전투 ' +
+              b.hazard.more.map((m, i) => m + '분부터 ' + (i + 2) + '개').join(' · ') +
+              '가 ' +
+              b.hazard.gap +
+              '초 간격으로 생긴다.',
+          },
           { term: '회복 구역', desc: healZoneText() + '. 방향 표시는 없다.' },
           {
             term: level.short + ' · XP',
@@ -7532,9 +7623,15 @@ return Plotly;
               b.cats.maxLevel +
               '까지 키운다. 동반 1마리와 Lv' +
               b.cats.maxLevel +
-              ' 고양이의 효과가 출격 순간 적용된다(정비사: 기체 시작 스킬 스택, 보급관: 분당 ' +
+              ' 고양이의 효과가 출격 순간 적용된다(' +
+              cats.engineer.name +
+              ': 기체 시작 스킬 스택, ' +
+              cats.supply.name +
+              ': 분당 ' +
               G +
-              ', 조종사: ' +
+              ', ' +
+              cats.pilot.name +
+              ': ' +
               abilities.dash +
               ' 재충전).',
           },
@@ -7612,6 +7709,7 @@ return Plotly;
     goldExtra,
     bossGoldText,
     blueCoinModes,
+    tips,
     alerts,
     ui,
     msg,
