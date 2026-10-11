@@ -189,6 +189,9 @@
   --cv-scoin: var(--violet);
   --cv-scoin-fill: var(--violet-deep);
   --cv-scoin-ink: #eee2ff;
+  --cv-bcoin: var(--blue);
+  --cv-bcoin-fill: var(--blue-deep);
+  --cv-bcoin-ink: var(--blue-ink);
   --cv-heal: var(--heal);
   --cv-revive: var(--gold);
 
@@ -4744,6 +4747,10 @@ return Plotly;
       levelChance: 0.01,
       bossMax: 5,
     },
+    // B 필드 코인: 매분 모드의 blueCoin 확률로 판정. 한 번에 하나만 필드에 남는다.
+    bCoin: { every: 60, value: 1, boss: 1, r: 30, margin: 50 },
+    // Point 종료 보상: 구간마다 각각 누적 환산한다.
+    pointBonus: { goldEvery: 500000, blueEvery: 1000000, superEvery: 10000000 },
     // 출격 버프(R-062, I-36): from 모드부터 켤 수 있고, 켜 두면 출격할 때마다 비용(b: B · s: S)을 낸다. 키 순서 = 화면 위 → 아래.
     // regen: 판 내내 초당 hp 회복 · revive: 한 번 쓰러지면 최대 HP × hp로 일어나 invuln초 무적 + 지금 충격파 한 번
     buffs: { from: 'super', regen: { b: 10, hp: 1 }, revive: { s: 2, hp: 0.5, invuln: 4 } },
@@ -5151,15 +5158,16 @@ return Plotly;
       .join(' · ');
   // 분당 G 보너스(goldBonus)가 있는 모드: 'Extreme · Super +1, Ultra 이상 +2'
   const goldExtra = () => modeGroups('goldBonus', ' +').join(', ');
-  // 보스 1마리 G(R-036): 모드마다 다르면 첫 모드 ~ 마지막 모드('Easy 1 ~ Insane 6'), 모두 같으면 그 값
+  // 보스 1마리 보상(R-079): 모드별 G + 공통 B 1개
   const bossGoldText = () => {
     const m = B().modes,
       ids = Object.keys(m),
       a = m[ids[0]].bossGold,
-      z = m[ids.at(-1)].bossGold;
-    return ids.every(id => m[id].bossGold === a)
-      ? String(a)
-      : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
+      z = m[ids.at(-1)].bossGold,
+      gold = ids.every(id => m[id].bossGold === a)
+        ? String(a)
+        : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
+    return gold + ' ' + G + ' + 1 ' + BL;
   };
 
   // ── 튜토리얼 · 팁(R-073 · R-074, I-63~I-66 · I-41): 처음 겪는 사건마다 한 줄 · 결과 팁 · 할 일 칩 · 탭 점 ──
@@ -5215,7 +5223,7 @@ return Plotly;
     blue: { sec: 3, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
     boss: { major: true, tone: 'gold', sec: 4, text: () => '보스 접근' },
     bossWave: { sec: 3, text: () => '보스 웨이브 격파' },
-    bossGold: { sec: 3, text: n => '보스 격파 +' + n + ' ' + G },
+    bossGold: { sec: 3, text: (n, b = 0) => '보스 격파 +' + n + ' ' + G + (b ? ' · +' + b + ' ' + BL : '') },
     siegeWarn: { major: true, tone: 'danger', sec: 3, text: () => '⚠ 포위 접근' },
     siege: { major: true, tone: 'danger', sec: 3, text: wave => '⚠ 포위 ' + wave + '회차' },
     // 손으로 올린 STAGE(배율 숫자는 뺀다): boss = 'now'(이 Stage가 보스) · 'next'(다음이 보스) · ''
@@ -5259,6 +5267,9 @@ return Plotly;
       sec: 3,
       text: src => SC + ' 코인 등장' + (src === 'level' ? ' · 레벨업' : src === 'boss' ? ' · 보스 격파' : ''),
     },
+    // B 필드 코인(R-079): B 색으로 출현, 줍기는 S와 같은 금색 반짝 알림.
+    bCoin: { major: true, tone: 'blue', sec: 3, text: () => BL + ' 코인 등장' },
+    bPick: { major: true, tone: 'gold', fx: 'shine', sec: 4, text: n => '+' + n + ' ' + BL },
     // 줍기(R-044): 금색 · 큰 글자 · 반짝임 한 번(fx: 'shine'), 4초
     sPick: { major: true, tone: 'gold', fx: 'shine', sec: 4, text: n => '+' + n + ' ' + SC },
     // 출격 버프(R-062): 적용(ids = 낸 버프) · 재화 부족으로 꺼짐(ids = 건너뛴 버프) · 1회 부활
@@ -5386,6 +5397,9 @@ return Plotly;
       pause: '일시정지',
       // LV 글자(색) + 숫자(밝게), 편집장 2026-10-03
       lvKey: level.short,
+      hpBuff: 'HP+',
+      reviveBuff: 'Re+',
+      coinSpawn: '필드 코인 출현',
       auto: auto.short,
       dash: abilities.dash,
       nova: abilities.nova,
@@ -5568,6 +5582,14 @@ return Plotly;
         ' ' +
         BL
       );
+    },
+    pointBonus: bonus => {
+      const gains = [
+        bonus.gold ? '+' + num(bonus.gold) + ' ' + G : '',
+        bonus.blue ? '+' + num(bonus.blue) + ' ' + BL : '',
+        bonus.super ? '+' + num(bonus.super) + ' ' + SC : '',
+      ].filter(Boolean);
+      return gains.length ? '포인트 보너스 · ' + gains.join(' · ') : '';
     },
     // 결과 G 내역(분 · 보스 · 코인(자동 G) · 고양이). 0인 항목은 뺀다.
     resultGold: ({ minute, boss, coin, autoGold, cat }) =>
@@ -6025,7 +6047,7 @@ return Plotly;
         goldBonus: '분당 ' + G + '+',
         bossGold: '보스 ' + G,
         blue: 'LV10마다 ' + BL,
-        blueCoin: BL + ' 코인 확률',
+        blueCoin: BL + ' 레벨업·필드 코인 확률',
         fan: '부채꼴',
         burst: '연속',
         bossSide: '보스 양옆',
@@ -6475,6 +6497,14 @@ return Plotly;
       'economy.goldBase': ['분당 ' + G + ' 기본(+ 수입 단계, 상한까지)', G, 'more'],
       'economy.goldMax': ['분당 ' + G + ' 상한(모드 보너스는 따로 더함)', G, 'more'],
       'economy.blueEvery': [BL + '를 받는 실제 LV 간격', 'LV', 'less'],
+      'bCoin.every': ['모드별 확률로 필드 B 코인을 판정하는 간격', '초', 'less'],
+      'bCoin.value': ['필드 B 코인 줍기 보상', BL, 'more'],
+      'bCoin.boss': ['보스 처치 B 보상', BL, 'more'],
+      'bCoin.r': ['필드 B 코인 반지름', '거리', 'easy'],
+      'bCoin.margin': ['필드 B 코인이 맵 가장자리에서 떨어지는 거리', '거리', ''],
+      'pointBonus.goldEvery': ['이 누적 Point마다 종료 보상 1 G', PT, 'less'],
+      'pointBonus.blueEvery': ['이 누적 Point마다 종료 보상 1 B', PT, 'less'],
+      'pointBonus.superEvery': ['이 누적 Point마다 종료 보상 1 S', PT, 'less'],
       'economy.coinChoice': ['레벨업 코인 1개 ' + G, G, 'more'],
       'economy.coinChoiceBlue': ['레벨업 ' + BL + ' 코인 1개 ' + BL, BL, 'more'],
       'economy.incomePrice': ['수입 단계 하나 가격', G, 'cost'],
@@ -7336,8 +7366,6 @@ return Plotly;
             coins.g.name,
             '전투 1분마다, 보스를 처치할 때마다(' +
               bossGoldText() +
-              ' ' +
-              G +
               "), 레벨업 때 '코인' 선택으로 얻습니다. 시간 코인 단계 · 자동 강화 · 한 줄 남기기 · " +
               coins.s.name +
               ' 제작에 씁니다.',
@@ -7357,7 +7385,7 @@ return Plotly;
               BL +
               ')이 되기도 합니다(' +
               blueCoinModes() +
-              '). 성장 화면의 영구 스킬과 ' +
+              '). 필드 코인도 Hard부터 매분 같은 모드 확률로 나타납니다. 성장 화면의 영구 스킬과 ' +
               coins.s.name +
               ' 제작에 씁니다.',
           ],

@@ -196,6 +196,9 @@
   --cv-scoin: var(--violet);
   --cv-scoin-fill: var(--violet-deep);
   --cv-scoin-ink: #eee2ff;
+  --cv-bcoin: var(--blue);
+  --cv-bcoin-fill: var(--blue-deep);
+  --cv-bcoin-ink: var(--blue-ink);
   --cv-heal: var(--heal);
   --cv-revive: var(--gold);
 
@@ -991,6 +994,7 @@ body[data-fx='low'] .title-start::after {
 .menu-top {
   display: grid;
   grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap);
+  row-gap: clamp(4px, calc(0.5rem - 4px), 10px);
   align-items: center;
   padding: 0 var(--sp-3);
 }
@@ -2486,6 +2490,20 @@ body[data-gm] .menu-top {
   row-gap: 2px;
   container-type: inline-size;
 }
+.hud-xp-line {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto auto minmax(16px, 1fr) auto;
+  align-items: center;
+  column-gap: 6px;
+}
+.hud-xp-line .hud-lv {
+  white-space: nowrap;
+  font-size: clamp(9px, 8.5cqi, 0.8125rem);
+}
+.hud-xp-line .hud-v {
+  min-width: 3.7em;
+}
 .hud-k {
   min-width: 1rem;
   font-size: 0.625rem;
@@ -2571,11 +2589,10 @@ body[data-gm] .menu-top {
   column-gap: 8px;
   min-height: 26px;
 }
-/* 정보 칸: 배지 · LV · 재화(남은 폭) · Point. LV · Point는 칸 폭, 재화는 자기 폭에 맞춰 글자가 준다(최소 9px).
-   LV999 · G 99,999 · B 9,999 · S 99 · 999,999,999도 줄바꿈 없이 들어가 AUTO · 일시정지를 밀지 않는다. */
+/* 정보 칸: 모드 배지 · 재화와 구매 버프 글자 · Point. 재화는 남은 폭에 맞춰 줄인다. */
 .hud-info {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: clamp(6px, 3cqi, 12px);
   container-type: inline-size;
@@ -2594,7 +2611,32 @@ body[data-gm] .menu-top {
 .hud-lv b {
   color: var(--ink);
 }
+.hud-resources {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1.5cqi, 7px);
+}
+.hud-buffs {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  white-space: nowrap;
+  font-size: clamp(9px, 3.1cqi, 0.75rem);
+  font-weight: 850;
+}
+.hud-buff {
+  font-style: normal;
+}
+.hud-buff--heal {
+  color: var(--heal);
+}
+.hud-buff--revive {
+  color: var(--gold);
+}
 .hud-sub {
+  flex: 1 1 auto;
+  min-width: 0;
   container-type: inline-size;
   overflow: hidden;
   white-space: nowrap;
@@ -2661,7 +2703,7 @@ body[data-gm] .menu-top {
   grid-column: 1 / -1;
   grid-row: 3;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(5.5em, auto);
+  grid-template-columns: minmax(0, 1fr) auto minmax(5.5em, auto);
   align-items: center;
   column-gap: 10px;
   margin: 8px -8px 0;
@@ -2698,12 +2740,39 @@ body[data-gm] .menu-top {
   background: var(--gold);
 }
 .hud-chain {
-  grid-column: 2;
+  grid-column: 3;
   justify-self: end;
   padding-right: 4px;
   font-weight: 800;
   font-style: italic;
   color: var(--pink);
+}
+.hud-spawncoins {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.coin-status {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.coin-status--b {
+  border: 1px solid var(--blue);
+  background: var(--blue-deep);
+  color: var(--blue-ink);
+}
+.coin-status--s {
+  border: 1px solid var(--violet);
+  background: var(--violet-deep);
+  color: var(--violet-ink);
 }
 /* 할 일 칩(H-TASK, R-073): 첫 판 세로 화면에서 보스 줄 다음 줄(덩어리 밖에 보이는 줄), 없으면 접힌다.
    해 보면 ✓ · 시안 → 0.8초 뒤 흐려진다(자리는 남아 옆 칩이 흔들리지 않음). 줄 끝은 is-out으로 흐려진 뒤 숨김(app.js).
@@ -2814,6 +2883,10 @@ body[data-fx='low'] .alert {
 .alert--gold {
   border-color: var(--gold);
   color: var(--gold);
+}
+.alert--blue {
+  border-color: var(--blue);
+  color: var(--blue-ink);
 }
 .alert--violet {
   border-color: var(--violet);
@@ -3357,6 +3430,9 @@ body[data-fx='low'] .intro-title::after {
 #result .overlay-panel {
   gap: clamp(var(--sp-2), calc((var(--vh-full) - 722px) / 10), var(--sp-3));
 }
+#result.has-point-reward .overlay-panel {
+  gap: clamp(6px, calc((var(--vh-full) - 742px) / 10), var(--sp-3));
+}
 .result-head {
   display: grid;
   justify-items: center;
@@ -3400,6 +3476,45 @@ body[data-fx='low'] .intro-title::after {
 body[data-fx='low'] .result-score.is-best,
 body[data-fx='low'] .result-score.is-best::after {
   animation: none;
+}
+.point-bonus-toast {
+  position: fixed;
+  top: calc(var(--safe-t) + var(--edge-top) + var(--sp-3));
+  left: 50%;
+  z-index: var(--z-dialog);
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  border: 1px solid color-mix(in srgb, var(--gold) 70%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-raise) 94%, transparent);
+  color: var(--gold);
+  box-shadow: 0 8px 28px #0008;
+  font-size: var(--fs-sm);
+  font-weight: 850;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -8px);
+  transition:
+    opacity 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+.point-bonus-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+#result.point-toast-on #result-kicker {
+  visibility: hidden;
+}
+body[data-fx='low'] .point-bonus-toast {
+  transition: none;
+}
+.point-reward-line {
+  display: block;
+  margin-top: 2px;
+  color: var(--gold);
+  font-weight: 750;
 }
 .reward-row {
   display: flex;
@@ -3963,7 +4078,7 @@ body[data-fx='low'] .boss-warn.is-on {
   }
   .hud-bossline {
     grid-area: boss;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     min-height: 14px;
     margin: 0;
     font-size: min(0.625rem, 11px);
@@ -3980,8 +4095,16 @@ body[data-fx='low'] .boss-warn.is-on {
   .boss-text {
     font-size: inherit;
   }
-  .boss-stage {
-    display: none;
+  .hud-spawncoins {
+    gap: 2px;
+  }
+  .coin-status {
+    width: 15px;
+    height: 15px;
+    font-size: 0.55rem;
+  }
+  .hud-chain {
+    grid-column: 3;
   }
   .hud-boss .bar {
     height: 4px;
@@ -4373,11 +4496,14 @@ body[data-fx='low'] .boss-warn.is-on {
             ><span id="shield-cur">0</span
             ><span class="of" id="shield-of">/<span id="shield-max">0</span></span></b
           >
-          <span class="hud-k">XP</span>
-          <div class="bar bar--xp"><i id="xp-fill"></i></div>
-          <b class="hud-v num"
-            ><span id="xp-cur">0</span><span class="of">/<span id="xp-max">5</span></span></b
-          >
+          <div class="hud-xp-line">
+            <span class="hud-lv num"><i>LV</i><b id="level-num">1</b></span>
+            <span class="hud-k">XP</span>
+            <div class="bar bar--xp"><i id="xp-fill"></i></div>
+            <b class="hud-v num"
+              ><span id="xp-cur">0</span><span class="of">/<span id="xp-max">5</span></span></b
+            >
+          </div>
         </div>
         <div class="hud-cell hud-time num" id="timer" data-area="H-TIME">00:00</div>
         <button
@@ -4394,12 +4520,18 @@ body[data-fx='low'] .boss-warn.is-on {
         <div class="hud-row hud-row--2" data-area="H-INFO">
           <div class="hud-cell hud-info">
             <span id="hud-badge"></span
-            ><span class="hud-lv num"><i>LV</i><b id="level-num">1</b></span
-            ><span class="hud-sub num"
-              ><i class="g">G</i><span id="hud-g">0</span><i class="b">B</i
-              ><span id="hud-b">0</span
-              ><span id="hud-s-wrap" hidden
-                ><i class="s">S</i><span id="hud-s">0</span></span
+            ><span class="hud-resources"
+              ><span class="hud-sub num"
+                ><i class="g">G</i><span id="hud-g">0</span><i class="b">B</i
+                ><span id="hud-b">0</span
+                ><span id="hud-s-wrap" hidden
+                  ><i class="s">S</i><span id="hud-s">0</span></span
+                ></span
+              ><span class="hud-buffs" id="hud-buffs" hidden
+                ><i class="hud-buff hud-buff--heal" id="hud-buff-regen" hidden>HP+</i
+                ><i class="hud-buff hud-buff--revive" id="hud-buff-revive" hidden
+                  >Re+</i
+                ></span
               ></span
             ><b class="hud-point num" id="score">0</b>
           </div>
@@ -4409,11 +4541,19 @@ body[data-fx='low'] .boss-warn.is-on {
         </div>
         <div class="hud-bossline">
           <div class="hud-cell hud-boss" id="boss-hud" data-area="H-BOSS" hidden>
-            <span class="boss-text num"
-              ><span id="boss-value"></span><span class="boss-stage" id="boss-stage"></span
-            ></span>
+            <span class="boss-text num"><span id="boss-value"></span></span>
             <div class="bar"><i id="boss-fill"></i></div>
           </div>
+          <span
+            class="hud-spawncoins"
+            id="hud-spawncoins"
+            role="group"
+            aria-label="필드 코인 출현"
+            hidden
+          >
+            <span class="coin-status coin-status--b" id="hud-b-spawn" hidden>B</span>
+            <span class="coin-status coin-status--s" id="hud-s-spawn" hidden>S</span>
+          </span>
           <span class="hud-cell hud-chain num" id="combo" data-area="H-CHAIN" hidden></span>
         </div>
         <!-- 할 일 칩(H-TASK, R-073): 첫 판 세로 화면 30초. 보스 줄 다음 줄, 없으면 접힌다(가로는 그리지 않음) -->
@@ -4475,6 +4615,7 @@ body[data-fx='low'] .boss-warn.is-on {
     </section>
 
     <section id="result" class="overlay" hidden aria-labelledby="result-title">
+      <div id="point-bonus-toast" class="point-bonus-toast" role="status" aria-live="polite" hidden></div>
       <div class="overlay-panel" data-area="O-RESULT">
         <div class="result-head">
           <div class="eyebrow" id="result-kicker">RUN RECORDED</div>
@@ -11849,6 +11990,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       levelChance: 0.01,
       bossMax: 5,
     },
+    // B 필드 코인: 매분 모드의 blueCoin 확률로 판정. 한 번에 하나만 필드에 남는다.
+    bCoin: { every: 60, value: 1, boss: 1, r: 30, margin: 50 },
+    // Point 종료 보상: 구간마다 각각 누적 환산한다.
+    pointBonus: { goldEvery: 500000, blueEvery: 1000000, superEvery: 10000000 },
     // 출격 버프(R-062, I-36): from 모드부터 켤 수 있고, 켜 두면 출격할 때마다 비용(b: B · s: S)을 낸다. 키 순서 = 화면 위 → 아래.
     // regen: 판 내내 초당 hp 회복 · revive: 한 번 쓰러지면 최대 HP × hp로 일어나 invuln초 무적 + 지금 충격파 한 번
     buffs: { from: 'super', regen: { b: 10, hp: 1 }, revive: { s: 2, hp: 0.5, invuln: 4 } },
@@ -12256,15 +12401,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       .join(' · ');
   // 분당 G 보너스(goldBonus)가 있는 모드: 'Extreme · Super +1, Ultra 이상 +2'
   const goldExtra = () => modeGroups('goldBonus', ' +').join(', ');
-  // 보스 1마리 G(R-036): 모드마다 다르면 첫 모드 ~ 마지막 모드('Easy 1 ~ Insane 6'), 모두 같으면 그 값
+  // 보스 1마리 보상(R-079): 모드별 G + 공통 B 1개
   const bossGoldText = () => {
     const m = B().modes,
       ids = Object.keys(m),
       a = m[ids[0]].bossGold,
-      z = m[ids.at(-1)].bossGold;
-    return ids.every(id => m[id].bossGold === a)
-      ? String(a)
-      : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
+      z = m[ids.at(-1)].bossGold,
+      gold = ids.every(id => m[id].bossGold === a)
+        ? String(a)
+        : modeName(ids[0]) + ' ' + a + ' ~ ' + modeName(ids.at(-1)) + ' ' + z;
+    return gold + ' ' + G + ' + 1 ' + BL;
   };
 
   // ── 튜토리얼 · 팁(R-073 · R-074, I-63~I-66 · I-41): 처음 겪는 사건마다 한 줄 · 결과 팁 · 할 일 칩 · 탭 점 ──
@@ -12320,7 +12466,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     blue: { sec: 3, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
     boss: { major: true, tone: 'gold', sec: 4, text: () => '보스 접근' },
     bossWave: { sec: 3, text: () => '보스 웨이브 격파' },
-    bossGold: { sec: 3, text: n => '보스 격파 +' + n + ' ' + G },
+    bossGold: { sec: 3, text: (n, b = 0) => '보스 격파 +' + n + ' ' + G + (b ? ' · +' + b + ' ' + BL : '') },
     siegeWarn: { major: true, tone: 'danger', sec: 3, text: () => '⚠ 포위 접근' },
     siege: { major: true, tone: 'danger', sec: 3, text: wave => '⚠ 포위 ' + wave + '회차' },
     // 손으로 올린 STAGE(배율 숫자는 뺀다): boss = 'now'(이 Stage가 보스) · 'next'(다음이 보스) · ''
@@ -12364,6 +12510,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       sec: 3,
       text: src => SC + ' 코인 등장' + (src === 'level' ? ' · 레벨업' : src === 'boss' ? ' · 보스 격파' : ''),
     },
+    // B 필드 코인(R-079): B 색으로 출현, 줍기는 S와 같은 금색 반짝 알림.
+    bCoin: { major: true, tone: 'blue', sec: 3, text: () => BL + ' 코인 등장' },
+    bPick: { major: true, tone: 'gold', fx: 'shine', sec: 4, text: n => '+' + n + ' ' + BL },
     // 줍기(R-044): 금색 · 큰 글자 · 반짝임 한 번(fx: 'shine'), 4초
     sPick: { major: true, tone: 'gold', fx: 'shine', sec: 4, text: n => '+' + n + ' ' + SC },
     // 출격 버프(R-062): 적용(ids = 낸 버프) · 재화 부족으로 꺼짐(ids = 건너뛴 버프) · 1회 부활
@@ -12491,6 +12640,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       pause: '일시정지',
       // LV 글자(색) + 숫자(밝게), 편집장 2026-10-03
       lvKey: level.short,
+      hpBuff: 'HP+',
+      reviveBuff: 'Re+',
+      coinSpawn: '필드 코인 출현',
       auto: auto.short,
       dash: abilities.dash,
       nova: abilities.nova,
@@ -12673,6 +12825,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         ' ' +
         BL
       );
+    },
+    pointBonus: bonus => {
+      const gains = [
+        bonus.gold ? '+' + num(bonus.gold) + ' ' + G : '',
+        bonus.blue ? '+' + num(bonus.blue) + ' ' + BL : '',
+        bonus.super ? '+' + num(bonus.super) + ' ' + SC : '',
+      ].filter(Boolean);
+      return gains.length ? '포인트 보너스 · ' + gains.join(' · ') : '';
     },
     // 결과 G 내역(분 · 보스 · 코인(자동 G) · 고양이). 0인 항목은 뺀다.
     resultGold: ({ minute, boss, coin, autoGold, cat }) =>
@@ -13130,7 +13290,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         goldBonus: '분당 ' + G + '+',
         bossGold: '보스 ' + G,
         blue: 'LV10마다 ' + BL,
-        blueCoin: BL + ' 코인 확률',
+        blueCoin: BL + ' 레벨업·필드 코인 확률',
         fan: '부채꼴',
         burst: '연속',
         bossSide: '보스 양옆',
@@ -13580,6 +13740,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'economy.goldBase': ['분당 ' + G + ' 기본(+ 수입 단계, 상한까지)', G, 'more'],
       'economy.goldMax': ['분당 ' + G + ' 상한(모드 보너스는 따로 더함)', G, 'more'],
       'economy.blueEvery': [BL + '를 받는 실제 LV 간격', 'LV', 'less'],
+      'bCoin.every': ['모드별 확률로 필드 B 코인을 판정하는 간격', '초', 'less'],
+      'bCoin.value': ['필드 B 코인 줍기 보상', BL, 'more'],
+      'bCoin.boss': ['보스 처치 B 보상', BL, 'more'],
+      'bCoin.r': ['필드 B 코인 반지름', '거리', 'easy'],
+      'bCoin.margin': ['필드 B 코인이 맵 가장자리에서 떨어지는 거리', '거리', ''],
+      'pointBonus.goldEvery': ['이 누적 Point마다 종료 보상 1 G', PT, 'less'],
+      'pointBonus.blueEvery': ['이 누적 Point마다 종료 보상 1 B', PT, 'less'],
+      'pointBonus.superEvery': ['이 누적 Point마다 종료 보상 1 S', PT, 'less'],
       'economy.coinChoice': ['레벨업 코인 1개 ' + G, G, 'more'],
       'economy.coinChoiceBlue': ['레벨업 ' + BL + ' 코인 1개 ' + BL, BL, 'more'],
       'economy.incomePrice': ['수입 단계 하나 가격', G, 'cost'],
@@ -14441,8 +14609,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             coins.g.name,
             '전투 1분마다, 보스를 처치할 때마다(' +
               bossGoldText() +
-              ' ' +
-              G +
               "), 레벨업 때 '코인' 선택으로 얻습니다. 시간 코인 단계 · 자동 강화 · 한 줄 남기기 · " +
               coins.s.name +
               ' 제작에 씁니다.',
@@ -14462,7 +14628,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               BL +
               ')이 되기도 합니다(' +
               blueCoinModes() +
-              '). 성장 화면의 영구 스킬과 ' +
+              '). 필드 코인도 Hard부터 매분 같은 모드 확률로 나타납니다. 성장 화면의 영구 스킬과 ' +
               coins.s.name +
               ' 제작에 씁니다.',
           ],
@@ -14985,7 +15151,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.7.2',
+  const VERSION = '4.7.3',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -15123,6 +15289,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       a ^= a + Math.imul(a ^ (a >>> 7), a | 61);
       return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
     }
+    // B 필드 코인 난수: 기존 S 코인 · 회복 구역 위치와 독립된 줄.
+    bCoinRng() {
+      let a = (this.bCoinSeed = (this.bCoinSeed + 0x6d2b79f5) >>> 0);
+      a = Math.imul(a ^ (a >>> 15), a | 1);
+      a ^= a + Math.imul(a ^ (a >>> 7), a | 61);
+      return ((a ^ (a >>> 14)) >>> 0) / 4294967296;
+    }
+    bCoinPoint(margin) {
+      return {
+        x: margin + this.bCoinRng() * (W - 2 * margin),
+        y: margin + this.bCoinRng() * (H - 2 * margin),
+      };
+    }
     // 붕괴 구역 난수(R-072): 붕괴 구역 방향만 쓰는 줄(시드에서 따로). 개수 · 위치를 바꿔도 적 · 카드 순서가 그대로다.
     hazardRng() {
       let a = (this.hazardSeed = (this.hazardSeed + 0x6d2b79f5) >>> 0);
@@ -15259,8 +15438,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.sCoins = [];
       this.sCoinSerial = 0;
       this.sCoinNext = this.difficultyId === S_COIN.mode ? S_COIN.every : Infinity;
+      this.bCoins = [];
+      this.bCoinSerial = 0;
+      this.bCoinNext = B.bCoin.every;
       // 맵 물건(R-061): 물건 난수 · 회복 구역(지금 하나 · 번호 · 다음 시각) · 회복한 양 · 보스 S 수
       this.itemSeed = (this.initialSeed ^ 0x2c1b3c6d) >>> 0;
+      this.bCoinSeed = (this.initialSeed ^ 0x4b1d5e57) >>> 0;
       // 붕괴 구역(R-072): 전용 난수 · 이번 묶음에 남은 개수 · 다음 하나까지 남은 초
       this.hazardSeed = (this.initialSeed ^ 0x5bd1e995) >>> 0;
       this.hazardLeft = 0;
@@ -15418,6 +15601,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         coin = { id: ++this.sCoinSerial, x: at.x, y: at.y, r: S_COIN.r };
       this.sCoins.push(coin);
       this.emit('s_spawn', { id: coin.id, x: coin.x, y: coin.y, src });
+    }
+    dropBCoin(src) {
+      const at = this.bCoinPoint(B.bCoin.margin),
+        coin = { id: ++this.bCoinSerial, x: at.x, y: at.y, r: B.bCoin.r };
+      this.bCoins.push(coin);
+      this.emit('b_spawn', { id: coin.id, x: coin.x, y: coin.y, src });
     }
     // 붕괴 구역 하나(R-072): 기체에서 offset 거리, 방향은 붕괴 구역 난수. 자리가 맵 가장자리 100 밖이면 방향을 다시
     // 뽑고(최대 4번) 그래도 밖이면(구석) 맵 가운데 쪽 방향으로 놓는다 → 벽 · 구석에서도 거리가 지켜진다.
@@ -16027,6 +16216,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         this.sCoinNext = (Math.floor(this.time / S_COIN.every) + 1) * S_COIN.every;
         this.spawnSCoin();
       }
+      if (this.time >= this.bCoinNext) {
+        this.bCoinNext = (Math.floor(this.time / B.bCoin.every) + 1) * B.bCoin.every;
+        if (!this.bCoins.length && this.profile.blueCoin > 0 && this.bCoinRng() < this.profile.blueCoin)
+          this.dropBCoin('time');
+      }
       // 회복 구역(R-061): 전투 시계 first초부터 every초마다 하나, life초 뒤 사라진다
       if (this.time >= this.zoneNext) {
         this.zoneNext = HEAL.first + (Math.floor((this.time - HEAL.first) / HEAL.every) + 1) * HEAL.every;
@@ -16333,6 +16527,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           this.emit('s_pick', { id: c.id, x: c.x, y: c.y });
         }
       if (picked) this.sCoins = this.sCoins.filter(c => !c.taken);
+      let bPicked = false;
+      for (const c of this.bCoins)
+        if (!c.taken && dist(c, p) < c.r + p.r) {
+          c.taken = bPicked = true;
+          this.emit('b_pick', { id: c.id, x: c.x, y: c.y });
+        }
+      if (bPicked) this.bCoins = this.bCoins.filter(c => !c.taken);
       this.enemies = this.enemies.filter(e => !e.dead);
       this.bullets = this.bullets.filter(
         b => b.ttl > 0 && b.x > -40 && b.x < W + 40 && b.y > -40 && b.y < H + 40,
@@ -17721,6 +17922,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     };
   }
 
+  function pointBonus(score) {
+    const points = Number.isSafeInteger(score) && score > 0 ? score : 0,
+      scale = B.pointBonus;
+    return {
+      gold: Math.floor(points / scale.goldEvery),
+      blue: Math.floor(points / scale.blueEvery),
+      super: Math.floor(points / scale.superEvery),
+    };
+  }
+
   function blank() {
     return {
       id: PROFILE_ID,
@@ -17755,6 +17966,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c: numbers(r.c),
         b: numbers(r.b),
         s: numbers(r.s),
+        bc: numbers(r.bc),
+        pb:
+          r.pb && typeof r.pb === 'object'
+            ? { gold: count(r.pb.gold), blue: count(r.pb.blue), super: count(r.pb.super) }
+            : null,
         cg: count(r.cg),
         t: Number.isFinite(r.t) ? r.t : 0,
         // 그 판에 낸 출격 버프(R-062, 판이 끝나면 runs와 함께 지움)
@@ -17880,6 +18096,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c: [],
         b: [],
         s: [],
+        bc: [],
+        pb: null,
         cg: cats.supply,
         t: Number(now) || 0,
         bf: buffs,
@@ -17927,7 +18145,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.gold += ECONOMY.coinChoice;
       return { ok: true, gold: ECONOMY.coinChoice };
     },
-    // 보스 처치 G(R-002): 판 안 보스 번호로 한 번만, 그 판 모드의 bossGold(R-036)를 지급한다.
+    // 보스 처치 G + B(R-002 · R-079): 보스 번호로 한 번만, 모드별 G와 B.bCoin.boss를 함께 지급한다.
     awardBoss(p, { runId, bossId }) {
       const r = p.runs[runId];
       if (!r) return fail('run_unknown');
@@ -17937,9 +18155,33 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (r.b.length > 400) r.b.splice(0, r.b.length - 400);
       const gold = B.modes[r.mode].bossGold;
       p.gold += gold;
+      p.blue += B.bCoin.boss;
       return { ok: true, gold };
     },
     // Insane S 코인(R-023): superCoin.mode 판에서 판 안 S 코인 번호로 한 번만 1 S.
+    awardBlueCoin(p, { runId, coinId }) {
+      const r = p.runs[runId];
+      if (!r) return fail('run_unknown');
+      if (!Number.isSafeInteger(coinId) || coinId < 1) return fail('invalid');
+      if (!(B.modes[r.mode].blueCoin > 0)) return fail('invalid');
+      if (r.bc.includes(coinId)) return dup({ blue: 0 });
+      r.bc.push(coinId);
+      if (r.bc.length > 400) r.bc.splice(0, r.bc.length - 400);
+      p.blue += B.bCoin.value;
+      return { ok: true, blue: B.bCoin.value };
+    },
+    awardPointBonus(p, { runId, score }) {
+      const r = p.runs[runId];
+      if (!r) return fail('run_unknown');
+      if (!Number.isSafeInteger(score) || score < 0) return fail('invalid');
+      if (r.pb) return dup({ ...r.pb });
+      const reward = pointBonus(score);
+      r.pb = { ...reward };
+      p.gold += reward.gold;
+      p.blue += reward.blue;
+      p.superCoins += reward.super;
+      return { ok: true, ...reward };
+    },
     awardSuper(p, { runId, coinId }) {
       const r = p.runs[runId];
       if (!r) return fail('run_unknown');
@@ -18544,6 +18786,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     awardBoss(runId, bossId) {
       return this.mutate(p => rules.awardBoss(p, { runId, bossId }));
     }
+    awardBlueCoin(runId, coinId) {
+      return this.mutate(p => rules.awardBlueCoin(p, { runId, coinId }));
+    }
+    awardPointBonus(runId, score) {
+      return this.mutate(p => rules.awardPointBonus(p, { runId, score }));
+    }
     awardSuper(runId, coinId) {
       return this.mutate(p => rules.awardSuper(p, { runId, coinId }));
     }
@@ -18634,6 +18882,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     canAuto,
     unlockTarget,
     noteQuote,
+    pointBonus,
     modeId,
     goldPerMinute,
     permaPrice,
@@ -18875,6 +19124,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     'scoin',
     'scoin-fill',
     'scoin-ink',
+    'bcoin',
+    'bcoin-fill',
+    'bcoin-ink',
     'heal',
     'revive',
   ];
@@ -19144,6 +19396,24 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       );
       this.textures.scoin = this.app.renderer.generateTexture({ target: coin, resolution: 2 });
       coin.destroy({ children: true });
+      const bcoin = new PIXI.Container(),
+        bletter = new PIXI.Text({
+          text: root.NeonTerms.coins.b.short,
+          style: { fontFamily: 'system-ui, sans-serif', fontSize: 20, fontWeight: '800', fill: P.bcoinInk },
+        });
+      bletter.anchor.set(0.5);
+      bcoin.addChild(
+        new PIXI.Graphics()
+          .circle(0, 0, 24)
+          .fill({ color: P.bcoin, alpha: 0.08 })
+          .stroke({ color: P.bcoin, width: 1.5, alpha: 0.45 })
+          .circle(0, 0, 17)
+          .fill(P.bcoinFill)
+          .stroke({ color: P.bcoin, width: 2.4 }),
+        bletter,
+      );
+      this.textures.bcoin = this.app.renderer.generateTexture({ target: bcoin, resolution: 2 });
+      bcoin.destroy({ children: true });
       // 붕괴 구역 섬광(R-072): 256px 방사형 흰빛 한 장(가운데 하얗고 가장자리 옅게, 끝은 또렷).
       // 프레임마다 그라디언트를 만들지 않고 색(tint) · 투명도 · 크기만 바꿔 쓴다
       const glow = document.createElement('canvas');
@@ -19467,6 +19737,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       this.hideAfter('scoins', j);
       j = 0;
+      for (const c of g.bCoins || []) {
+        const s = this.pool('bcoins', j++, 'bcoin');
+        s.position.set(c.x, c.y);
+        s.scale.set(1 + Math.sin(this.time * 3) * 0.06);
+      }
+      this.hideAfter('bcoins', j);
+      j = 0;
       // 충돌과 같은 반경·각도(Neon.ORBIT_RADIUS, Neon.orbitAngle)로 그린다
       if (p.orbits)
         this.fx.circle(p.x, p.y, Neon.ORBIT_RADIUS).stroke({ color: P.blade, width: 1, alpha: 0.12 });
@@ -19721,6 +19998,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c.stroke();
         c.fillStyle = S.scoinInk;
         c.fillText(root.NeonTerms.coins.s.short, coin.x, coin.y + 1);
+      }
+      for (const coin of g.bCoins || []) {
+        c.fillStyle = S.bcoinFill;
+        c.strokeStyle = S.bcoin;
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.arc(coin.x, coin.y, 17, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.fillStyle = S.bcoinInk;
+        c.fillText(root.NeonTerms.coins.b.short, coin.x, coin.y + 1);
       }
       c.lineWidth = 0.6;
       c.translate(g.p.x, g.p.y);
@@ -23459,6 +23747,8 @@ let canvas = $('arena'),
   oldMode = '',
   lastBossWarn = -Infinity,
   resultUnlockSound = false,
+  pointBonusToastId = null,
+  pointBonusToastTimer = 0,
   // 결과 새 기록 연출(R-058): { id, on, raf }
   bestFx = null,
   upgradeStarted = 0,
@@ -24185,13 +24475,21 @@ function renderResultCoins() {
   if (!r) return;
   const w = wallet(),
     e = r.earned || {},
+    bonus = r.pointBonus || { gold: 0, blue: 0, super: 0 },
     gold = e.gold || 0,
     boss = e.boss || 0,
     autoGold = e.autoGold || 0,
     cat = e.cat || 0,
     coin = (r.coinChoices || 0) * BAL.economy.coinChoice + autoGold,
+    startLevel = r.launch?.type === 'super' ? r.launch.startLevel || 1 : 1,
+    blueLevel =
+      Math.max(
+        0,
+        Math.floor(r.level / BAL.economy.blueEvery) - Math.floor(startLevel / BAL.economy.blueEvery),
+      ) * (BAL.modes[r.difficultyId]?.blue || 0),
     // S는 Insane 판(또는 S를 받은 판)에만 보인다
     showS = (e.super || 0) > 0 || r.difficultyId === BAL.superCoin.mode;
+  $('result').classList.toggle('has-point-reward', !!(bonus.gold || bonus.blue || bonus.super));
   $('result-coins').innerHTML =
     V.coin('g', '+' + num(gold)) +
     V.coin('b', '+' + num(e.blue || 0)) +
@@ -24199,13 +24497,36 @@ function renderResultCoins() {
     '<span class="overlay-note">' +
     V.esc(
       T.msg.resultCoins(
-        { minute: Math.max(0, gold - boss - coin - cat), boss, coin, autoGold, cat },
+        { minute: Math.max(0, gold - boss - coin - cat - bonus.gold), boss, coin, autoGold, cat },
         w.gold,
         w.blue,
-        { level: Math.max(0, (e.blue || 0) - (e.blueCoin || 0)), coin: e.blueCoin || 0 },
+        { level: blueLevel, coin: e.blueCoin || 0 },
       ),
     ) +
+    (bonus.gold || bonus.blue || bonus.super
+      ? '<span class="point-reward-line">' + V.esc(T.msg.pointBonus(bonus)) + '</span>'
+      : '') +
     '</span>';
+}
+function showPointBonusToast(r, bonus) {
+  if (pointBonusToastId === r.id || !(bonus.gold || bonus.blue || bonus.super)) return;
+  pointBonusToastId = r.id;
+  clearTimeout(pointBonusToastTimer);
+  const el = $('point-bonus-toast');
+  $('result').classList.add('point-toast-on');
+  text(el.id, T.msg.pointBonus(bonus));
+  el.hidden = false;
+  el.classList.remove('is-on');
+  requestAnimationFrame(() => el.classList.add('is-on'));
+  pointBonusToastTimer = setTimeout(() => {
+    el.classList.remove('is-on');
+    pointBonusToastTimer = setTimeout(() => {
+      if (pointBonusToastId === r.id) {
+        el.hidden = true;
+        $('result').classList.remove('point-toast-on');
+      }
+    }, 220);
+  }, 2600);
 }
 // 결과 새 기록(R-058, I-30): 'NEW BEST'와 같은 조건(그 순위 1위)을 결과를 여는 순간 미리 계산해, 점수를 0부터
 // 올리고(1.2초, 끝이 느림) 다 오르면 금색으로 한 번 반짝. 줄이기면 바로 최종값 + 금색. 결과마다 한 번
@@ -24271,7 +24592,19 @@ function showResult() {
       r.abilityUsage = r.summary.abilityUsage || r.abilityUsage;
       r.partial = session.partial;
       await rewards;
+      const point = await profile.awardPointBonus(r.id, r.score);
+      r.pointBonus = point.ok ? { gold: point.gold, blue: point.blue, super: point.super } : null;
+      if (point.ok && !point.duplicate) {
+        runEarned.gold += point.gold;
+        runEarned.blue += point.blue;
+        runEarned.super += point.super;
+      }
       r.earned = { ...runEarned };
+      if (point.ok && lastResult === r) {
+        renderResultCoins();
+        refreshProfileUI();
+        if (!point.duplicate) showPointBonusToast(r, point);
+      }
       await checkpointPromise;
       const ok = await store.save(r);
       // 기록 보관(R-018): 판이 정상으로 끝나 저장된 뒤에만 정리한다(100판 · 상세 로그 10판, TOP3·별표 보호)
@@ -24481,6 +24814,9 @@ function updateHUD() {
   text('stage-text', g.stage);
   text('score', num(g.score));
   text('level-num', p.level);
+  show('hud-buff-regen', g.buffList.includes('regen'));
+  show('hud-buff-revive', g.buffList.includes('revive'));
+  show('hud-buffs', g.buffList.includes('regen') || g.buffList.includes('revive'));
   setP($('xp-fill'), p.xp / p.nextXP);
   text('xp-cur', num(Math.floor(p.xp)));
   text('xp-max', num(p.nextXP));
@@ -24511,17 +24847,22 @@ function updateHUD() {
     );
   }
   const boss = g.bossInfo(),
-    bossLine = $('boss-hud').hidden;
+    bossLine = [$('boss-hud').hidden, $('hud-spawncoins').hidden, $('combo').hidden].join(':');
   show('boss-hud', boss.alive > 0);
   if (boss.alive) {
     setP($('boss-fill'), boss.maxHp ? boss.hp / boss.maxHp : 0);
     text('boss-value', T.msg.bossCount(boss.alive, boss.total));
-    text('boss-stage', T.msg.bossStage(boss.originStage));
   }
+  const hasBCoin = (g.bCoins || []).some(c => !c.taken),
+    hasSCoin = (g.sCoins || []).some(c => !c.taken);
+  show('hud-b-spawn', hasBCoin);
+  show('hud-s-spawn', hasSCoin);
+  show('hud-spawncoins', hasBCoin || hasSCoin);
   show('combo', g.combo >= 5);
   if (g.combo >= 5) text('combo', T.msg.combo(g.combo));
-  // 보스 줄이 나타나거나 사라지면 알림 자리가 움직여 기준선을 다시 잰다
-  if (bossLine !== $('boss-hud').hidden) checkAlertLine();
+  // 보스 · 필드 코인 · CHAIN 줄이 바뀌면 알림 자리를 다시 잰다.
+  if (bossLine !== [$('boss-hud').hidden, $('hud-spawncoins').hidden, $('combo').hidden].join(':'))
+    checkAlertLine();
   show('siege-edges', visualTime < siegeEdgeUntil);
   $('stage-button').disabled = g.mode !== 'playing';
 }
@@ -24805,6 +25146,17 @@ function awardSuper(id, coinId) {
     if (r.ok && r.super) refreshProfileUI();
   });
 }
+function awardBlueField(id, coinId) {
+  return queueReward(async () => {
+    const r = await profile.awardBlueCoin(id, coinId);
+    if (r.ok && r.blue && id === runId) {
+      runEarned.blue += r.blue;
+      notify('bPick', r.blue);
+      sfx('coin');
+    }
+    if (r.ok && r.blue) refreshProfileUI();
+  });
+}
 // 레벨업 코인을 이 판 몫에 더한다: G 코인 또는 B 코인(R-043, blueCoin은 blue 안의 내역)
 function addCoin(r) {
   if (r.gold) runEarned.gold += r.gold;
@@ -24832,7 +25184,8 @@ function awardBoss(id, bossId) {
     if (r.ok && r.gold && id === runId) {
       runEarned.gold += r.gold;
       runEarned.boss += r.gold;
-      notify('bossGold', r.gold);
+      runEarned.blue += BAL.bCoin.boss;
+      notify('bossGold', r.gold, BAL.bCoin.boss);
     }
     if (r.ok && r.gold) refreshProfileUI();
   });
@@ -24877,6 +25230,7 @@ function events() {
     }
     if (e.type === 'siege') notify('siege', e.wave);
     if (e.type === 's_spawn') notify('sCoin', e.src);
+    if (e.type === 'b_spawn') notify('bCoin', e.src);
     // 1회 부활(R-062): 금빛 고리(렌더러) · 알림 · 해금 소리 · 진동
     if (e.type === 'revive') {
       notify('revive');
@@ -24884,6 +25238,7 @@ function events() {
       vibrate(T.ui.vibe.revive);
     }
     if (e.type === 's_pick' && Number.isSafeInteger(e.id)) awardSuper(runId, e.id);
+    if (e.type === 'b_pick' && Number.isSafeInteger(e.id)) awardBlueField(runId, e.id);
     if (e.type === 'minute') awardMinute(runId, e.minute);
     if (e.type === 'level') awardLevel(runId, e.level);
     if (e.type === 'stage') {
