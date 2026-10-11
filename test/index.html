@@ -14092,8 +14092,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         brief: (time, lv, boss) => time + ' · LV' + lv + ' · 보스 ' + boss,
         goldMark: G,
         blue: BL,
-        // B 내역(R-043): LV 보상 · B 코인 칸
-        blueParts: { level: 'LV 보상', coin: BL + ' 코인' },
+        // B 내역(R-043 · R-079): LV 보상 · B 코인 칸 · 보스 · 필드 코인(추정 상한) · 포인트 보너스
+        blueParts: {
+          level: 'LV 보상',
+          coin: BL + ' 코인',
+          boss: '보스 ' + BL,
+          field: '필드 ' + BL + ' 코인',
+          point: '포인트 보너스',
+        },
         super: SC,
         details: '자세히',
         gold: {
@@ -14103,6 +14109,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           autoGoldCapped: '자동 ' + G + '(스킬 모두 최대)',
           autoGoldChance: '자동 ' + G + '(확률)',
           cat: '고양이',
+          point: '포인트 보너스',
           total: '합계',
         },
         actual: '실제로 받은 값(분당)',
@@ -15151,7 +15158,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.7.3',
+  const VERSION = '4.7.4',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -16715,6 +16722,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       autoGold: finiteCount(e?.autoGold),
       // B 코인(R-043)으로 받은 B. blue 안의 내역이다.
       blueCoin: finiteCount(e?.blueCoin),
+      // 포인트 종료 보상(R-079)으로 받은 G. gold 안의 내역이다(옛 기록은 0).
+      point: finiteCount(e?.point),
     };
   }
   // 출격 순간 고양이 레벨: 고양이마다 0~maxLevel 정수(0은 미해금)
@@ -23618,7 +23627,7 @@ let canvas = $('arena'),
   starting = false,
   automaticBudget = 4,
   frozen = false,
-  runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0, blueCoin: 0 },
+  runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0, blueCoin: 0, point: 0 },
   runUnlocked = [],
   runHidden = false,
   rewards = Promise.resolve(),
@@ -24081,7 +24090,7 @@ async function begin(launch = {}) {
     renderer.cam.x = g.p.x;
     renderer.cam.y = g.p.y;
     runId = nextRunId;
-    runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0, blueCoin: 0 };
+    runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0, blueCoin: 0, point: 0 };
     // 기록의 cats는 이 판에 적용된 고양이의 레벨(적용되지 않은 고양이는 0)
     runCats = { ...cats.levels };
     runUnlocked = [];
@@ -24353,7 +24362,7 @@ function renderResultCoins() {
     '<span class="overlay-note">' +
     V.esc(
       T.msg.resultCoins(
-        { minute: Math.max(0, gold - boss - coin - cat - bonus.gold), boss, coin, autoGold, cat },
+        { minute: Math.max(0, gold - boss - coin - cat - (e.point || 0)), boss, coin, autoGold, cat },
         w.gold,
         w.blue,
         { level: blueLevel, coin: e.blueCoin || 0 },
@@ -24452,6 +24461,7 @@ function showResult() {
       r.pointBonus = point.ok ? { gold: point.gold, blue: point.blue, super: point.super } : null;
       if (point.ok && !point.duplicate) {
         runEarned.gold += point.gold;
+        runEarned.point += point.gold;
         runEarned.blue += point.blue;
         runEarned.super += point.super;
       }

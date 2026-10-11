@@ -6849,8 +6849,14 @@ return Plotly;
         brief: (time, lv, boss) => time + ' · LV' + lv + ' · 보스 ' + boss,
         goldMark: G,
         blue: BL,
-        // B 내역(R-043): LV 보상 · B 코인 칸
-        blueParts: { level: 'LV 보상', coin: BL + ' 코인' },
+        // B 내역(R-043 · R-079): LV 보상 · B 코인 칸 · 보스 · 필드 코인(추정 상한) · 포인트 보너스
+        blueParts: {
+          level: 'LV 보상',
+          coin: BL + ' 코인',
+          boss: '보스 ' + BL,
+          field: '필드 ' + BL + ' 코인',
+          point: '포인트 보너스',
+        },
         super: SC,
         details: '자세히',
         gold: {
@@ -6860,6 +6866,7 @@ return Plotly;
           autoGoldCapped: '자동 ' + G + '(스킬 모두 최대)',
           autoGoldChance: '자동 ' + G + '(확률)',
           cat: '고양이',
+          point: '포인트 보너스',
           total: '합계',
         },
         actual: '실제로 받은 값(분당)',
@@ -7843,6 +7850,8 @@ return Plotly;
       autoGold: finiteCount(e?.autoGold),
       // B 코인(R-043)으로 받은 B. blue 안의 내역이다.
       blueCoin: finiteCount(e?.blueCoin),
+      // 포인트 종료 보상(R-079)으로 받은 G. gold 안의 내역이다(옛 기록은 0).
+      point: finiteCount(e?.point),
     };
   }
   // 출격 순간 고양이 레벨: 고양이마다 0~maxLevel 정수(0은 미해금)
