@@ -2697,15 +2697,17 @@ body[data-gm] .menu-top {
   border-color: var(--cyan);
   background: var(--cyan-deep);
 }
-/* 보스 줄 · CHAIN(보완 3): 세로 화면은 덩어리 바로 아래 한 줄(보스 왼쪽 · CHAIN 오른쪽).
-   CHAIN 칸은 미리 잡아 두어 CHAIN이 나타나도 보스 상자 폭이 그대로다. 둘 다 없으면 줄을 접는다. */
+/* 보스 줄 · CHAIN(보완 3, R-083): 세로 화면은 덩어리 바로 아래 한 줄 — 필드 코인 원(왼쪽 고정) → 보스 → CHAIN.
+   CHAIN 칸은 미리 잡아 두어 CHAIN이 나타나도 보스 상자 폭이 그대로다. 높이는 24px 고정이라 보스가 나와도 원이
+   움직이지 않는다. 빈 첫 칸이 간격을 남기지 않게 열 간격은 0, 원 쪽에 오른쪽 여백. 모두 없으면 줄을 접는다. */
 .hud-bossline {
   grid-column: 1 / -1;
   grid-row: 3;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(5.5em, auto);
+  grid-template-columns: auto minmax(0, 1fr) minmax(5.5em, auto);
   align-items: center;
-  column-gap: 10px;
+  column-gap: 0;
+  min-height: 24px;
   margin: 8px -8px 0;
   font-size: 0.875rem;
 }
@@ -2715,7 +2717,7 @@ body[data-gm] .menu-top {
   }
 }
 .hud-boss {
-  grid-column: 1;
+  grid-column: 2;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -2742,19 +2744,21 @@ body[data-gm] .menu-top {
 .hud-chain {
   grid-column: 3;
   justify-self: end;
-  padding-right: 4px;
+  padding: 0 4px 0 8px;
   font-weight: 800;
   font-style: italic;
   color: var(--pink);
 }
 .hud-spawncoins {
-  grid-column: 2;
+  grid-column: 1;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  margin-right: 8px;
   white-space: nowrap;
 }
 .coin-status {
+  position: relative;
   width: 22px;
   height: 22px;
   display: grid;
@@ -2763,6 +2767,22 @@ body[data-gm] .menu-top {
   font-size: 0.7rem;
   font-weight: 900;
   line-height: 1;
+}
+/* 필드 코인 개수(R-083): 2개 이상일 때 원 오른쪽 위 작은 숫자(위치 정보는 주지 않는다) */
+.coin-count {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 12px;
+  padding: 0 2px;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 12px;
+  text-align: center;
 }
 .coin-status--b {
   border: 1px solid var(--blue);
@@ -3200,6 +3220,11 @@ body[data-fx='low'] .is-point::before {
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
+/* 물리 상한 도달 칸(R-086): 숫자는 그대로, 금색 테두리(색) + 아래 굵은 줄(모양) — 색약에서도 구분 */
+.hud-skill.is-cap {
+  border-color: var(--gold);
+  box-shadow: inset 0 -3px 0 var(--gold);
+}
 
 /* ── 전투 위 오버레이: 레벨업 · 일시정지 · 결과 (backdrop-filter 없이 불투명 배경) ── */
 /* S 출격 시작 연출(R-048, O-INTRO): 전투 화면 위 겹(t=0이라 적 없음). 금색 'S 출격' + 빛줄기 → 가운데 3 · 2 · 1.
@@ -3431,10 +3456,11 @@ body[data-fx='low'] .intro-title::after {
   gap: clamp(var(--sp-2), calc((var(--vh-full) - 722px) / 10), var(--sp-3));
 }
 #result.has-point-reward .overlay-panel {
-  gap: clamp(6px, calc((var(--vh-full) - 742px) / 10), var(--sp-3));
+  gap: clamp(6px, calc((var(--vh-full) - 762px) / 10), var(--sp-3));
 }
 .result-head {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: var(--sp-1);
   text-align: center;
@@ -3510,11 +3536,34 @@ body[data-fx='low'] .result-score.is-best::after {
 body[data-fx='low'] .point-bonus-toast {
   transition: none;
 }
-.point-reward-line {
-  display: block;
-  margin-top: 2px;
+/* 포인트 보너스 한 줄(R-084): 결과 Point 바로 아래 금색 글자만(띠 · 꼬리표 없음) */
+.result-bonus {
+  max-width: 100%;
+  margin: 0;
   color: var(--gold);
-  font-weight: 750;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  line-height: 1.25;
+}
+/* 결과 보상(R-084): 접는 한 줄 — 머리글은 칩(합계) + '보상 내역', 펼치면 잔액과 재화마다 출처 합 */
+.reward-box {
+  min-width: 0;
+}
+.reward-detail summary {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px var(--sp-3);
+}
+.reward-more {
+  color: var(--muted);
+  font-weight: 700;
+}
+.reward-list li {
+  display: block;
+  color: var(--ink-2);
+}
+.reward-list li:last-child {
+  border-bottom: 0;
 }
 .reward-row {
   display: flex;
@@ -4078,7 +4127,7 @@ body[data-fx='low'] .boss-warn.is-on {
   }
   .hud-bossline {
     grid-area: boss;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     min-height: 14px;
     margin: 0;
     font-size: min(0.625rem, 11px);
@@ -4097,11 +4146,15 @@ body[data-fx='low'] .boss-warn.is-on {
   }
   .hud-spawncoins {
     gap: 2px;
+    margin-right: 6px;
   }
   .coin-status {
     width: 15px;
     height: 15px;
     font-size: 0.55rem;
+  }
+  .coin-count {
+    display: none;
   }
   .hud-chain {
     grid-column: 3;
@@ -4539,11 +4592,7 @@ body[data-fx='low'] .boss-warn.is-on {
             <span>AUTO</span>
           </button>
         </div>
-        <div class="hud-bossline">
-          <div class="hud-cell hud-boss" id="boss-hud" data-area="H-BOSS" hidden>
-            <span class="boss-text num"><span id="boss-value"></span></span>
-            <div class="bar"><i id="boss-fill"></i></div>
-          </div>
+        <div class="hud-bossline" id="hud-bossline">
           <span
             class="hud-spawncoins"
             id="hud-spawncoins"
@@ -4551,9 +4600,17 @@ body[data-fx='low'] .boss-warn.is-on {
             aria-label="필드 코인 출현"
             hidden
           >
-            <span class="coin-status coin-status--b" id="hud-b-spawn" hidden>B</span>
-            <span class="coin-status coin-status--s" id="hud-s-spawn" hidden>S</span>
+            <span class="coin-status coin-status--b" id="hud-b-spawn" hidden
+              >B<i class="coin-count num" id="hud-b-count" hidden></i
+            ></span>
+            <span class="coin-status coin-status--s" id="hud-s-spawn" hidden
+              >S<i class="coin-count num" id="hud-s-count" hidden></i
+            ></span>
           </span>
+          <div class="hud-cell hud-boss" id="boss-hud" data-area="H-BOSS" hidden>
+            <span class="boss-text num"><span id="boss-value"></span></span>
+            <div class="bar"><i id="boss-fill"></i></div>
+          </div>
           <span class="hud-cell hud-chain num" id="combo" data-area="H-CHAIN" hidden></span>
         </div>
         <!-- 할 일 칩(H-TASK, R-073): 첫 판 세로 화면 30초. 보스 줄 다음 줄, 없으면 접힌다(가로는 그리지 않음) -->
@@ -4623,11 +4680,12 @@ body[data-fx='low'] .boss-warn.is-on {
           <span class="sc-chip" id="result-sc" hidden>S 출격</span>
           <h2 class="sr-only" id="result-title">결과</h2>
           <div class="result-score num" id="final-score">0</div>
+          <p class="result-bonus num" id="result-bonus" hidden></p>
           <span class="notice notice--best" id="new-record" hidden>NEW BEST</span>
         </div>
         <div class="summary-grid" id="result-stats"></div>
         <p class="buff-line" id="result-buffs" hidden></p>
-        <div class="reward-row" id="result-coins"></div>
+        <div class="reward-box" id="result-coins"></div>
         <p class="result-unlock" id="result-unlock" role="status" hidden></p>
         <!-- 다음 판 팁 한 자리(R-074): 보상 · 해금 줄 아래, 주요 버튼 바로 위('다시 도전' 직전에 읽힘) -->
         <p class="tip-line" id="result-tip" hidden></p>
@@ -11979,7 +12037,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // Insane S 코인(R-023 · R-061): mode 판(일반 · S 출격)에서 세 출처로 1개씩 생긴다. 크기 r, 자석 없이 기체가
     // 닿아야 1 S, 줍지 않으면 판 끝까지 남는다. ① 전투 시계 every초마다 기체에서 near~far 거리의 무작위 방향
     // ② 레벨업마다 levelChance 확률(시드 · LV 해시) ③ 보스 웨이브를 다 잡을 때마다(판당 bossMax).
-    // ②③은 맵 전역 무작위. 셋 모두 맵 가장자리에서 margin 안쪽
+    // ②③은 맵 전역 무작위. 셋 모두 맵 가장자리에서 margin 안쪽. 필드에 동시 max개까지(상한이면 그 차례는 건너뜀, R-081)
     superCoin: {
       mode: 'insane',
       every: 300,
@@ -11989,9 +12047,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       margin: 50,
       levelChance: 0.01,
       bossMax: 5,
+      max: 7,
     },
-    // B 필드 코인: 매분 모드의 blueCoin 확률로 판정. 한 번에 하나만 필드에 남는다.
-    bCoin: { every: 60, value: 1, boss: 1, r: 30, margin: 50 },
+    // B 필드 코인: 매분 모드의 blueCoin 확률로 판정. 필드에 동시 max개까지 쌓이고 줍기 전까지 남는다(R-081).
+    bCoin: { every: 60, value: 1, boss: 1, r: 30, margin: 50, max: 7 },
     // Point 종료 보상: 구간마다 각각 누적 환산한다.
     pointBonus: { goldEvery: 500000, blueEvery: 1000000, superEvery: 10000000 },
     // 출격 버프(R-062, I-36): from 모드부터 켤 수 있고, 켜 두면 출격할 때마다 비용(b: B · s: S)을 낸다. 키 순서 = 화면 위 → 아래.
@@ -12636,6 +12695,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     mode: { title: '모드 선택', close: '닫기', group: '모드', done: '선택 완료' },
     hud: {
       status: '기체 상태',
+      // 스킬 줄 한계 칸(R-086)의 읽기 글자(화면에는 금색 테두리 + 아래 줄만)
+      skillCap: '상한 도달',
       hp: 'HP',
       pause: '일시정지',
       // LV 글자(색) + 숫자(밝게), 편집장 2026-10-03
@@ -12713,6 +12774,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       replay: '다시 도전',
       menu: '메뉴로',
       skills: '스킬 내역',
+      rewardDetail: '보상 내역',
       noteLabel: '기록 한 줄 저장',
       note: '한 줄 남기기',
       noteHint: () => '선택 · 최대 ' + E().noteMax + '자 · 글자당 ' + E().notePerChar + ' ' + G,
@@ -12805,27 +12867,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       point: point.upper,
       kills: '처치',
     },
-    // 결과 재화 줄: G 내역(있을 때) + B 내역(B 코인을 받은 판만, R-043) + 잔액
-    resultCoins: (parts, gold, blue, blueParts = {}) => {
-      const detail = msg.resultGold(parts),
-        blueDetail = blueParts.coin
-          ? [blueParts.level ? 'LV ' + num(blueParts.level) : '', '코인 ' + num(blueParts.coin)]
-              .filter(Boolean)
-              .join(' · ')
-          : '';
-      return (
-        (detail ? G + ' 내역 ' + detail + ' · ' : '') +
-        (blueDetail ? BL + ' 내역 ' + blueDetail + ' · ' : '') +
-        '잔액 ' +
-        num(gold) +
-        ' ' +
-        G +
-        ' · ' +
-        num(blue) +
-        ' ' +
-        BL
-      );
-    },
+    // 결과 잔액(R-084): 접는 내역 줄의 머리글 뒤에 붙는다
+    resultBalance: (gold, blue) => '잔액 ' + num(gold) + ' ' + G + ' · ' + num(blue) + ' ' + BL,
     pointBonus: bonus => {
       const gains = [
         bonus.gold ? '+' + num(bonus.gold) + ' ' + G : '',
@@ -12834,16 +12877,31 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ].filter(Boolean);
       return gains.length ? '포인트 보너스 · ' + gains.join(' · ') : '';
     },
-    // 결과 G 내역(분 · 보스 · 코인(자동 G) · 고양이). 0인 항목은 뺀다.
-    resultGold: ({ minute, boss, coin, autoGold, cat }) =>
-      [
-        minute ? '분당 ' + num(minute) : '',
-        boss ? '보스 ' + num(boss) : '',
-        coin ? '코인 ' + num(coin) + (autoGold ? '(자동 ' + G + ' ' + num(autoGold) + ')' : '') : '',
-        cat ? '고양이 ' + num(cat) : '',
-      ]
-        .filter(Boolean)
-        .join(' · '),
+    // 결과 보상 내역(R-084): 재화마다 한 줄 '+합계 = 출처 n · …'(0인 출처는 뺀다, 합은 칩의 합계와 같다).
+    // unit: 'g' · 'b' · 's', parts: [[출처 키, 값]] — 출처 이름은 rewardPart
+    rewardPart: {
+      minute: '분당',
+      boss: '보스',
+      coin: '코인',
+      cat: '고양이',
+      level: 'LV',
+      field: '필드',
+      pick: '줍기',
+      point: '포인트 보너스',
+    },
+    resultReward: (unit, total, parts, autoGold = 0) => {
+      const name = { g: G, b: BL, s: SC }[unit],
+        list = parts
+          .filter(([, n]) => n > 0)
+          .map(
+            ([k, n]) =>
+              msg.rewardPart[k] +
+              ' ' +
+              num(n) +
+              (k === 'coin' && unit === 'g' && autoGold ? '(자동 ' + num(autoGold) + ')' : ''),
+          );
+      return name + ' +' + num(total) + (list.length ? ' = ' + list.join(' · ') : '');
+    },
     resultUnlock: ids => '새 모드 해금 · ' + ids.map(modeName).join(' · '),
     resultHidden: '히든 탭 해금 · 성장 탭 맨 아래',
     resultKicker: defeated => (defeated ? 'SIGNAL LOST · RUN RECORDED' : 'RUN SAVED · SIGNAL ON HOLD'),
@@ -13745,6 +13803,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'bCoin.boss': ['보스 처치 B 보상', BL, 'more'],
       'bCoin.r': ['필드 B 코인 반지름', '거리', 'easy'],
       'bCoin.margin': ['필드 B 코인이 맵 가장자리에서 떨어지는 거리', '거리', ''],
+      'bCoin.max': ['필드 B 코인이 동시에 쌓이는 최대 개수', '개', 'more'],
       'pointBonus.goldEvery': ['이 누적 Point마다 종료 보상 1 G', PT, 'less'],
       'pointBonus.blueEvery': ['이 누적 Point마다 종료 보상 1 B', PT, 'less'],
       'pointBonus.superEvery': ['이 누적 Point마다 종료 보상 1 S', PT, 'less'],
@@ -13781,6 +13840,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'superCoin.margin': ['맵 가장자리에서 떨어지는 거리', '거리', ''],
       'superCoin.levelChance': ['레벨업마다 맵 어딘가에 나올 확률', '확률(0~1)', 'more'],
       'superCoin.bossMax': ['보스 웨이브를 다 잡을 때 나오는 판당 최대', '개', 'more'],
+      'superCoin.max': ['필드에 동시에 쌓이는 S 코인 최대 개수', '개', 'more'],
       'buffs.regen.b': [buffs.regen.name + ' 버프 비용(켜 두면 출격할 때마다)', BL, 'cost'],
       'buffs.regen.hp': [buffs.regen.name + ' 버프 초당 회복', 'HP/초', 'easy'],
       'buffs.revive.s': [buffs.revive.name + ' 버프 비용(켜 두면 출격할 때마다)', SC, 'cost'],
@@ -14635,7 +14695,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               BL +
               ')이 되기도 합니다(' +
               blueCoinModes() +
-              '). 필드 코인도 Hard부터 매분 같은 모드 확률로 나타납니다. 성장 화면의 영구 스킬과 ' +
+              '). 필드 코인도 Hard부터 매분 같은 모드 확률로 나타나고, 여러 개가 쌓여(최대 ' +
+              B().bCoin.max +
+              '개) 줍기 전까지 남습니다. 성장 화면의 영구 스킬과 ' +
               coins.s.name +
               ' 제작에 씁니다.',
           ],
@@ -15158,7 +15220,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.7.4',
+  const VERSION = '4.8.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -15921,7 +15983,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         cleared,
       });
       // 보스 S(R-061): Insane에서 웨이브를 다 잡을 때마다 맵 아무 곳에 1개(판당 bossMax)
-      if (this.difficultyId === S_COIN.mode && this.bossS < S_COIN.bossMax) {
+      if (
+        this.difficultyId === S_COIN.mode &&
+        this.bossS < S_COIN.bossMax &&
+        this.sCoins.length < S_COIN.max
+      ) {
         this.bossS++;
         this.dropSCoin('boss');
       }
@@ -16086,7 +16152,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.level++;
       p.nextXP = B.level.base + (p.level - 1) * B.level.step;
       // 레벨업 S(R-061): Insane에서 (시드, LV) 해시가 levelChance 미만이면 맵 아무 곳에 1개
-      if (this.difficultyId === S_COIN.mode && levelDrop(this.initialSeed, p.level) < S_COIN.levelChance)
+      if (
+        this.difficultyId === S_COIN.mode &&
+        this.sCoins.length < S_COIN.max &&
+        levelDrop(this.initialSeed, p.level) < S_COIN.levelChance
+      )
         this.dropSCoin('level');
       const pool = UPGRADES.filter(
         u => !B.defense.includes(u.id) || this.defenseUsed(u.id) < this.profile.defenseCap,
@@ -16221,11 +16291,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (this.stage < 1 + Math.floor(this.p.level / B.stage.autoLevel)) this.raiseStage(true);
       if (this.time >= this.sCoinNext) {
         this.sCoinNext = (Math.floor(this.time / S_COIN.every) + 1) * S_COIN.every;
-        this.spawnSCoin();
+        // 필드 동시 상한(R-081): max개면 이번 차례는 건너뛴다
+        if (this.sCoins.length < S_COIN.max) this.spawnSCoin();
       }
       if (this.time >= this.bCoinNext) {
         this.bCoinNext = (Math.floor(this.time / B.bCoin.every) + 1) * B.bCoin.every;
-        if (!this.bCoins.length && this.profile.blueCoin > 0 && this.bCoinRng() < this.profile.blueCoin)
+        if (
+          this.bCoins.length < B.bCoin.max &&
+          this.profile.blueCoin > 0 &&
+          this.bCoinRng() < this.profile.blueCoin
+        )
           this.dropBCoin('time');
       }
       // 회복 구역(R-061): 전투 시계 first초부터 every초마다 하나, life초 뒤 사라진다
@@ -21420,15 +21495,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // 획득 스킬 줄(H-SKILLS, R-031 · 보완 4): 가진 스킬만 단일 순서로, 칸마다 아이콘 + 출처 합계 스택.
   // list = [[id, n], …](T.skillOrder 순, n > 0)
+  // 획득 스킬 줄(R-031): [id, 스택, 물리 상한 도달] — 상한 칸은 숫자 그대로 금색 테두리 + 아래 굵은 줄(R-086)
   function hudSkills(list) {
     return list
-      .map(([id, n]) => {
+      .map(([id, n, cap]) => {
         const u = upgrade(id);
         return (
-          '<li class="hud-skill" style="--c:' +
+          '<li class="hud-skill' +
+          (cap ? ' is-cap' : '') +
+          '" style="--c:' +
           u.color +
           '" aria-label="' +
-          esc(u.name + ' ' + n) +
+          esc(u.name + ' ' + n + (cap ? ' · ' + T.ui.hud.skillCap : '')) +
           '"><span aria-hidden="true">' +
           u.icon +
           '</span><b>' +
@@ -24352,26 +24430,51 @@ function renderResultCoins() {
         0,
         Math.floor(r.level / BAL.economy.blueEvery) - Math.floor(startLevel / BAL.economy.blueEvery),
       ) * (BAL.modes[r.difficultyId]?.blue || 0),
+    blueTotal = e.blue || 0,
+    superTotal = e.super || 0,
+    blueCoin = e.blueCoin || 0,
+    blueBoss = (r.bossKills || 0) * BAL.bCoin.boss,
+    // 필드 B는 저장하지 않는다: 합계에서 알려진 몫을 뺀 나머지(실험실과 같은 방식)
+    blueField = Math.max(0, blueTotal - blueLevel - blueCoin - blueBoss - (bonus.blue || 0)),
+    hasBonus = !!(bonus.gold || bonus.blue || bonus.super),
     // S는 Insane 판(또는 S를 받은 판)에만 보인다
-    showS = (e.super || 0) > 0 || r.difficultyId === BAL.superCoin.mode;
-  $('result').classList.toggle('has-point-reward', !!(bonus.gold || bonus.blue || bonus.super));
+    showS = superTotal > 0 || r.difficultyId === BAL.superCoin.mode,
+    line = (unit, total, parts) => '<li>' + V.esc(T.msg.resultReward(unit, total, parts, autoGold)) + '</li>';
+  $('result').classList.toggle('has-point-reward', hasBonus);
+  // 포인트 보너스(R-084): 결과 Point 바로 아래 금색 한 줄. 칩은 합계, 출처는 접는 내역 안
+  text('result-bonus', hasBonus ? T.msg.pointBonus(bonus) : '');
+  show('result-bonus', hasBonus);
   $('result-coins').innerHTML =
+    '<details class="skills-detail reward-detail"><summary><span class="reward-row">' +
     V.coin('g', '+' + num(gold)) +
-    V.coin('b', '+' + num(e.blue || 0)) +
-    (showS ? V.coin('sc', '+' + num(e.super || 0)) : '') +
-    '<span class="overlay-note">' +
-    V.esc(
-      T.msg.resultCoins(
-        { minute: Math.max(0, gold - boss - coin - cat - (e.point || 0)), boss, coin, autoGold, cat },
-        w.gold,
-        w.blue,
-        { level: blueLevel, coin: e.blueCoin || 0 },
-      ),
-    ) +
-    (bonus.gold || bonus.blue || bonus.super
-      ? '<span class="point-reward-line">' + V.esc(T.msg.pointBonus(bonus)) + '</span>'
+    V.coin('b', '+' + num(blueTotal)) +
+    (showS ? V.coin('sc', '+' + num(superTotal)) : '') +
+    '</span><span class="reward-more">' +
+    V.esc(T.ui.result.rewardDetail) +
+    '</span></summary><ul class="stack-list reward-list"><li>' +
+    V.esc(T.msg.resultBalance(w.gold, w.blue)) +
+    '</li>' +
+    line('g', gold, [
+      ['minute', Math.max(0, gold - boss - coin - cat - (e.point || 0))],
+      ['boss', boss],
+      ['coin', coin],
+      ['cat', cat],
+      ['point', e.point || 0],
+    ]) +
+    line('b', blueTotal, [
+      ['level', blueLevel],
+      ['coin', blueCoin],
+      ['boss', blueBoss],
+      ['field', blueField],
+      ['point', bonus.blue || 0],
+    ]) +
+    (showS
+      ? line('s', superTotal, [
+          ['pick', Math.max(0, superTotal - (bonus.super || 0))],
+          ['point', bonus.super || 0],
+        ])
       : '') +
-    '</span>';
+    '</ul></details>';
 }
 function showPointBonusToast(r, bonus) {
   if (pointBonusToastId === r.id || !(bonus.gold || bonus.blue || bonus.super)) return;
@@ -24703,13 +24806,14 @@ function updateHUD() {
       button.dataset.ready = r;
     }
   }
-  // 획득 스킬 줄(R-031): 출처 합계 스택이 바뀔 때만 다시 그린다
+  // 획득 스킬 줄(R-031): 출처 합계 스택 · 물리 상한 도달(R-086, 엔진 isCapped 한 곳)이 바뀔 때만 다시 그린다
   const stacks = T.skillOrder.map(id => g.stack(id)),
-    key = stacks.join(',');
+    caps = T.skillOrder.map(id => g.isCapped(id)),
+    key = stacks.join(',') + '|' + caps.map(Number).join('');
   if (key !== skillKey) {
     skillKey = key;
     $('hud-skills').innerHTML = V.hudSkills(
-      T.skillOrder.map((id, i) => [id, stacks[i]]).filter(([, n]) => n > 0),
+      T.skillOrder.map((id, i) => [id, stacks[i], caps[i]]).filter(([, n]) => n > 0),
     );
   }
   const boss = g.bossInfo(),
@@ -24719,11 +24823,16 @@ function updateHUD() {
     setP($('boss-fill'), boss.maxHp ? boss.hp / boss.maxHp : 0);
     text('boss-value', T.msg.bossCount(boss.alive, boss.total));
   }
-  const hasBCoin = (g.bCoins || []).some(c => !c.taken),
-    hasSCoin = (g.sCoins || []).some(c => !c.taken);
-  show('hud-b-spawn', hasBCoin);
-  show('hud-s-spawn', hasSCoin);
-  show('hud-spawncoins', hasBCoin || hasSCoin);
+  // 필드 코인 원(R-083): 있다 · 몇 개만 알린다(2개 이상이면 숫자, 위치 · 방향 정보 없음)
+  const bN = (g.bCoins || []).filter(c => !c.taken).length,
+    sN = (g.sCoins || []).filter(c => !c.taken).length;
+  show('hud-b-spawn', bN > 0);
+  show('hud-s-spawn', sN > 0);
+  show('hud-spawncoins', bN > 0 || sN > 0);
+  show('hud-b-count', bN > 1);
+  show('hud-s-count', sN > 1);
+  if (bN > 1) text('hud-b-count', bN > 9 ? '9+' : String(bN));
+  if (sN > 1) text('hud-s-count', sN > 9 ? '9+' : String(sN));
   show('combo', g.combo >= 5);
   if (g.combo >= 5) text('combo', T.msg.combo(g.combo));
   // 보스 · 필드 코인 · CHAIN 줄이 바뀌면 알림 자리를 다시 잰다.
