@@ -249,6 +249,8 @@
 
   /* 터치 영역 */
   --tap: 44px;
+  /* HUD 크기(R-091): body[data-hud] s | m(기본) | l. 위 덩어리 · 아래 행동 줄에만 zoom으로 걸린다(ui.css) */
+  --hud-z: 1;
   --tap-lg: 48px;
   --action-h: 56px;
   --action-w: 72px;
@@ -466,6 +468,18 @@ body[data-fx='low'] .nb-shine,
 body[data-fx='low'] .nb-aura,
 body[data-fx='low'] .nb-spark {
   animation: none !important;
+}
+body[data-hud='s'] {
+  --hud-z: 0.9;
+}
+body[data-hud='l'] {
+  --hud-z: 1.15;
+}
+/* 가로 화면은 알림 기준선 위에 들어가야 해서 크게를 적용하지 않는다(PC · 가로는 깨지지 않는지만) */
+@media (orientation: landscape) and (max-height: 520px) {
+  body[data-hud='l'] {
+    --hud-z: 1;
+  }
 }
 
       /* NEON ARENA v4 화면 부품. 배치는 모두 흐름·그리드로 하고 고정 좌표를 쓰지 않는다(UI 계약).
@@ -2407,13 +2421,20 @@ body[data-gm] .menu-top {
   grid-template-areas: 'top' 'notice' 'play' 'bottom';
   gap: 6px;
   height: var(--vh-full);
-  /* 화면 맨 위 · 맨 아래에 여백을 조금 둔다(R-029) */
-  padding: calc(10px + var(--safe-t) + var(--edge-top)) calc(8px + var(--safe-r))
+  /* 화면 맨 위 · 맨 아래에 여백을 조금 둔다(R-029). 맨 위 추가 여백은 R-090에서 10 → 4px(카메라 구멍 여백 --edge-top은 그대로) */
+  padding: calc(4px + var(--safe-t) + var(--edge-top)) calc(8px + var(--safe-r))
     calc(12px + var(--safe-b) + var(--edge-bottom)) calc(8px + var(--safe-l));
   pointer-events: none;
 }
 .hud button {
   pointer-events: auto;
+}
+/* HUD 크기(R-091): 위 덩어리 · 아래 행동 줄에만 zoom을 건다(.hud 자체는 화면 높이 · 안전 여백을, 알림 묶음은 R-047 기준선을 그대로 쓴다).
+   터치 상자는 zoom을 나눠 실제 44px 아래로 줄지 않게 한다(--tap) */
+.hud > .hud-top,
+.hud > .hud-bottom {
+  zoom: var(--hud-z);
+  --tap: max(44px, calc(44px / var(--hud-z)));
 }
 /* 위 한 덩어리(R-029). 세로: 1줄 STAGE | 막대 3개 | 시간 | 일시정지, 2줄 배지 · LV · 재화 · Point · AUTO,
    덩어리 바로 아래 보스 줄 · CHAIN. 판 배경(.hud-panel)은 1~2줄 칸을 덮는 빈 칸이고 글자 칸은 그 위에 놓인다.
@@ -2421,13 +2442,14 @@ body[data-gm] .menu-top {
 .hud-top {
   grid-area: top;
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr) auto var(--tap);
+  grid-template-columns: max(48px, var(--tap)) minmax(0, 1fr) auto var(--tap);
+  grid-template-rows: var(--tap) auto;
   grid-template-areas:
     'stage bars time pause'
     'info info info info';
   align-items: center;
   column-gap: 8px;
-  row-gap: 4px;
+  row-gap: 6px;
   padding: 6px 8px;
   container-type: inline-size;
 }
@@ -2446,89 +2468,186 @@ body[data-gm] .menu-top {
 .hud-cell {
   min-width: 0;
 }
-/* STAGE: 한 번 탭으로 즉시 오른다. 금색 테두리 · ↑로 다른 버튼과 구분한다 */
+/* STAGE: 한 번 탭으로 즉시 오른다. 누를 수 있는 금색 버튼(R-090): 위 'STAGE' 작은 글자, 아래 숫자 + ↑.
+   입체감 = 위쪽 안쪽 빛 1px + 위에서 아래로 옅어지는 금색 + 아래 2px 턱(어두운 금). 누르면 2px 내려가고 턱이 사라진다 */
 .hud-stage {
   grid-area: stage;
   align-self: stretch;
   display: grid;
-  justify-items: center;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  justify-content: center;
   align-content: center;
-  min-height: 50px;
-  padding: 3px 0;
+  column-gap: 1px;
+  row-gap: 1px;
+  height: var(--tap);
+  min-height: 0;
+  padding: 0 2px 1px;
   border-radius: 10px;
-  border: 1.5px solid var(--gold);
-  background: color-mix(in srgb, var(--stage-bg) 87.84%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 72%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--gold) 20%, var(--stage-bg)) 0%,
+    var(--stage-bg) 62%,
+    color-mix(in srgb, var(--stage-bg) 82%, #000) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--gold) 42%, transparent),
+    0 2px 0 color-mix(in srgb, var(--gold) 34%, #000),
+    0 4px 10px rgb(0 0 0 / 0.45);
   color: var(--gold);
   line-height: 1;
+  transition: transform 80ms var(--ease);
 }
 .hud-stage small {
-  font-size: min(0.5625rem, 10px);
+  grid-column: 1 / -1;
+  justify-self: center;
+  font-size: 8px;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
+  line-height: 1;
 }
 .hud-stage b {
-  margin: 2px 0 1px;
-  font-size: min(1.375rem, 24px);
+  margin: 0;
+  font-size: min(1.25rem, 20px);
   font-weight: 900;
+  line-height: 1;
   color: var(--ink);
 }
 .hud-stage i {
+  align-self: center;
   font-style: normal;
-  font-size: min(0.875rem, 15px);
+  font-size: 13px;
   font-weight: 900;
+  line-height: 1;
+}
+.hud-stage:active,
+.hud-stage.is-press {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--gold) 30%, transparent),
+    0 0 0 color-mix(in srgb, var(--gold) 34%, #000),
+    0 1px 4px rgb(0 0 0 / 0.45);
 }
 .hud-stage:disabled {
   opacity: 0.55;
+  box-shadow: none;
 }
-/* 막대 3개: 이름 | 막대 | 수치. 수치는 칸 폭에 맞춰 줄고, 막대가 남은 폭을 쓴다 */
+/* 게이지 칸(44px 띠 안, R-090): 머리 줄(이름 · 수치) 위, 막대 아래 — 글자와 얇은 막대를 옆에 나란히 두지 않아 크기가 겨루지 않는다.
+   HP 머리 줄 = 'HP' · 89/120(왼쪽) … 30/30(오른쪽, 보호막 색). 그 아래 HP 막대 5px + 1px 틈 + 보호막 막대 3px = 한 몸 게이지(방패 그림 없음).
+   6px쯤 띄우고 XP 머리 줄 = 'LV 46'(왼쪽, XP 막대 = 다음 LV까지) … 3/5(오른쪽, 금색), 그 아래 XP 막대 3px.
+   오른쪽 열 수치(보호막 · XP)는 같은 칸이라 '/'가 한 세로선에 선다. 글자는 .hud-top 폭 기준(cqi), 막대는 남은 폭.
+   줄: 머리 10 | 3 | HP 5 | 1 | 보호막 3 | 나머지(약 6) | 머리 10 | 3 | XP 3 = 44px */
 .hud-bars {
   grid-area: bars;
+  align-self: stretch;
   display: grid;
-  grid-template-columns: auto minmax(16px, 1fr) auto;
-  align-items: center;
-  column-gap: 6px;
-  row-gap: 2px;
-  container-type: inline-size;
+  grid-template-columns: auto auto auto minmax(6px, 1fr) auto auto;
+  grid-template-rows: 10px 3px 5px 1px 3px minmax(0, 1fr) 10px 3px 3px;
+  gap: 0;
 }
-.hud-xp-line {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: auto auto minmax(16px, 1fr) auto;
-  align-items: center;
-  column-gap: 6px;
-}
-.hud-xp-line .hud-lv {
-  white-space: nowrap;
-  font-size: clamp(9px, 8.5cqi, 0.8125rem);
-}
-.hud-xp-line .hud-v {
-  min-width: 3.7em;
+.hud-xp-line,
+.hud-v {
+  display: contents;
 }
 .hud-k {
-  min-width: 1rem;
-  font-size: 0.625rem;
+  min-width: 0;
+  margin-right: 4px;
+  align-self: end;
+  font-size: 9px;
   font-weight: 800;
-  line-height: 1;
+  line-height: 10px;
   color: var(--muted);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
-.hud-k--icon {
-  display: grid;
-  color: var(--blue);
-}
-.hud-k--icon svg {
-  width: 0.95rem;
-  height: 0.95rem;
-}
-.hud-v {
-  justify-self: end;
-  font-size: clamp(9px, 8.5cqi, 0.75rem);
+.hud-v > span {
+  align-self: end;
+  font-size: clamp(9px, 3.1cqi, 0.6875rem);
   font-weight: 800;
-  line-height: 1.3;
+  line-height: 10px;
+  font-variant-numeric: tabular-nums;
 }
 .hud-v .of {
   color: var(--muted);
   font-weight: 600;
+}
+.hud-bars .bar {
+  grid-column: 1 / -1;
+  height: 100%;
+  border-radius: 99px;
+}
+/* 자리: 머리 줄 */
+.g-hk {
+  grid-area: 1 / 1;
+}
+.g-hc {
+  grid-area: 1 / 2;
+  justify-self: end;
+}
+.g-ho {
+  grid-area: 1 / 3;
+}
+.g-sc {
+  grid-area: 1 / 5;
+  justify-self: end;
+  color: var(--blue);
+}
+.hud-v .of.g-so {
+  grid-area: 1 / 6;
+  color: color-mix(in srgb, var(--blue) 60%, var(--muted));
+}
+.hud-lv.g-lv {
+  grid-area: 7 / 1 / 8 / 4;
+  align-self: end;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 10px;
+  white-space: nowrap;
+}
+.g-lv i {
+  margin: 0;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+.g-lv b {
+  font-size: clamp(9px, 3.1cqi, 0.6875rem);
+  line-height: 10px;
+}
+.g-xc {
+  grid-area: 7 / 5;
+  justify-self: end;
+  color: var(--gold);
+}
+.hud-v .of.g-xo {
+  grid-area: 7 / 6;
+  color: color-mix(in srgb, var(--gold) 55%, var(--muted));
+}
+/* 자리: 막대 */
+.hud-bars .g-hb {
+  grid-row: 3;
+}
+.hud-bars .g-sb {
+  grid-row: 5;
+}
+.hud-bars .g-xb {
+  grid-row: 9;
+}
+/* 현재값은 오른쪽 맞춤 — 보호막 · XP의 '/'가 같은 세로선 */
+.g-hc,
+.g-sc,
+.g-xc {
+  text-align: right;
+}
+/* 크게(R-091): 게이지 칸이 zoom으로 좁아지는 만큼 머리 줄 수치를 줄인다(긴 값 12,345/12,345 · 글자 150%에서도 한 줄) */
+body[data-hud='l'] .hud-v > span,
+body[data-hud='l'] .g-lv b {
+  font-size: clamp(8px, 2.6cqi, 0.6875rem);
+}
+/* 크게에서도 둘째 줄(배지 · 재화 · 버프 · Point · AUTO)은 보통과 같은 크기: 글자가 빽빽한 줄이라 zoom을 되돌려
+   칸이 좁아져 재화가 잘리지 않게 한다(첫 줄 STAGE · 게이지 · 시간 · 일시정지만 커진다) */
+body[data-hud='l'] .hud-row--2 {
+  zoom: calc(1 / var(--hud-z));
 }
 .bar {
   height: 6px;
@@ -2556,18 +2675,19 @@ body[data-gm] .menu-top {
 }
 .hud-time {
   grid-area: time;
-  font-size: clamp(1.25rem, 9.5cqi, 2.125rem);
+  align-self: center;
+  font-size: clamp(1.125rem, 7cqi, 1.5rem);
   font-weight: 800;
   line-height: 1;
   text-align: center;
 }
 /* 1시간이 넘으면 '1:02:47'로 길어져 작게 */
 .hud-time.is-long {
-  font-size: clamp(1rem, 6.4cqi, 1.5rem);
+  font-size: clamp(0.9375rem, 5.6cqi, 1.25rem);
 }
 .hud-pause {
   grid-area: pause;
-  align-self: start;
+  align-self: center;
   width: var(--tap);
   height: var(--tap);
   display: grid;
@@ -2575,6 +2695,17 @@ body[data-gm] .menu-top {
   border-radius: var(--r-md);
   border: 1px solid var(--line-strong);
   color: var(--ink-2);
+  /* STAGE와 같은 꼴의 누르는 버튼(중립색, R-090) */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 7%, var(--surface)), var(--surface) 65%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 2px 0 color-mix(in srgb, var(--line-strong) 55%, #000),
+    0 4px 10px rgb(0 0 0 / 0.4);
+  transition: transform 80ms var(--ease);
+}
+.hud-pause:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 .hud-pause svg {
   width: 20px;
@@ -2587,7 +2718,7 @@ body[data-gm] .menu-top {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 8px;
-  min-height: 26px;
+  min-height: 22px;
 }
 /* 정보 칸: 모드 배지 · 재화와 구매 버프 글자 · Point. 재화는 남은 폭에 맞춰 줄인다. */
 .hud-info {
@@ -2668,17 +2799,94 @@ body[data-gm] .menu-top {
   color: var(--c-sc);
 }
 .hud-point {
+  position: relative;
   justify-self: end;
-  font-size: clamp(10px, 4.2cqi, 1.0625rem);
+  font-size: clamp(12px, 5.2cqi, 1.125rem);
   font-weight: 800;
   color: var(--gold);
+  transform-origin: 100% 60%;
+}
+/* Point 튀어 오름(R-090): 보너스 구간(50만 G · 100만 B · 1000만 S, balance.pointBonus)을 넘는 순간 그 코인 색으로 튄다.
+   같은 숫자를 겹쳐 그린 ::after(data-v)를 그 색으로 불투명도만 올렸다 내리고 본체는 transform만(성능 규칙).
+   G는 Point와 같은 금색이라 흰빛이 섞인 금색으로 구분. 줄이기 · 기기 '동작 줄이기'면 튀지 않고 색만 */
+.hud-point::after {
+  content: attr(data-v);
+  position: absolute;
+  inset: 0;
+  color: var(--pb-c, var(--gold));
+  text-shadow: 0 0 10px color-mix(in srgb, var(--pb-c, var(--gold)) 70%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.hud-point.pb-g {
+  --pb-c: #fff1c2;
+}
+.hud-point.pb-b {
+  --pb-c: var(--c-blue);
+}
+.hud-point.pb-s {
+  --pb-c: var(--c-sc);
+}
+.hud-point.is-bounce {
+  animation: pb-bounce 0.9s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.hud-point.is-bounce::after {
+  animation: pb-glow 1.1s ease-out;
+}
+.hud-point.pb-s.is-bounce {
+  animation-duration: 1.2s;
+}
+.hud-point.pb-s.is-bounce::after {
+  animation-duration: 1.3s;
+}
+@keyframes pb-bounce {
+  0% {
+    transform: scale(1);
+  }
+  16% {
+    transform: translateY(-3px) scale(1.3);
+  }
+  34% {
+    transform: translateY(0) scale(0.94);
+  }
+  52% {
+    transform: translateY(-1px) scale(1.1);
+  }
+  72% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes pb-glow {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  10%,
+  65% {
+    opacity: 1;
+  }
+}
+body[data-fx='low'] .hud-point.is-bounce {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-point.is-bounce {
+    animation: none;
+  }
 }
 .hud-auto {
   width: var(--tap);
   height: var(--tap);
-  margin-block: -9px;
+  /* 누르는 상자 44px가 위 줄 일시정지(행 간격 6px 아래)와 겹치지 않게 위쪽은 간격만큼만 넓히고,
+     알약은 정보 줄 가운데로 내린다(위 8px = 줄 22px 가운데 − 알약 높이 절반) */
+  margin-block: -6px -16px;
   display: grid;
   place-items: center;
+  align-content: start;
+  padding-top: 8px;
   color: var(--muted);
 }
 .hud-auto span {
@@ -2736,7 +2944,8 @@ body[data-gm] .menu-top {
   color: var(--gold);
 }
 .hud-boss .bar {
-  height: 5px;
+  height: 4px;
+  border-radius: 99px;
 }
 .hud-boss .bar i {
   background: var(--gold);
@@ -3085,10 +3294,24 @@ body[data-pad='left'] .action-row {
   height: 54px;
   border-radius: 12px;
   border: 1px solid var(--line-strong);
-  background: color-mix(in srgb, var(--action-bg) 87.84%, transparent);
+  /* 위 안쪽 빛 + 아래 2px 턱(제 색의 어두운 쪽) + 누르면 2px 내려감(R-090, STAGE와 같은 꼴) */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, currentColor 14%, var(--action-bg)),
+    color-mix(in srgb, var(--action-bg) 87.84%, transparent) 70%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, currentColor 30%, transparent),
+    0 2px 0 color-mix(in srgb, currentColor 30%, #000),
+    0 5px 12px rgb(0 0 0 / 0.4);
+  transition: transform 80ms var(--ease);
   font-size: var(--fs-md);
   font-weight: 800;
   line-height: 1.15;
+}
+.action:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, currentColor 22%, transparent);
 }
 .action strong,
 .action small {
@@ -3863,6 +4086,33 @@ body[data-fx='low'] .boss-warn.is-on {
 .setting-list + .setting-list {
   margin-top: -4px;
 }
+/* 설정 창 조율(R-091, 'HUD 크기' 줄 +44px 흡수): 384×802 · 시험 경로 GM 줄 · 전체 화면(위 9px)까지 스크롤 없이.
+   ① 버전 글자를 제목 줄 오른쪽으로(아래 안내 줄은 전체 화면 실패 안내가 있을 때만 보임) ② 두 묶음 사이 틈 대신 굵은 선 하나
+   ③ 창 안쪽 여백 · 칸 사이 16 · 12 → 12 · 8px ④ 선택 칸 너비 하나(오른쪽 끝 · 왼쪽 끝이 한 줄로 섬) */
+#settings-dialog {
+  padding: var(--sp-3) var(--sp-4);
+  gap: 8px;
+}
+#settings-dialog .settings-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+#settings-dialog .settings-ver {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+#settings-dialog .setting-list + .setting-list {
+  margin-top: -8px;
+  border-top: 2px solid var(--line-strong);
+}
+#settings-dialog #render-note:empty {
+  display: none;
+}
+#settings-dialog .setting-row select {
+  width: min(11em, 60%);
+}
 /* 버튼 줄 3칸(전체 화면 · 도움말 · 팁 다시 보기): 좁거나 글자가 크면 두 줄로 */
 .btn-row--3 {
   grid-template-columns: repeat(auto-fit, minmax(5.8em, 1fr));
@@ -4067,6 +4317,7 @@ body[data-fx='low'] .boss-warn.is-on {
     grid-template-areas:
       'stage bars time info tog pause'
       'stage bars time boss tog pause';
+    grid-template-rows: auto auto;
     column-gap: 10px;
     row-gap: 2px;
     padding: 5px 8px;
@@ -4076,6 +4327,7 @@ body[data-fx='low'] .boss-warn.is-on {
     margin: -5px -8px;
   }
   .hud-stage {
+    height: auto;
     min-height: var(--tap);
     padding: 2px 0;
   }
@@ -4089,20 +4341,33 @@ body[data-fx='low'] .boss-warn.is-on {
   .hud-stage i {
     font-size: min(0.75rem, 13px);
   }
+  /* 가로: 게이지 칸은 막대 셋 + LV만(머리 줄 글자 · 수치는 숨김) */
   .hud-bars {
     grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    row-gap: 2px;
+    align-content: center;
   }
-  .hud-k {
-    font-size: min(0.5625rem, 10px);
+  .hud-bars .g-hb {
+    grid-row: 1;
   }
-  .hud-k--icon svg {
-    width: 0.8rem;
-    height: 0.8rem;
+  .hud-bars .g-sb {
+    grid-row: 2;
   }
-  .hud-v {
+  .hud-bars .g-xb {
+    grid-row: 3;
+    grid-column: 2;
+  }
+  .hud-bars .hud-k,
+  .hud-bars .hud-v > span {
     display: none;
   }
-  .bar {
+  .hud-lv.g-lv {
+    grid-area: 3 / 1;
+    margin-right: 6px;
+  }
+  .hud-bars .bar {
     height: 4px;
   }
   .hud-time {
@@ -4124,6 +4389,11 @@ body[data-fx='low'] .boss-warn.is-on {
   .hud-auto {
     grid-area: tog;
     margin: 0;
+    padding-top: 0;
+    align-content: center;
+  }
+  .hud-point {
+    font-size: clamp(10px, 4.2cqi, 1.0625rem);
   }
   .hud-bossline {
     grid-area: boss;
@@ -4131,6 +4401,8 @@ body[data-fx='low'] .boss-warn.is-on {
     min-height: 14px;
     margin: 0;
     font-size: min(0.625rem, 11px);
+    /* 보스 · CHAIN 글자 줄 높이가 14px를 넘어 덩어리가 1px 커지지 않게(R-090: STAGE가 낮아져 여유가 없어짐) */
+    line-height: 1.2;
   }
   .hud-boss {
     grid-template-columns: auto minmax(0, 1fr);
@@ -4515,7 +4787,7 @@ body[data-fx='low'] .boss-warn.is-on {
     </div>
 
     <div id="hud" class="hud" hidden>
-      <!-- 위 한 덩어리(R-029): 1줄 STAGE | 막대 3개 | 시간 | 일시정지, 2줄 배지 · LV · 재화 · Point · AUTO,
+      <!-- 위 한 덩어리(R-029): 1줄 STAGE | 게이지 칸(HP · 보호막 · LV · XP) | 시간 | 일시정지, 2줄 배지 · LV · 재화 · Point · AUTO,
            그 아래 보스 줄 · CHAIN(가로 화면은 덩어리 안 아래 줄). 판(.hud-panel)은 배경만 그리는 칸이다. -->
       <header class="hud-top">
         <i class="hud-panel" aria-hidden="true"></i>
@@ -4529,32 +4801,25 @@ body[data-fx='low'] .boss-warn.is-on {
           <small>STAGE</small><b class="num" id="stage-text">1</b><i aria-hidden="true">↑</i>
         </button>
         <div class="hud-cell hud-bars" data-area="H-BARS" role="group" aria-label="기체 상태">
-          <span class="hud-k">HP</span>
-          <div class="bar bar--hp" id="hp-bar"><i id="health-fill"></i></div>
+          <span class="hud-k g-hk">HP</span>
+          <div class="bar bar--hp g-hb" id="hp-bar"><i id="health-fill"></i></div>
           <b class="hud-v num"
-            ><span id="hp-cur">100</span><span class="of">/<span id="hp-max">100</span></span></b
+            ><span class="g-hc" id="hp-cur">100</span
+            ><span class="of g-ho">/<span id="hp-max">100</span></span></b
           >
-          <span class="hud-k hud-k--icon" role="img" aria-label="보호막"
-            ><svg viewBox="0 0 16 16" aria-hidden="true">
-              <path
-                d="M8 1.6 13.4 3.7v3.9c0 3.2-2.2 5.6-5.4 6.8-3.2-1.2-5.4-3.6-5.4-6.8V3.7z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linejoin="round"
-              /></svg
-          ></span>
-          <div class="bar bar--shield"><i id="shield-fill"></i></div>
+          <div class="bar bar--shield g-sb" role="img" aria-label="보호막">
+            <i id="shield-fill"></i>
+          </div>
           <b class="hud-v num"
-            ><span id="shield-cur">0</span
-            ><span class="of" id="shield-of">/<span id="shield-max">0</span></span></b
+            ><span class="g-sc" id="shield-cur">0</span
+            ><span class="of g-so" id="shield-of">/<span id="shield-max">0</span></span></b
           >
           <div class="hud-xp-line">
-            <span class="hud-lv num"><i>LV</i><b id="level-num">1</b></span>
-            <span class="hud-k">XP</span>
-            <div class="bar bar--xp"><i id="xp-fill"></i></div>
+            <span class="hud-lv g-lv num"><i>LV</i><b id="level-num">1</b></span>
+            <div class="bar bar--xp g-xb" role="img" aria-label="XP"><i id="xp-fill"></i></div>
             <b class="hud-v num"
-              ><span id="xp-cur">0</span><span class="of">/<span id="xp-max">5</span></span></b
+              ><span class="g-xc" id="xp-cur">0</span
+              ><span class="of g-xo">/<span id="xp-max">5</span></span></b
             >
           </div>
         </div>
@@ -4726,13 +4991,23 @@ body[data-fx='low'] .boss-warn.is-on {
 
     <dialog id="settings-dialog" class="dialog" data-area="O-SETTINGS" aria-labelledby="settings-title">
       <div class="eyebrow">SETTINGS</div>
-      <h2 id="settings-title">화면 · 소리 설정</h2>
+      <div class="settings-head">
+        <h2 id="settings-title">화면 · 소리 설정</h2>
+        <span class="settings-ver num" id="settings-ver"></span>
+      </div>
       <!-- 두 묶음(R-073 설정 창 조율): 화면 | 소리 · 진동, 줄 44px · 가는 선. 384×802에서 스크롤 없이 -->
       <div class="setting-list" role="group" aria-label="화면">
         <label class="setting-row" for="view-setting"
           >시야<select id="view-setting">
             <option value="wide">넓게 · 기본</option>
             <option value="standard">표준</option>
+          </select></label
+        >
+        <label class="setting-row" for="hud-setting"
+          >HUD 크기<select id="hud-setting">
+            <option value="s">작게</option>
+            <option value="m">보통 · 기본</option>
+            <option value="l">크게</option>
           </select></label
         >
         <label class="setting-row" for="pad-setting"
@@ -4751,9 +5026,9 @@ body[data-fx='low'] .boss-warn.is-on {
         >
         <label class="setting-row" for="quality-setting"
           >이펙트<select id="quality-setting">
-            <option value="auto">자동</option>
-            <option value="high">풍부하게</option>
-            <option value="low">가볍게</option>
+            <option value="auto">자동 · 기본</option>
+            <option value="high">풍부하게 · 기체 빛</option>
+            <option value="low">가볍게 · 빛 끔</option>
           </select></label
         >
         <label class="setting-row" for="motion-setting"
@@ -12801,10 +13076,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       view: '시야',
       viewWide: '넓게 · 기본',
       viewStandard: '표준',
+      // HUD 크기(R-091): 위 덩어리 · 아래 행동 줄의 크기. 보통이 기본
+      hud: 'HUD 크기',
+      hudSmall: '작게',
+      hudMedium: '보통 · 기본',
+      hudLarge: '크게',
       effects: '이펙트',
-      effectsAuto: '자동',
-      effectsHigh: '풍부하게',
-      effectsLow: '가볍게',
+      effectsAuto: '자동 · 기본',
+      effectsHigh: '풍부하게 · 기체 빛',
+      effectsLow: '가볍게 · 빛 끔',
       // 배경음악(R-051, 이 기기 설정, 기본 켜짐). '효과음'과 따로 켜고 끈다
       music: '음악',
       sound: '효과음',
@@ -15220,7 +15500,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.8.0',
+  const VERSION = '4.9.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -19231,6 +19511,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   // 전투 연출 값(R-056, 임시값: 플레이 피드백으로 조정). 설정 '흔들림 · 번쩍임 줄이기'(motion 꺼짐)면 흔들림 · 반짝 없음
   const FX = {
+    // 기체 빛 고리 품질(방향 수, R-089)
+    glow: { quality: 0.3 },
     // 화면 흔들림 [세기(화면 px), 길이(초)]: 세기는 남은 시간만큼 줄어들고 방향은 무작위
     hurtShake: [6, 0.18],
     novaShake: [4, 0.2],
@@ -19345,8 +19627,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           outerStrength: 0.7,
           innerStrength: 0.2,
           color: this.pal.glow,
-          quality: 0.15,
+          quality: FX.glow.quality,
         });
+        // 필터 해상도 1이면 기체 본체까지 저해상도로 그려 점 무늬가 된다(R-089) → 그림 해상도를 따른다
+        this.glow.resolution = 'inherit';
       } catch (e) {
         this.mode = '2d';
         const next = this.canvas.cloneNode();
@@ -23863,7 +24147,9 @@ let canvas = $('arena'),
   runCats = {},
   recSelect = null,
   // 획득 스킬 줄을 마지막으로 그린 스택(바뀔 때만 다시 그림)
-  skillKey = '';
+  skillKey = '',
+  // Point 보너스 구간을 마지막으로 넘은 횟수 { g, b, s }(R-090 튀어 오름, 판이 새로 시작해 줄면 다시 맞춘다)
+  pbLast = { g: 0, b: 0, s: 0 };
 const preview = new Neon.Game();
 // S 출격 시작 연출(R-048): { t: 화면 시간(초), step }. 그동안 엔진은 'paused'라 시간 · 기록 · 보상 시계가 멈춘다.
 let intro = null;
@@ -23885,6 +24171,8 @@ let prefs = {
     pad: 'center',
     // 알림 위치(R-064): 'center'(기본) | 'left' | 'right'. 이 기기 설정(백업 대상 아님)
     alertPos: 'center',
+    // HUD 크기(R-091): 's' | 'm'(기본) | 'l'. 이 기기 설정(백업 대상 아님)
+    hud: 'm',
     auto: false,
     autoGold: false,
     // 출격 버프 스위치(R-062): { regen, revive } 기본 꺼짐. 이 기기 설정(백업 대상 아님), 비용은 출격할 때 낸다
@@ -23910,6 +24198,7 @@ try {
     prefs.vibrate = p.vibrate !== false;
     prefs.pad = ['center', 'right', 'left'].includes(p.pad) ? p.pad : 'center';
     prefs.alertPos = ['center', 'left', 'right'].includes(p.alertPos) ? p.alertPos : 'center';
+    prefs.hud = ['s', 'm', 'l'].includes(p.hud) ? p.hud : 'm';
     prefs.auto = p.auto === true;
     prefs.autoGold = p.autoGold === true;
     prefs.buffs = Object.fromEntries(NeonProgress.BUFFS.map(id => [id, p.buffs?.[id] === true]));
@@ -23934,6 +24223,10 @@ for (const type of ['pointerup', 'touchend', 'click', 'keydown'])
 // 버튼 위치는 body의 data-pad로 HUD 배치 규칙(ui.css)을 고른다
 function applyPad() {
   if (document.body.dataset.pad !== prefs.pad) document.body.dataset.pad = prefs.pad;
+}
+// HUD 크기(R-091): body의 data-hud로 ui.css가 위 덩어리 · 아래 행동 줄의 배율을 고른다
+function applyHud() {
+  if (document.body.dataset.hud !== prefs.hud) document.body.dataset.hud = prefs.hud;
 }
 // 설정 '흔들림 · 번쩍임 줄이기'(R-056): body의 data-fx로 CSS 연출을 고른다('low'면 끄거나 약하게). 저장 키는 motion
 function applyFx() {
@@ -24886,12 +25179,14 @@ function settingsDialog() {
   $('numbers-setting').checked = prefs.numbers;
   $('vibrate-setting').checked = prefs.vibrate;
   $('pad-setting').value = prefs.pad;
+  $('hud-setting').value = prefs.hud;
   $('alert-setting').value = prefs.alertPos;
   $('gm-hide-setting').checked = prefs.gmHide;
   $('tips-setting').checked = prefs.tips.on;
   // '팁 다시 보기'는 창을 열 때마다 다시 누를 수 있다(누르면 '다음 판부터'로 잠김)
   $('tips-again').disabled = false;
   text('tips-again', T.tips.again);
+  text('render-note', '');
   $('settings-dialog').showModal();
 }
 function resize() {
@@ -24909,6 +25204,19 @@ function resize() {
 function input() {
   return controls?.read() || { x: 0, y: 0, dash: false, nova: false, aim: null };
 }
+// Point가 보너스 구간(G · B · S)을 넘는 순간 그 코인 색으로 튀어 오른다. 한 번에 여러 구간이면 가장 큰 것(S > B > G) 하나.
+// 값이 바뀔 때만 부른다. 일시정지 · 결과 중에는 튀지 않는다(R-090)
+function pointBounce() {
+  const b = NeonProgress.pointBonus(g.score),
+    last = pbLast,
+    kind = b.super > last.s ? 's' : b.blue > last.b ? 'b' : b.gold > last.g ? 'g' : '';
+  pbLast = { g: b.gold, b: b.blue, s: b.super };
+  if (!kind || g.mode !== 'playing') return;
+  const el = $('score');
+  el.classList.remove('pb-g', 'pb-b', 'pb-s', 'is-bounce');
+  void el.offsetWidth;
+  el.classList.add('pb-' + kind, 'is-bounce');
+}
 function updateHUD() {
   const p = g.p;
   text('hp-cur', num(Math.ceil(p.hp)));
@@ -24925,7 +25233,12 @@ function updateHUD() {
   const longTime = g.time >= 3600;
   if ($('timer').classList.contains('is-long') !== longTime) $('timer').classList.toggle('is-long', longTime);
   text('stage-text', g.stage);
-  text('score', num(g.score));
+  const scoreText = num(g.score);
+  if ($('score').textContent !== scoreText) {
+    $('score').textContent = scoreText;
+    $('score').dataset.v = scoreText;
+    pointBounce();
+  }
   text('level-num', p.level);
   show('hud-buff-regen', g.buffList.includes('regen'));
   show('hud-buff-revive', g.buffList.includes('revive'));
@@ -25571,6 +25884,10 @@ function bind() {
   // STAGE 버튼은 대시 · 충격파처럼 누르는 순간 반응한다(이동 중 다른 손가락으로 동시 터치, input.js)
   for (const id of ['dash', 'nova'])
     $(id + '-button').addEventListener('animationend', e => e.currentTarget.classList.remove('is-flash'));
+  // Point 튀어 오름(R-090): 빛(::after) 애니메이션이 가장 길어 그 끝에서 클래스를 뗀다
+  $('score').addEventListener('animationend', e => {
+    if (e.animationName === 'pb-glow') e.currentTarget.classList.remove('is-bounce');
+  });
   $('settings').onclick = settingsDialog;
   $('pause-settings').onclick = settingsDialog;
   $('mode-open').onclick = openModeSheet;
@@ -25591,12 +25908,14 @@ function bind() {
     prefs.numbers = $('numbers-setting').checked;
     prefs.vibrate = $('vibrate-setting').checked;
     prefs.pad = $('pad-setting').value;
+    prefs.hud = $('hud-setting').value;
     prefs.alertPos = $('alert-setting').value;
     prefs.gmHide = $('gm-hide-setting').checked;
     // 팁 보기(R-073): 끄면 지금 판의 TIP 줄 · 할 일 칩 · 가리킴도 바로 멈춘다(결과 팁은 tipsOn으로)
     prefs.tips.on = $('tips-setting').checked;
     if (!prefs.tips.on) stopTips();
     applyPad();
+    applyHud();
     applyFx();
     applyAlerts();
     renderGmEntry();
@@ -26600,6 +26919,7 @@ async function saveNote() {
 async function boot() {
   NeonBadges.ensureDefs(document);
   applyPad();
+  applyHud();
   applyFx();
   applyAlerts();
   await profile.ready;
@@ -26623,7 +26943,8 @@ async function boot() {
   renderer = await new NeonRenderer(canvas).init();
   canvas = renderer.canvas;
   resize();
-  text('render-note', T.msg.renderNote(Neon.VERSION, renderer.mode === '2d'));
+  // 버전은 설정 창 제목 줄 오른쪽에, 아래 안내 줄(#render-note)은 전체 화면 · 부팅 실패 안내가 있을 때만 쓴다(R-091)
+  text('settings-ver', T.msg.renderNote(Neon.VERSION, renderer.mode === '2d'));
   bind();
   registerTools();
   if (/[?&]touch\b/.test(location.search)) touchDiagnostics();

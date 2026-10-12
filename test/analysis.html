@@ -242,6 +242,8 @@
 
   /* 터치 영역 */
   --tap: 44px;
+  /* HUD 크기(R-091): body[data-hud] s | m(기본) | l. 위 덩어리 · 아래 행동 줄에만 zoom으로 걸린다(ui.css) */
+  --hud-z: 1;
   --tap-lg: 48px;
   --action-h: 56px;
   --action-w: 72px;
@@ -459,6 +461,18 @@ body[data-fx='low'] .nb-shine,
 body[data-fx='low'] .nb-aura,
 body[data-fx='low'] .nb-spark {
   animation: none !important;
+}
+body[data-hud='s'] {
+  --hud-z: 0.9;
+}
+body[data-hud='l'] {
+  --hud-z: 1.15;
+}
+/* 가로 화면은 알림 기준선 위에 들어가야 해서 크게를 적용하지 않는다(PC · 가로는 깨지지 않는지만) */
+@media (orientation: landscape) and (max-height: 520px) {
+  body[data-hud='l'] {
+    --hud-z: 1;
+  }
 }
 
     </style>
@@ -5500,10 +5514,15 @@ return Plotly;
       view: '시야',
       viewWide: '넓게 · 기본',
       viewStandard: '표준',
+      // HUD 크기(R-091): 위 덩어리 · 아래 행동 줄의 크기. 보통이 기본
+      hud: 'HUD 크기',
+      hudSmall: '작게',
+      hudMedium: '보통 · 기본',
+      hudLarge: '크게',
       effects: '이펙트',
-      effectsAuto: '자동',
-      effectsHigh: '풍부하게',
-      effectsLow: '가볍게',
+      effectsAuto: '자동 · 기본',
+      effectsHigh: '풍부하게 · 기체 빛',
+      effectsLow: '가볍게 · 빛 끔',
       // 배경음악(R-051, 이 기기 설정, 기본 켜짐). '효과음'과 따로 켜고 끈다
       music: '음악',
       sound: '효과음',
