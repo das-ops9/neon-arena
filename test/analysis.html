@@ -5976,7 +5976,12 @@ return Plotly;
       novaUse: n => '발동 ' + n,
       novaEffect: abilities.nova + ' 실제 효과',
       novaEffectValue: (kills, cleared) => '처치 ' + kills + ' · 탄환 제거 ' + cleared,
-      fps: fps => '평균 ' + (fps || '미기록') + ' FPS · 저장한 로그로 사용 효과를 확인할 수 있습니다.',
+      fps: (fps, slow) =>
+        '평균 ' +
+        (fps || '미기록') +
+        ' FPS · 느린 프레임 ' +
+        (slow ?? 0) +
+        ' · 저장한 로그로 사용 효과를 확인할 수 있습니다.',
     },
     stats: {
       time: '생존',

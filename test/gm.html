@@ -13538,7 +13538,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       novaUse: n => '발동 ' + n,
       novaEffect: abilities.nova + ' 실제 효과',
       novaEffectValue: (kills, cleared) => '처치 ' + kills + ' · 탄환 제거 ' + cleared,
-      fps: fps => '평균 ' + (fps || '미기록') + ' FPS · 저장한 로그로 사용 효과를 확인할 수 있습니다.',
+      fps: (fps, slow) =>
+        '평균 ' +
+        (fps || '미기록') +
+        ' FPS · 느린 프레임 ' +
+        (slow ?? 0) +
+        ' · 저장한 로그로 사용 효과를 확인할 수 있습니다.',
     },
     stats: {
       time: '생존',
@@ -15500,7 +15505,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.9.0',
+  const VERSION = '4.9.1',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -19511,6 +19516,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   // 전투 연출 값(R-056, 임시값: 플레이 피드백으로 조정). 설정 '흔들림 · 번쩍임 줄이기'(motion 꺼짐)면 흔들림 · 반짝 없음
   const FX = {
+    // 그림 해상도 상한(R-092): 기기 배율과 이 값 중 작은 쪽. 1.75 → 2.5 시험(폰 FPS · perf --gpu로 판정, 못 맞추면 2.25 → 1.75)
+    resMax: 2.5,
     // 기체 빛 고리 품질(방향 수, R-089)
     glow: { quality: 0.3 },
     // 화면 흔들림 [세기(화면 px), 길이(초)]: 세기는 남은 시간만큼 줄어들고 방향은 무작위
@@ -19597,7 +19604,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           preference: 'webgl',
           background: this.pal.baseBg,
           antialias: true,
-          resolution: Math.min(devicePixelRatio || 1, 1.75),
+          resolution: Math.min(devicePixelRatio || 1, FX.resMax),
           autoDensity: true,
           autoStart: false,
         });
@@ -21950,7 +21957,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       A.novaEffectValue(ne.kills || 0, ne.projectilesCleared || 0) +
       '</small></li>' +
       '</ul><p class="overlay-note">' +
-      A.fps(s.avgFps) +
+      A.fps(s.avgFps, s.slowFrames) +
       '</p></details>'
     );
   }
