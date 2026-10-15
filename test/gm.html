@@ -58,6 +58,7 @@
   --lilac: #b895ff;
   --on-cyan: #04201c;
   --on-danger: #1a0508;
+  --on-white: var(--bg); /* 흰 바탕 위 글자(결과 NEW BEST) */
   --blue-ink: #cfe7ff;
   --violet-ink: #e9ddff;
   --danger-ink: #ffd0d5;
@@ -2765,6 +2766,11 @@ body[data-hud='l'] .hud-row--2 {
 .hud-buff--revive {
   color: var(--gold);
 }
+/* 1회 부활을 쓴 판: 흐린 회색으로 꺼진 모습(I-80) */
+.hud-buff--revive.is-used {
+  color: var(--muted);
+  opacity: 0.55;
+}
 .hud-sub {
   flex: 1 1 auto;
   min-width: 0;
@@ -3946,8 +3952,11 @@ body[data-fx='low'] .boss-warn.is-on {
   text-align: center;
 }
 .notice--best {
-  border-color: var(--gold);
-  color: var(--gold);
+  /* 흰 바탕 · 진한 글자: 바로 위 금색 점수 · 보상 줄과 구분(I-79) */
+  border-color: var(--white);
+  background: var(--white);
+  color: var(--on-white);
+  font-weight: 850;
 }
 /* 결과: 이 판에서 열린 모드 · 히든 탭(R-024 · R-026) */
 .result-unlock {
@@ -15505,7 +15514,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.9.1',
+  const VERSION = '4.9.2',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -25249,6 +25258,9 @@ function updateHUD() {
   text('level-num', p.level);
   show('hud-buff-regen', g.buffList.includes('regen'));
   show('hud-buff-revive', g.buffList.includes('revive'));
+  const reviveUsed = g.revived === true;
+  if ($('hud-buff-revive').classList.contains('is-used') !== reviveUsed)
+    $('hud-buff-revive').classList.toggle('is-used', reviveUsed);
   show('hud-buffs', g.buffList.includes('regen') || g.buffList.includes('revive'));
   setP($('xp-fill'), p.xp / p.nextXP);
   text('xp-cur', num(Math.floor(p.xp)));
