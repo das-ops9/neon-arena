@@ -195,6 +195,23 @@
   --cv-bcoin-ink: var(--blue-ink);
   --cv-heal: var(--heal);
   --cv-revive: var(--gold);
+  /* 도색(R-108): 몸체 선 · 빛(밝은 색) + 몸체 채움(짙은 색). 기체 가운데 흰 점은 그대로.
+     구분: 칼(시안 + 흰 심) · 적 탄(빨강 · 주황)과 겹치지 않게 빨강 · 주황 계열 없음.
+     노랑 = 레몬(54°) ↔ 경험치 젬 옅은 금색 · 보스 금색: 채도 · 밝기로 가름.
+     파랑 = 코발트(229°) ↔ 보호막 · B 코인 하늘색(208°): 색상을 20° 넘게 띄움.
+     보라 = 짙은 보라(270°, 채도 높음) ↔ S 코인 · 충격파 · 사수 연보라(채도 낮음): 채도로 가름 */
+  --paint-yellow: #ffe23a;
+  --paint-yellow-fill: #3a3108;
+  --paint-blue: #4f6bff;
+  --paint-blue-fill: #111c55;
+  --paint-violet: #a855ff;
+  --paint-violet-fill: #2a1250;
+  --cv-paint-yellow: var(--paint-yellow);
+  --cv-paint-yellow-fill: var(--paint-yellow-fill);
+  --cv-paint-blue: var(--paint-blue);
+  --cv-paint-blue-fill: var(--paint-blue-fill);
+  --cv-paint-violet: var(--paint-violet);
+  --cv-paint-violet-fill: var(--paint-violet-fill);
 
   /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
   --an-bg: #090f18;
@@ -4759,6 +4776,21 @@ return Plotly;
         pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
       },
     },
+    // 격납고 도색(R-106 · R-107, PLANNING-world 6-4 · Q195 a): 영구 스킬을 모두 MAX로 하면 열린다(opened 'hangar').
+    // 기체마다 first 색을 먼저 사고 나머지는 아무 순서. price: g G · b B · s S. 사면 바로 입히고, 입힌 색 하나로 출격한다(출격 순간 고정).
+    // 입힌 색 능력(그 기체 판만): start 기체 시작 스킬마다 더하는 스택(출처 '도색') · regen 초당 HP(시간 압박에서 멈춤) · revive 부활 수.
+    // 모음(세 기체 모두 그 색을 가짐, 입힌 색과 무관): noteCost 한 줄 남기기 글자당 G · goldX 분당 G 배율 · shieldX 보호막 재생 배율 ·
+    // scMake S 제작 한 번에 만드는 S · revive 부활 수. 한 판 부활은 reviveMax까지(1회 부활 버프 + 도색 + 모음)
+    paint: {
+      colors: ['yellow', 'blue', 'violet'],
+      first: 'yellow',
+      price: { yellow: { g: 5000 }, blue: { b: 500 }, violet: { s: 300 } },
+      start: { yellow: 1, blue: 3, violet: 3 },
+      regen: { blue: 1 },
+      revive: { violet: 1 },
+      sets: { yellow: { noteCost: 5, goldX: 2 }, blue: { shieldX: 2, scMake: 2 }, violet: { revive: 1 } },
+      reviveMax: 3,
+    },
     // Insane S 코인(R-023 · R-061): mode 판(일반 · S 출격)에서 세 출처로 1개씩 생긴다. 크기 r, 자석 없이 기체가
     // 닿아야 1 S, 줍지 않으면 판 끝까지 남는다. ① 전투 시계 every초마다 기체에서 near~far 거리의 무작위 방향
     // ② 레벨업마다 levelChance 확률(시드 · LV 해시) ③ 보스 웨이브를 다 잡을 때마다(판당 bossMax).
@@ -4849,7 +4881,7 @@ return Plotly;
 
   // ── 이름 규칙(I-06, Q112). TERMS.md 맨 위 '이름 규칙'이 이 문장들이다 ──
   const nameRules = [
-    '고유 이름(모드 · 기체 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
+    '고유 이름(모드 · 기체 · 도색 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
     '처음 하는 사람이 Help 없이 이름만 보고 효과를 안다. 그 위에 우주 · 네온 느낌을 한 겹(화력 · 부스터 · 궤도 칼날).',
     '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음).',
     '겹치지 않게: 다른 것에 같은 말을 쓰지 않는다(Super 모드 ↔ Super Coin → Star Coin).',
@@ -4949,6 +4981,14 @@ return Plotly;
         innerStroke: 1.1,
       },
     },
+  };
+  // 격납고 도색(R-106, 편집장 2026-10-16): 색 이름은 고유 이름이라 영어(기체 이름과 같은 꼴, 이름 규칙 1).
+  // 키 = balance paint.colors id, base = 도색 없음. 화면은 이름 옆에 늘 그 색 견본을 둔다(이름 규칙 2)
+  const paint = {
+    names: { base: '기본', yellow: 'FLARE', blue: 'FROST', violet: 'NEBULA' },
+    group: '도색',
+    sets: '도색 모음',
+    setName: c => paint.names[c] + ' 모음',
   };
   const craftName = id => crafts[id]?.name || '';
   // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · color: 카드 표기(값은 tokens.css --sk-<id>, R-054). 그림은 icons.js(R-097)
@@ -5055,7 +5095,15 @@ return Plotly;
     return ids.map(skillName).join('·') + ' +' + n + (start.multi ? ' (' + (1 + start.multi) + '발)' : '');
   }
   // 스택 출처
-  const sources = { craft: '기체', cat: '고양이', perma: '영구', prep: '준비', earned: '획득' };
+  // 키 순서 = 스킬 내역의 출처 순서. 도색(R-107)은 기체 다음
+  const sources = {
+    craft: '기체',
+    paint: '도색',
+    cat: '고양이',
+    perma: '영구',
+    prep: '준비',
+    earned: '획득',
+  };
   // 적. name: 화면 · short: 짧은 이름
   const enemies = {
     chaser: { name: '추적자', short: '추적' },
@@ -5311,7 +5359,13 @@ return Plotly;
           ? buffs[ids[0]].name + ' ' + (B().buffs[ids[0]].s ? SC : BL) + ' 부족 · 꺼짐'
           : buffs.tag + ' 재화 부족 · 꺼짐',
     },
-    revive: { major: true, tone: 'gold', sec: 4, text: () => buffs.revive.name },
+    // 부활이 둘 이상인 판(R-107)은 '부활 1/3'처럼 쓴 수 / 모두
+    revive: {
+      major: true,
+      tone: 'gold',
+      sec: 4,
+      text: (used, total) => (total >= 2 ? '부활 ' + used + '/' + total : buffs.revive.name),
+    },
     // 튜토리얼 줄(R-073): 시안 테두리 + 앞에 작은 표(k). 설명을 담으므로 '짧게' 규칙의 예외, 4초(coach.js RULE.sec)
     tip: { tone: 'tip', sec: 4, k: () => tips.k, text: id => tips.lines[id] || '' },
   };
@@ -5372,7 +5426,7 @@ return Plotly;
     grow: {
       title: '공통 성장',
       note: '산 만큼 모든 기체가 그 스킬을 갖고 출격합니다. 한 번에 +1, 스킬마다 MAX까지.',
-      // 아래 칸 3개 중 '준비 중' 두 칸(R-033)
+      // 아래 칸: 히든(넓게) 아래 한 줄에 격납고 | '준비 중'(R-033 → R-106)
       soon: '준비 중',
     },
     // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
@@ -5506,6 +5560,12 @@ return Plotly;
       cats: '고양이 Lv',
       unlocks: '해금',
       hidden: '히든 탭',
+      // 격납고(R-109): 열기 칸 · 도색 고르기(그대로 · 모두 가짐 · 없음)
+      hangar: '격납고',
+      paint: '도색',
+      paintKeep: '그대로',
+      paintAll: '모두 가짐',
+      paintNone: '없음',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
@@ -5714,17 +5774,33 @@ return Plotly;
         auto.short +
         ' 버튼으로 켜고 끕니다.',
       income: tier => '시간 코인 ' + tier + '단계 · 분당 ' + G + ' +1',
-      craftSC: coins.s.ko + ' 1개를 만들었습니다',
-      perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용',
+      // n = 한 번에 만든 수(파랑 모음이면 2, R-107)
+      craftSC: n => coins.s.ko + ' ' + n + '개를 만들었습니다 · ' + SC + ' +' + n,
+      // opened: 이 구매로 열린 문(영구 11개 MAX → 격납고, R-106)
+      perma: (id, price, opened) =>
+        skillName(id) +
+        ' 영구 +1 · ' +
+        price +
+        ' ' +
+        BL +
+        ' 사용' +
+        (opened?.includes('hangar') ? ' · 격납고 · 도색이 열렸습니다' : ''),
       needs_auto: auto.name + '를 먼저 사야 합니다.',
       sc_reserved: SC + ' 출격 준비에 예약된 ' + SC + '는 쓸 수 없습니다.',
       hidden_locked: '히든 탭이 아직 열리지 않았습니다.',
+      // 격납고 도색(R-106)
+      hangar_locked: '격납고가 아직 열리지 않았습니다.',
+      needs_first: () => '먼저 ' + paint.names[B().paint.first] + ' 도색을 사야 합니다.',
       locked: '먼저 해금해야 합니다.',
       // 산 직후 켜진 스위치가 바로 아래 카드에 보인다(문구 규칙 3)
       autoGold: () => '자동 ' + G + ' 습득을 샀습니다.',
       catUnlock: id => cats[id].name + ' 해금',
       catLevel: (id, lv) => cats[id].name + ' Lv' + lv,
       companion: id => (id ? cats[id].name + ' 동반' : '동반 해제'),
+      // 도색(R-106): 사면 바로 입힘 · 입히기 · 벗기(기본)
+      paintBuy: (craft, c) => craftName(craft) + ' ' + paint.names[c] + ' 도색 · 바로 입혔습니다',
+      paintWear: (craft, c) =>
+        c ? craftName(craft) + ' ' + paint.names[c] + ' 입힘' : craftName(craft) + ' 기본 색으로',
     },
     // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
     permaCapped: c =>
@@ -5815,6 +5891,8 @@ return Plotly;
         cats: '고양이',
         hidden: '히든 탭',
         autoGold: '자동 ' + G + ' 습득',
+        // 세 기체가 가진 도색 수 합(R-109)
+        paint: paint.group,
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -5893,6 +5971,15 @@ return Plotly;
       buffs.group +
       ' · ' +
       ids.map(id => (id === 'revive' && revived ? buffs.revive.used : buffs[id].name)).join(' · '),
+    // 도색 · 부활이 둘 이상인 판(R-108): '도색 FROST · HP 회복 · 부활 2/3'(입힌 색 · 낸 버프 · 쓴 부활 / 모두)
+    lookLine: (color, ids, used, total) =>
+      [
+        color && paint.group + ' ' + paint.names[color],
+        ...ids.map(id => buffs[id].name),
+        total > 0 && '부활 ' + used + '/' + total,
+      ]
+        .filter(Boolean)
+        .join(' · '),
     recordsEmpty: '아직 저장된 기록이 없습니다.',
     // 기록 탭 별표 · 선택 삭제(R-018)
     rec: {
@@ -5996,12 +6083,67 @@ return Plotly;
         B().cats.maxLevel +
         ' 고양이는 고르지 않아도 항상 효과를 줍니다.',
     },
+    // 격납고 · 도색(R-106): 성장 탭 아래 칸 · 격납고 화면(page-hangar). 색 이름은 paint.names, 값 · 효과는 balance paint
+    hangar: {
+      entry: '격납고 · 도색',
+      entryLocked: () => '🔒 성장 ' + Object.keys(E().perma).length + '개 MAX',
+      title: '격납고 · 도색',
+      back: '성장으로 돌아가기',
+      applied: '적용 중',
+      appliedNone: '도색 없음',
+      crafts: '기체',
+      list: id => craftName(id) + ' ' + paint.group,
+      worn: '입힘',
+      wear: '입히기',
+      needFirst: () => paint.names[B().paint.first] + ' 먼저',
+      base: '능력 없음 · 처음 색',
+      // 입힌 색 능력 한 줄: '부스터·속사 +3 · HP +1/초 · 부활 +1'(기체 시작 스킬 이름은 craftStart 그대로)
+      ability: (craft, c) => {
+        const P = B().paint;
+        if (!c || c === 'base') return view.hangar.base;
+        return [
+          craftStart(craft).replace(/\+\d+.*$/, '+' + P.start[c]),
+          P.regen[c] && 'HP +' + P.regen[c] + '/초',
+          P.revive[c] && '부활 +' + P.revive[c],
+        ]
+          .filter(Boolean)
+          .join(' · ');
+      },
+      price: c => {
+        const p = B().paint.price[c] || {};
+        return [p.g && num(p.g) + ' ' + G, p.b && num(p.b) + ' ' + BL, p.s && num(p.s) + ' ' + SC]
+          .filter(Boolean)
+          .join(' + ');
+      },
+      buyLabel: (craft, c) =>
+        craftName(craft) + ' ' + paint.names[c] + ' · ' + view.hangar.price(c) + '로 사기',
+      sets: paint.sets,
+      setsShort: '모음',
+      setsNote: '세 기체 모두 가지면',
+      // 모음 효과 한 줄(balance paint.sets) + 보라는 다음 히든 예고(월드는 15단계)
+      setEffect: c => {
+        const s = B().paint.sets[c] || {};
+        return [
+          s.noteCost !== undefined && '한 줄 남기기 글자당 ' + s.noteCost + ' ' + G,
+          s.goldX && '분당 ' + G + ' ×' + s.goldX,
+          s.shieldX && '보호막 재생 ×' + s.shieldX,
+          s.scMake && SC + ' 제작 한 번에 ' + s.scMake + '개',
+          s.revive && '부활 +' + s.revive,
+          c === 'violet' && '다음 히든 🔒',
+        ]
+          .filter(Boolean)
+          .join(' · ');
+      },
+      setCount: n => n + '/3',
+      note: '산 색 중 하나를 입혀 출격합니다. 입힌 색만 능력을 주고, 모음은 입힌 색과 상관없이 켜집니다.',
+    },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
     noSkills: '스킬이 없습니다.',
     stackCount: (total, kinds) => '· 총 ' + total + '스택 · ' + kinds + '종',
     prep: {
       craft: n => sources.craft + ' ' + n,
+      paint: n => sources.paint + ' ' + n,
       perma: n => sources.perma + ' ' + n,
       cap: (n, cap) => '방어 한도 ' + n + ' / ' + cap,
       full: '상한 도달 · 이후 피해',
@@ -6619,6 +6761,23 @@ return Plotly;
       'buffs.revive.s': [buffs.revive.name + ' 버프 비용(켜 두면 출격할 때마다)', SC, 'cost'],
       'buffs.revive.hp': ['부활 때 최대 HP의 이 비율로 일어남', '비율', 'easy'],
       'buffs.revive.invuln': ['부활 뒤 무적 시간', '초', 'easy'],
+      // 격납고 도색(R-106 · R-107)
+      'paint.price.yellow.g': [paint.names.yellow + ' 도색 값(기체마다, 먼저 사야 함)', G, 'cost'],
+      'paint.price.blue.b': [paint.names.blue + ' 도색 값(기체마다)', BL, 'cost'],
+      'paint.price.violet.s': [paint.names.violet + ' 도색 값(기체마다)', SC, 'cost'],
+      'paint.start.*': ['입힌 도색: 기체 시작 스킬마다 더하는 스택', '스택', 'easy'],
+      'paint.regen.blue': [paint.names.blue + ' 입힘: 초당 HP 회복(시간 압박 뒤 멈춤)', 'HP/초', 'easy'],
+      'paint.revive.violet': [paint.names.violet + ' 입힘: 부활 수', '번', 'easy'],
+      'paint.sets.yellow.noteCost': [paint.setName('yellow') + ': 한 줄 남기기 글자당 ' + G, G, 'cost'],
+      'paint.sets.yellow.goldX': [
+        paint.setName('yellow') + ': 분당 ' + G + ' 배율(시간 코인 + 모드 몫)',
+        '배',
+        'more',
+      ],
+      'paint.sets.blue.shieldX': [paint.setName('blue') + ': 보호막 재생 배율', '배', 'easy'],
+      'paint.sets.blue.scMake': [paint.setName('blue') + ': ' + SC + ' 제작 한 번에 만드는 수', '개', 'more'],
+      'paint.sets.violet.revive': [paint.setName('violet') + ': 부활 수', '번', 'easy'],
+      'paint.reviveMax': ['한 판 부활 최대(버프 + 도색 + 모음)', '번', 'easy'],
       'healZone.first': ['첫 회복 구역 시점(전투 시계)', '초', 'hard'],
       'healZone.every': ['회복 구역 간격', '초', 'hard'],
       'healZone.life': ['회복 구역 유지 시간', '초', 'easy'],
@@ -6959,6 +7118,10 @@ return Plotly;
           permaMax: '영구 스택 전부 MAX',
           buffRegen: () => buffs.regen.name + ' 버프 1번(' + buffs.cost('regen') + ')',
           buffRevive: () => buffs.revive.name + ' 버프 1번(' + buffs.cost('revive') + ')',
+          // 격납고 도색(R-109): 세 기체 모두 그 색(모음이 켜지는 값)
+          paintYellow: paint.names.yellow + ' ' + paint.group + ' 셋',
+          paintBlue: paint.names.blue + ' ' + paint.group + ' 셋',
+          paintViolet: paint.names.violet + ' ' + paint.group + ' 셋',
         },
         goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
         // 플레이 시간 표기: 'n분' · 'n시간 m분'
@@ -7387,6 +7550,15 @@ return Plotly;
               b.cats.maxLevel +
               ' 고양이의 효과가 출격 때 적용됩니다.',
           ],
+          // 격납고 도색(R-106)
+          [
+            view.hangar.title,
+            '영구 스킬을 모두 MAX로 하면 성장 탭 맨 아래에 열립니다. 기체마다 ' +
+              paint.names[b.paint.first] +
+              '부터 사서 입히면 시작 스킬 · HP 회복 · 부활이 붙고, 세 기체가 같은 색을 모두 가지면 ' +
+              paint.sets +
+              ' 효과가 켜집니다.',
+          ],
         ],
       },
       {
@@ -7748,6 +7920,20 @@ return Plotly;
               abilities.dash +
               ' 재충전).',
           },
+          {
+            term: view.hangar.title,
+            desc:
+              '영구 스킬을 모두 MAX로 하면 성장 탭 맨 아래에서 열린다. 기체마다 ' +
+              b.paint.colors.map(c => paint.names[c]).join(' · ') +
+              josa(paint.names[b.paint.colors[b.paint.colors.length - 1]], '을/를') +
+              ' 사서 하나를 입혀 출격한다. 입힌 색은 시작 스킬 · HP 회복 · 부활을, ' +
+              paint.sets +
+              '(세 기체 모두 그 색을 가짐)은 분당 ' +
+              G +
+              ' · 보호막 재생 · ' +
+              SC +
+              ' 제작 · 부활을 더한다.',
+          },
         ],
       },
       {
@@ -7956,6 +8142,7 @@ return Plotly;
     crafts,
     craftName,
     craftStart,
+    paint,
     skills,
     skillName,
     skillGroups,

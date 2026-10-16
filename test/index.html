@@ -202,6 +202,23 @@
   --cv-bcoin-ink: var(--blue-ink);
   --cv-heal: var(--heal);
   --cv-revive: var(--gold);
+  /* 도색(R-108): 몸체 선 · 빛(밝은 색) + 몸체 채움(짙은 색). 기체 가운데 흰 점은 그대로.
+     구분: 칼(시안 + 흰 심) · 적 탄(빨강 · 주황)과 겹치지 않게 빨강 · 주황 계열 없음.
+     노랑 = 레몬(54°) ↔ 경험치 젬 옅은 금색 · 보스 금색: 채도 · 밝기로 가름.
+     파랑 = 코발트(229°) ↔ 보호막 · B 코인 하늘색(208°): 색상을 20° 넘게 띄움.
+     보라 = 짙은 보라(270°, 채도 높음) ↔ S 코인 · 충격파 · 사수 연보라(채도 낮음): 채도로 가름 */
+  --paint-yellow: #ffe23a;
+  --paint-yellow-fill: #3a3108;
+  --paint-blue: #4f6bff;
+  --paint-blue-fill: #111c55;
+  --paint-violet: #a855ff;
+  --paint-violet-fill: #2a1250;
+  --cv-paint-yellow: var(--paint-yellow);
+  --cv-paint-yellow-fill: var(--paint-yellow-fill);
+  --cv-paint-blue: var(--paint-blue);
+  --cv-paint-blue-fill: var(--paint-blue-fill);
+  --cv-paint-violet: var(--paint-violet);
+  --cv-paint-violet-fill: var(--paint-violet-fill);
 
   /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
   --an-bg: #090f18;
@@ -1382,6 +1399,33 @@ body[data-fx='low'] .title-start::after {
   color: var(--ink-2);
   line-height: 1.35;
 }
+/* 기체 아이콘 = 입힌 색(R-108, .paint-craft 꼴) */
+.craft .craft-icon.paint-craft {
+  color: var(--pl);
+}
+/* 플레이 탭 기체 칸(R-108): 가진 모음 색마다 테두리 빛 한 겹(노랑 → 파랑 → 보라 바깥으로). 전투 화면 · 모드 배지 자리는 그대로.
+   파랑 · 보라 모음은 노랑을 먼저 사야 하므로 노랑이 늘 안쪽이다 */
+.area--craft[data-sets] {
+  box-shadow: var(--set-glow);
+}
+.area--craft[data-sets='yellow'] {
+  --set-glow: 0 0 0 1px var(--paint-yellow), 0 0 12px -2px var(--paint-yellow);
+}
+.area--craft[data-sets='yellow blue'] {
+  --set-glow:
+    0 0 0 1px var(--paint-yellow), 0 0 0 3px var(--bg), 0 0 0 4px var(--paint-blue),
+    0 0 14px -2px var(--paint-blue);
+}
+.area--craft[data-sets='yellow violet'] {
+  --set-glow:
+    0 0 0 1px var(--paint-yellow), 0 0 0 3px var(--bg), 0 0 0 4px var(--paint-violet),
+    0 0 14px -2px var(--paint-violet);
+}
+.area--craft[data-sets='yellow blue violet'] {
+  --set-glow:
+    0 0 0 1px var(--paint-yellow), 0 0 0 3px var(--bg), 0 0 0 4px var(--paint-blue), 0 0 0 6px var(--bg),
+    0 0 0 7px var(--paint-violet), 0 0 16px -2px var(--paint-violet);
+}
 
 /* 아래 고정(R-032): 최근 기록 + 출격. 본문을 덮지 않는 별도 행이라 가장 작은 화면에서도 보인다 */
 .launch-zone {
@@ -1648,9 +1692,10 @@ body[data-fx='low'] .title-start::after {
   border-color: var(--gold);
   color: var(--gold);
 }
-/* 아래 칸 3개: 히든 + '준비 중' 두 칸 */
+/* 아래 칸: 히든(넓게) 아래 한 줄에 격납고 | 준비 중(반씩, R-106) */
 .soon-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--sp-2);
 }
 .soon-cell {
@@ -2006,6 +2051,259 @@ p.cat-note {
   text-align: left;
 }
 
+/* 격납고 · 도색(R-106, 샘플 design/v5-stage11). 성장 탭 아래 칸: 히든(넓게) 아래 한 줄에 격납고 | 준비 중(반씩) */
+.hangar-entry {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-lg);
+  border: 1px dashed var(--line-strong);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+  color: var(--ink-2);
+  text-align: center;
+}
+.hangar-entry strong {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-3);
+}
+.hangar-entry small {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+.hangar-entry.is-open {
+  border-style: solid;
+  border-color: var(--cyan);
+  background: linear-gradient(160deg, var(--cyan-deep), var(--surface));
+  color: var(--cyan);
+}
+.hangar-entry .paint-crafts {
+  display: inline-flex;
+  gap: 6px;
+  margin-right: 6px;
+  vertical-align: -4px;
+}
+.hangar-entry .paint-crafts svg {
+  width: 18px;
+  height: 18px;
+}
+/* 도색 기체 그림(작은 아이콘 · 큰 그림 공통): 몸체 채움 --pf · 선 --pl, 기본 = 시안 */
+.paint-craft {
+  --pl: var(--cyan);
+  --pf: var(--cyan-deep);
+}
+.paint-craft .pc-body {
+  fill: var(--pf);
+  stroke: var(--pl);
+  stroke-linejoin: round;
+}
+.paint-craft .pc-line {
+  fill: none;
+  stroke: var(--pl);
+  opacity: 0.85;
+}
+.paint-craft .pc-core {
+  fill: var(--white);
+}
+.paint--yellow {
+  --pl: var(--paint-yellow);
+  --pf: var(--paint-yellow-fill);
+  --paint: var(--paint-yellow);
+}
+.paint--blue {
+  --pl: var(--paint-blue);
+  --pf: var(--paint-blue-fill);
+  --paint: var(--paint-blue);
+}
+.paint--violet {
+  --pl: var(--paint-violet);
+  --pf: var(--paint-violet-fill);
+  --paint: var(--paint-violet);
+}
+.paint--base {
+  --paint: var(--cyan);
+}
+/* 격납고 화면(page-hangar): 적용 중 줄 · 기체 셋 · 색 줄 넷 · 모음 세 줄 · 안내 */
+.hangar {
+  display: grid;
+  gap: 10px;
+}
+.paint-applied {
+  color: var(--paint);
+}
+.set-applied {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.set-applied .paint-dots i {
+  width: 9px;
+  height: 9px;
+}
+.hangar-crafts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.hangar-craft {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-height: 78px;
+  padding: var(--sp-2) 4px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.hangar-craft svg {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pl) 60%, transparent));
+}
+.hangar-craft strong {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-3);
+  letter-spacing: 0.03em;
+}
+.hangar-craft[aria-pressed='true'] {
+  border-color: var(--cyan);
+  background: linear-gradient(160deg, var(--cyan-deep), var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 33.33%, transparent);
+}
+/* 가진 색 점 셋(노랑 · 파랑 · 보라 순, 없으면 빈 테두리) */
+.paint-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.paint-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+}
+.paint-dots i.on {
+  border-color: var(--paint);
+  background: var(--paint);
+}
+.paint-list,
+.set-list {
+  display: grid;
+  gap: 6px;
+}
+.paint-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 54px;
+  padding: 6px var(--sp-2) 6px var(--sp-3);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.paint-row.is-worn {
+  border-color: var(--paint);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--paint) 33.33%, transparent);
+}
+.paint-row.is-locked {
+  opacity: 0.6;
+}
+.paint-swatch {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--pf, var(--cyan-deep)) 70%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--pl, var(--cyan)) 50%, transparent);
+}
+.paint-swatch svg {
+  width: 28px;
+  height: 28px;
+}
+.paint-main {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.paint-main h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-3);
+  color: var(--paint);
+}
+.paint-main p {
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+  line-height: 1.35;
+}
+.paint-tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-3);
+  color: var(--bg);
+  background: var(--paint);
+}
+.paint-btn {
+  min-width: 84px;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-sm);
+}
+.paint-btn small {
+  display: block;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-1);
+  opacity: 0.8;
+}
+/* 도색 모음 3줄: 세 기체가 그 색을 가졌는지(입힌 색과 무관), 켜지면 그 색 테두리 빛 */
+.set-list h3 {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-3);
+  color: var(--area-label);
+}
+.set-list h3 small {
+  font-weight: var(--fw-1);
+  color: var(--muted);
+}
+.set-row {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: 4px var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--line-strong);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.set-row b {
+  font-weight: var(--fw-3);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.set-row .paint-dots i {
+  width: 9px;
+  height: 9px;
+}
+.set-row.is-on {
+  border-style: solid;
+  border-color: var(--paint);
+  color: var(--ink-2);
+  box-shadow: 0 0 10px -2px color-mix(in srgb, var(--paint) 60%, transparent);
+}
+.set-row.is-on b {
+  color: var(--paint);
+}
+
 /* 기록 */
 .record-list {
   display: grid;
@@ -2236,7 +2534,8 @@ body[data-gm] .menu-top {
   font-weight: var(--fw-3);
   color: var(--ink-2);
 }
-.gm-field input {
+.gm-field input,
+.gm-field select {
   width: 100%;
   min-height: var(--tap);
   padding: 0 var(--sp-2);
@@ -2252,6 +2551,10 @@ body[data-gm] .menu-top {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+/* 해금 칸 아래 도색 고르기(R-109): 체크 줄과 띄움 */
+.gm-checks + .gm-grid {
+  margin-top: var(--sp-2);
 }
 .gm-check {
   display: inline-flex;
@@ -5028,9 +5331,9 @@ body[data-fx='low'] .boss-warn.is-on {
           <p class="overlay-note" id="grow-status" role="status"></p>
           <div id="growth-list" class="page" data-area="G-LIST"></div>
           <div id="hidden-entry" data-area="G-HIDDEN"></div>
-          <div class="soon-list" data-area="G-SOON" aria-hidden="true">
-            <div class="soon-cell">준비 중</div>
-            <div class="soon-cell">준비 중</div>
+          <div class="soon-list" data-area="G-SOON">
+            <div id="hangar-entry" data-area="G-HANGAR"></div>
+            <div class="soon-cell" aria-hidden="true">준비 중</div>
           </div>
         </section>
         <section class="page page--hidden" id="page-hidden" aria-label="히든 탭 · 고양이 비행사" hidden>
@@ -5040,6 +5343,14 @@ body[data-fx='low'] .boss-warn.is-on {
           </div>
           <p class="overlay-note" id="hidden-status" role="status"></p>
           <div id="hidden-view" class="page"></div>
+        </section>
+        <section class="page page--hangar" id="page-hangar" aria-label="격납고 · 도색" hidden>
+          <div class="page-head page-head--back">
+            <button class="back-btn" id="hangar-back" aria-label="성장으로 돌아가기"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.6 5.6 8.2 12l6.4 6.4"/></svg></button>
+            <h2>격납고 · 도색</h2>
+          </div>
+          <p class="overlay-note" id="hangar-status" role="status"></p>
+          <div id="hangar-view" class="page"></div>
         </section>
         <section class="page page--shop" id="page-shop" aria-label="상점" hidden>
           <div class="page-head">
@@ -5213,9 +5524,7 @@ body[data-fx='low'] .boss-warn.is-on {
               ><span class="hud-buffs" id="hud-buffs" hidden
                 ><i class="hud-buff hud-buff--heal" id="hud-buff-regen" hidden>HP+</i
                 ><i class="hud-buff hud-buff--revive" id="hud-buff-revive" hidden
-                  >Re+</i
-                ></span
-              ></span
+                  >Re+<b id="hud-revive-n"></b></i></span></span
             ><b class="hud-point num" id="score">0</b>
           </div>
           <button class="hud-cell hud-auto" id="auto-toggle" aria-pressed="false" hidden>
@@ -12725,6 +13034,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
       },
     },
+    // 격납고 도색(R-106 · R-107, PLANNING-world 6-4 · Q195 a): 영구 스킬을 모두 MAX로 하면 열린다(opened 'hangar').
+    // 기체마다 first 색을 먼저 사고 나머지는 아무 순서. price: g G · b B · s S. 사면 바로 입히고, 입힌 색 하나로 출격한다(출격 순간 고정).
+    // 입힌 색 능력(그 기체 판만): start 기체 시작 스킬마다 더하는 스택(출처 '도색') · regen 초당 HP(시간 압박에서 멈춤) · revive 부활 수.
+    // 모음(세 기체 모두 그 색을 가짐, 입힌 색과 무관): noteCost 한 줄 남기기 글자당 G · goldX 분당 G 배율 · shieldX 보호막 재생 배율 ·
+    // scMake S 제작 한 번에 만드는 S · revive 부활 수. 한 판 부활은 reviveMax까지(1회 부활 버프 + 도색 + 모음)
+    paint: {
+      colors: ['yellow', 'blue', 'violet'],
+      first: 'yellow',
+      price: { yellow: { g: 5000 }, blue: { b: 500 }, violet: { s: 300 } },
+      start: { yellow: 1, blue: 3, violet: 3 },
+      regen: { blue: 1 },
+      revive: { violet: 1 },
+      sets: { yellow: { noteCost: 5, goldX: 2 }, blue: { shieldX: 2, scMake: 2 }, violet: { revive: 1 } },
+      reviveMax: 3,
+    },
     // Insane S 코인(R-023 · R-061): mode 판(일반 · S 출격)에서 세 출처로 1개씩 생긴다. 크기 r, 자석 없이 기체가
     // 닿아야 1 S, 줍지 않으면 판 끝까지 남는다. ① 전투 시계 every초마다 기체에서 near~far 거리의 무작위 방향
     // ② 레벨업마다 levelChance 확률(시드 · LV 해시) ③ 보스 웨이브를 다 잡을 때마다(판당 bossMax).
@@ -12815,7 +13139,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // ── 이름 규칙(I-06, Q112). TERMS.md 맨 위 '이름 규칙'이 이 문장들이다 ──
   const nameRules = [
-    '고유 이름(모드 · 기체 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
+    '고유 이름(모드 · 기체 · 도색 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
     '처음 하는 사람이 Help 없이 이름만 보고 효과를 안다. 그 위에 우주 · 네온 느낌을 한 겹(화력 · 부스터 · 궤도 칼날).',
     '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음).',
     '겹치지 않게: 다른 것에 같은 말을 쓰지 않는다(Super 모드 ↔ Super Coin → Star Coin).',
@@ -12915,6 +13239,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         innerStroke: 1.1,
       },
     },
+  };
+  // 격납고 도색(R-106, 편집장 2026-10-16): 색 이름은 고유 이름이라 영어(기체 이름과 같은 꼴, 이름 규칙 1).
+  // 키 = balance paint.colors id, base = 도색 없음. 화면은 이름 옆에 늘 그 색 견본을 둔다(이름 규칙 2)
+  const paint = {
+    names: { base: '기본', yellow: 'FLARE', blue: 'FROST', violet: 'NEBULA' },
+    group: '도색',
+    sets: '도색 모음',
+    setName: c => paint.names[c] + ' 모음',
   };
   const craftName = id => crafts[id]?.name || '';
   // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · color: 카드 표기(값은 tokens.css --sk-<id>, R-054). 그림은 icons.js(R-097)
@@ -13021,7 +13353,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return ids.map(skillName).join('·') + ' +' + n + (start.multi ? ' (' + (1 + start.multi) + '발)' : '');
   }
   // 스택 출처
-  const sources = { craft: '기체', cat: '고양이', perma: '영구', prep: '준비', earned: '획득' };
+  // 키 순서 = 스킬 내역의 출처 순서. 도색(R-107)은 기체 다음
+  const sources = {
+    craft: '기체',
+    paint: '도색',
+    cat: '고양이',
+    perma: '영구',
+    prep: '준비',
+    earned: '획득',
+  };
   // 적. name: 화면 · short: 짧은 이름
   const enemies = {
     chaser: { name: '추적자', short: '추적' },
@@ -13277,7 +13617,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           ? buffs[ids[0]].name + ' ' + (B().buffs[ids[0]].s ? SC : BL) + ' 부족 · 꺼짐'
           : buffs.tag + ' 재화 부족 · 꺼짐',
     },
-    revive: { major: true, tone: 'gold', sec: 4, text: () => buffs.revive.name },
+    // 부활이 둘 이상인 판(R-107)은 '부활 1/3'처럼 쓴 수 / 모두
+    revive: {
+      major: true,
+      tone: 'gold',
+      sec: 4,
+      text: (used, total) => (total >= 2 ? '부활 ' + used + '/' + total : buffs.revive.name),
+    },
     // 튜토리얼 줄(R-073): 시안 테두리 + 앞에 작은 표(k). 설명을 담으므로 '짧게' 규칙의 예외, 4초(coach.js RULE.sec)
     tip: { tone: 'tip', sec: 4, k: () => tips.k, text: id => tips.lines[id] || '' },
   };
@@ -13338,7 +13684,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     grow: {
       title: '공통 성장',
       note: '산 만큼 모든 기체가 그 스킬을 갖고 출격합니다. 한 번에 +1, 스킬마다 MAX까지.',
-      // 아래 칸 3개 중 '준비 중' 두 칸(R-033)
+      // 아래 칸: 히든(넓게) 아래 한 줄에 격납고 | '준비 중'(R-033 → R-106)
       soon: '준비 중',
     },
     // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
@@ -13472,6 +13818,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       cats: '고양이 Lv',
       unlocks: '해금',
       hidden: '히든 탭',
+      // 격납고(R-109): 열기 칸 · 도색 고르기(그대로 · 모두 가짐 · 없음)
+      hangar: '격납고',
+      paint: '도색',
+      paintKeep: '그대로',
+      paintAll: '모두 가짐',
+      paintNone: '없음',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
@@ -13680,17 +14032,33 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         auto.short +
         ' 버튼으로 켜고 끕니다.',
       income: tier => '시간 코인 ' + tier + '단계 · 분당 ' + G + ' +1',
-      craftSC: coins.s.ko + ' 1개를 만들었습니다',
-      perma: (id, price) => skillName(id) + ' 영구 +1 · ' + price + ' ' + BL + ' 사용',
+      // n = 한 번에 만든 수(파랑 모음이면 2, R-107)
+      craftSC: n => coins.s.ko + ' ' + n + '개를 만들었습니다 · ' + SC + ' +' + n,
+      // opened: 이 구매로 열린 문(영구 11개 MAX → 격납고, R-106)
+      perma: (id, price, opened) =>
+        skillName(id) +
+        ' 영구 +1 · ' +
+        price +
+        ' ' +
+        BL +
+        ' 사용' +
+        (opened?.includes('hangar') ? ' · 격납고 · 도색이 열렸습니다' : ''),
       needs_auto: auto.name + '를 먼저 사야 합니다.',
       sc_reserved: SC + ' 출격 준비에 예약된 ' + SC + '는 쓸 수 없습니다.',
       hidden_locked: '히든 탭이 아직 열리지 않았습니다.',
+      // 격납고 도색(R-106)
+      hangar_locked: '격납고가 아직 열리지 않았습니다.',
+      needs_first: () => '먼저 ' + paint.names[B().paint.first] + ' 도색을 사야 합니다.',
       locked: '먼저 해금해야 합니다.',
       // 산 직후 켜진 스위치가 바로 아래 카드에 보인다(문구 규칙 3)
       autoGold: () => '자동 ' + G + ' 습득을 샀습니다.',
       catUnlock: id => cats[id].name + ' 해금',
       catLevel: (id, lv) => cats[id].name + ' Lv' + lv,
       companion: id => (id ? cats[id].name + ' 동반' : '동반 해제'),
+      // 도색(R-106): 사면 바로 입힘 · 입히기 · 벗기(기본)
+      paintBuy: (craft, c) => craftName(craft) + ' ' + paint.names[c] + ' 도색 · 바로 입혔습니다',
+      paintWear: (craft, c) =>
+        c ? craftName(craft) + ' ' + paint.names[c] + ' 입힘' : craftName(craft) + ' 기본 색으로',
     },
     // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
     permaCapped: c =>
@@ -13781,6 +14149,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         cats: '고양이',
         hidden: '히든 탭',
         autoGold: '자동 ' + G + ' 습득',
+        // 세 기체가 가진 도색 수 합(R-109)
+        paint: paint.group,
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -13859,6 +14229,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       buffs.group +
       ' · ' +
       ids.map(id => (id === 'revive' && revived ? buffs.revive.used : buffs[id].name)).join(' · '),
+    // 도색 · 부활이 둘 이상인 판(R-108): '도색 FROST · HP 회복 · 부활 2/3'(입힌 색 · 낸 버프 · 쓴 부활 / 모두)
+    lookLine: (color, ids, used, total) =>
+      [
+        color && paint.group + ' ' + paint.names[color],
+        ...ids.map(id => buffs[id].name),
+        total > 0 && '부활 ' + used + '/' + total,
+      ]
+        .filter(Boolean)
+        .join(' · '),
     recordsEmpty: '아직 저장된 기록이 없습니다.',
     // 기록 탭 별표 · 선택 삭제(R-018)
     rec: {
@@ -13962,12 +14341,67 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         B().cats.maxLevel +
         ' 고양이는 고르지 않아도 항상 효과를 줍니다.',
     },
+    // 격납고 · 도색(R-106): 성장 탭 아래 칸 · 격납고 화면(page-hangar). 색 이름은 paint.names, 값 · 효과는 balance paint
+    hangar: {
+      entry: '격납고 · 도색',
+      entryLocked: () => '🔒 성장 ' + Object.keys(E().perma).length + '개 MAX',
+      title: '격납고 · 도색',
+      back: '성장으로 돌아가기',
+      applied: '적용 중',
+      appliedNone: '도색 없음',
+      crafts: '기체',
+      list: id => craftName(id) + ' ' + paint.group,
+      worn: '입힘',
+      wear: '입히기',
+      needFirst: () => paint.names[B().paint.first] + ' 먼저',
+      base: '능력 없음 · 처음 색',
+      // 입힌 색 능력 한 줄: '부스터·속사 +3 · HP +1/초 · 부활 +1'(기체 시작 스킬 이름은 craftStart 그대로)
+      ability: (craft, c) => {
+        const P = B().paint;
+        if (!c || c === 'base') return view.hangar.base;
+        return [
+          craftStart(craft).replace(/\+\d+.*$/, '+' + P.start[c]),
+          P.regen[c] && 'HP +' + P.regen[c] + '/초',
+          P.revive[c] && '부활 +' + P.revive[c],
+        ]
+          .filter(Boolean)
+          .join(' · ');
+      },
+      price: c => {
+        const p = B().paint.price[c] || {};
+        return [p.g && num(p.g) + ' ' + G, p.b && num(p.b) + ' ' + BL, p.s && num(p.s) + ' ' + SC]
+          .filter(Boolean)
+          .join(' + ');
+      },
+      buyLabel: (craft, c) =>
+        craftName(craft) + ' ' + paint.names[c] + ' · ' + view.hangar.price(c) + '로 사기',
+      sets: paint.sets,
+      setsShort: '모음',
+      setsNote: '세 기체 모두 가지면',
+      // 모음 효과 한 줄(balance paint.sets) + 보라는 다음 히든 예고(월드는 15단계)
+      setEffect: c => {
+        const s = B().paint.sets[c] || {};
+        return [
+          s.noteCost !== undefined && '한 줄 남기기 글자당 ' + s.noteCost + ' ' + G,
+          s.goldX && '분당 ' + G + ' ×' + s.goldX,
+          s.shieldX && '보호막 재생 ×' + s.shieldX,
+          s.scMake && SC + ' 제작 한 번에 ' + s.scMake + '개',
+          s.revive && '부활 +' + s.revive,
+          c === 'violet' && '다음 히든 🔒',
+        ]
+          .filter(Boolean)
+          .join(' · ');
+      },
+      setCount: n => n + '/3',
+      note: '산 색 중 하나를 입혀 출격합니다. 입힌 색만 능력을 주고, 모음은 입힌 색과 상관없이 켜집니다.',
+    },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
     noSkills: '스킬이 없습니다.',
     stackCount: (total, kinds) => '· 총 ' + total + '스택 · ' + kinds + '종',
     prep: {
       craft: n => sources.craft + ' ' + n,
+      paint: n => sources.paint + ' ' + n,
       perma: n => sources.perma + ' ' + n,
       cap: (n, cap) => '방어 한도 ' + n + ' / ' + cap,
       full: '상한 도달 · 이후 피해',
@@ -14585,6 +15019,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'buffs.revive.s': [buffs.revive.name + ' 버프 비용(켜 두면 출격할 때마다)', SC, 'cost'],
       'buffs.revive.hp': ['부활 때 최대 HP의 이 비율로 일어남', '비율', 'easy'],
       'buffs.revive.invuln': ['부활 뒤 무적 시간', '초', 'easy'],
+      // 격납고 도색(R-106 · R-107)
+      'paint.price.yellow.g': [paint.names.yellow + ' 도색 값(기체마다, 먼저 사야 함)', G, 'cost'],
+      'paint.price.blue.b': [paint.names.blue + ' 도색 값(기체마다)', BL, 'cost'],
+      'paint.price.violet.s': [paint.names.violet + ' 도색 값(기체마다)', SC, 'cost'],
+      'paint.start.*': ['입힌 도색: 기체 시작 스킬마다 더하는 스택', '스택', 'easy'],
+      'paint.regen.blue': [paint.names.blue + ' 입힘: 초당 HP 회복(시간 압박 뒤 멈춤)', 'HP/초', 'easy'],
+      'paint.revive.violet': [paint.names.violet + ' 입힘: 부활 수', '번', 'easy'],
+      'paint.sets.yellow.noteCost': [paint.setName('yellow') + ': 한 줄 남기기 글자당 ' + G, G, 'cost'],
+      'paint.sets.yellow.goldX': [
+        paint.setName('yellow') + ': 분당 ' + G + ' 배율(시간 코인 + 모드 몫)',
+        '배',
+        'more',
+      ],
+      'paint.sets.blue.shieldX': [paint.setName('blue') + ': 보호막 재생 배율', '배', 'easy'],
+      'paint.sets.blue.scMake': [paint.setName('blue') + ': ' + SC + ' 제작 한 번에 만드는 수', '개', 'more'],
+      'paint.sets.violet.revive': [paint.setName('violet') + ': 부활 수', '번', 'easy'],
+      'paint.reviveMax': ['한 판 부활 최대(버프 + 도색 + 모음)', '번', 'easy'],
       'healZone.first': ['첫 회복 구역 시점(전투 시계)', '초', 'hard'],
       'healZone.every': ['회복 구역 간격', '초', 'hard'],
       'healZone.life': ['회복 구역 유지 시간', '초', 'easy'],
@@ -14925,6 +15376,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           permaMax: '영구 스택 전부 MAX',
           buffRegen: () => buffs.regen.name + ' 버프 1번(' + buffs.cost('regen') + ')',
           buffRevive: () => buffs.revive.name + ' 버프 1번(' + buffs.cost('revive') + ')',
+          // 격납고 도색(R-109): 세 기체 모두 그 색(모음이 켜지는 값)
+          paintYellow: paint.names.yellow + ' ' + paint.group + ' 셋',
+          paintBlue: paint.names.blue + ' ' + paint.group + ' 셋',
+          paintViolet: paint.names.violet + ' ' + paint.group + ' 셋',
         },
         goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
         // 플레이 시간 표기: 'n분' · 'n시간 m분'
@@ -15353,6 +15808,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               b.cats.maxLevel +
               ' 고양이의 효과가 출격 때 적용됩니다.',
           ],
+          // 격납고 도색(R-106)
+          [
+            view.hangar.title,
+            '영구 스킬을 모두 MAX로 하면 성장 탭 맨 아래에 열립니다. 기체마다 ' +
+              paint.names[b.paint.first] +
+              '부터 사서 입히면 시작 스킬 · HP 회복 · 부활이 붙고, 세 기체가 같은 색을 모두 가지면 ' +
+              paint.sets +
+              ' 효과가 켜집니다.',
+          ],
         ],
       },
       {
@@ -15714,6 +16178,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               abilities.dash +
               ' 재충전).',
           },
+          {
+            term: view.hangar.title,
+            desc:
+              '영구 스킬을 모두 MAX로 하면 성장 탭 맨 아래에서 열린다. 기체마다 ' +
+              b.paint.colors.map(c => paint.names[c]).join(' · ') +
+              josa(paint.names[b.paint.colors[b.paint.colors.length - 1]], '을/를') +
+              ' 사서 하나를 입혀 출격한다. 입힌 색은 시작 스킬 · HP 회복 · 부활을, ' +
+              paint.sets +
+              '(세 기체 모두 그 색을 가짐)은 분당 ' +
+              G +
+              ' · 보호막 재생 · ' +
+              SC +
+              ' 제작 · 부활을 더한다.',
+          },
         ],
       },
       {
@@ -15922,6 +16400,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     crafts,
     craftName,
     craftStart,
+    paint,
     skills,
     skillName,
     skillGroups,
@@ -16119,7 +16598,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.11.0',
+  const VERSION = '4.12.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -16158,6 +16637,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 출격 버프(R-062): balance buffs의 키(from 제외, progression.js BUFFS와 같은 규칙)
   const BF = B.buffs,
     BUFF_IDS = Object.freeze(Object.keys(BF).filter(k => k !== 'from'));
+  // 도색(R-107): 출격 순간 고정 값(NeonProgress.paintEffects)만 받는다. 한 판 부활은 PAINT.reviveMax까지(버프 + 도색 + 모음)
+  const PAINT = B.paint;
+  function cleanPaint(raw) {
+    const n = (v, lo, hi) => Math.min(hi, Math.max(lo, Number(v) || 0)),
+      wear = PAINT.colors.includes(raw?.wear) ? raw.wear : null;
+    return {
+      wear,
+      sets: Array.isArray(raw?.sets) ? PAINT.colors.filter(c => raw.sets.includes(c)) : [],
+      start: Math.floor(n(raw?.start, 0, 99)),
+      regen: n(raw?.regen, 0, 99),
+      revive: Math.floor(n(raw?.revive, 0, PAINT.reviveMax)),
+      shieldX: n(raw?.shieldX || 1, 1, 10),
+    };
+  }
   // 엔진 난수(rng)를 쓰지 않는 (시드, 레벨) 해시 → 0~1. 확률을 바꿔도 적·카드가 그대로다. mix마다 따로 뽑힌다.
   function seedRoll(seed, level, mix) {
     let a = ((seed >>> 0) ^ Math.imul(level, mix)) >>> 0;
@@ -16200,12 +16693,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return CAPS[craft] || CAPS.striker;
   }
   // S 출격 무작위 배분(R-063): 남은 배분(SC_LAUNCH.picks − picks 합)을 하나씩 고르게 채운다.
-  // 후보 = 방어 스킬은 준비 수 < cap, 물리 상한이 있는 스킬은 기체 + 영구 + 준비 < 상한, 나머지는 늘 후보(없으면 멈춤).
-  // 준비 화면(view.js prepRows)과 같은 출처(기체 · 영구 · 준비)를 센다. 입력은 그대로 두고 새 배분을 돌려준다.
+  // 후보 = 방어 스킬은 준비 수 < cap, 물리 상한이 있는 스킬은 기체 + 도색 + 영구 + 준비 < 상한, 나머지는 늘 후보(없으면 멈춤).
+  // 준비 화면(view.js prepRows)과 같은 출처(기체 · 도색 · 영구 · 준비)를 센다. 입력은 그대로 두고 새 배분을 돌려준다.
   function fillPrep(craft, stacks, picks, cap, rand = Math.random) {
     const out = cleanStacks(picks),
       caps = skillCaps(craft),
-      fixed = id => (stacks?.craft?.[id] || 0) + (stacks?.perma?.[id] || 0);
+      fixed = id => (stacks?.craft?.[id] || 0) + (stacks?.paint?.[id] || 0) + (stacks?.perma?.[id] || 0);
     let left = SC_LAUNCH.picks - Object.values(out).reduce((a, n) => a + n, 0);
     while (left > 0) {
       const pool = SKILL_IDS.filter(id =>
@@ -16392,11 +16885,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       // 출격 버프(R-062): 출격 트랜잭션이 비용을 받고 적용한 것만 온다(launch.buffs). 1회 부활은 판에 한 번
       this.buffList = Array.isArray(launch?.buffs) ? BUFF_IDS.filter(id => launch.buffs.includes(id)) : [];
       this.buffs = Object.fromEntries(BUFF_IDS.map(id => [id, this.buffList.includes(id)]));
-      this.reviveLeft = this.buffs.revive ? 1 : 0;
+      // 도색(R-107): 입힌 색 · 모음 효과. 부활 = 버프(1) + 도색 · 모음, reviveMax로 자름 · 쓴 수는 revivesUsed
+      this.paint = cleanPaint(launch?.paint);
+      this.reviveTotal = Math.min(PAINT.reviveMax, (this.buffs.revive ? 1 : 0) + this.paint.revive);
+      this.reviveLeft = this.reviveTotal;
+      this.revivesUsed = 0;
       this.revived = false;
-      // 출처별 스택: 기체·고양이·영구·준비는 출격 때 고정(판 도중 영구 구매는 다음 출격부터), 획득은 upgrades.
+      // 출처별 스택: 기체·도색·고양이·영구·준비는 출격 때 고정(판 도중 영구 구매는 다음 출격부터), 획득은 upgrades.
+      // 도색 = 기체 시작 스킬마다 paint.start(정비사 미오와 같은 길, 방어 한도에 세지 않음)
       this.stacks = {
         craft: { ...CRAFT_START[this.craft] },
+        paint: this.paint.start
+          ? Object.fromEntries(Object.keys(CRAFT_START[this.craft]).map(id => [id, this.paint.start]))
+          : {},
         cat: engineer
           ? Object.fromEntries(Object.keys(CRAFT_START[this.craft]).map(id => [id, engineer]))
           : {},
@@ -16480,11 +16981,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.shield = p.maxShield;
       return this;
     }
-    // 스킬 스택 합계(기체·고양이·영구·준비·획득). 능력치와 상한은 합계로 계산한다.
+    // 스킬 스택 합계(기체·도색·고양이·영구·준비·획득). 능력치와 상한은 합계로 계산한다.
     stack(id) {
       const s = this.stacks;
       return (
         (s.craft[id] || 0) +
+        (s.paint[id] || 0) +
         (s.cat[id] || 0) +
         (s.perma[id] || 0) +
         (s.prep[id] || 0) +
@@ -16939,9 +17441,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         source,
       });
       if (p.hp <= 0) {
-        // 1회 부활(R-062): 쓰러지는 순간 한 번, 최대 HP × hp로 일어나 invuln초 무적 + 충격파 한 번(재충전 그대로)
+        // 부활(R-062 · R-107): 쓰러질 때마다 남은 부활 하나, 최대 HP × hp로 일어나 invuln초 무적 + 충격파 한 번(재충전 그대로)
         if (this.reviveLeft > 0) {
-          this.reviveLeft = 0;
+          this.reviveLeft--;
+          this.revivesUsed++;
           this.revived = true;
           p.hp = p.maxHp * BF.revive.hp;
           p.invuln = BF.revive.invuln;
@@ -17275,13 +17778,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (p.noHit > B.player.shieldDelay)
         p.shield = Math.min(
           p.maxShield,
-          p.shield + dt * (B.player.shieldRegen + S.shield.regen * this.stack('shield')),
+          p.shield + dt * (B.player.shieldRegen + S.shield.regen * this.stack('shield')) * this.paint.shieldX,
         );
-      // 회복(R-061 · R-062): 회복 구역 안(기체 중심이 원 안)이면 초당 HEAL.hp, HP 회복 버프면 초당 regen.hp.
+      // 회복(R-061 · R-062): 회복 구역 안(기체 중심이 원 안)이면 초당 HEAL.hp, HP 회복 버프면 초당 regen.hp + 도색 regen(R-107, 같은 몫).
       // 최대 HP까지, 구역 몫을 먼저 채우고 남은 빈칸에 버프 몫. 회복한 양은 healed에 센다
       // 시간 압박(R-101) 뒤에는 두 몫 모두 0
       const zoneHeal = !this.lateOn && this.zone && dist(this.zone, p) < this.zone.r ? HEAL.hp : 0,
-        buffHeal = !this.lateOn && this.buffs.regen ? BF.regen.hp : 0;
+        buffHeal = this.lateOn ? 0 : (this.buffs.regen ? BF.regen.hp : 0) + this.paint.regen;
       if ((zoneHeal || buffHeal) && p.hp < p.maxHp) {
         const z = Math.min(p.maxHp - p.hp, zoneHeal * dt);
         p.hp += z;
@@ -17593,6 +18096,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         healed: +(this.healed.zone + this.healed.buff).toFixed(2),
         // 1회 부활을 쓴 판만(R-062, 버프 없는 판의 상태 모양은 그대로)
         ...(this.revived ? { revived: true } : {}),
+        // 부활을 두 번 이상 쓴 판만(R-107)
+        ...(this.revivesUsed > 1 ? { revives: this.revivesUsed } : {}),
         // 시간 압박에 닿은 판만(R-101)
         ...(this.lateOn ? { lateOn: true } : {}),
       };
@@ -19064,7 +19569,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return target;
     return null;
   }
-  function noteQuote(value) {
+  // perChar: 글자당 G(노랑 모음이면 낮아짐 — 저장 거래 안에서 notePer(프로필)로 다시 계산한다)
+  function noteQuote(value, perChar = ECONOMY.notePerChar) {
     const text = String(value ?? '')
       .trim()
       .normalize('NFC');
@@ -19080,7 +19586,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return {
       text,
       count: n,
-      cost: n * ECONOMY.notePerChar,
+      cost: n * perChar,
       valid: supported && n > 0 && n <= ECONOMY.noteMax && !/[\r\n\u0000-\u001f\u007f]/.test(text),
     };
   }
@@ -19483,16 +19989,62 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     if (spendableSC(p, now) >= cost) return null;
     return p.superCoins >= cost ? 'sc_reserved' : 'insufficient';
   }
+  // ── 격납고 도색(R-106 · R-107). 색 · 기체 목록은 balance. 모음 = 세 기체 모두 그 색을 가짐(own에서 계산, 따로 저장하지 않음)
+  const PAINT = B.paint,
+    COLORS = Object.freeze([...PAINT.colors]),
+    CRAFT_IDS = Object.freeze(Object.keys(B.crafts));
+  // 기체가 가진 색(balance 순서, 모르는 색은 빼고 봄 — 저장된 값은 그대로 둔다)
+  function paintOwn(p, craft) {
+    const own = p?.paint?.own?.[craft];
+    return Array.isArray(own) ? COLORS.filter(c => own.includes(c)) : [];
+  }
+  function paintSets(p) {
+    return COLORS.filter(c => CRAFT_IDS.every(id => paintOwn(p, id).includes(c)));
+  }
+  // 입힌 색: 가진 색일 때만(아니면 기본 = null)
+  function paintWear(p, craft) {
+    const w = p?.paint?.wear?.[craft];
+    return paintOwn(p, craft).includes(w) ? w : null;
+  }
+  // 켜진 모음 중 그 효과를 가진 첫 값(없으면 기본값)
+  const setValue = (sets, key, base) => {
+    for (const c of sets) if (PAINT.sets[c]?.[key] !== undefined) return PAINT.sets[c][key];
+    return base;
+  };
+  const notePer = p => setValue(paintSets(p), 'noteCost', ECONOMY.notePerChar);
+  // 출격 순간 고정할 도색 효과(catEffects 꼴, 프로필을 바꾸지 않는다). craft = 이 판 기체
+  // start: 기체 시작 스킬마다 더할 스택 · regen: 초당 HP · revive: 도색 · 모음 부활 수(reviveMax로 자름) · gx: 분당 G 배율 ·
+  // shieldX: 보호막 재생 배율 · noteCost: 한 줄 남기기 글자당 G · scMake: S 제작 한 번에 만드는 S
+  function paintEffects(p, craft) {
+    const wear = paintWear(p, craft),
+      sets = paintSets(p),
+      on = (map, c) => (c ? count(map?.[c]) : 0);
+    return {
+      wear,
+      sets,
+      start: on(PAINT.start, wear),
+      regen: on(PAINT.regen, wear),
+      revive: Math.min(PAINT.reviveMax, on(PAINT.revive, wear) + count(setValue(sets, 'revive', 0))),
+      gx: setValue(sets, 'goldX', 1),
+      shieldX: setValue(sets, 'shieldX', 1),
+      noteCost: setValue(sets, 'noteCost', ECONOMY.notePerChar),
+      scMake: setValue(sets, 'scMake', 1),
+    };
+  }
+  // 영구 스킬 11개가 모두 MAX
+  const permaFull = p => SKILLS.every(id => count(p.perma[id]) >= permaMax(id));
 
   // 순수 규칙: p(프로필 사본)를 바꾸고 결과를 돌려준다.
   const rules = {
     // 출격(R-062 출격 버프 포함): launch.buffs(요청 id 배열)를 BUFFS 순서로 본다. from 모드 아래면 건너뜀('mode'),
     // 비용(B · S)이 모자라면 건너뜀('insufficient', 예약된 S 때문이면 'sc_reserved'), 아니면 이 트랜잭션에서 낸다.
     // 적용한 버프는 runs[runId].bf. 같은 판 id의 두 번째 출격은 아무것도 내지 않고 그 판의 버프를 돌려준다.
-    startRun(p, { runId, mode, launch, now }) {
+    // 도색 효과(R-107)는 이 판 기체(craft)로 출격 순간 고정 — 분당 G 배율은 runs[runId].x.gx(1이면 적지 않음)
+    startRun(p, { runId, mode, launch, now, craft }) {
       if (!validId(runId)) return fail('invalid');
-      const cats = catEffects(p);
-      if (p.runs[runId]) return dup({ cats, buffs: [...p.runs[runId].bf], skipped: [] });
+      const cats = catEffects(p),
+        paint = paintEffects(p, craft);
+      if (p.runs[runId]) return dup({ cats, paint, buffs: [...p.runs[runId].bf], skipped: [] });
       const startLevel = count(launch?.startLevel) || 1,
         want = buffList(launch?.buffs),
         buffs = [],
@@ -19527,16 +20079,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         t: Number(now) || 0,
         bf: buffs,
       };
-      return { ok: true, cats, buffs: [...buffs], skipped };
+      if (paint.gx !== 1) p.runs[runId].x = { gx: paint.gx };
+      return { ok: true, cats, paint, buffs: [...buffs], skipped };
     },
-    // 분마다 분당 G + 이 판의 고양이 분당 G(cg). cat은 그중 고양이 몫.
+    // 분마다 분당 G × 이 판의 모음 배율(x.gx, R-107) + 고양이 분당 G(cg, 배율 없음). cat은 그중 고양이 몫.
     awardMinute(p, { runId, minute }) {
       const r = p.runs[runId];
       if (!r) return fail('run_unknown');
       if (!Number.isSafeInteger(minute) || minute <= r.m) return dup({ gold: 0, cat: 0 });
       const minutes = minute - r.m,
+        gx = r.x?.gx > 0 ? r.x.gx : 1,
         cat = minutes * count(r.cg),
-        gold = minutes * goldPerMinute(p.incomeTier, r.mode) + cat;
+        gold = Math.floor(minutes * goldPerMinute(p.incomeTier, r.mode) * gx) + cat;
       p.gold += gold;
       r.m = minute;
       return { ok: true, gold, cat };
@@ -19635,7 +20189,28 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         p.scHold = null;
         changed = true;
       }
+      // 이미 MAX인 계정은 첫 부팅에 격납고가 열린다(R-106)
+      if (rules.openDoors(p).opened?.length) changed = true;
       return changed ? { ok: true } : dup();
+    },
+    // 한 줄 남기기: 기록 r에 한 번만. 글자당 값은 그 순간 프로필의 모음으로(R-107, 화면 값을 믿지 않음)
+    note(p, { record: r, value }) {
+      const q = noteQuote(value, notePer(p));
+      if (!q.valid) return { ok: false, reason: 'invalid_note', cost: 0 };
+      if (!r) return { ok: false, reason: 'record_not_found', cost: 0 };
+      if (r.noteConfirmed || r.note) return { ok: false, reason: 'note_confirmed', record: r, cost: 0 };
+      if (p.gold < q.cost) return { ok: false, reason: 'insufficient', cost: 0 };
+      p.gold -= q.cost;
+      r.note = q.text;
+      r.noteConfirmed = true;
+      r.noteCost = q.cost;
+      return { ok: true, record: r, cost: q.cost };
+    },
+    // 열린 문(R-106): 영구 스킬 11개가 모두 MAX인 순간 'hangar'. 한 번 열리면 MAX 값이 바뀌어도 닫지 않는다
+    openDoors(p) {
+      if (p.opened.includes('hangar') || !permaFull(p)) return dup({ opened: [] });
+      p.opened.push('hangar');
+      return { ok: true, opened: ['hangar'] };
     },
     buyIncome(p, { txId, expectedTier }) {
       if (!validId(txId)) return fail('invalid');
@@ -19659,7 +20234,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.blue -= price;
       p.perma[skill] = owned + 1;
       remember(p, txId);
-      return { ok: true, price };
+      return { ok: true, price, opened: rules.openDoors(p).opened };
     },
     buyAuto(p) {
       if (p.ownedAuto) return dup();
@@ -19726,6 +20301,39 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.companion = cat;
       return { ok: true };
     },
+    // 도색 사기(R-106): 기체마다 first 색을 먼저, 값은 balance paint.price(G · B · S 중 하나 이상). 예약된 S는 쓰지 않는다.
+    // 사면 own 끝에 더하고 바로 입힌다(wear). txId로 두 번 눌러도 한 번만
+    buyPaint(p, { txId, craft, color, now }) {
+      if (!validId(txId) || !CRAFT_IDS.includes(craft) || !COLORS.includes(color)) return fail('invalid');
+      if (p.tx.includes(txId)) return dup();
+      if (!p.opened.includes('hangar')) return fail('hangar_locked');
+      const own = paintOwn(p, craft);
+      if (own.includes(color)) return fail('stale');
+      if (color !== PAINT.first && !own.includes(PAINT.first)) return fail('needs_first');
+      const cost = PAINT.price[color] || {},
+        g = count(cost.g),
+        b = count(cost.b),
+        s = count(cost.s),
+        short = (s && scShort(p, now, s)) || (p.gold < g || p.blue < b ? 'insufficient' : null);
+      if (short) return fail(short);
+      p.gold -= g;
+      p.blue -= b;
+      p.superCoins -= s;
+      p.paint.own[craft] = [...(p.paint.own[craft] || []), color];
+      p.paint.wear[craft] = color;
+      remember(p, txId);
+      return { ok: true, price: { g, b, s }, craft, color };
+    },
+    // 도색 입히기(R-106): 가진 색 또는 null(기본 = 벗기). 재화 없음 · 판 도중 바꿔도 다음 출격부터(출격 순간 고정)
+    wearPaint(p, { craft, color }) {
+      if (!CRAFT_IDS.includes(craft) || (color !== null && !COLORS.includes(color))) return fail('invalid');
+      if (!p.opened.includes('hangar')) return fail('hangar_locked');
+      if (color !== null && !paintOwn(p, craft).includes(color)) return fail('locked');
+      if (paintWear(p, craft) === color) return dup();
+      if (color === null) delete p.paint.wear[craft];
+      else p.paint.wear[craft] = color;
+      return { ok: true, craft, color };
+    },
     // 히든 탭 해금: hiddenFrom 모드 판이 패배 · 직접 종료로 끝났을 때만(중단 제외). 옛 기록으로 소급하지 않도록
     // evaluateRun(백업 가져오기에서도 불림)에는 넣지 않고, 화면이 실제 판이 끝날 때만 부른다.
     unlockHidden(p, { difficultyId, reason }) {
@@ -19739,11 +20347,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (!validId(txId)) return fail('invalid');
       if (p.tx.includes(txId)) return dup();
       if (p.gold < ECONOMY.scGold || p.blue < ECONOMY.scBlue) return fail('insufficient');
+      // 파랑 모음(R-107)이면 한 번에 scMake개 — 값은 그대로, 거래 안에서 프로필로 계산
+      const made = count(setValue(paintSets(p), 'scMake', 1)) || 1;
       p.gold -= ECONOMY.scGold;
       p.blue -= ECONOMY.scBlue;
-      p.superCoins++;
+      p.superCoins += made;
       remember(p, txId);
-      return { ok: true };
+      return { ok: true, made };
     },
     holdSC(p, { prepId, now }) {
       if (!validId(prepId)) return fail('invalid');
@@ -19776,6 +20386,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     // GM 패널(R-065, GM 저장소에서만): 넘어온 항목만 바꾼다(다른 칸은 그대로). G · B · S는 0~GM_MAX 정수,
     // 고양이 Lv 0~maxLevel, 해금 = easy · hard + 고른 모드, 히든 탭. 레벨 0이 된 동반 고양이는 뺀다.
+    // 격납고(R-109): hangar 참/거짓 = 열기 · 닫기, paint 'all' = 세 기체 모든 색 가짐(입힌 색 그대로) · 'none' = 모두 없음
     gmSet(p, v = {}) {
       const int = (x, max) => Math.min(max, Math.max(0, Math.floor(Number(x) || 0)));
       for (const k of ['gold', 'blue', 'superCoins']) if (v[k] !== undefined) p[k] = int(v[k], GM_MAX);
@@ -19783,6 +20394,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (Array.isArray(v.unlocked))
         p.unlockedModes = MODES.filter(m => m === 'easy' || m === 'hard' || v.unlocked.includes(m));
       if (typeof v.hidden === 'boolean') p.hidden = v.hidden;
+      if (v.hangar === true && !p.opened.includes('hangar')) p.opened.push('hangar');
+      if (v.hangar === false) p.opened = p.opened.filter(id => id !== 'hangar');
+      if (v.paint === 'all') for (const id of CRAFT_IDS) p.paint.own[id] = [...COLORS];
+      if (v.paint === 'none') p.paint = { own: {}, wear: {} };
       if (p.companion && !(p.cats[p.companion] >= 1)) p.companion = null;
       return { ok: true };
     },
@@ -19987,8 +20602,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       const key = String(id || '').toLowerCase();
       return MODES.includes(key) && this.profile.unlockedModes.includes(key);
     }
+    // 글자당 값은 지금 프로필의 모음으로(R-107) — 저장 때는 saveNote 거래 안에서 다시 계산한다
     noteQuote(text) {
-      return noteQuote(text);
+      return noteQuote(text, notePer(this.profile));
     }
     async load() {
       await this.store.ready;
@@ -20364,9 +20980,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return this.result(true, { records: out.records });
       });
     }
-    startRun(runId, mode, launch) {
+    startRun(runId, mode, launch, craft) {
       const now = this.now();
-      return this.mutate(p => rules.startRun(p, { runId, mode, launch, now }));
+      return this.mutate(p => rules.startRun(p, { runId, mode, launch, now, craft }));
     }
     awardMinute(runId, minute) {
       return this.mutate(p => rules.awardMinute(p, { runId, minute }));
@@ -20414,6 +21030,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }
     setCompanion(cat) {
       return this.mutate(p => rules.setCompanion(p, { cat }));
+    }
+    // 도색(R-106): txId는 화면이 누를 때마다 새로(같은 누름의 재시도만 같은 값)
+    buyPaint(txId, craft, color) {
+      const now = this.now();
+      return this.mutate(p => rules.buyPaint(p, { txId, craft, color, now }));
+    }
+    wearPaint(craft, color) {
+      return this.mutate(p => rules.wearPaint(p, { craft, color }));
     }
     // 화면이 실제 판이 끝날 때만 부른다(evaluateRun과 따로).
     unlockHidden(run) {
@@ -20487,20 +21111,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return out;
       });
     }
+    // 값은 거래 안에서 그 순간 프로필의 모음(R-107)으로 다시 계산한다(rules.note)
     saveNote(recordId, value) {
-      const q = noteQuote(value);
-      if (typeof recordId !== 'string' || !recordId || !q.valid)
+      if (typeof recordId !== 'string' || !recordId || !noteQuote(value).valid)
         return Promise.resolve(this.result(false, { reason: 'invalid_note', cost: 0 }));
-      return this.mutate((p, r) => {
-        if (!r) return { ok: false, reason: 'record_not_found', cost: 0 };
-        if (r.noteConfirmed || r.note) return { ok: false, reason: 'note_confirmed', record: r, cost: 0 };
-        if (p.gold < q.cost) return { ok: false, reason: 'insufficient', cost: 0 };
-        p.gold -= q.cost;
-        r.note = q.text;
-        r.noteConfirmed = true;
-        r.noteCost = q.cost;
-        return { ok: true, record: r, cost: q.cost };
-      }, recordId);
+      return this.mutate((p, record) => rules.note(p, { record, value }), recordId);
     }
   }
 
@@ -20516,6 +21131,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     permaMax,
     permaExcess,
     catEffects,
+    // 격납고 도색(R-106 · R-107)
+    paintEffects,
+    paintOwn,
+    paintSets,
+    paintWear,
+    notePer,
+    permaFull,
     migrate,
     blank,
     rules,
@@ -20560,6 +21182,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     LOG_FORMAT = 'neon-arena-log';
   const Data = () => root.NeonData,
     Progress = () => root.NeonProgress,
+    Balance = () => root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null),
     T = root.NeonTerms || (typeof require === 'function' ? require('./terms.js') : null);
 
   function profileFields(p) {
@@ -20657,12 +21280,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   const REASON_TEXT = T.msg.backup.reasons;
   // 가져오기 확인 창용: 항목마다 파일 값과 지금 값을 나란히 두고, 바꾸면 잃는 항목에 down을 붙인다.
-  // 해금·영구 스택·고양이는 합계가 아니라 항목별로 비교한다(다른 모드·다른 스킬·다른 고양이를 잃는 경우).
+  // 해금·영구 스택·고양이·도색은 합계가 아니라 항목별로 비교한다(다른 모드·다른 스킬·다른 고양이·다른 색을 잃는 경우).
+  // 도색(R-109): 값 = 기체마다 가진 색 수의 합(모르는 색은 세지 않음), 지금 어떤 기체의 색이 파일의 그 기체에 없으면 down
   function compare(file, now) {
     const norm = p => profileFields(Progress().migrate({ ...p, schemaVersion: Progress().SCHEMA })),
       a = norm(file),
       b = norm(now),
       total = o => Object.values(o).reduce((s, n) => s + n, 0),
+      crafts = Object.keys(Balance().crafts),
+      paints = p => crafts.reduce((s, c) => s + Progress().paintOwn(p, c).length, 0),
       rows = [
         ['gold', a.gold, b.gold],
         ['blue', a.blue, b.blue],
@@ -20684,6 +21310,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         ['cats', total(a.cats), total(b.cats), Object.keys(b.cats).some(k => (a.cats[k] || 0) < b.cats[k])],
         ['hidden', a.hidden, b.hidden, b.hidden && !a.hidden],
         ['autoGold', a.ownedAutoGold, b.ownedAutoGold, b.ownedAutoGold && !a.ownedAutoGold],
+        [
+          'paint',
+          paints(a),
+          paints(b),
+          crafts.some(c => {
+            const had = Progress().paintOwn(a, c);
+            return Progress()
+              .paintOwn(b, c)
+              .some(color => !had.includes(color));
+          }),
+        ],
       ].map(([key, f, n, down = f < n]) => ({ key, label: T.msg.backup.rows[key], file: f, now: n, down }));
     return { rows, down: rows.some(r => r.down) };
   }
@@ -20781,7 +21418,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     'bcoin-ink',
     'heal',
     'revive',
+    // 도색(R-108): 몸체 선 · 빛 + 채움
+    'paint-yellow',
+    'paint-yellow-fill',
+    'paint-blue',
+    'paint-blue-fill',
+    'paint-violet',
+    'paint-violet-fill',
   ];
+  // 도색 색 id → 팔레트 키('blue' → paintBlue · paintBlueFill). 모르는 색은 기본(시안)
+  const paintKey = c => 'paint' + c[0].toUpperCase() + c.slice(1),
+    PAINTS = root.NeonBalance.paint.colors;
+  const wornOf = g => (PAINTS.includes(g.paint?.wear) ? g.paint.wear : null);
   const MISSING = 0xff00ff;
   function readPalette() {
     const style = getComputedStyle(document.documentElement),
@@ -21009,17 +21657,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           this.textures[name] = this.app.renderer.generateTexture({ target: g, resolution: 2 });
           g.destroy();
         };
+      // 기체 × (기본 + 도색 색) 텍스처(R-108, 처음 한 번): 'player-<기체>' · 'player-<기체>-<색>'. 흰 가운데 점 · 모양은 그대로
       for (const id of Object.keys(root.NeonTerms.crafts)) {
         const s = craftShape(id);
-        make('player-' + id, g => {
-          g.poly(s.body.flat()).fill(P.craftFill).stroke({ color: P.craftLine, width: 1.8 });
-          if (s.inner) g.poly(s.inner.flat()).stroke({ color: P.craftLine, width: 1.1, alpha: 0.85 });
-          if (s.line)
-            g.moveTo(...s.line[0])
-              .lineTo(...s.line[1])
-              .stroke({ color: P.craftLine, width: 1.2, alpha: 0.85 });
-          g.circle(CRAFT_SCALE, 0, 2.5).fill(P.craftCore);
-        });
+        for (const c of [null, ...PAINTS]) {
+          const fill = c ? P[paintKey(c) + 'Fill'] : P.craftFill,
+            line = c ? P[paintKey(c)] : P.craftLine;
+          make('player-' + id + (c ? '-' + c : ''), g => {
+            g.poly(s.body.flat()).fill(fill).stroke({ color: line, width: 1.8 });
+            if (s.inner) g.poly(s.inner.flat()).stroke({ color: line, width: 1.1, alpha: 0.85 });
+            if (s.line)
+              g.moveTo(...s.line[0])
+                .lineTo(...s.line[1])
+                .stroke({ color: line, width: 1.2, alpha: 0.85 });
+            g.circle(CRAFT_SCALE, 0, 2.5).fill(P.craftCore);
+          });
+        }
       }
       // 적: 종류마다 하나, 보스는 단계마다 셋('boss' · 'boss2' · 'boss3', 바깥 선 · 가운데 점만 단계 색, R-057)
       for (const [kind, s] of Object.entries(Neon.STATS))
@@ -21315,8 +21968,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         this.width / 2 - this.cam.x * z + (Math.random() * 2 - 1) * shake,
         this.height / 2 - this.cam.y * z + (Math.random() * 2 - 1) * shake,
       );
-      const look = this.textures['player-' + craftShape(g.craft).key];
+      // 입힌 색(R-108): 그 색 텍스처 · 빛 필터 색(기본은 시안 --cv-glow). 판 시작에 정해지고 판 도중 바뀌지 않는다
+      const worn = wornOf(g),
+        look = this.textures['player-' + craftShape(g.craft).key + (worn ? '-' + worn : '')],
+        glowColor = worn ? P[paintKey(worn)] : P.glow;
       if (this.player.texture !== look) this.player.texture = look;
+      if (this.glowColor !== glowColor) {
+        this.glowColor = glowColor;
+        this.glow.color = glowColor;
+      }
       this.player.position.set(p.x, p.y);
       this.player.rotation = p.aim;
       this.player.alpha = p.invuln > 0 ? 0.65 : 1;
@@ -21716,7 +22376,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       c.lineWidth = 0.6;
       c.translate(g.p.x, g.p.y);
       c.rotate(g.p.aim);
-      c.strokeStyle = S.craft2d;
+      // 도색(R-108): 기본 그래픽은 선 색만
+      const worn = wornOf(g);
+      c.strokeStyle = worn ? S[paintKey(worn)] : S.craft2d;
       const s = craftShape(g.craft),
         path = (points, close) => {
           c.beginPath();
@@ -22704,11 +23366,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       );
     }).join('');
   }
-  // 결과 · 기록 상세의 버프 한 줄(R-062): 버프를 쓴 판만, 아니면 빈 글자
-  const buffLine = r => (r?.buffs?.length ? TV.buffLine(r.buffs, r.revived === true) : '');
+  // 결과 · 기록 상세의 버프 한 줄(R-062 · R-108): 도색을 입혔거나 도색 · 모음 부활이 있던 판은 '도색 FROST · HP 회복 · 부활 2/3',
+  // 그 밖에 버프를 쓴 판은 '출격 버프 · HP 회복 · 1회 부활(씀)', 둘 다 없으면 빈 글자. 모두 부활 수는 기록 look으로 다시 센다
+  function buffLine(r) {
+    const P = BAL.paint,
+      ids = Array.isArray(r?.buffs) ? r.buffs : [],
+      color = P.colors.includes(r?.look?.paint) ? r.look.paint : null,
+      sets = Array.isArray(r?.look?.sets) ? r.look.sets : [],
+      byPaint = (color ? P.revive[color] || 0 : 0) + sets.reduce((n, c) => n + (P.sets[c]?.revive || 0), 0),
+      total = Math.min(P.reviveMax, (ids.includes('revive') ? 1 : 0) + byPaint);
+    if (color || byPaint > 0) return TV.lookLine(color, ids, Math.min(total, r.revives || 0), total);
+    return ids.length ? TV.buffLine(ids, r.revived === true) : '';
+  }
 
-  // 기체 카드(R-062 플레이 탭 배치 조율): 아이콘 옆 이름(글자를 키우면 이름이 아래 줄로) + 시작 스킬 / 역할 / HP 세 줄
-  function crafts(selected) {
+  // 기체 카드(R-062 플레이 탭 배치 조율): 아이콘 옆 이름(글자를 키우면 이름이 아래 줄로) + 시작 스킬 / 역할 / HP 세 줄.
+  // 아이콘 = 입힌 색(R-108, wear = { 기체: 색 }, 없으면 기본 시안)
+  function crafts(selected, wear = {}) {
     return Object.entries(Neon.CRAFTS)
       .map(
         ([id, c]) =>
@@ -22717,7 +23390,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '" aria-pressed="' +
           (id === selected) +
           '"><span class="craft-head">' +
-          craftIcon(id) +
+          paintCraft(id, wear[id], 'craft-icon') +
           '<strong>' +
           T.craftName(id) +
           '</strong></span><small>' +
@@ -23225,6 +23898,196 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     );
   }
 
+  // ── 격납고 · 도색(R-106) ──
+  const PAINT = BAL.paint,
+    CRAFT_IDS = Object.keys(BAL.crafts),
+    PN = T.paint.names;
+  // 도색 기체 그림: terms.js 기체 모양(점 목록) 그대로, 몸체 채움 --pf · 선 --pl · 흰 가운데 점(ui.css .paint-craft).
+  // color = 색 id 또는 null(기본 = 시안)
+  function paintCraft(id, color, cls = '') {
+    const s = (T.crafts[id] || T.crafts.striker).shape;
+    return (
+      '<svg class="paint-craft paint--' +
+      (color || 'base') +
+      (cls ? ' ' + cls : '') +
+      '" viewBox="0 0 22 22" aria-hidden="true"><path class="pc-body" stroke-width="' +
+      s.bodyStroke +
+      '" d="' +
+      pathOf(s.body, true) +
+      '"/>' +
+      (s.inner
+        ? '<path class="pc-line" stroke-width="' + s.innerStroke + '" d="' + pathOf(s.inner, true) + '"/>'
+        : '') +
+      (s.line
+        ? '<path class="pc-line" stroke-width="' + s.lineStroke + '" d="' + pathOf(s.line, false) + '"/>'
+        : '') +
+      '<circle class="pc-core" cx="11" cy="' +
+      (s.body[0][1] + 5) +
+      '" r="1.1"/></svg>'
+    );
+  }
+  // 가진 색 점 셋(balance 색 순서, 없으면 빈 테두리)
+  const paintDots = own =>
+    '<span class="paint-dots" aria-hidden="true">' +
+    PAINT.colors.map(c => '<i class="paint--' + c + (own.includes(c) ? ' on' : '') + '"></i>').join('') +
+    '</span>';
+  // 성장 탭 아래 칸(히든 아래 한 줄의 첫 칸). info = { open, wear: { 기체: 색 }, sets: [색] }
+  function hangarEntry(info) {
+    const H = TV.hangar;
+    if (!info.open)
+      return (
+        '<div class="hangar-entry"><strong>' +
+        H.entry +
+        '</strong><small>' +
+        esc(H.entryLocked()) +
+        '</small></div>'
+      );
+    return (
+      '<button class="hangar-entry is-open" id="hangar-open"><strong>' +
+      H.entry +
+      '</strong><small><span class="paint-crafts">' +
+      CRAFT_IDS.map(id => paintCraft(id, info.wear[id])).join('') +
+      '</span>' +
+      info.sets.map(T.paint.setName).join(' · ') +
+      ' ›</small></button>'
+    );
+  }
+  // 격납고 화면(page-hangar, 샘플 design/v5-stage11). info = { sel, own: { 기체: [색] }, wear, sets, gold, blue, sc, ready }
+  // own · wear는 balance 색만(NeonProgress.paintOwn · paintWear로 걸러 옴)
+  function hangarPage(info) {
+    const H = TV.hangar,
+      sel = info.sel,
+      own = info.own[sel] || [],
+      wear = info.wear[sel] || null,
+      sets = info.sets,
+      applied = [];
+    if (wear)
+      applied.push(
+        '<b class="paint--' +
+          wear +
+          ' paint-applied">' +
+          PN[wear] +
+          ' · ' +
+          esc(H.ability(sel, wear)) +
+          '</b>',
+      );
+    // 모음은 한 칸: '모음' + 켜진 색 점(셋이 켜져도 한 줄)
+    if (sets.length)
+      applied.push(
+        '<b class="set-applied">' +
+          H.setsShort +
+          ' <span class="paint-dots" aria-label="' +
+          esc(sets.map(T.paint.setName).join(' · ')) +
+          '">' +
+          sets.map(c => '<i class="paint--' + c + ' on"></i>').join('') +
+          '</span></b>',
+      );
+    const craftBtn = id =>
+      '<button class="hangar-craft" data-hangar-craft="' +
+      id +
+      '" aria-pressed="' +
+      (id === sel) +
+      '">' +
+      paintCraft(id, info.wear[id]) +
+      '<strong>' +
+      T.craftName(id) +
+      '</strong>' +
+      paintDots(info.own[id] || []) +
+      '</button>';
+    const row = c => {
+      const base = c === 'base',
+        has = base || own.includes(c),
+        worn = base ? !wear : wear === c,
+        locked = !has && c !== PAINT.first && !own.includes(PAINT.first),
+        cost = base ? {} : PAINT.price[c] || {},
+        kind = cost.g ? 'gold' : cost.b ? 'blue' : 'sc',
+        afford =
+          !base && info.gold >= (cost.g || 0) && info.blue >= (cost.b || 0) && info.sc >= (cost.s || 0),
+        btn = worn
+          ? '<button class="btn paint-btn" disabled>' + H.worn + ' ✓</button>'
+          : has
+            ? '<button class="btn paint-btn" data-paint-wear="' +
+              c +
+              '"' +
+              (info.ready ? '' : ' disabled') +
+              '>' +
+              H.wear +
+              '</button>'
+            : locked
+              ? '<button class="btn paint-btn" disabled>🔒<small>' + esc(H.needFirst()) + '</small></button>'
+              : '<button class="btn btn--' +
+                kind +
+                ' paint-btn" data-paint-buy="' +
+                c +
+                '" aria-label="' +
+                esc(H.buyLabel(sel, c)) +
+                '"' +
+                (afford && info.ready ? '' : ' disabled') +
+                '>' +
+                esc(H.price(c)) +
+                '</button>';
+      return (
+        '<article class="paint-row paint--' +
+        c +
+        (worn ? ' is-worn' : '') +
+        (locked ? ' is-locked' : '') +
+        '"><span class="paint-swatch paint--' +
+        c +
+        '">' +
+        paintCraft(sel, base ? null : c) +
+        '</span><div class="paint-main"><h3>' +
+        PN[c] +
+        (worn ? ' <span class="paint-tag">' + H.worn + '</span>' : '') +
+        '</h3><p>' +
+        esc(H.ability(sel, c)) +
+        '</p></div>' +
+        btn +
+        '</article>'
+      );
+    };
+    const setRow = c => {
+      const on = sets.includes(c),
+        n = CRAFT_IDS.filter(id => (info.own[id] || []).includes(c)).length;
+      return (
+        '<div class="set-row paint--' +
+        c +
+        (on ? ' is-on' : '') +
+        '"><span class="paint-dots" role="img" aria-label="' +
+        H.setCount(n) +
+        '">' +
+        CRAFT_IDS.map((id, i) => '<i class="paint--' + c + (i < n ? ' on' : '') + '"></i>').join('') +
+        '</span><b>' +
+        T.paint.setName(c) +
+        '</b><span>' +
+        esc(H.setEffect(c)) +
+        '</span></div>'
+      );
+    };
+    return (
+      '<div class="hangar"><div class="cat-applied"><span>' +
+      H.applied +
+      '</span>' +
+      (applied.length ? applied.join('') : '<small>' + H.appliedNone + '</small>') +
+      '</div><div class="hangar-crafts" role="group" aria-label="' +
+      H.crafts +
+      '">' +
+      CRAFT_IDS.map(craftBtn).join('') +
+      '</div><section class="paint-list" aria-label="' +
+      esc(H.list(sel)) +
+      '">' +
+      ['base', ...PAINT.colors].map(row).join('') +
+      '</section><section class="set-list"><h3>' +
+      H.sets +
+      ' <small>· ' +
+      H.setsNote +
+      '</small></h3>' +
+      PAINT.colors.map(setRow).join('') +
+      '</section><p class="overlay-note cat-note">' +
+      esc(H.note) +
+      '</p></div>'
+    );
+  }
+
   function choice(g, c, i) {
     const u = upgrade(c.id),
       have = g.stack(u.id),
@@ -23324,21 +24187,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     );
   }
 
-  // S 출격 준비: 11종 배분 줄. 출처(기체·영구), 방어 한도(준비+획득), 물리 상한을 함께 보여 준다.
-  // info = { craft, stacks: { craft, perma, prep }, cap(모드 방어 한도), left(남은 배분 수) }
+  // S 출격 준비: 11종 배분 줄. 출처(기체·도색·영구), 방어 한도(준비+획득), 물리 상한을 함께 보여 준다.
+  // info = { craft, stacks: { craft, paint, perma, prep }, cap(모드 방어 한도), left(남은 배분 수) }
   function prepRows(info) {
     const caps = Neon.skillCaps(info.craft);
     return SKILL_GROUPS.flatMap(([, ids]) => ids)
       .map(id => {
         const u = upgrade(id),
           c = info.stacks.craft[id] || 0,
+          d = info.stacks.paint?.[id] || 0,
           m = info.stacks.perma[id] || 0,
           n = info.stacks.prep[id] || 0,
           defense = isDefense(id) && Number.isFinite(info.cap),
           cap = caps[id],
-          total = c + m + n,
+          total = c + d + m + n,
           notes = [];
         if (c) notes.push(TV.prep.craft(c));
+        if (d) notes.push(TV.prep.paint(d));
         if (m) notes.push(TV.prep.perma(m));
         if (defense) notes.push(TV.prep.cap(n, info.cap));
         const full = cap !== undefined && total >= cap;
@@ -23499,7 +24364,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '<div class="result-line">' +
       resultStats(r) +
       '</div>' +
-      (r.buffs?.length ? '<p class="buff-line">' + esc(buffLine(r)) + '</p>' : '') +
+      (buffLine(r) ? '<p class="buff-line">' + esc(buffLine(r)) + '</p>' : '') +
       '<details class="skills-detail"><summary>' +
       D.skills +
       stackCount(r.stacks, r.skills) +
@@ -23571,6 +24436,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     stackList,
     hiddenEntry,
     hiddenPage,
+    paintCraft,
+    hangarEntry,
+    hangarPage,
     stackCount,
     prepRows,
     analysisSummary,
@@ -26196,8 +27064,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       craftFill: resolve(v('cyan')),
       mode: Object.fromEntries(modes.map(id => [id, resolve('var(--mode-' + id + ')')])),
       cat: Object.fromEntries(root.NeonBalance.cats.list.map(id => [id, resolve('var(--cat-' + id + ')')])),
-      // 도색 색(11단계가 정함, 지금은 틀)
-      paint: { yellow: '#ffd84a', blue: '#4aa8ff', violet: '#b88bff' },
+      // 도색 색(R-108): tokens.css --paint-<색>(전투 몸체 · 격납고와 같은 값)
+      paint: Object.fromEntries(
+        root.NeonBalance.paint.colors.map(c => [c, resolve('var(--paint-' + c + ')')]),
+      ),
       skill: Object.fromEntries(
         Object.keys(T.skills).map(id => [id, resolve(String(T.skills[id].color || ''))]),
       ),
@@ -26331,6 +27201,8 @@ let canvas = $('arena'),
   runCats = {},
   runCompanion = null,
   recSelect = null,
+  // 격납고 화면에서 고른 기체(R-106, 열 때 플레이 탭에서 고른 기체)
+  hangarCraft = 'striker',
   // 획득 스킬 줄을 마지막으로 그린 스택(바뀔 때만 다시 그림)
   skillKey = '',
   // Point 보너스 구간을 마지막으로 넘은 횟수 { g, b, s }(R-090 튀어 오름, 판이 새로 시작해 줄면 다시 맞춘다)
@@ -26587,6 +27459,11 @@ function wallet() {
     cats: p.cats || {},
     companion: p.companion ?? null,
     hidden: p.hidden === true,
+    // 격납고 도색(R-106): 열림 · 가진 색 · 입힌 색(balance 색만) · 모음
+    hangar: (p.opened || []).includes('hangar'),
+    own: Object.fromEntries(Object.keys(BAL.crafts).map(id => [id, NeonProgress.paintOwn(p, id)])),
+    wear: Object.fromEntries(Object.keys(BAL.crafts).map(id => [id, NeonProgress.paintWear(p, id)])),
+    sets: NeonProgress.paintSets(p),
   };
 }
 
@@ -26597,11 +27474,13 @@ function showPage(name) {
     ['page-play', 'play'],
     ['page-grow', 'grow'],
     ['page-hidden', 'hidden'],
+    ['page-hangar', 'hangar'],
     ['page-shop', 'shop'],
     ['page-rec', 'rec'],
   ])
     $(id).hidden = key !== name;
-  const tab = name === 'hidden' ? 'grow' : name;
+  // 히든 · 격납고는 성장 탭 안의 뒤로가기 화면
+  const tab = name === 'hidden' || name === 'hangar' ? 'grow' : name;
   for (const t of document.querySelectorAll('.tab'))
     if (t.dataset.tab === tab) t.setAttribute('aria-current', 'page');
     else t.removeAttribute('aria-current');
@@ -26622,8 +27501,18 @@ function closeModeSheet() {
   $('mode-sheet').hidden = true;
   $('mode-open').focus();
 }
+// 기체 칸(R-108): 아이콘 = 입힌 색, 칸 테두리 = 가진 모음 색마다 빛 한 겹(data-sets). 고른 기체 · 도색이 바뀔 때만 다시 그림
+let craftKey = '';
 function renderCrafts() {
-  $('crafts').innerHTML = V.crafts(selected);
+  const w = wallet(),
+    sets = w.sets.join(' '),
+    key = selected + '|' + Object.values(w.wear).join(',') + '|' + sets;
+  if (key === craftKey) return;
+  craftKey = key;
+  $('crafts').innerHTML = V.crafts(selected, w.wear);
+  const area = $('crafts').closest('.area--craft');
+  if (sets) area.dataset.sets = sets;
+  else delete area.dataset.sets;
 }
 function renderRecordsPage() {
   const pages = Math.max(1, Math.ceil(records.length / 10));
@@ -26778,14 +27667,21 @@ async function begin(launch = {}) {
       nextRunId = uid(),
       // 출격 버프(R-062): 켜 둔 스위치(고른 모드가 from 이상일 때만). 비용은 startRun 한 트랜잭션에서 낸다
       want = NeonProgress.buffOk(selectedDifficulty) ? NeonProgress.BUFFS.filter(id => prefs.buffs[id]) : [],
-      started = await profile.startRun(nextRunId, selectedDifficulty, {
-        type: sc ? 'super' : 'normal',
-        startLevel: sc ? Neon.SC_LAUNCH.level : 1,
-        buffs: want,
-      });
+      started = await profile.startRun(
+        nextRunId,
+        selectedDifficulty,
+        {
+          type: sc ? 'super' : 'normal',
+          startLevel: sc ? Neon.SC_LAUNCH.level : 1,
+          buffs: want,
+        },
+        selected,
+      );
     // 영구 스택과 고양이 효과(R-026)는 출격 순간 값으로 고정한다(판 도중 구매 · 동반 변경은 다음 출격부터).
     // 저장소가 막혀 startRun이 실패해도 같은 규칙(catEffects)으로 엔진을 채운다. 버프는 비용을 낸 것만(실패면 없음)
     const cats = started.cats || NeonProgress.catEffects(profile.snapshot()),
+      // 도색(R-107)도 같은 규칙: 저장이 막혀도 그 순간 프로필로 엔진을 채운다
+      paint = started.paint || NeonProgress.paintEffects(profile.snapshot(), selected),
       buffs = started.ok ? started.buffs || [] : [],
       // GM 화면의 일반 출격은 GM 패널의 시작 STAGE에서(R-065)
       gmStage = GM && !sc ? GM.startStage() : undefined,
@@ -26795,6 +27691,7 @@ async function begin(launch = {}) {
       ...launch,
       perma: profile.snapshot().perma,
       cats,
+      paint,
       buffs,
       gmStage,
       gmLate,
@@ -26906,7 +27803,7 @@ function startLate() {
   const L = T.ui.late;
   text('late-kicker', L.kicker(Math.round(g.lateAt / 60)));
   // 부활 줄은 남은 부활이 있을 때만
-  $('late-keep').hidden = !(g.buffs.revive && !g.revived);
+  $('late-keep').hidden = !(g.reviveLeft > 0);
   sfx('late');
   vibrate(L.vibrate);
   tickLate(0);
@@ -27177,6 +28074,8 @@ function makeRecord() {
     launch: { ...g.launch },
     stacks: {
       craft: { ...g.stacks.craft },
+      // 도색 출처(R-107, 기록 stacks의 새 키 — 옛 빌드도 지우지 않음)
+      ...(Object.keys(g.stacks.paint).length ? { paint: { ...g.stacks.paint } } : {}),
       cat: { ...g.stacks.cat },
       perma: { ...g.stacks.perma },
       prep: { ...g.stacks.prep },
@@ -27189,7 +28088,9 @@ function makeRecord() {
     // 10단계(R-100): 출격 순간 동반 · 시간 압박에 닿음 · 쓴 부활 수
     companion: runCompanion,
     late: g.lateOn === true,
-    revives: g.revived === true ? 1 : 0,
+    revives: g.revivesUsed || 0,
+    // 11단계(R-108): 그 판 기체에 입힌 색 · 출격 순간 켜진 모음(기록 카드 · 결과 버프 줄)
+    look: { paint: g.paint.wear, sets: [...g.paint.sets] },
     siegeWaves: g.siegeWaves || 0,
     abilityUsage: g.abilityUsage,
     meta: recorder?.meta || {},
@@ -27600,16 +28501,20 @@ function updateHUD() {
     pointBounce();
   }
   text('level-num', p.level);
-  show('hud-buff-regen', g.buffList.includes('regen'));
-  show('hud-buff-revive', g.buffList.includes('revive'));
+  // HP+ = 버프 또는 FROST 입힘(R-107), Re+ = 부활이 하나라도 있는 판. 둘 이상이면 남은 수 'Re+3' → 2 → 1 → 흐린 'Re+'
+  const regenOn = g.buffList.includes('regen') || g.paint.regen > 0,
+    reviveOn = g.reviveTotal > 0;
+  show('hud-buff-regen', regenOn);
+  show('hud-buff-revive', reviveOn);
+  text('hud-revive-n', g.reviveTotal >= 2 && g.reviveLeft > 0 ? g.reviveLeft : '');
   // 시간 압박(R-101) 뒤 HP 회복 버프는 흐린 회색(Re+와 같은 꼴)
   const regenOff = g.lateOn === true;
   if ($('hud-buff-regen').classList.contains('is-used') !== regenOff)
     $('hud-buff-regen').classList.toggle('is-used', regenOff);
-  const reviveUsed = g.revived === true;
+  const reviveUsed = g.reviveTotal > 0 && g.reviveLeft <= 0;
   if ($('hud-buff-revive').classList.contains('is-used') !== reviveUsed)
     $('hud-buff-revive').classList.toggle('is-used', reviveUsed);
-  show('hud-buffs', g.buffList.includes('regen') || g.buffList.includes('revive'));
+  show('hud-buffs', regenOn || reviveOn);
   setP($('xp-fill'), p.xp / p.nextXP);
   text('xp-cur', num(Math.floor(p.xp)));
   text('xp-max', num(p.nextXP));
@@ -27890,7 +28795,7 @@ function closeUpgradeTip(mark = true) {
 function renderDots() {
   const w = wallet(),
     t = prefs.tips,
-    growB = page === 'grow' || page === 'hidden' ? w.blue : Math.min(t.growB, w.blue);
+    growB = page === 'grow' || page === 'hidden' || page === 'hangar' ? w.blue : Math.min(t.growB, w.blue);
   if (growB !== t.growB) {
     t.growB = growB;
     savePrefs();
@@ -28060,9 +28965,9 @@ function events() {
     if (e.type === 'siege') notify('siege', e.wave);
     if (e.type === 's_spawn') notify('sCoin', e.src);
     if (e.type === 'b_spawn') notify('bCoin', e.src);
-    // 1회 부활(R-062): 금빛 고리(렌더러) · 알림 · 해금 소리 · 진동
+    // 부활(R-062 · R-107): 금빛 고리(렌더러) · 알림 · 해금 소리 · 진동
     if (e.type === 'revive') {
-      notify('revive');
+      notify('revive', g.revivesUsed, g.reviveTotal);
       sfx('unlock');
       vibrate(T.ui.vibe.revive);
     }
@@ -28248,6 +29153,26 @@ function bind() {
       $('menu-body').scrollTop = $('menu-body').scrollHeight;
       $('hidden-open')?.focus();
     }
+    // 격납고(R-106): 성장 탭 아래 칸 → 격납고 화면(기체는 플레이 탭에서 고른 기체부터)
+    if (b.id === 'hangar-open' && wallet().hangar) {
+      hangarCraft = selected;
+      text('hangar-status', '');
+      showPage('hangar');
+      $('hangar-back').focus();
+    }
+    if (b.id === 'hangar-back') {
+      showPage('grow');
+      $('menu-body').scrollTop = $('menu-body').scrollHeight;
+      $('hangar-open')?.focus();
+    }
+    if (b.dataset.hangarCraft) {
+      hangarCraft = b.dataset.hangarCraft;
+      text('hangar-status', '');
+      refreshProfileUI();
+      document.querySelector('[data-hangar-craft="' + hangarCraft + '"]')?.focus();
+    }
+    if (b.dataset.paintBuy) buyPaint(hangarCraft, b.dataset.paintBuy);
+    if (b.dataset.paintWear) wearPaint(hangarCraft, b.dataset.paintWear);
     if (b.dataset.cat) buyCat(b.dataset.cat, Number(b.dataset.catLevel));
     if (b.dataset.catPick) pickCat(b.dataset.catPick);
     if (b.id === 'buy-income') buyIncome();
@@ -28755,6 +29680,7 @@ function refreshProfileUI() {
   }
   renderModeBest();
   renderBuffs();
+  renderCrafts();
   $('difficulty-cards').innerHTML = V.modeCards(
     selectedDifficulty,
     id => profile.isUnlocked(id),
@@ -28777,7 +29703,12 @@ function refreshProfileUI() {
       w.hidden,
       w.companion ? [w.companion, w.cats[w.companion] || 0] : null,
     );
+    $('hangar-entry').innerHTML = V.hangarEntry({ open: w.hangar, wear: w.wear, sets: w.sets });
   }
+  // 격납고가 닫혀 있으면(예: 백업 · GM으로 바꿈) 성장 탭으로 돌아간다
+  if (page === 'hangar' && !w.hangar) showPage('grow');
+  else if (page === 'hangar')
+    $('hangar-view').innerHTML = V.hangarPage({ ...w, sel: hangarCraft, ready: !buyBusy });
   // 히든 탭이 닫혀 있으면(예: 백업으로 바꿈) 성장 탭으로 돌아간다
   if (page === 'hidden' && !w.hidden) showPage('grow');
   else if (page === 'hidden')
@@ -28848,7 +29779,15 @@ async function purchase(statusId, run, okText) {
   try {
     const r = await run();
     const m = T.msg.purchase;
-    text(statusId, r.ok ? (r.duplicate ? m.duplicate : okText(r)) : m[r.reason] || m.failed);
+    const fail = m[r.reason];
+    text(
+      statusId,
+      r.ok
+        ? r.duplicate
+          ? m.duplicate
+          : okText(r)
+        : (typeof fail === 'function' ? fail() : fail) || m.failed,
+    );
   } finally {
     buyBusy = false;
     refreshProfileUI();
@@ -28910,7 +29849,23 @@ function craftSC() {
   return purchase(
     'shop-status',
     () => profile.craftSC(uid()),
-    () => T.msg.purchase.craftSC,
+    r => T.msg.purchase.craftSC(r.made || 1),
+  );
+}
+// 도색(R-106): 사면 바로 입힘. 입히기는 재화 없이 같은 잠금(buyBusy) 길로(판 도중 바꾸면 다음 출격부터)
+function buyPaint(craft, color) {
+  return purchase(
+    'hangar-status',
+    () => profile.buyPaint(uid(), craft, color),
+    () => T.msg.purchase.paintBuy(craft, color),
+  );
+}
+function wearPaint(craft, color) {
+  const c = color === 'base' ? null : color;
+  return purchase(
+    'hangar-status',
+    () => profile.wearPaint(craft, c),
+    () => T.msg.purchase.paintWear(craft, c),
   );
 }
 function buyPerma(skill) {
@@ -28918,7 +29873,7 @@ function buyPerma(skill) {
   return purchase(
     'grow-status',
     () => profile.buyPerma(uid(), skill, owned),
-    r => T.msg.purchase.perma(skill, r.price),
+    r => T.msg.purchase.perma(skill, r.price, r.opened),
   );
 }
 function legacyBest() {
@@ -28951,10 +29906,20 @@ async function openPrep() {
   $('prep').hidden = false;
   $('prep-back').focus();
 }
+// 도색 시작 스킬(R-107): 기체 시작 스킬마다 입힌 색의 start(엔진 stacks.paint와 같은 값, 준비 화면 · 무작위 배분용)
+function paintStacks(craft) {
+  const n = NeonProgress.paintEffects(profile.snapshot(), craft).start;
+  return n ? Object.fromEntries(Object.keys(Neon.CRAFT_START[craft] || {}).map(id => [id, n])) : {};
+}
 function prepInfo() {
   return {
     craft: selected,
-    stacks: { craft: Neon.CRAFT_START[selected] || {}, perma: wallet().perma, prep: prep.picks },
+    stacks: {
+      craft: Neon.CRAFT_START[selected] || {},
+      paint: paintStacks(selected),
+      perma: wallet().perma,
+      prep: prep.picks,
+    },
     cap: Neon.difficulty(selectedDifficulty).defenseCap,
     left: Neon.SC_LAUNCH.picks - Object.values(prep.picks).reduce((a, n) => a + n, 0),
   };
@@ -28971,6 +29936,7 @@ function renderPrep() {
     type: 'super',
     perma: info.stacks.perma,
     prep: prep.picks,
+    paint: NeonProgress.paintEffects(profile.snapshot(), selected),
   });
   text('prep-start', PREP_TEXT.start(preview.stage, preview.p.level));
   text('prep-craft', PREP_TEXT.craft(selected, preview.p.maxHp));
