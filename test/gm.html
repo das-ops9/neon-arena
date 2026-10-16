@@ -5402,6 +5402,449 @@ body[data-fx='low'] .boss-warn.is-on {
   }
 }
 
+/* ── 비행 경력 · 비행 일지(R-115, 계약 design/v5-stage13/stage13.css) ──
+   기록 탭 맨 위: 경력 카드 → 비행 일지 줄 → 기록 목록 · 비행 일지 화면(기록 탭 안 뒤로가기): 말풍선 → 칭호 줄 → 세 사다리 → 안내 한 줄 ·
+   결과 이정표 줄(.talk--row.is-mile, 12단계 고양이 줄과 같은 꼴) */
+.career-view {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+/* 큰 글자(130 · 150%)에서도 기록 탭 폭을 넓히지 않게: 안쪽 한 줄 글자는 줄이거나 말줄임 */
+.career-view > * {
+  min-width: 0;
+}
+/* 경력 카드 */
+.career-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding: 10px var(--sp-3) 4px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+}
+.career-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--sp-2);
+}
+.career-head h3 {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-3);
+  color: var(--cyan);
+  letter-spacing: 0.02em;
+}
+.career-head small {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* 단 칭호(금색 알약, 기록 카드 칭호 띠와 같은 꼴) */
+.title-chip {
+  margin-left: auto;
+  align-self: center;
+  padding: 1px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  color: var(--gold);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-3);
+  white-space: nowrap;
+}
+.career-cells {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.career-cells span {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 5px 2px 4px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  min-width: 0;
+}
+.career-cells b {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-4);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  text-align: center;
+}
+.career-cells small {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+/* 최고 줄 + 자세히(누르는 줄, 44px) */
+.career-more {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  min-height: var(--tap);
+  margin-top: -6px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-2);
+  color: var(--ink-2);
+  text-align: left;
+}
+.career-more span {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.career-more em {
+  flex: none;
+  font-style: normal;
+  color: var(--cyan);
+}
+.career-detail {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px var(--sp-3);
+  padding: var(--sp-2) 0 2px;
+  border-top: 1px dashed var(--line);
+  font-size: var(--fs-xs);
+}
+.career-detail dt {
+  color: var(--muted);
+  font-weight: var(--fw-2);
+}
+.career-detail dd {
+  margin: 0;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+}
+.career-scope {
+  padding: 2px 0 8px;
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+
+/* ── 기록 탭: 비행 일지 줄 ── */
+.journal-entry {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 34px 8px var(--sp-3);
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--gold) 50%, var(--line));
+  background: linear-gradient(160deg, var(--gold-tint), var(--surface));
+  text-align: left;
+}
+.je-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.je-top strong {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-3);
+  color: var(--gold);
+}
+.je-top b {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-4);
+  font-variant-numeric: tabular-nums;
+}
+.je-top b small {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+/* 안 읽은 일지 수(빨강 점 대신 금색 숫자 알약 — 탭 점과 함께) */
+.je-new {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--bg);
+  font-size: 0.625rem;
+  font-style: normal;
+  font-weight: var(--fw-4);
+  line-height: 16px;
+  text-align: center;
+}
+.je-stars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+}
+.je-stars i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+}
+.je-stars i.on {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+.je-next {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-2);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.je-next small {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+.je-next em {
+  font-style: normal;
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.je-bar,
+.mile-bar {
+  flex: 1;
+  min-width: 30px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--cyan) calc(var(--p) * 100%),
+    var(--surface-3) calc(var(--p) * 100%)
+  );
+}
+.je-go {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--fs-lg);
+  color: var(--gold);
+}
+
+/* ── 비행 일지 화면 ──
+   한 화면(384×802 넘침 0): 남는 높이는 이정표 줄 사이에 고르게(화면 배치 원칙). 짧은 화면만 스크롤 */
+.page--journal {
+  min-height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.journal-view {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+.journal-talk .talk-bubble {
+  min-height: 52px;
+}
+.nw {
+  white-space: nowrap;
+}
+.mile-tag {
+  margin-left: 5px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: var(--gold) !important;
+  font-style: normal;
+  letter-spacing: 0 !important;
+}
+.title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  padding: 2px var(--sp-2) 2px var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--line-strong);
+}
+.title-label {
+  margin-right: 2px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-3);
+  color: var(--muted);
+}
+/* 칭호 칩: 누르는 칸은 44px(배치 검사 터치 규칙), 보이는 알약은 안쪽 30px */
+.title-pick {
+  display: inline-grid;
+  align-items: center;
+  min-height: var(--tap);
+  min-width: var(--tap);
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-2);
+  white-space: nowrap;
+}
+.title-pick > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.title-pick[aria-pressed='true'] > span {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  color: var(--gold);
+}
+.title-pick.is-locked {
+  opacity: 0.45;
+}
+.title-pick.is-locked i {
+  font-style: normal;
+  font-size: 0.625rem;
+}
+.mile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.mile-col {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.mile-col h4 {
+  margin: 0 0 4px 4px;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-3);
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+.mile-col ol {
+  position: relative;
+  display: grid;
+  grid-auto-rows: minmax(54px, 1fr);
+  gap: 4px;
+}
+/* 사다리 줄(별 사이를 잇는 세로선) */
+.mile-col ol::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 18px;
+  bottom: 18px;
+  width: 1px;
+  background: var(--line-strong);
+}
+.mile {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 54px;
+  padding: 4px 4px 4px 4px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  text-align: left;
+}
+.mile-star {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.mile-star svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.mile.is-title .mile-star svg {
+  width: 20px;
+  height: 20px;
+}
+.mile.is-done .mile-star svg {
+  fill: var(--gold);
+  stroke: var(--gold);
+}
+.mile.is-done.is-title .mile-star svg {
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gold) 70%, transparent));
+}
+.mile-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.mile-text b {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-3);
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mile.is-done .mile-text b {
+  color: var(--ink);
+}
+.mile-text small {
+  font-size: 0.625rem;
+  font-weight: var(--fw-2);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mile-text small em {
+  font-style: normal;
+  color: var(--gold);
+}
+.mile .mile-bar {
+  height: 3px;
+}
+.mile.is-locked {
+  opacity: 0.55;
+}
+.mile.is-pick {
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  background: color-mix(in srgb, var(--gold) 9%, var(--surface));
+}
+.mile-new {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold);
+}
+.journal-hint {
+  text-align: center;
+}
+.journal-count {
+  margin-left: 4px;
+  font-size: var(--fs-sm);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 결과: 이정표 줄(승진 통과 다음 자리) ── */
+.talk--row.is-mile .talk-bubble {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.talk--row.is-mile .mile-tag {
+  font-size: 0.625rem;
+}
+
     </style>
   </head>
   <body data-mode="title">
@@ -5536,6 +5979,15 @@ body[data-fx='low'] .boss-warn.is-on {
           <p class="overlay-note" id="hangar-status" role="status"></p>
           <div id="hangar-view" class="page"></div>
         </section>
+        <section class="page page--journal" id="page-journal" aria-label="비행 일지" hidden>
+          <div class="page-head page-head--back">
+            <button class="back-btn" id="journal-back" aria-label="기록으로 돌아가기">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.6 5.6 8.2 12l6.4 6.4"/></svg>
+            </button>
+            <h2>비행 일지 <b class="journal-count" id="journal-count"></b></h2>
+          </div>
+          <div id="journal-view" class="page journal-view"></div>
+        </section>
         <section class="page page--shop" id="page-shop" aria-label="상점" hidden>
           <div class="page-head">
             <h2>상점</h2>
@@ -5546,9 +5998,11 @@ body[data-fx='low'] .boss-warn.is-on {
         <section class="page page--records" id="page-rec" aria-label="기록" hidden>
           <div class="page-head">
             <h2>기록</h2>
-            <p>전체 모드 · Point 순 · 최근 100판 보관, 상세 로그는 최근 10판</p>
+            <p>최신순 · 최근 100판 보관, 상세 로그는 최근 10판</p>
           </div>
           <p class="overlay-note" id="rec-status" role="status"></p>
+          <!-- 비행 경력 카드 · 비행 일지 줄(R-115): 첫 판 전에는 비어 있음 -->
+          <div id="career-view" class="career-view" hidden></div>
           <div id="record-list"></div>
           <section class="data-box" data-area="K-DATA" aria-label="데이터 관리">
             <h3>데이터 관리</h3>
@@ -13285,6 +13739,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 100, logs: 10 },
+    // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
+    // 판정 종류 하나씩 — sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
+    // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름 — 마스터는 최종 보스 전 잠김).
+    // title: 칭호를 주는 큰 이정표. door 'world'는 balance.world가 생기기 전(15단계 전)에는 넘지 않는다. 판 진행 영향 0
+    mile: [
+      { id: 'hour1', col: 'fly', sum: 'time', need: 3600 },
+      { id: 'insane1', col: 'fly', sum: 'mode.insane.runs', need: 1 },
+      { id: 'hour10', col: 'fly', sum: 'time', need: 36000 },
+      { id: 'hour50', col: 'fly', sum: 'time', need: 180000, title: true },
+      { id: 'world', col: 'fly', door: 'world', title: true },
+      { id: 'boss1', col: 'fight', sum: 'bosses', need: 1 },
+      { id: 'boss100', col: 'fight', sum: 'bosses', need: 100 },
+      { id: 'kill100k', col: 'fight', sum: 'kills', need: 100000, title: true },
+      { id: 'boss1000', col: 'fight', sum: 'bosses', need: 1000, title: true },
+      { id: 'master', col: 'fight', rank: 4 },
+      { id: 'hangar', col: 'grow', door: 'hangar' },
+      { id: 'paint1', col: 'grow', paint: 1 },
+      { id: 'set1', col: 'grow', set: 1 },
+      { id: 'promo1', col: 'grow', rank: 1 },
+      { id: 'promo3', col: 'grow', rank: 3, title: true },
+    ],
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
     log: {
@@ -13347,11 +13822,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // ── 이름 규칙(I-06, Q112). TERMS.md 맨 위 '이름 규칙'이 이 문장들이다 ──
   const nameRules = [
-    '고유 이름(모드 · 기체 · 도색 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
+    '고유 이름(모드 · 기체 · 도색 · 칭호 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
     '처음 하는 사람이 Help 없이 이름만 보고 효과를 안다. 그 위에 우주 · 네온 느낌을 한 겹(화력 · 부스터 · 궤도 칼날).',
     '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음). 고양이가 승진하면 이름 왼쪽에 단계 칩([중급] 정비사 미오)을 붙이고 이름 글자는 그대로 둔다.',
     '겹치지 않게: 다른 것에 같은 말을 쓰지 않는다(Super 모드 ↔ Super Coin → Star Coin).',
-    "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point.",
+    "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point. 칭호는 영어 대문자 한두 단어 · 11글자 안(VOYAGER · BOSS HUNTER).",
     '지우는 일은 결과가 보이게(전체 초기화).',
     '이름은 `src/terms.js`에서만 만들고 바꾼다. 내부 id · 저장 키는 바꾸지 않는다(표시만). 이름 뒤 조사는 `josa()`로 붙인다.',
   ];
@@ -13639,6 +14114,46 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             : modeName(P.supplyFrom) + '부터 ' + BL + ' +' + P.effect.supplyBlue[i] + '/분';
     return abilities.nova + ' +' + pctOf(P.nova[i]) + '% · ' + own;
   };
+  // ── 이정표 · 칭호(R-114): 키 = balance.mile id(저장 키, 바꾸지 않음 — 표시만 여기서 바꾼다).
+  // 칭호는 영어 고유 이름(이름 규칙 1 · 5, 편집장 2026-10-17): 대문자 한두 단어 · 11글자 안
+  const mile = {
+    hour1: '총 1시간',
+    insane1: '첫 Insane',
+    hour10: '총 10시간',
+    hour50: '총 50시간',
+    world: '월드 열림',
+    boss1: '첫 보스',
+    boss100: '보스 100',
+    kill100k: '처치 10만',
+    boss1000: '보스 1000',
+    master: '마스터',
+    hangar: '격납고',
+    paint1: '첫 도색',
+    set1: '첫 모음',
+    promo1: '첫 승진',
+    promo3: '전문',
+  };
+  const titles = {
+    hour50: 'VOYAGER',
+    world: 'PATHFINDER',
+    kill100k: 'ACE',
+    boss1000: 'BOSS HUNTER',
+    promo3: 'WING LEADER',
+  };
+  // 큰 수 한 곳(R-115): 10만 미만 1,240 · 100만 미만 18.2만 · 1억 미만 4,721만 · 그 위 21.3억(모두 내림)
+  const big = n => {
+    const v = Math.floor(Number(n) || 0),
+      one = x => String(Math.floor(x * 10) / 10);
+    if (v < 100000) return num(v);
+    if (v < 1e6) return one(v / 1e4) + '만';
+    if (v < 1e8) return num(Math.floor(v / 1e4)) + '만';
+    return one(v / 1e8) + '억';
+  };
+  // 시간(초) → 'n시간 m분'(1시간 안이면 'm분')
+  const hm = sec => {
+    const m = Math.floor((Number(sec) || 0) / 60);
+    return m < 60 ? m + '분' : Math.floor(m / 60) + '시간' + (m % 60 ? ' ' + (m % 60) + '분' : '');
+  };
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
   const level = { short: 'LV' };
@@ -13917,13 +14432,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     rec: {
       title: '기록',
       note: () =>
-        '전체 모드 · ' +
-        point.name +
-        ' 순 · 최근 ' +
-        B().records.keep +
-        '판 보관, 상세 로그는 최근 ' +
-        B().records.logs +
-        '판',
+        '최신순 · 최근 ' + B().records.keep + '판 보관, 상세 로그는 최근 ' + B().records.logs + '판',
       data: '데이터 관리',
       dataNote:
         '재화와 기록은 이 브라우저에만 저장됩니다. 파일로 백업해 두면 다른 기기에서도 가져올 수 있습니다.',
@@ -14051,6 +14560,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       paintKeep: '그대로',
       paintAll: '모두 가짐',
       paintNone: '없음',
+      // 이정표(R-114): 고르기(그대로 · 모두 · 없음 — 없음이면 지금 상태로 다시 채움)
+      mile: '이정표',
+      mileAll: '모두',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
@@ -14154,6 +14666,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   // ── 화면 메시지(app.js·view.js가 상황에 따라 쓰는 문구) ──
   const msg = {
+    // 판 밖에서 넘은 이정표(R-115, 격납고 · 성장 상태 줄)
+    mile: ids =>
+      '이정표 · ' +
+      ids.map(id => mile[id] || id).join(' · ') +
+      ' — 기록 탭 비행 일지에 ' +
+      (ids.length > 1 ? ids.length + '장이' : '한 장이') +
+      ' 더해졌습니다.',
     storageFull: '저장 공간 부족 · 기록을 파일로 남기세요',
     storageLimited: '이 브라우저의 저장 기능이 제한되어 있습니다.',
     renderNote: (v, fallback) => 'v' + v + (fallback ? ' · 기본 그래픽' : ''),
@@ -14645,6 +15164,67 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       },
       setCount: n => n + '/3',
       note: '산 색 중 하나를 입혀 출격합니다. 입힌 색만 능력을 주고, 모음은 입힌 색과 상관없이 켜집니다.',
+    },
+    // 비행 경력 카드 · 비행 일지(R-115, 기록 탭). 이정표 이름 · 칭호는 위 mile · titles, 일지 조각은 talk.lines.mile
+    journal: {
+      career: '비행 경력',
+      since: d => d + '부터',
+      stats: ['비행 시간', '판', '처치', '보스'],
+      best: (pt, st, ch) => '최고 ' + pt + ' ' + point.name + ' · ' + stageLabel(st) + ' · CHAIN ' + ch,
+      more: '자세히 ▾',
+      less: '접기 ▴',
+      title: '비행 일지',
+      back: '기록으로 돌아가기',
+      count: (n, all) => n + ' / ' + all,
+      next: '다음',
+      cols: { fly: '비행', fight: '전투', grow: '성장' },
+      titleLabel: '칭호',
+      titleNone: '없음',
+      retro: '이전 기록',
+      titleTag: '칭호',
+      mileTag: '이정표',
+      newMark: '새 일지',
+      unread: n => '새 ' + n,
+      hint: '넘은 별을 누르면 그때의 일지를 다시 봅니다.',
+      // 자세히: 경력 범위 안내(소급 범위, Q205)
+      scope:
+        '경력은 그때 남아 있던 기록 · 플레이 로그로 시작해 그 뒤 모든 판을 셉니다. 기록을 지워도 경력은 그대로입니다.',
+      detail: { craft: '기체', cat: '고양이', mode: '모드', total: '누적' },
+      runs: n => num(n) + '판',
+      // 누적 줄(자세히): s = 경력 sum
+      total: s => [
+        big(s.point) + ' ' + point.name,
+        big(s.gold) + ' ' + G + ' · ' + big(s.blue) + ' ' + BL + ' · ' + num(s.super || 0) + ' ' + SC,
+        abilities.nova + ' 처치 ' + big(s['nova.kills']) + ' · 탄 ' + big(s['nova.clears']),
+        abilities.dash + ' ' + big(s.dash) + ' · 포위 ' + num(s.siege || 0) + '회',
+        '시간 압박 ' +
+          num(s.late || 0) +
+          '판 · 부활 ' +
+          num(s.revive || 0) +
+          '번 · ' +
+          SC +
+          ' 출격 ' +
+          num(s.sc || 0) +
+          '판',
+      ],
+      // 못 넘은 이정표의 아래 줄: m = balance.mile 항목, x = NeonProgress.mileState 항목(have · need · lock · soon)
+      prog: (m, x) => {
+        if (x.soon) return '준비 중';
+        if (x.lock) return '🔒 최종 보스';
+        if (m.sum === 'time')
+          return m.need <= 3600
+            ? Math.floor(x.have / 60) + '/' + m.need / 60 + '분'
+            : Math.floor(x.have / 3600) + '/' + m.need / 3600 + '시간';
+        if (m.sum === 'mode.insane.runs') return modeName('insane') + ' 한 판';
+        if (m.sum) return big(x.have) + '/' + big(m.need);
+        if (m.door === 'hangar') return '영구 ' + Object.keys(E().perma).length + '개 MAX';
+        if (m.door === 'world') return paint.names.violet + ' 모음';
+        if (m.paint) return '격납고 도색';
+        if (m.set) return '세 기체 같은 색';
+        if (m.rank)
+          return m.rank === 1 ? 'Lv' + B().cats.maxLevel + ' 고양이 승진' : rankName(m.rank) + ' 승진';
+        return '';
+      },
     },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
@@ -16123,6 +16703,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               paint.sets +
               ' 효과가 켜집니다.',
           ],
+          // 비행 일지(R-115)
+          [
+            view.journal.title,
+            '기록 탭 맨 위에서 이정표 ' +
+              b.mile.length +
+              '개를 봅니다. 큰 이정표 다섯은 칭호가 되고, 고른 칭호는 다음 판부터 기록 카드에 붙습니다.',
+          ],
         ],
       },
       {
@@ -16546,6 +17133,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           { term: '분석 로그', desc: '한 판의 상세 기록 파일. 상세 분석 화면에서 다시 볼 수 있다.' },
           { term: '백업', desc: '기록과 재화를 파일 하나로 내보내고 다른 기기에서 가져온다.' },
           { term: '중단 기록', desc: '앱이 꺼졌을 때 마지막 저장 시점까지 남는 기록.' },
+          {
+            term: view.journal.career,
+            desc: '기록 탭 맨 위 카드. 비행 시간 · 판 · 처치 · 보스를 모든 판에 걸쳐 센다(기록을 지워도 그대로).',
+          },
+          {
+            term: '이정표',
+            desc:
+              '경력이 어느 선을 넘으면 하나씩 생긴다(비행 · 전투 · 성장 ' +
+              b.mile.length +
+              '개). 이 기능이 생기기 전에 이미 넘은 것은 날짜 없이 ' +
+              view.journal.retro +
+              '.',
+          },
+          {
+            term: view.journal.title,
+            desc: '이정표마다 고양이(히든 탭 전에는 무전)가 들려주는 한 장. 기록 탭 비행 일지 화면에서 다시 본다.',
+          },
+          {
+            term: view.journal.titleLabel,
+            desc:
+              '큰 이정표 다섯이 주는 이름(' +
+              Object.values(titles).join(' · ') +
+              '). 하나를 고르면 그 뒤 판의 기록 카드에 붙는다.',
+          },
         ],
       },
     ];
@@ -16689,6 +17300,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       },
       // 히든 탭이 열린 판의 결과(처음 만남, Q171 '드디어 만났네'): 정비사 미오
       meet: { by: 'engineer', text: '드디어 만났네! 우린 고양이 비행사야. 히든 탭에서 기다릴게.' },
+      // 비행 일지 조각(R-114, '저 별까지' Q185 · 편집장 2026-10-17 초안 그대로): 키 = 이정표 id. by = 고양이 id · 'radio' ·
+      // 'promo'(가장 높이 승진한 고양이). 히든 탭 전이면 누구든 무전(talk.js mileSpeaker). 말풍선 두 줄 안(약 40자)
+      mile: {
+        hour1: { by: 'radio', text: '한 시간째 네 신호를 듣고 있어. 저 별까지는 멀어. 천천히 가자.' },
+        insane1: { by: 'engineer', text: '여기가 별길 끝 구간이야. 저 별은 이 너머래. 기체는 내가 지킬게.' },
+        hour10: { by: 'pilot', text: '열 시간을 날았어! 처음엔 점 같던 저 별이 조금 커졌어.' },
+        hour50: { by: 'pilot', text: '쉰 시간을 날았어. 이제 저 별이 손에 닿을 것 같아.' },
+        world: { by: 'pilot', text: '별길 너머가 열렸어! 저 별을 꿈꾸는 조종사가 우리만이 아니었네.' },
+        boss1: { by: 'radio', text: '첫 보스를 넘었구나. 저 별까지 가는 길이 이제 막 시작됐어.' },
+        boss100: { by: 'supply', text: '보스 100마리째! 장부 한 권이 꽉 찼어. 새 장부 꺼낼게!' },
+        kill100k: { by: 'supply', text: '적 10만을 넘었어! 이 숫자면 별길 끝까지 소문났을걸?' },
+        boss1000: { by: 'supply', text: '보스 1000마리! 장부가 책장 하나를 채웠어. 넌 진짜 사냥꾼이야.' },
+        master: { by: 'promo', text: '최종 보스를 넘었어. 이제 난 마스터야. 저 별까지 끝까지 같이 가자.' },
+        hangar: { by: 'engineer', text: '격납고 문을 열었어. 이제 기체마다 네 색을 입힐 수 있어.' },
+        paint1: { by: 'engineer', text: '첫 도색 끝! 저 별에서도 멀리서 너인 줄 알아보겠다.' },
+        set1: { by: 'engineer', text: '세 기체가 같은 색이야. 나란히 서니까 빛이 달라 보여.' },
+        promo1: { by: 'promo', text: '나 승진했어! 너랑 같이 날면서 나도 자랐나 봐.' },
+        promo3: { by: 'promo', text: '전문이 됐어. 이제 삼각 편대 맨 앞은 나한테 맡겨.' },
+      },
+      // 비행 일지에 아직 한 장도 없을 때(무전)
+      mileFirst: '이정표를 넘을 때마다 일지가 한 장씩 쌓여. 첫 장은 첫 보스야.',
       // ── 히든 탭(맨 위 말풍선) ──
       // 동반 고양이
       buddy: {
@@ -16771,6 +17403,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     promoRanks,
     rankName,
     catLabelText,
+    mile,
+    titles,
+    big,
+    hm,
     abilities,
     stage,
     level,
@@ -16957,7 +17593,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.13.0',
+  const VERSION = '4.14.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -20528,6 +21164,56 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 영구 스킬 11개가 모두 MAX
   const permaFull = p => SKILLS.every(id => count(p.perma[id]) >= permaMax(id));
 
+  // ── 이정표 · 칭호(R-114). 목록은 balance.mile(순서 = 사다리), 이름 · 칭호 · 일지 조각은 terms.
+  // mile 값 = 넘은 시각(ms) · 1 = 이전 기록(13단계 전에 이미 넘음, 날짜 모름). 한 번 적으면 지우지 않는다(조건이 거짓이 돼도)
+  const MILE = Object.freeze([...(B.mile || [])]),
+    MILE_RETRO = 1,
+    TITLE_IDS = Object.freeze(MILE.filter(m => m.title).map(m => m.id));
+  const mileSum = (p, key) => nonNeg(p?.career?.sum?.[key]) || 0;
+  // 가장 높은 승진 단계(Lv5 · 마스터 잠금으로 자른 값)
+  const topRank = p => Math.max(0, ...CATS.map(id => promoRank(p, id)));
+  // 판정은 프로필 값만: 월드는 balance.world가 생기기 전(15단계 전)에는, 마스터는 promoCap 밖이면 넘지 않는다
+  function mileMet(m, p) {
+    if (m.sum) return mileSum(p, m.sum) >= m.need;
+    if (m.door)
+      return (m.door !== 'world' || !!B.world) && Array.isArray(p?.opened) && p.opened.includes(m.door);
+    if (m.paint) return CRAFT_IDS.filter(id => paintOwn(p, id).length > 0).length >= m.paint;
+    if (m.set) return paintSets(p).length >= m.set;
+    if (m.rank) return m.rank <= promoCap() && topRank(p) >= m.rank;
+    return false;
+  }
+  // 판정 한 곳: 아직 없는 이정표 중 조건을 넘은 것을 적는다(retro면 1) → { ok, ids: [새로 넘은 id, 사다리 순] } · 없으면 dup
+  function mileCheck(p, { now, retro } = {}) {
+    if (!isObj(p.mile)) p.mile = {};
+    const at = retro ? MILE_RETRO : natural(now) > MILE_RETRO ? now : MILE_RETRO,
+      ids = [];
+    for (const m of MILE)
+      if (!(natural(p.mile[m.id]) > 0) && mileMet(m, p)) {
+        p.mile[m.id] = at;
+        ids.push(m.id);
+      }
+    return ids.length ? { ok: true, ids } : dup({ ids: [] });
+  }
+  // 화면 상태(비행 일지): 넘음 · 시각 + 못 넘은 것의 진행(have/need) · 잠김(lock) · 준비 중(soon)
+  function mileState(p) {
+    const cap = promoCap(),
+      top = topRank(p);
+    return MILE.map(m => {
+      const at = natural(p?.mile?.[m.id]) || 0,
+        x = { id: m.id, col: m.col, title: !!m.title, done: at > 0, at };
+      if (m.sum) Object.assign(x, { have: mileSum(p, m.sum), need: m.need });
+      else if (m.rank) Object.assign(x, m.rank > cap ? { lock: true } : { have: top, need: m.rank });
+      else if (m.door === 'world' && !B.world) x.soon = true;
+      return x;
+    });
+  }
+  // 가진 칭호 = 넘은 칭호 이정표(저장하지 않고 mile에서 계산) · 단 칭호 = cos.wear.title이 가진 것일 때만
+  const titlesOf = p => TITLE_IDS.filter(id => natural(p?.mile?.[id]) > 0);
+  function titleOf(p) {
+    const w = p?.cos?.wear?.title;
+    return titlesOf(p).includes(w) ? w : null;
+  }
+
   // 순수 규칙: p(프로필 사본)를 바꾸고 결과를 돌려준다.
   const rules = {
     // 출격(R-062 출격 버프 포함): launch.buffs(요청 id 배열)를 BUFFS 순서로 본다. from 모드 아래면 건너뜀('mode'),
@@ -20717,6 +21403,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (p.opened.includes('hangar') || !permaFull(p)) return dup({ opened: [] });
       p.opened.push('hangar');
       return { ok: true, opened: ['hangar'] };
+    },
+    // 이정표(R-114): 프로필 쓰기 한 길(ProfileStore.mutate)을 감싼다. 규칙이 ok면 같은 트랜잭션에서 mileCheck →
+    // 새 이정표가 있으면 결과에 mile: [id]를 붙이고 쓰기(규칙이 dup이어도). ok가 아니면 그대로
+    withMile(change, now) {
+      return (p, r, raw) => {
+        const out = change(p, r, raw);
+        if (!out?.ok) return out;
+        const m = mileCheck(p, { now });
+        return m.duplicate ? out : { ...out, mile: m.ids, duplicate: false };
+      };
+    },
+    // 단 칭호(R-114): null = 벗기 · 칭호 이정표가 아니면 invalid · 아직 안 넘었으면 locked · 같으면 dup
+    setTitle(p, { id }) {
+      const was = p.cos.wear.title ?? null;
+      if (id === null || id === undefined) {
+        if (was === null) return dup();
+        delete p.cos.wear.title;
+        return { ok: true };
+      }
+      if (!TITLE_IDS.includes(id)) return fail('invalid');
+      if (!titlesOf(p).includes(id)) return fail('locked');
+      if (was === id) return dup();
+      p.cos.wear.title = id;
+      return { ok: true };
     },
     buyIncome(p, { txId, expectedTier }) {
       if (!validId(txId)) return fail('invalid');
@@ -20913,7 +21623,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // GM 패널(R-065, GM 저장소에서만): 넘어온 항목만 바꾼다(다른 칸은 그대로). G · B · S는 0~GM_MAX 정수,
     // 고양이 Lv 0~maxLevel, 해금 = easy · hard + 고른 모드, 히든 탭. 레벨 0이 된 동반 고양이는 뺀다.
     // 격납고(R-109): hangar 참/거짓 = 열기 · 닫기, paint 'all' = 세 기체 모든 색 가짐(입힌 색 그대로) · 'none' = 모두 없음
-    gmSet(p, v = {}) {
+    // 이정표(R-114): mile 'all' = 넘을 수 있는 이정표 모두 지금 시각(마스터 · 월드 잠김 그대로) · 'none' = 비움(감싼 mileCheck가 지금 상태로 다시 채움)
+    gmSet(p, v = {}, now = 0) {
       const int = (x, max) => Math.min(max, Math.max(0, Math.floor(Number(x) || 0)));
       for (const k of ['gold', 'blue', 'superCoins']) if (v[k] !== undefined) p[k] = int(v[k], GM_MAX);
       for (const id of CATS) if (v.cats?.[id] !== undefined) p.cats[id] = int(v.cats[id], B.cats.maxLevel);
@@ -20933,6 +21644,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         }
       if ((p.companion && !(p.cats[p.companion] >= 1)) || Array.isArray(p.x?.party))
         writeParty(p, partyOf(p));
+      if (v.mile === 'none') p.mile = {};
+      if (v.mile === 'all') {
+        const at = natural(now) > MILE_RETRO ? now : MILE_RETRO;
+        for (const m of MILE)
+          if (!(natural(p.mile[m.id]) > 0) && !(m.rank > cap) && !(m.door === 'world' && !B.world))
+            p.mile[m.id] = at;
+      }
       return { ok: true };
     },
     // 판 끝(R-100): 정상 종료이고 careerAt이 0인 기록이면 경력에 더하고 기록 careerAt = now(같은 트랜잭션).
@@ -20954,7 +21672,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         promoRun(p, r);
         out.push({ ...r, careerAt: natural(now) || 1 });
       }
-      return out.length ? { ok: true, records: out } : dup({ records: [] });
+      // 이정표(R-114): 주운 판 · 다른 길로 넘은 것까지 이 자리에서 한 번
+      const m = mileCheck(p, { now });
+      return out.length || !m.duplicate
+        ? { ok: true, records: out, mile: m.ids }
+        : dup({ records: [], mile: [] });
     },
     // 백업 가져오기(R-100): 경력 · 이정표는 '프로필 교체' 체크와 상관없이 합친다(잃는 것 없음)
     mergeMemory(p, { profile }) {
@@ -20989,6 +21711,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           /* 처음 값 없이 */
         }
       p.career = s.career;
+      // 이정표(R-114): 이관 때 이미 넘은 것은 '이전 기록'(값 1, 날짜 모름)
+      mileCheck(p, { retro: true });
       const byId = new Map((Array.isArray(records) ? records : []).filter(r => r?.id).map(r => [r.id, r]));
       return {
         ok: true,
@@ -21176,6 +21900,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         if (saved?.schemaVersion === SCHEMA) {
           this.profile = migrate(saved);
           rules.cleanup(this.profile, { now });
+          if (!mileCheck(this.profile, { retro: true }).duplicate)
+            try {
+              localStorage.setItem(KEY, JSON.stringify(this.profile));
+            } catch {}
         } else {
           const m = rules.migrate5(null, { fallback, now, seed: false, version: root.NEON_VERSION || '' });
           this.profile = m.profile;
@@ -21206,8 +21934,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             // MAX를 넘던 영구 스택(R-042)은 migrate가 줄이고 B로 돌려준다. 그 결과를 바로 저장하고 화면에 알린다.
             const p = migrate(raw),
               capped = permaExcess(raw),
-              cleaned = rules.cleanup(p, { now });
-            if (capped || !cleaned.duplicate) os.profiles.put(p);
+              cleaned = rules.cleanup(p, { now }),
+              // 이정표(R-114): 13단계 전(또는 옛 탭)에서 이미 넘은 것은 '이전 기록'(값 1)
+              retro = mileCheck(p, { retro: true });
+            if (capped || !cleaned.duplicate || !retro.duplicate) os.profiles.put(p);
             return { ok: true, profile: p, capped, records: [] };
           }
           const m = rules.migrate5(raw || null, {
@@ -21332,7 +22062,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         tx.onerror = tx.onabort = () => resolve(this.result(false, { reason: 'storage' }));
       });
     }
+    // 이정표(R-114): 모든 쓰기를 rules.withMile로 감싼다 — 판 끝 · 격납고 · 도색 · GM · 백업이 한 길
     mutate(change, recordId) {
+      change = rules.withMile(change, this.now());
       return this.serial(async () => {
         if (this.store.db) return this.transaction(change, recordId);
         if (recordId)
@@ -21605,7 +22337,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // GM 패널(R-065): GM 저장소(접미사 '-gm')에서만 바꾼다. 다른 저장소면 아무것도 하지 않고 gm_only
     gmSet(v) {
       if (!isGm()) return Promise.resolve(this.result(false, { reason: 'gm_only' }));
-      return this.mutate(p => rules.gmSet(p, v));
+      return this.mutate(p => rules.gmSet(p, v, this.now()));
     }
     // 판 끝(R-100): store.save(r) 바로 뒤 · prune() 앞. 프로필 + 그 기록을 한 트랜잭션에서
     addCareer(recordId) {
@@ -21624,17 +22356,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               if (got.main?.schemaVersion !== SCHEMA) return { ok: false, reason: 'migrate' };
               const p = migrate(got.main),
                 res = rules.sweepCareer(p, { records: got.records, now });
-              if (res.duplicate) return { ok: true, added: 0, records: [] };
+              if (res.duplicate) return { ok: true, added: 0, records: [], mile: [] };
               os.profiles.put(p);
               for (const r of res.records) os.records.put(r);
-              return { ok: true, added: res.records.length, records: res.records, profile: p };
+              return {
+                ok: true,
+                added: res.records.length,
+                records: res.records,
+                profile: p,
+                mile: res.mile,
+              };
             },
           );
         if (!out?.ok) return this.result(false, { reason: out?.reason || 'storage' });
         if (out.profile) this.profile = out.profile;
         this.keepRecords(out.records);
-        return this.result(true, { added: out.added });
+        return this.result(true, { added: out.added, mile: out.mile || [] });
       });
+    }
+    // 단 칭호(R-114): id = 칭호 이정표 id 또는 null(벗기)
+    setTitle(id) {
+      return this.mutate(p => rules.setTitle(p, { id }));
     }
     // 백업 가져오기(R-100): schema 3 파일의 경력 · 이정표를 합친다('프로필 교체' 체크와 따로)
     mergeMemory(profile) {
@@ -21703,6 +22445,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     careerSeed,
     careerMerge,
     mileMerge,
+    // 이정표 · 칭호(R-114)
+    MILE,
+    TITLE_IDS,
+    mileCheck,
+    mileState,
+    titlesOf,
+    titleOf,
     V5_FIELDS,
     HISTORY_KEEP,
     ECONOMY,
@@ -24656,29 +25405,292 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   // 고양이가 말하는 승진 줄(R-112, 결과 한마디 자리 · 한 마리 한 줄). events = ProfileStore.addCareer의 events
   // { cat, kind: 'pass' | 'opened' | 'try', rank, nowRank, kills, clears }. 이름 줄은 통과면 새 단계
+  function promoRow(e) {
+    const S = T.talk.lines.promo;
+    const text =
+      e.kind === 'pass'
+        ? S.pass[e.cat](e.rank)
+        : e.kind === 'opened'
+          ? S.opened(e.rank)
+          : S.trying(e.rank, e.kills, e.clears) + S.tail[e.cat];
+    return (
+      '<div class="talk talk--row talk--' +
+      e.cat +
+      (e.kind === 'pass' ? ' is-pass' : '') +
+      '">' +
+      catFace(e.cat, 'talk-face') +
+      '<p class="talk-bubble"><span class="talk-name">' +
+      catLabel(e.cat, e.kind === 'pass' ? e.rank : e.nowRank) +
+      '</span><span class="talk-text">' +
+      esc(text) +
+      '</span></p></div>'
+    );
+  }
   function promoTalk(events = []) {
-    const S = T.talk.lines.promo,
-      row = e => {
-        const text =
-          e.kind === 'pass'
-            ? S.pass[e.cat](e.rank)
-            : e.kind === 'opened'
-              ? S.opened(e.rank)
-              : S.trying(e.rank, e.kills, e.clears) + S.tail[e.cat];
-        return (
-          '<div class="talk talk--row talk--' +
-          e.cat +
-          (e.kind === 'pass' ? ' is-pass' : '') +
-          '">' +
-          catFace(e.cat, 'talk-face') +
-          '<p class="talk-bubble"><span class="talk-name">' +
-          catLabel(e.cat, e.kind === 'pass' ? e.rank : e.nowRank) +
-          '</span><span class="talk-text">' +
-          esc(text) +
-          '</span></p></div>'
-        );
-      };
-    return events.length ? '<div class="talk-rows">' + events.slice(0, 3).map(row).join('') + '</div>' : '';
+    return events.length
+      ? '<div class="talk-rows">' + events.slice(0, 3).map(promoRow).join('') + '</div>'
+      : '';
+  }
+
+  // ── 비행 경력 · 비행 일지(R-115, 계약 design/v5-stage13/journal.js) ──
+  const TJ = TV.journal;
+  // 말하는 이 이름 줄: 무전이면 아이콘 + '??? · 무전', 고양이면 단계 칩 + 이름(12단계 catLabel)
+  const lineName = line =>
+    line.by === 'radio'
+      ? Icons.svg('radio') + esc(T.talk.radioName + ' · ' + T.talk.radio)
+      : catLabel(line.by, line.rank);
+  // 이정표 줄(결과, 12단계 고양이 줄과 같은 꼴): line = NeonTalk.mileLine 결과
+  function mileRow(id, line) {
+    const m = BAL.mile.find(x => x.id === id);
+    return (
+      '<div class="talk talk--row is-mile talk--' +
+      line.by +
+      '">' +
+      catFace(line.shape, 'talk-face') +
+      '<p class="talk-bubble"><span class="talk-name">' +
+      lineName(line) +
+      '<em class="mile-tag">' +
+      esc(TJ.mileTag + ' · ' + T.mile[id] + (m?.title ? ' · ' + TJ.titleTag : '')) +
+      '</em></span><span class="talk-text">' +
+      esc(line.text) +
+      '</span></p></div>'
+    );
+  }
+  // 처음 만남 줄(고양이 줄 꼴): line = NeonTalk.pick('result', { met }) 결과
+  const meetRow = line =>
+    '<div class="talk talk--row talk--' +
+    line.by +
+    '">' +
+    catFace(line.shape, 'talk-face') +
+    '<p class="talk-bubble"><span class="talk-name">' +
+    lineName(line) +
+    '</span><span class="talk-text">' +
+    esc(line.text) +
+    '</span></p></div>';
+  // 결과 고양이 줄(R-112 · R-115): ['처음 만남'] → 승진 통과 → 이정표(사다리 순) → 시험 열림 · 시험, 최대 3줄.
+  // rows = { meet: 줄 | null, events: addCareer events, miles: [[id, mileLine 결과]] } → { html, shown: [보인 이정표 id] }
+  function resultRows({ meet = null, events = [], miles = [] } = {}) {
+    const list = [
+      ...(meet ? [() => meetRow(meet)] : []),
+      ...events.filter(e => e.kind === 'pass').map(e => () => promoRow(e)),
+      ...miles.map(([id, line]) => Object.assign(() => mileRow(id, line), { mile: id })),
+      ...events.filter(e => e.kind !== 'pass').map(e => () => promoRow(e)),
+    ].slice(0, 3);
+    return {
+      html: list.length ? '<div class="talk-rows">' + list.map(f => f()).join('') + '</div>' : '',
+      shown: list.filter(f => f.mile).map(f => f.mile),
+    };
+  }
+  const ymd = ms => {
+    const d = new Date(ms);
+    return (
+      d.getFullYear() +
+      '.' +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      '.' +
+      String(d.getDate()).padStart(2, '0')
+    );
+  };
+  const md = ms => {
+    const d = new Date(ms);
+    return String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+  };
+  // 기록 탭 맨 위 경력 카드: info = { career, title(단 칭호 id · null), open(자세히 펼침) }
+  function careerCard(info) {
+    const c = info.career,
+      s = c.sum || {},
+      x = c.max || {},
+      cells = [
+        [T.hm(s.time), TJ.stats[0]],
+        [num(s.runs || 0), TJ.stats[1]],
+        [T.big(s.kills), TJ.stats[2]],
+        [num(s.bosses || 0), TJ.stats[3]],
+      ];
+    // 기체 · 고양이 · 모드별: 판이 있는 것만
+    const list = (pre, ids, f) =>
+      ids
+        .map(id => [id, s[pre + '.' + id + '.time'] || 0, s[pre + '.' + id + '.runs'] || 0])
+        .filter(r => r[2] > 0)
+        .map(r => '<span class="nw">' + esc(f(r)) + '</span>')
+        .join(' · ') || '-';
+    const D = TJ.detail,
+      detail = !info.open
+        ? ''
+        : '<dl class="career-detail"><dt>' +
+          D.craft +
+          '</dt><dd>' +
+          list('craft', Object.keys(BAL.crafts), r => T.craftName(r[0]) + ' ' + T.hm(r[1])) +
+          '</dd><dt>' +
+          D.cat +
+          '</dt><dd>' +
+          list('cat', BAL.cats.list, r => T.cats[r[0]].name.split(' ').pop() + ' ' + T.hm(r[1])) +
+          '</dd><dt>' +
+          D.mode +
+          '</dt><dd>' +
+          list('mode', Object.keys(BAL.modes), r => T.modeName(r[0]) + ' ' + TJ.runs(r[2])) +
+          '</dd><dt>' +
+          D.total +
+          '</dt><dd>' +
+          TJ.total(s).map(esc).join('<br>') +
+          '</dd></dl><p class="career-scope">' +
+          esc(TJ.scope) +
+          '</p>';
+    return (
+      '<section class="career-card" data-area="K-CAREER" aria-label="' +
+      esc(TJ.career) +
+      '"><div class="career-head"><h3>' +
+      esc(TJ.career) +
+      '</h3>' +
+      (c.first > 0 ? '<small>' + esc(TJ.since(ymd(c.first))) + '</small>' : '') +
+      (info.title ? '<span class="title-chip">' + esc(T.titles[info.title]) + '</span>' : '') +
+      '</div><div class="career-cells">' +
+      cells.map(([v, k]) => '<span><b>' + esc(v) + '</b><small>' + esc(k) + '</small></span>').join('') +
+      '</div><button class="career-more" data-career="more" aria-expanded="' +
+      !!info.open +
+      '"><span>' +
+      esc(TJ.best(T.big(x.score), num(x.stage || 0), num(x.chain || 0))) +
+      '</span><em>' +
+      esc(info.open ? TJ.less : TJ.more) +
+      '</em></button>' +
+      detail +
+      '</section>'
+    );
+  }
+  // 못 넘은 이정표의 진행 글(terms) · 막대 비율
+  const progText = x =>
+    TJ.prog(
+      BAL.mile.find(m => m.id === x.id),
+      x,
+    );
+  const ratio = x => Math.min(1, x.have / x.need).toFixed(3);
+  // '다음' = 숫자 진행이 있는 안 넘은 이정표 중 비율이 가장 높은 것(없으면 사다리 순 첫 안 넘은 것, 잠김 · 준비 중 제외)
+  function nextMile(st) {
+    const left = st.filter(x => !x.done && !x.lock && !x.soon);
+    return left.filter(x => x.need).sort((a, b) => b.have / b.need - a.have / a.need)[0] || left[0] || null;
+  }
+  // 기록 탭 비행 일지 줄(누르면 비행 일지 화면): st = NeonProgress.mileState, unread = 안 읽은 조각 수
+  function journalEntry(st, unread) {
+    const done = st.filter(x => x.done).length,
+      next = nextMile(st);
+    return (
+      '<button class="journal-entry" data-area="K-MILE" data-journal="open"><span class="je-top"><strong>' +
+      esc(TJ.title) +
+      '</strong><b class="num">' +
+      done +
+      '<small>/' +
+      st.length +
+      '</small></b>' +
+      (unread ? '<i class="je-new">' + esc(TJ.unread(unread)) + '</i>' : '') +
+      '<span class="je-stars" aria-hidden="true">' +
+      st.map((x, i) => '<i' + (i < done ? ' class="on"' : '') + '></i>').join('') +
+      '</span></span>' +
+      (next
+        ? '<span class="je-next"><small>' +
+          esc(TJ.next) +
+          '</small> ' +
+          esc(T.mile[next.id]) +
+          (next.need ? '<i class="je-bar" style="--p:' + ratio(next) + '"></i>' : '') +
+          '<em>' +
+          esc(progText(next)) +
+          '</em></span>'
+        : '') +
+      '<span class="je-go" aria-hidden="true">›</span></button>'
+    );
+  }
+  // 별 하나(이정표 표시)
+  const STAR =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.9 6.4.7-4.8 4.3 1.4 6.3L12 16.8 6.3 20l1.4-6.3L2.9 9.4l6.4-.7z"/></svg>';
+  // 비행 일지 화면: info = { st, pick(고른 이정표 id · null), line(그 조각 NeonTalk.mileLine · 없으면 무전 안내 줄),
+  //   read: Set(읽은 id), wear(단 칭호 id · null) }
+  function journalPage(info) {
+    const st = info.st,
+      byId = Object.fromEntries(st.map(x => [x.id, x])),
+      pick = info.pick && byId[info.pick]?.done ? info.pick : null,
+      line = info.line;
+    const bubble =
+      '<div class="talk journal-talk talk--' +
+      line.by +
+      '" data-area="J-TALK">' +
+      catFace(line.shape, 'talk-face') +
+      '<p class="talk-bubble"><span class="talk-name">' +
+      lineName(line) +
+      (pick ? '<em class="mile-tag">' + esc(T.mile[pick]) + '</em>' : '') +
+      '</span><span class="talk-text">' +
+      esc(line.text) +
+      '</span></p></div>';
+    const ids = Object.keys(T.titles),
+      owned = ids.filter(id => byId[id]?.done),
+      chip = (key, label, on, locked) =>
+        '<button class="title-pick' +
+        (locked ? ' is-locked' : '') +
+        '" data-title="' +
+        key +
+        '" aria-pressed="' +
+        on +
+        '"' +
+        (locked ? ' disabled' : '') +
+        '><span>' +
+        (locked ? '<i aria-hidden="true">🔒</i>' : '') +
+        esc(label) +
+        '</span></button>';
+    const titles =
+      '<div class="title-row" role="group" data-area="J-TITLE" aria-label="' +
+      esc(TJ.titleLabel) +
+      '"><span class="title-label">' +
+      esc(TJ.titleLabel) +
+      '</span>' +
+      chip('none', TJ.titleNone, !info.wear, false) +
+      ids.map(id => chip(id, T.titles[id], info.wear === id, !owned.includes(id))).join('') +
+      '</div>';
+    const col = c =>
+      '<div class="mile-col mile-col--' +
+      c +
+      '"><h4>' +
+      esc(TJ.cols[c]) +
+      '</h4><ol>' +
+      st
+        .filter(x => x.col === c)
+        .map(x => {
+          const cls = ['mile'];
+          if (x.done) cls.push('is-done');
+          else if (x.lock || x.soon) cls.push('is-locked');
+          if (x.title) cls.push('is-title');
+          if (pick === x.id) cls.push('is-pick');
+          const unread = x.done && !info.read.has(x.id),
+            sub = x.done ? (x.at === 1 ? TJ.retro : md(x.at)) : progText(x);
+          return (
+            '<li><button class="' +
+            cls.join(' ') +
+            '" data-mile="' +
+            x.id +
+            '"' +
+            (x.done ? '' : ' aria-disabled="true"') +
+            (pick === x.id ? ' aria-current="true"' : '') +
+            '><span class="mile-star">' +
+            STAR +
+            '</span><span class="mile-text"><b>' +
+            esc(T.mile[x.id]) +
+            '</b><small>' +
+            (x.title && x.done ? '<em>' + esc(TJ.titleTag) + '</em> ' : '') +
+            esc(sub) +
+            '</small>' +
+            (!x.done && x.need ? '<i class="mile-bar" style="--p:' + ratio(x) + '"></i>' : '') +
+            '</span>' +
+            (unread ? '<i class="mile-new" role="img" aria-label="' + esc(TJ.newMark) + '"></i>' : '') +
+            '</button></li>'
+          );
+        })
+        .join('') +
+      '</ol></div>';
+    return (
+      bubble +
+      titles +
+      '<div class="mile-grid" data-area="J-MILE">' +
+      ['fly', 'fight', 'grow'].map(col).join('') +
+      '</div><p class="overlay-note journal-hint">' +
+      esc(TJ.hint) +
+      '</p>'
+    );
   }
 
   // ── 격납고 · 도색(R-106) ──
@@ -25201,6 +26213,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     catGlyphSvg,
     catLabel,
     promoTalk,
+    resultRows,
+    careerCard,
+    journalEntry,
+    journalPage,
     helpBody,
     esc,
     num,
@@ -27051,11 +28067,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return shot > 0 && shot > other ? 'nova' : null;
   }
 
-  // 탭 점: 기록(백업 뒤 기록 20판 이상) · 성장(살 수 있는 영구 스킬이 있고 B가 그 뒤 늘었음)
-  function dots({ records, backup, blue, growB, prices } = {}) {
+  // 탭 점: 기록(백업 뒤 기록 20판 이상 · 안 읽은 비행 일지가 있음, R-114) · 성장(살 수 있는 영구 스킬이 있고 B가 그 뒤 늘었음)
+  function dots({ records, backup, blue, growB, prices, unread } = {}) {
     const recs = Array.isArray(records) ? records : [];
     const since = typeof backup === 'number' && Number.isFinite(backup) ? backup : 0;
-    const rec = recs.filter(r => r && r.date > since).length >= 20;
+    const rec = recs.filter(r => r && r.date > since).length >= 20 || Number(unread) > 0;
     const list = Array.isArray(prices) ? prices : [];
     const canBuy = list.some(p => typeof p === 'number' && Number.isFinite(p) && p <= blue);
     return { rec, grow: canBuy && blue > growB };
@@ -27079,7 +28095,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   //   mark = 기기 설정에 적을 것 { said: [줄 id](한 번만 하는 줄), day: 'YYYY-MM-DD'(그날 한 번), lastTip: 전략 팁 id 또는 '' }
   const B = () => root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null),
     T = () => root.NeonTerms || (typeof require === 'function' ? require('./terms.js') : null),
-    Data = () => root.NeonData || (typeof require === 'function' ? require('./data.js') : null);
+    Data = () => root.NeonData || (typeof require === 'function' ? require('./data.js') : null),
+    Prog = () => root.NeonProgress || (typeof require === 'function' ? require('./progression.js') : null);
   const RULE = Object.freeze({
     away: 3, // 오랜만: 마지막 판 뒤 일
     short: 120, // 짧은 판: 이 초 안에 쓰러짐
@@ -27327,6 +28344,37 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     };
   }
 
+  // 비행 일지 조각을 말하는 이(R-114): terms talk.lines.mile[id].by = 고양이 id · 'radio' · 'promo'(가장 높이 승진한 고양이,
+  // 같으면 cats.list 순). 히든 탭이 열리기 전이면 누구든 무전(voice와 같은 규칙), 'radio' 조각은 늘 무전
+  function mileSpeaker(id, profile) {
+    const by = T().talk.lines.mile?.[id]?.by;
+    if (!by || by === 'radio' || profile?.hidden !== true) return 'radio';
+    if (by !== 'promo') return by;
+    let best = CATS()[0],
+      top = -1;
+    for (const c of CATS()) {
+      const r = Prog().promoRank(profile, c);
+      if (r > top) ((best = c), (top = r));
+    }
+    return best;
+  }
+  // 조각 한 줄(결과 이정표 줄 · 비행 일지 말풍선): { by, shape, rank, id, text } — 무전이면 글 앞 RADIO · 실루엣 = 날짜
+  function mileLine(id, profile, now = new Date()) {
+    const piece = T().talk.lines.mile?.[id];
+    if (!piece) return null;
+    const by = mileSpeaker(id, profile);
+    return {
+      ...out({ now }, by, 'mile.' + id, piece.text),
+      rank: by === 'radio' ? 0 : Prog().promoRank(profile, by),
+    };
+  }
+
+  // 비행 일지에 아직 한 장도 없을 때(무전)
+  const mileFirst = (now = new Date()) => ({
+    ...out({ now }, 'radio', 'mile.first', T().talk.lines.mileFirst),
+    rank: 0,
+  });
+
   function pick(kind, ctx = {}, rand = Math.random) {
     if (kind === 'result') return result(ctx, rand);
     if (kind === 'intro') return intro(ctx, rand);
@@ -27334,14 +28382,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     if (kind === 'card') return card(ctx);
     return null;
   }
-  // 기기 설정 talk 정리: { said: { 줄 id: 1 }, day: 'YYYY-MM-DD', lastTip }
+  // 기기 설정 talk 정리: { said: { 줄 id: 1 }, day: 'YYYY-MM-DD', lastTip, mile: { 읽은 이정표 id: 1 }(R-114, 최대 50) }
   function clean(raw) {
-    const said = {};
+    const said = {},
+      mile = {};
     if (raw?.said && typeof raw.said === 'object')
       for (const k of Object.keys(raw.said).slice(-200))
         if (typeof k === 'string' && k.length <= 60) said[k] = 1;
+    if (raw?.mile && typeof raw.mile === 'object')
+      for (const k of Object.keys(raw.mile).slice(0, 50))
+        if (/^[a-z0-9][a-z0-9._-]{0,39}$/.test(k)) mile[k] = 1;
     return {
       said,
+      mile,
       day: typeof raw?.day === 'string' && raw.day.length <= 10 ? raw.day : '',
       lastTip: typeof raw?.lastTip === 'string' && raw.lastTip.length <= 30 ? raw.lastTip : '',
     };
@@ -27352,10 +28405,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     for (const id of mark?.said || []) t.said[id] = 1;
     if (mark?.day) t.day = mark.day;
     if (mark && 'lastTip' in mark) t.lastTip = mark.lastTip || '';
-    return t;
+    for (const id of mark?.mile || []) if (Object.keys(t.mile).length < 50 || t.mile[id]) t.mile[id] = 1;
+    return clean(t);
   }
 
-  const api = { RULE, pick, strategy, clean, remember, seeded, dayKey };
+  const api = { RULE, pick, strategy, clean, remember, seeded, dayKey, mileSpeaker, mileLine, mileFirst };
   root.NeonTalk = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -27847,6 +28901,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       paint: look.paint || undefined,
       sets: look.sets?.length ? look.sets : undefined,
       rank: (cat && ranks[cat]) || look.rank || undefined,
+      // 칭호 띠(R-115): 출격 순간 단 칭호(칭호 이정표 id일 때만)
+      titleName: T.titles?.[look.cos?.title] || undefined,
       week: r.world?.week ? 'WORLD · ' + r.world.week : undefined,
       skills: r.world?.sk ? Object.entries(r.world.sk) : undefined,
     };
@@ -27986,18 +29042,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const check = (id, label) =>
     '<label class="gm-check"><input type="checkbox" id="' + id + '" />' + esc(label) + '</label>';
   // 도색(R-109): 그대로 · 모두 가짐 · 없음(실제 재화 없이 부활 3 · 모음 시험)
-  const paintPick = () =>
+  // 이정표(R-114): 그대로 · 모두 · 없음(없음이면 지금 상태로 다시 채움 — 다음 판 결과 이정표 줄 시험)
+  const pick = (id, label, opts) =>
     '<label class="gm-field">' +
-    esc(G().paint) +
-    '<select id="gm-paint">' +
-    [
+    esc(label) +
+    '<select id="' +
+    id +
+    '">' +
+    opts.map(([v, t]) => '<option value="' + v + '">' + esc(t) + '</option>').join('') +
+    '</select></label>';
+  const paintPick = () =>
+    pick('gm-paint', G().paint, [
       ['keep', G().paintKeep],
       ['all', G().paintAll],
       ['none', G().paintNone],
-    ]
-      .map(([v, t]) => '<option value="' + v + '">' + esc(t) + '</option>')
-      .join('') +
-    '</select></label>';
+    ]);
+  const milePick = () =>
+    pick('gm-mile', G().mile, [
+      ['keep', G().paintKeep],
+      ['all', G().mileAll],
+      ['none', G().paintNone],
+    ]);
   // 승진 단계 칸(R-113): 열 수 있는 단계까지(마스터 잠금)
   const cap = () => root.NeonProgress.promoCap(),
     rankOf = (p, id) => Math.min(cap(), p.promo?.[id]?.rank || 0);
@@ -28035,6 +29100,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       check('gm-hangar', g.hangar) +
       '</div><div class="gm-grid">' +
       paintPick() +
+      milePick() +
       '</div></section><section class="gm-sec"><h3>' +
       esc(g.start) +
       '</h3><div class="gm-grid">' +
@@ -28073,6 +29139,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     $('gm-hidden').checked = p.hidden === true;
     $('gm-hangar').checked = (p.opened || []).includes('hangar');
     $('gm-paint').value = 'keep';
+    $('gm-mile').value = 'keep';
     $('gm-stage').value = startStage();
     $('gm-late').value = lateMin() || '';
     $('gm-status').textContent = '';
@@ -28110,11 +29177,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         hidden: $('gm-hidden').checked,
         hangar: $('gm-hangar').checked,
         paint: $('gm-paint').value === 'keep' ? undefined : $('gm-paint').value,
+        mile: $('gm-mile').value === 'keep' ? undefined : $('gm-mile').value,
       });
       ctx.refreshProfileUI();
       await ctx.refreshRecords();
       load();
-      $('gm-status').textContent = r.ok ? G().applied : G().failed;
+      $('gm-status').textContent = r.ok
+        ? G().applied + (r.mile?.length ? ' · ' + T.msg.mile(r.mile) : '')
+        : G().failed;
     } finally {
       btn.disabled = false;
     }
@@ -28220,7 +29290,13 @@ let canvas = $('arena'),
   // 출격 순간 동반 고양이들 · 동반 · 승진한 고양이 단계(R-111, 기록 party · ranks)
   runParty = [],
   runRanks = {},
+  // 출격 순간 단 칭호(R-115, 기록 look.cos.title — 판 뒤에 바꿔도 그 판 카드는 그대로)
+  runTitle = null,
   recSelect = null,
+  // 기록 탭 경력 '자세히'(이 화면 동안만) · 비행 일지 화면에서 고른 별 · 배치 검사용 가짜 프로필(journalDemo)
+  careerOpen = false,
+  journalPick = null,
+  journalSnap = null,
   // 격납고 화면에서 고른 기체(R-106, 열 때 플레이 탭에서 고른 기체)
   hangarCraft = 'striker',
   // 획득 스킬 줄을 마지막으로 그린 스택(바뀔 때만 다시 그림)
@@ -28492,6 +29568,7 @@ function wallet() {
 }
 
 function showPage(name) {
+  const prev = page;
   page = name;
   $('menu').dataset.page = name;
   for (const [id, key] of [
@@ -28499,12 +29576,16 @@ function showPage(name) {
     ['page-grow', 'grow'],
     ['page-hidden', 'hidden'],
     ['page-hangar', 'hangar'],
+    ['page-journal', 'journal'],
     ['page-shop', 'shop'],
     ['page-rec', 'rec'],
   ])
     $(id).hidden = key !== name;
-  // 히든 · 격납고는 성장 탭 안의 뒤로가기 화면
-  const tab = name === 'hidden' || name === 'hangar' ? 'grow' : name;
+  // 히든 · 격납고는 성장 탭, 비행 일지는 기록 탭 안의 뒤로가기 화면
+  const tab = name === 'hidden' || name === 'hangar' ? 'grow' : name === 'journal' ? 'rec' : name;
+  // 경력 '자세히'는 기록 탭에 들어올 때 접고, 비행 일지는 열 때마다 처음 고르기(안 읽은 것부터)
+  if (name === 'rec' && prev !== 'journal') careerOpen = false;
+  if (name === 'journal') journalPick = null;
   for (const t of document.querySelectorAll('.tab'))
     if (t.dataset.tab === tab) t.setAttribute('aria-current', 'page');
     else t.removeAttribute('aria-current');
@@ -28542,6 +29623,64 @@ function renderRecordsPage() {
   const pages = Math.max(1, Math.ceil(records.length / 10));
   historyPage = Math.min(Math.max(0, historyPage), pages - 1);
   $('record-list').innerHTML = V.recordList(records, historyPage, 10, recSelect);
+  renderCareer();
+}
+// ── 비행 경력 · 비행 일지(R-115). 읽은 일지는 이 기기 설정 talk.mile(백업 대상 아님) ──
+const mileSnap = () => journalSnap || profile.snapshot();
+const mileRead = () => new Set(Object.keys(prefs.talk.mile || {}));
+// 안 읽은 일지 = 넘었고 읽지 않은 이정표(사다리 순)
+function unreadMiles(snap = mileSnap()) {
+  const read = mileRead();
+  return NeonProgress.MILE.filter(m => snap.mile?.[m.id] > 0 && !read.has(m.id)).map(m => m.id);
+}
+function markRead(ids) {
+  const fresh = ids.filter(id => !prefs.talk.mile?.[id]);
+  if (!fresh.length || journalSnap) return;
+  prefs.talk = NeonTalk.remember(prefs.talk, { mile: fresh });
+  savePrefs();
+  if (g.mode === 'menu') renderDots();
+}
+// 기록 탭 맨 위: 경력 카드 + 비행 일지 줄(경력이 비었으면 = 첫 판 전이면 그리지 않음)
+function renderCareer() {
+  const snap = mileSnap(),
+    el = $('career-view'),
+    on = snap.career?.sum?.runs > 0;
+  el.hidden = !on;
+  el.innerHTML = on
+    ? V.careerCard({ career: snap.career, title: NeonProgress.titleOf(snap), open: careerOpen }) +
+      V.journalEntry(NeonProgress.mileState(snap), unreadMiles(snap).length)
+    : '';
+}
+// 처음 고르는 별: 안 읽은 것 중 사다리 순 첫째 → 가장 최근에 넘은 것 → 없음(무전 안내)
+function firstPick(st, read) {
+  const done = st.filter(x => x.done);
+  return (
+    done.find(x => !read.has(x.id))?.id ||
+    done.reduce((a, x) => (!a || x.at >= a.at ? x : a), null)?.id ||
+    null
+  );
+}
+function renderJournal() {
+  const snap = mileSnap(),
+    st = NeonProgress.mileState(snap);
+  if (!st.find(x => x.id === journalPick)?.done) journalPick = firstPick(st, mileRead());
+  // 말풍선에 뜬 조각 = 읽음
+  if (journalPick) markRead([journalPick]);
+  text('journal-count', T.view.journal.count(st.filter(x => x.done).length, st.length));
+  $('journal-view').innerHTML = V.journalPage({
+    st,
+    pick: journalPick,
+    line: journalPick ? NeonTalk.mileLine(journalPick, snap) : NeonTalk.mileFirst(),
+    read: mileRead(),
+    wear: NeonProgress.titleOf(snap),
+  });
+}
+// 칭호 고르기: 재화 없음 · 메뉴에서만. 다음 출격부터 기록에 붙는다
+async function pickTitle(key) {
+  if (g.mode !== 'menu' || journalSnap) return;
+  await profile.setTitle(key === 'none' ? null : key);
+  renderJournal();
+  document.querySelector('[data-title="' + key + '"]')?.focus();
 }
 // 저장소 대기·연결 끊김 안내(TOP3 자리에 보인다)
 function storageWait(on) {
@@ -28747,6 +29886,7 @@ async function begin(launch = {}) {
     // 출격 순간 동반 고양이들(R-100 · R-111 기록 party · companion = 첫 동반) · 승진 단계
     runParty = [...(cats.party || NeonProgress.partyOf(profile.snapshot()))];
     runRanks = { ...(cats.ranks || {}) };
+    runTitle = NeonProgress.titleOf(profile.snapshot());
     runUnlocked = [];
     runHidden = false;
     lastCheckpoint = 0;
@@ -29139,6 +30279,8 @@ function makeRecord() {
       paint: g.paint.wear,
       sets: [...g.paint.sets],
       ...(runRanks[runParty[0]] ? { rank: runRanks[runParty[0]] } : {}),
+      // 13단계(R-115): 출격 순간 단 칭호(이정표 id)
+      ...(runTitle ? { cos: { title: runTitle } } : {}),
     },
     siegeWaves: g.siegeWaves || 0,
     abilityUsage: g.abilityUsage,
@@ -29300,6 +30442,7 @@ function showResult() {
     lastResult = r;
     resultUnlockSound = false;
     resultPromo = null;
+    resultMile = [];
     g.onEvent = null;
     lastSavedPromise = (async () => {
       r.summary = await session.finish(g);
@@ -29325,6 +30468,11 @@ function showResult() {
       // 비행 경력(R-100): 저장 바로 뒤 · 정리 앞, 기록 careerAt과 한 트랜잭션. 승진 판정(R-111)도 같은 자리 →
       // 고양이 줄(R-112)이 결과 한마디를 대신하고, 통과가 있으면 해금 소리 한 번
       const career = ok ? await profile.addCareer(r.id) : null;
+      // 이정표(R-114 · R-115): 이 판에 넘은 이정표 → 결과 고양이 줄(승진 통과 다음)
+      if (career?.mile?.length) {
+        resultMile = career.mile;
+        if (lastResult === r) renderResultTalk();
+      }
       if (career?.events?.length) {
         resultPromo = career.events;
         if (lastResult === r) {
@@ -29350,6 +30498,11 @@ function showResult() {
       runHidden = hidden.ok && hidden.unlocked === true;
       if (runHidden) {
         resultTalk = talkPick('result', { record: r, met: true });
+        if (lastResult === r) renderResultTalk();
+      }
+      // 히든 탭이 열린 순간(같은 판)에도 이정표가 생길 수 있다(mutate 감쌈)
+      if (hidden.mile?.length) {
+        resultMile = [...new Set([...resultMile, ...hidden.mile])];
         if (lastResult === r) renderResultTalk();
       }
       await profile.addHistory(
@@ -29675,6 +30828,8 @@ let coach = null,
   resultTalk = null,
   // 승진 줄(R-112): 이 판 addCareer의 events(있으면 결과 한마디 대신 고양이 줄)
   resultPromo = null,
+  // 이정표 줄(R-115): 이 판에 넘은 이정표 id(사다리 순)
+  resultMile = [],
   hiddenTalk = null;
 // 고양이 한마디(R-102): 고르는 데 쓰는 것을 모아 pick, 한 번만 하는 줄은 기기 설정에 적는다
 function talkPick(kind, extra = {}) {
@@ -29695,8 +30850,24 @@ function talkPick(kind, extra = {}) {
   if (line && line.by !== 'radio' && !line.locked) line.rank = NeonProgress.promoRank(snap, line.by) || 0;
   return line;
 }
+// 결과 한마디 자리(R-112 · R-115): 승진 · 이정표 줄이 있으면 고양이 줄(['처음 만남'] → 통과 → 이정표 → 시험, 최대 3줄),
+// 없으면 한마디. 같은 판에 승진 통과가 있으면 승진 이정표(첫 승진 · 전문 · 마스터) 줄은 뺀다(일지는 안 읽음으로 남음)
+const RANK_MILES = NeonProgress.MILE.filter(m => m.rank).map(m => m.id);
 function renderResultTalk() {
-  $('result-talk').innerHTML = resultPromo?.length ? V.promoTalk(resultPromo) : V.talk(resultTalk);
+  const events = resultPromo || [],
+    pass = events.some(e => e.kind === 'pass'),
+    snap = mileSnap(),
+    miles = resultMile
+      .filter(id => !(pass && RANK_MILES.includes(id)))
+      .map(id => [id, NeonTalk.mileLine(id, snap)])
+      .filter(([, line]) => line);
+  if (!events.length && !miles.length) {
+    $('result-talk').innerHTML = V.talk(resultTalk);
+    return;
+  }
+  const out = V.resultRows({ meet: runHidden ? resultTalk : null, events, miles });
+  $('result-talk').innerHTML = out.html;
+  markRead(out.shown);
 }
 // 줄이 가리키는 버튼 · 할 일 칩 시간(초, 임시값: ROADMAP 6단계 '임시값'): 전투 chips초면 칩이 끝남 · 이동 입력 move초면
 // 이동 ✓ · 줄 흐려짐 fade초 · 셋 다 ✓면 done초 뒤 접힘 · 첫 판 가리킴 차례 [전투 시계 초, 버튼](대시는 STAGE 가리킴
@@ -29872,6 +31043,7 @@ function renderDots() {
   }
   const d = NeonCoach.dots({
     records,
+    unread: unreadMiles().length,
     backup: t.backup,
     blue: w.blue,
     growB,
@@ -30237,6 +31409,26 @@ function bind() {
       showPage('hangar');
       $('hangar-back').focus();
     }
+    // 비행 경력 · 비행 일지(R-115)
+    if (b.dataset.career === 'more') {
+      careerOpen = !careerOpen;
+      renderCareer();
+      document.querySelector('[data-career="more"]')?.focus();
+    }
+    if (b.dataset.journal === 'open') {
+      showPage('journal');
+      $('journal-back').focus();
+    }
+    if (b.id === 'journal-back') {
+      showPage('rec');
+      document.querySelector('[data-journal="open"]')?.focus();
+    }
+    if (b.dataset.mile && b.classList.contains('is-done')) {
+      journalPick = b.dataset.mile;
+      renderJournal();
+      document.querySelector('[data-mile="' + journalPick + '"]')?.focus();
+    }
+    if (b.dataset.title) pickTitle(b.dataset.title);
     if (b.id === 'hangar-back') {
       showPage('grow');
       $('menu-body').scrollTop = $('menu-body').scrollHeight;
@@ -30793,6 +31985,7 @@ function refreshProfileUI() {
         ready: !buyBusy,
         effects: NeonProgress.catEffects(profile.snapshot()),
       });
+  if (page === 'journal') renderJournal();
   if (page === 'shop')
     $('shop-list').innerHTML = V.shopList(
       {
@@ -30854,14 +32047,13 @@ async function purchase(statusId, run, okText) {
     const r = await run();
     const m = T.msg.purchase;
     const fail = m[r.reason];
-    text(
-      statusId,
-      r.ok
-        ? r.duplicate
-          ? m.duplicate
-          : okText(r)
-        : (typeof fail === 'function' ? fail() : fail) || m.failed,
-    );
+    const line = r.ok
+      ? r.duplicate
+        ? m.duplicate
+        : okText(r)
+      : (typeof fail === 'function' ? fail() : fail) || m.failed;
+    // 판 밖에서 넘은 이정표(R-115: 격납고 열림 · 첫 도색 · 첫 모음): 상태 줄 한 줄 + 기록 탭 점
+    text(statusId, r.ok && r.mile?.length ? line + ' ' + T.msg.mile(r.mile) : line);
   } finally {
     buyBusy = false;
     refreshProfileUI();
@@ -31525,6 +32717,86 @@ async function boot() {
           el.style.animationPlayState = 'paused';
         }
         if (kind === 'level' && !$('upgrade').hidden) upgradeTip('levelup');
+      },
+      // 비행 일지(R-115, 배치 검사용 가짜 프로필 — 저장하지 않음): 'rec' = 경력 카드(자세히 펼침) + 일지 줄 ·
+      // 'j9' = 일지 9/15(이전 기록 6 · 새 3 · 칭호 ACE) · 'j1' = 일지 1/15(첫 보스) · 'result' = 승진 통과 + 이정표 + 시험 · null = 끄기
+      journalDemo(kind) {
+        if (kind === 'result') {
+          journalSnap = null;
+          resultPromo = [
+            { cat: 'engineer', kind: 'pass', rank: 2, nowRank: 2, kills: 1500, clears: 8000 },
+            { cat: 'supply', kind: 'try', rank: 3, nowRank: 2, kills: 1240, clears: 6100 },
+          ];
+          resultMile = ['hour50'];
+          renderResultTalk();
+          runUnlocked = ['insane'];
+          renderResultUnlock();
+          text('result-buffs', V.buffLine({ buffs: NeonProgress.BUFFS, revived: true }) || '');
+          $('result-buffs').hidden = false;
+          return;
+        }
+        if (!kind) {
+          journalSnap = null;
+          careerOpen = false;
+          return;
+        }
+        const snap = profile.snapshot(),
+          day = Date.UTC(2026, 9, 14),
+          craft = (t, n) => ({ time: t * 3600, runs: n }),
+          sum = {
+            runs: 312,
+            time: 41 * 3600 + 5 * 60,
+            kills: 1823456,
+            bosses: 612,
+            point: 2130000000,
+            gold: 182345,
+            blue: 41230,
+            super: 512,
+            'nova.kills': 312345,
+            'nova.clears': 1234567,
+            dash: 23456,
+            siege: 812,
+            late: 21,
+            revive: 33,
+            sc: 41,
+          },
+          add = (pre, ids, f) =>
+            ids.forEach((id, i) =>
+              Object.entries(f(i)).forEach(([k, v]) => (sum[pre + '.' + id + '.' + k] = v)),
+            );
+        add('craft', Object.keys(BAL.crafts), i => craft([22, 12, 7][i], [160, 92, 60][i]));
+        add('cat', BAL.cats.list, i => craft([30, 21, 18][i], [200, 150, 120][i]));
+        add('mode', Object.keys(BAL.modes), i => craft(5, [40, 52, 60, 70, 50, 40][i]));
+        const one = kind === 'j1';
+        journalSnap = {
+          ...snap,
+          hidden: true,
+          cats: { engineer: 5, supply: 5, pilot: 5 },
+          promo: { engineer: { rank: 1, open: 2, best: {} } },
+          career: {
+            ...snap.career,
+            first: Date.UTC(2026, 9, 2),
+            sum: one ? { runs: 3, time: 900, kills: 2300, bosses: 1 } : sum,
+            max: { score: 47210000, stage: 74, chain: 1240 },
+          },
+          mile: one
+            ? { boss1: day }
+            : {
+                hour1: 1,
+                insane1: 1,
+                boss1: 1,
+                boss100: 1,
+                hangar: 1,
+                paint1: 1,
+                hour10: day,
+                kill100k: day,
+                promo1: day,
+              },
+          cos: { ...snap.cos, wear: one ? {} : { title: 'kill100k' } },
+        };
+        careerOpen = kind === 'rec';
+        if (page === 'rec') renderCareer();
+        if (page === 'journal') renderJournal();
       },
       // 승진 결과(R-112, 배치 검사용): 고양이 줄 셋(통과 · 시험 · 열림) + 해금 줄 + 버프 줄
       promoDemo() {

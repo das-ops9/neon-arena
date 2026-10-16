@@ -4843,6 +4843,27 @@ return Plotly;
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 100, logs: 10 },
+    // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
+    // 판정 종류 하나씩 — sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
+    // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름 — 마스터는 최종 보스 전 잠김).
+    // title: 칭호를 주는 큰 이정표. door 'world'는 balance.world가 생기기 전(15단계 전)에는 넘지 않는다. 판 진행 영향 0
+    mile: [
+      { id: 'hour1', col: 'fly', sum: 'time', need: 3600 },
+      { id: 'insane1', col: 'fly', sum: 'mode.insane.runs', need: 1 },
+      { id: 'hour10', col: 'fly', sum: 'time', need: 36000 },
+      { id: 'hour50', col: 'fly', sum: 'time', need: 180000, title: true },
+      { id: 'world', col: 'fly', door: 'world', title: true },
+      { id: 'boss1', col: 'fight', sum: 'bosses', need: 1 },
+      { id: 'boss100', col: 'fight', sum: 'bosses', need: 100 },
+      { id: 'kill100k', col: 'fight', sum: 'kills', need: 100000, title: true },
+      { id: 'boss1000', col: 'fight', sum: 'bosses', need: 1000, title: true },
+      { id: 'master', col: 'fight', rank: 4 },
+      { id: 'hangar', col: 'grow', door: 'hangar' },
+      { id: 'paint1', col: 'grow', paint: 1 },
+      { id: 'set1', col: 'grow', set: 1 },
+      { id: 'promo1', col: 'grow', rank: 1 },
+      { id: 'promo3', col: 'grow', rank: 3, title: true },
+    ],
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
     log: {
@@ -4905,11 +4926,11 @@ return Plotly;
 
   // ── 이름 규칙(I-06, Q112). TERMS.md 맨 위 '이름 규칙'이 이 문장들이다 ──
   const nameRules = [
-    '고유 이름(모드 · 기체 · 도색 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
+    '고유 이름(모드 · 기체 · 도색 · 칭호 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
     '처음 하는 사람이 Help 없이 이름만 보고 효과를 안다. 그 위에 우주 · 네온 느낌을 한 겹(화력 · 부스터 · 궤도 칼날).',
     '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음). 고양이가 승진하면 이름 왼쪽에 단계 칩([중급] 정비사 미오)을 붙이고 이름 글자는 그대로 둔다.',
     '겹치지 않게: 다른 것에 같은 말을 쓰지 않는다(Super 모드 ↔ Super Coin → Star Coin).',
-    "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point.",
+    "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point. 칭호는 영어 대문자 한두 단어 · 11글자 안(VOYAGER · BOSS HUNTER).",
     '지우는 일은 결과가 보이게(전체 초기화).',
     '이름은 `src/terms.js`에서만 만들고 바꾼다. 내부 id · 저장 키는 바꾸지 않는다(표시만). 이름 뒤 조사는 `josa()`로 붙인다.',
   ];
@@ -5197,6 +5218,46 @@ return Plotly;
             : modeName(P.supplyFrom) + '부터 ' + BL + ' +' + P.effect.supplyBlue[i] + '/분';
     return abilities.nova + ' +' + pctOf(P.nova[i]) + '% · ' + own;
   };
+  // ── 이정표 · 칭호(R-114): 키 = balance.mile id(저장 키, 바꾸지 않음 — 표시만 여기서 바꾼다).
+  // 칭호는 영어 고유 이름(이름 규칙 1 · 5, 편집장 2026-10-17): 대문자 한두 단어 · 11글자 안
+  const mile = {
+    hour1: '총 1시간',
+    insane1: '첫 Insane',
+    hour10: '총 10시간',
+    hour50: '총 50시간',
+    world: '월드 열림',
+    boss1: '첫 보스',
+    boss100: '보스 100',
+    kill100k: '처치 10만',
+    boss1000: '보스 1000',
+    master: '마스터',
+    hangar: '격납고',
+    paint1: '첫 도색',
+    set1: '첫 모음',
+    promo1: '첫 승진',
+    promo3: '전문',
+  };
+  const titles = {
+    hour50: 'VOYAGER',
+    world: 'PATHFINDER',
+    kill100k: 'ACE',
+    boss1000: 'BOSS HUNTER',
+    promo3: 'WING LEADER',
+  };
+  // 큰 수 한 곳(R-115): 10만 미만 1,240 · 100만 미만 18.2만 · 1억 미만 4,721만 · 그 위 21.3억(모두 내림)
+  const big = n => {
+    const v = Math.floor(Number(n) || 0),
+      one = x => String(Math.floor(x * 10) / 10);
+    if (v < 100000) return num(v);
+    if (v < 1e6) return one(v / 1e4) + '만';
+    if (v < 1e8) return num(Math.floor(v / 1e4)) + '만';
+    return one(v / 1e8) + '억';
+  };
+  // 시간(초) → 'n시간 m분'(1시간 안이면 'm분')
+  const hm = sec => {
+    const m = Math.floor((Number(sec) || 0) / 60);
+    return m < 60 ? m + '분' : Math.floor(m / 60) + '시간' + (m % 60 ? ' ' + (m % 60) + '분' : '');
+  };
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
   const level = { short: 'LV' };
@@ -5475,13 +5536,7 @@ return Plotly;
     rec: {
       title: '기록',
       note: () =>
-        '전체 모드 · ' +
-        point.name +
-        ' 순 · 최근 ' +
-        B().records.keep +
-        '판 보관, 상세 로그는 최근 ' +
-        B().records.logs +
-        '판',
+        '최신순 · 최근 ' + B().records.keep + '판 보관, 상세 로그는 최근 ' + B().records.logs + '판',
       data: '데이터 관리',
       dataNote:
         '재화와 기록은 이 브라우저에만 저장됩니다. 파일로 백업해 두면 다른 기기에서도 가져올 수 있습니다.',
@@ -5609,6 +5664,9 @@ return Plotly;
       paintKeep: '그대로',
       paintAll: '모두 가짐',
       paintNone: '없음',
+      // 이정표(R-114): 고르기(그대로 · 모두 · 없음 — 없음이면 지금 상태로 다시 채움)
+      mile: '이정표',
+      mileAll: '모두',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
@@ -5712,6 +5770,13 @@ return Plotly;
 
   // ── 화면 메시지(app.js·view.js가 상황에 따라 쓰는 문구) ──
   const msg = {
+    // 판 밖에서 넘은 이정표(R-115, 격납고 · 성장 상태 줄)
+    mile: ids =>
+      '이정표 · ' +
+      ids.map(id => mile[id] || id).join(' · ') +
+      ' — 기록 탭 비행 일지에 ' +
+      (ids.length > 1 ? ids.length + '장이' : '한 장이') +
+      ' 더해졌습니다.',
     storageFull: '저장 공간 부족 · 기록을 파일로 남기세요',
     storageLimited: '이 브라우저의 저장 기능이 제한되어 있습니다.',
     renderNote: (v, fallback) => 'v' + v + (fallback ? ' · 기본 그래픽' : ''),
@@ -6203,6 +6268,67 @@ return Plotly;
       },
       setCount: n => n + '/3',
       note: '산 색 중 하나를 입혀 출격합니다. 입힌 색만 능력을 주고, 모음은 입힌 색과 상관없이 켜집니다.',
+    },
+    // 비행 경력 카드 · 비행 일지(R-115, 기록 탭). 이정표 이름 · 칭호는 위 mile · titles, 일지 조각은 talk.lines.mile
+    journal: {
+      career: '비행 경력',
+      since: d => d + '부터',
+      stats: ['비행 시간', '판', '처치', '보스'],
+      best: (pt, st, ch) => '최고 ' + pt + ' ' + point.name + ' · ' + stageLabel(st) + ' · CHAIN ' + ch,
+      more: '자세히 ▾',
+      less: '접기 ▴',
+      title: '비행 일지',
+      back: '기록으로 돌아가기',
+      count: (n, all) => n + ' / ' + all,
+      next: '다음',
+      cols: { fly: '비행', fight: '전투', grow: '성장' },
+      titleLabel: '칭호',
+      titleNone: '없음',
+      retro: '이전 기록',
+      titleTag: '칭호',
+      mileTag: '이정표',
+      newMark: '새 일지',
+      unread: n => '새 ' + n,
+      hint: '넘은 별을 누르면 그때의 일지를 다시 봅니다.',
+      // 자세히: 경력 범위 안내(소급 범위, Q205)
+      scope:
+        '경력은 그때 남아 있던 기록 · 플레이 로그로 시작해 그 뒤 모든 판을 셉니다. 기록을 지워도 경력은 그대로입니다.',
+      detail: { craft: '기체', cat: '고양이', mode: '모드', total: '누적' },
+      runs: n => num(n) + '판',
+      // 누적 줄(자세히): s = 경력 sum
+      total: s => [
+        big(s.point) + ' ' + point.name,
+        big(s.gold) + ' ' + G + ' · ' + big(s.blue) + ' ' + BL + ' · ' + num(s.super || 0) + ' ' + SC,
+        abilities.nova + ' 처치 ' + big(s['nova.kills']) + ' · 탄 ' + big(s['nova.clears']),
+        abilities.dash + ' ' + big(s.dash) + ' · 포위 ' + num(s.siege || 0) + '회',
+        '시간 압박 ' +
+          num(s.late || 0) +
+          '판 · 부활 ' +
+          num(s.revive || 0) +
+          '번 · ' +
+          SC +
+          ' 출격 ' +
+          num(s.sc || 0) +
+          '판',
+      ],
+      // 못 넘은 이정표의 아래 줄: m = balance.mile 항목, x = NeonProgress.mileState 항목(have · need · lock · soon)
+      prog: (m, x) => {
+        if (x.soon) return '준비 중';
+        if (x.lock) return '🔒 최종 보스';
+        if (m.sum === 'time')
+          return m.need <= 3600
+            ? Math.floor(x.have / 60) + '/' + m.need / 60 + '분'
+            : Math.floor(x.have / 3600) + '/' + m.need / 3600 + '시간';
+        if (m.sum === 'mode.insane.runs') return modeName('insane') + ' 한 판';
+        if (m.sum) return big(x.have) + '/' + big(m.need);
+        if (m.door === 'hangar') return '영구 ' + Object.keys(E().perma).length + '개 MAX';
+        if (m.door === 'world') return paint.names.violet + ' 모음';
+        if (m.paint) return '격납고 도색';
+        if (m.set) return '세 기체 같은 색';
+        if (m.rank)
+          return m.rank === 1 ? 'Lv' + B().cats.maxLevel + ' 고양이 승진' : rankName(m.rank) + ' 승진';
+        return '';
+      },
     },
     defense: (used, cap) => '방어 ' + used + '/' + cap,
     owned: (have, next) => '보유 ' + have + ' → ' + next,
@@ -7681,6 +7807,13 @@ return Plotly;
               paint.sets +
               ' 효과가 켜집니다.',
           ],
+          // 비행 일지(R-115)
+          [
+            view.journal.title,
+            '기록 탭 맨 위에서 이정표 ' +
+              b.mile.length +
+              '개를 봅니다. 큰 이정표 다섯은 칭호가 되고, 고른 칭호는 다음 판부터 기록 카드에 붙습니다.',
+          ],
         ],
       },
       {
@@ -8104,6 +8237,30 @@ return Plotly;
           { term: '분석 로그', desc: '한 판의 상세 기록 파일. 상세 분석 화면에서 다시 볼 수 있다.' },
           { term: '백업', desc: '기록과 재화를 파일 하나로 내보내고 다른 기기에서 가져온다.' },
           { term: '중단 기록', desc: '앱이 꺼졌을 때 마지막 저장 시점까지 남는 기록.' },
+          {
+            term: view.journal.career,
+            desc: '기록 탭 맨 위 카드. 비행 시간 · 판 · 처치 · 보스를 모든 판에 걸쳐 센다(기록을 지워도 그대로).',
+          },
+          {
+            term: '이정표',
+            desc:
+              '경력이 어느 선을 넘으면 하나씩 생긴다(비행 · 전투 · 성장 ' +
+              b.mile.length +
+              '개). 이 기능이 생기기 전에 이미 넘은 것은 날짜 없이 ' +
+              view.journal.retro +
+              '.',
+          },
+          {
+            term: view.journal.title,
+            desc: '이정표마다 고양이(히든 탭 전에는 무전)가 들려주는 한 장. 기록 탭 비행 일지 화면에서 다시 본다.',
+          },
+          {
+            term: view.journal.titleLabel,
+            desc:
+              '큰 이정표 다섯이 주는 이름(' +
+              Object.values(titles).join(' · ') +
+              '). 하나를 고르면 그 뒤 판의 기록 카드에 붙는다.',
+          },
         ],
       },
     ];
@@ -8247,6 +8404,27 @@ return Plotly;
       },
       // 히든 탭이 열린 판의 결과(처음 만남, Q171 '드디어 만났네'): 정비사 미오
       meet: { by: 'engineer', text: '드디어 만났네! 우린 고양이 비행사야. 히든 탭에서 기다릴게.' },
+      // 비행 일지 조각(R-114, '저 별까지' Q185 · 편집장 2026-10-17 초안 그대로): 키 = 이정표 id. by = 고양이 id · 'radio' ·
+      // 'promo'(가장 높이 승진한 고양이). 히든 탭 전이면 누구든 무전(talk.js mileSpeaker). 말풍선 두 줄 안(약 40자)
+      mile: {
+        hour1: { by: 'radio', text: '한 시간째 네 신호를 듣고 있어. 저 별까지는 멀어. 천천히 가자.' },
+        insane1: { by: 'engineer', text: '여기가 별길 끝 구간이야. 저 별은 이 너머래. 기체는 내가 지킬게.' },
+        hour10: { by: 'pilot', text: '열 시간을 날았어! 처음엔 점 같던 저 별이 조금 커졌어.' },
+        hour50: { by: 'pilot', text: '쉰 시간을 날았어. 이제 저 별이 손에 닿을 것 같아.' },
+        world: { by: 'pilot', text: '별길 너머가 열렸어! 저 별을 꿈꾸는 조종사가 우리만이 아니었네.' },
+        boss1: { by: 'radio', text: '첫 보스를 넘었구나. 저 별까지 가는 길이 이제 막 시작됐어.' },
+        boss100: { by: 'supply', text: '보스 100마리째! 장부 한 권이 꽉 찼어. 새 장부 꺼낼게!' },
+        kill100k: { by: 'supply', text: '적 10만을 넘었어! 이 숫자면 별길 끝까지 소문났을걸?' },
+        boss1000: { by: 'supply', text: '보스 1000마리! 장부가 책장 하나를 채웠어. 넌 진짜 사냥꾼이야.' },
+        master: { by: 'promo', text: '최종 보스를 넘었어. 이제 난 마스터야. 저 별까지 끝까지 같이 가자.' },
+        hangar: { by: 'engineer', text: '격납고 문을 열었어. 이제 기체마다 네 색을 입힐 수 있어.' },
+        paint1: { by: 'engineer', text: '첫 도색 끝! 저 별에서도 멀리서 너인 줄 알아보겠다.' },
+        set1: { by: 'engineer', text: '세 기체가 같은 색이야. 나란히 서니까 빛이 달라 보여.' },
+        promo1: { by: 'promo', text: '나 승진했어! 너랑 같이 날면서 나도 자랐나 봐.' },
+        promo3: { by: 'promo', text: '전문이 됐어. 이제 삼각 편대 맨 앞은 나한테 맡겨.' },
+      },
+      // 비행 일지에 아직 한 장도 없을 때(무전)
+      mileFirst: '이정표를 넘을 때마다 일지가 한 장씩 쌓여. 첫 장은 첫 보스야.',
       // ── 히든 탭(맨 위 말풍선) ──
       // 동반 고양이
       buddy: {
@@ -8329,6 +8507,10 @@ return Plotly;
     promoRanks,
     rankName,
     catLabelText,
+    mile,
+    titles,
+    big,
+    hm,
     abilities,
     stage,
     level,
