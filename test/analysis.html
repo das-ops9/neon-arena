@@ -4865,6 +4865,7 @@ return Plotly;
     "문장은 '~합니다', 라벨은 명사형. 켜고 끔은 '켜기/끄기'(ON/OFF 안 씀).",
     "문장 속에 '스택'을 쓰지 않는다. '+1'처럼 숫자로.",
     "효과는 '하면 어떻게 되는지'로(예: '추천 스킬 자동 선택' → '스킬을 대신 골라 줍니다').",
+    "고양이 대사(talk)는 캐릭터 말투(반말)다 — '~합니다' 규칙의 예외(R-102).",
   ];
 
   // ── 이름 ──
@@ -5455,6 +5456,37 @@ return Plotly;
     // S 출격 시작 연출(R-048, O-INTRO): 제목 2초 → 3 · 2 · 1 각 1초. 그동안 적 · 시간이 멈춘다
     // 알림 sec처럼 보이는 시간도 여기 둔다: titleSec 초 + count 초, 진동 패턴(ms, 약 2초)
     intro: { title: SC + ' 출격', titleSec: 2, count: 3, vibrate: [200, 100, 200, 100, 600] },
+    // 기록 카드(R-103, O-CARD): 결과 · 기록 상세 버튼 → 창(미리보기 · 공유하기 | 그림 저장)
+    card: {
+      button: '기록 카드',
+      title: '기록 카드',
+      share: '공유하기',
+      save: '그림 저장',
+      close: '닫기',
+      making: '카드를 만드는 중입니다.',
+      hint: '공유 창이 열리지 않으면 그림으로 저장합니다.',
+      shareFail: '공유하지 못해 그림으로 저장했습니다.',
+      saved: '그림을 저장했습니다.',
+      fail: '카드를 만들지 못했습니다.',
+      alt: '이 판의 기록 카드',
+      file: 'NEON-card-',
+      time: '시간',
+      place: (kind, n) => rankingName(kind) + ' ' + n + '위' + (n === 1 ? ' · NEW BEST' : ''),
+    },
+    // 시간 압박 창(R-101, O-LATE): 머리(분) · 제목 · 바뀌는 것 줄 · 안내 → titleSec초 뒤 count부터 카운트다운. 임시값
+    late: {
+      kicker: min => min + ':00',
+      title: '시간 압박',
+      lines: {
+        harder: '적이 1분마다 더 세지고 많아집니다',
+        heal: '모든 HP 회복이 멈춥니다',
+        revive: '부활은 그대로입니다',
+      },
+      hint: '화면을 누르면 바로 시작합니다',
+      titleSec: 2.6,
+      count: 3,
+      vibrate: [120, 80, 240],
+    },
     // 전투 진동 패턴(R-055, ms · 설정 '진동'): 피격 · 보스 등장 경고 · 레벨업 창(AUTO가 아닐 때) · 1회 부활(R-062). 임시값
     vibe: { hurt: 30, boss: [90, 120, 90], level: 40, revive: [60, 40, 160] },
     // 출격 버프 스위치 묶음(R-062, shell.html P-BUFF 읽기 이름)
@@ -5476,6 +5508,9 @@ return Plotly;
       hidden: '히든 탭',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
+      // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
+      late: '시간 압박 시작(분)',
+      lateNote: '비우면 20분',
       fill: '가득 채우기',
       apply: '적용',
       close: '닫기',
@@ -5500,15 +5535,11 @@ return Plotly;
       menu: '메뉴로',
       skills: '스킬 내역',
       rewardDetail: '보상 내역',
-      noteLabel: '기록 한 줄 저장',
-      note: '한 줄 남기기',
-      noteHint: () => '선택 · 최대 ' + E().noteMax + '자 · 글자당 ' + E().notePerChar + ' ' + G,
-      notePlaceholder: '이번 판의 한마디',
-      noteCost: () => '0자 · 0 ' + G,
-      noteSave: '한 줄 남기기',
-      noteSkip: '건너뛰기',
-      exportLog: '분석 로그 저장',
-      analysis: '상세 분석',
+      noteLabel: '이 판을 한 줄로 남기기',
+      notePlaceholder: () => '이 판을 한 줄로 · 글자당 ' + E().notePerChar + ' ' + G,
+      noteSave: '남기기',
+      // 맨 아래 글자 버튼 줄(R-105): 펼침 둘 | 구석 둘
+      more: { skills: '스킬 내역 ▾', play: '플레이 분석 ▾', log: '로그 저장', analysis: '상세 분석' },
     },
     settings: {
       kicker: 'SETTINGS',
@@ -5554,7 +5585,7 @@ return Plotly;
       help: '도움말',
       done: '설정 완료',
     },
-    detail: { exportLog: '분석 로그 저장', analysis: '상세 분석', back: '돌아가기' },
+    detail: { back: '돌아가기' },
     del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
     reset: { kicker: 'RESET', cancel: '취소' },
     import: {
@@ -5791,7 +5822,8 @@ return Plotly;
       saved: '한 줄 저장 완료',
       quote: (count, cost, rest) =>
         count + ' / ' + E().noteMax + '글자 · ' + cost + ' ' + G + ' · 저장 후 ' + num(rest) + ' ' + G,
-      save: (count, cost) => (count ? cost + ' ' + G + '로 남기기' : '한 줄 남기기'),
+      // 남기기 버튼 글자 = 값(R-105), 입력이 없으면 '남기기'
+      save: (count, cost) => (count ? cost + ' ' + G : '남기기'),
       tooLong: () => E().noteMax + '글자까지 입력할 수 있습니다.',
       short: (count, cost) => count + ' / ' + E().noteMax + '글자 · ' + cost + ' ' + G + ' · 잔액 부족',
       limited: '이 브라우저에서는 유료 한 줄 저장을 사용할 수 없습니다. ' + G + '는 차감하지 않습니다.',
@@ -5837,6 +5869,9 @@ return Plotly;
       waitOldTab: '다른 탭에 열린 이전 버전을 닫아 주세요. 닫으면 바로 이어집니다.',
       // 다른 탭에서 새 버전이 열려 이 탭의 저장소 연결이 끊겼을 때
       closed: '다른 탭에서 새 버전이 열려 이 탭은 저장을 멈췄습니다. 새로고침해 주세요.',
+      // 저장 형식 이관(R-100)이 아직 끝나지 않아 프로필을 쓰지 않았을 때
+      migrate:
+        '저장 형식을 새로 맞추지 못해 저장을 멈췄습니다. 앱을 다시 열어 주세요. 기록 · 재화는 그대로입니다.',
     },
   };
 
@@ -5979,6 +6014,8 @@ return Plotly;
       nova: n => abilities.nova + ' ' + n + '회',
       boss: n => '보스 ' + n + '회 격파',
       topDamage: kind => '주요 피격: ' + enemyName(kind),
+      // 기록 상세의 접는 칸 제목(R-105, 결과의 '플레이 분석 ▾'와 같은 내용)
+      play: '플레이 분석',
       none: '상세 스킬 활용: 미기록',
       title: abilities.dash + ' · ' + abilities.nova + ' 활용',
       dashReady: (ready, chance) => abilities.dash + ' 준비 ' + ready + ' · 위험 기회 ' + chance,
@@ -7747,6 +7784,165 @@ return Plotly;
     ];
   };
 
+  // ── 고양이 한마디(R-102, 10단계): 인트로 · 결과 · 히든 탭 · 기록 카드 제목. 고르는 규칙은 src/talk.js(NeonTalk).
+  // 말투: 캐릭터 반말(textRules 마지막 줄, 문구 규칙 4의 예외). 정비사 미오 = 차분 · 기체, 보급관 토토 = 넉살 · 보상,
+  // 조종사 루나 = 들뜸 · 대시, 무전(히든 탭 열기 전 '???') = 짧고 아리송, 글 앞 RADIO. 원본 계약 design/v5-stage10/talk-lines.js
+  const talk = (() => {
+    const RADIO = '…치직… ';
+    const lines = {
+      // ── 인트로(T-START 위 말풍선) ──
+      hello: {
+        engineer: [
+          '기체 점검 끝. 오늘도 깔끔하게 날아 보자.',
+          '칼날 각도를 다시 맞춰 뒀어. 마음껏 돌려.',
+          '엔진 소리가 좋아. 오늘은 멀리 갈 수 있겠어.',
+        ],
+        supply: [
+          '보급 준비 완료! 오늘은 얼마나 벌어 올 거야?',
+          'G가 쌓이면 쓸 데도 생기지. 헤헤, 다녀와!',
+          '보스 하나 잡을 때마다 장부가 두꺼워진다고!',
+        ],
+        pilot: [
+          '활주로 비었어! 지금 바로 출격하자!',
+          '오늘은 대시로 끝까지 뚫어 볼래!',
+          '별이 잘 보이는 밤이야. 높이 날자!',
+        ],
+        radio: [
+          '신호 잡혔다. 누군가 우릴 듣고 있어.',
+          '아직은 이름을 말할 수 없어. Insane 끝에서 만나.',
+          '오늘도 무사히 돌아와. 우린 기다릴게.',
+        ],
+      },
+      // 마지막으로 끝난 판에서 3일 넘게 지나서 앱을 열었을 때
+      away: {
+        engineer: ['오랜만이야. 기체는 매일 닦아 뒀어.'],
+        supply: ['어디 갔다 왔어? 장부가 심심했다고!'],
+        pilot: ['보고 싶었어! 오늘은 꼭 같이 날자!'],
+        radio: ['오랜만이야. 신호가 끊긴 줄 알았어.'],
+      },
+      // 특별한 날(기기 날짜, 양력 고정일): 'MM-DD' → 줄. 그날 처음 열 때 한 번
+      day: {
+        '01-01': '새해 첫 비행이야! 올해도 잘 부탁해.',
+        '05-05': '어린이날이야! 오늘은 신나게 날아 보자.',
+        '08-08': '오늘은 세계 고양이의 날! 우리 날이야, 냥!',
+        '10-31': '핼러윈이야. 적들도 오늘은 분장했으려나?',
+        '12-25': '메리 크리스마스! 하늘에 선물이 떨어져 있을지도.',
+        '12-31': '올해 마지막 비행이야. 끝까지 함께해 줘서 고마워.',
+      },
+      // 첫 출격 기념일(경력 first 날짜): 100일째 · 해마다 같은 월 · 일. 그날 처음 열 때 한 번
+      anniv: {
+        d100: () => '첫 출격부터 오늘이 100일째야!',
+        year: n => '오늘은 첫 출격 ' + n + '년째 되는 날이야!',
+      },
+      // 함께한 시간(동반 고양이의 경력 cat.<id>.time, 무전이면 전체 time)이 처음 넘었을 때 한 번(기기 설정 talk.said)
+      hours: {
+        1: '벌써 함께 1시간이야. 손발이 맞아 가는걸!',
+        10: '함께 10시간째야. 이제 눈빛만 봐도 알지.',
+        50: '함께 50시간! 너랑 나는 최고의 팀이야.',
+        100: '함께 100시간째야. 이 하늘은 우리 거야.',
+      },
+      // ── 결과(O-RESULT 팁 자리) ──
+      // 전략 팁(R-102, 편집장 2026-10-16 '고양이가 해금될 정도면 기본 팁은 안다'): 히든 탭이 열린 뒤 결과 팁 자리.
+      // 그 판 기록으로 순서대로 처음 맞는 하나(같은 팁 연속 금지 — 기기 설정 talk.lastTip), 없으면 아래 상황 한마디. 이름 줄에 'TIP'.
+      // 순서 · 조건(talk.js RULE): lateWall 시간 압박에 닿고 90초 안에 쓰러짐 → damage 쓰러진 판 받은 피해의 40% 넘는 출처
+      //   (붕괴 구역 · 보스 · 분열 · 사수 · 몸통) → bonus 다음 S(1000만 단위) · B(100만 단위)까지 8% 안 → novaIdle 충격파 '쓸 기회'
+      //   45초 넘게 놀림 → dashIdle 대시도 → stageLate 직접 올린 STAGE 2번 이하인 5분 넘는 일반 출격 → zoneMiss 회복 구역 5번 넘게
+      //   생겼는데 한 번도 못 들어감. 숫자는 판 기록 값(n = 남은 Point 만 단위 · p = %, s = 초).
+      strategy: {
+        lateWall: { by: 'engineer', text: () => '시간 압박부터는 회복이 멈춰. 20분 전에 HP를 가득 채워 둬.' },
+        hazard: {
+          by: 'pilot',
+          text: p => '이번 판 피해의 ' + p + '%가 붉은 원이었어. 차오르면 대시로 빠져나가!',
+        },
+        boss: {
+          by: 'engineer',
+          text: p => '피해의 ' + p + '%가 보스 탄이었어. 보스 앞에선 충격파로 탄을 지워.',
+        },
+        splitter: {
+          by: 'pilot',
+          text: p => '분열 적에게 ' + p + '%나 맞았어. 터지면 셋으로 갈라지니 몸통에 붙지 마.',
+        },
+        shooter: { by: 'engineer', text: p => '사수 탄에 ' + p + '% 맞았어. 멀리 있는 사수부터 잡자.' },
+        contact: { by: 'pilot', text: p => '적과 부딪혀서 ' + p + '%를 잃었어. 빠져나갈 길을 남겨 두자.' },
+        bonus: {
+          by: 'supply',
+          text: (n, coin) => n + ' Point만 더였으면 ' + coin + '가 하나 더였어! 다음엔 조금만 더 버텨 보자.',
+        },
+        novaIdle: { by: 'engineer', text: s => '충격파가 ' + s + '초나 쓸 때를 기다렸어. 몰리면 바로 눌러.' },
+        dashIdle: { by: 'pilot', text: s => '대시가 ' + s + '초나 놀았어. 맞기 전에 눌러!' },
+        stageLate: {
+          by: 'supply',
+          text: () => 'Stage를 직접 일찍 올리면 Point가 훨씬 빨리 커져. 보상도 같이!',
+        },
+        zoneMiss: {
+          by: 'pilot',
+          text: n => '초록 원이 ' + n + '번 생겼는데 한 번도 못 들어갔어. 다니다 보면 HP가 차!',
+        },
+      },
+      // 입문 팁(히든 탭 열기 전 · 팁 보기 · 일반 출격일 때만): 다음 판 팁(R-074 resultTip)을 역할 말투로: STAGE = 보급관 토토(보상), 대시 = 조종사 루나, 충격파 = 정비사 미오. 이름 줄에 'TIP'
+      tip: {
+        stage: { by: 'supply', text: 'Stage를 올리면 Point가 커져. Point가 크면 보상도 커지지!' },
+        dash: { by: 'pilot', text: '대시 중엔 잠깐 무적이야. 탄이 몰려오면 뚫고 가!' },
+        nova: { by: 'engineer', text: '충격파는 가까운 탄을 지워. 몰릴 때 아끼지 마.' },
+      },
+      // 그 순위 1위(NEW BEST)
+      best: {
+        engineer: ['새 기록이야! 기체가 버텨 줘서 다행이야.'],
+        supply: ['새 기록! 이건 장부에 금색으로 적어 둘게!'],
+        pilot: ['새 기록이야! 우리 진짜 멀리 왔어!'],
+        radio: ['새 기록 신호가 여기까지 들려.'],
+      },
+      // 시간 압박(극한 구간)에 닿은 판
+      late: {
+        engineer: ['시간 압박까지 버텼어. 엔진이 뜨거울 거야.'],
+        supply: ['시간 압박을 넘겼다고? 다음 보급은 두둑하게!'],
+        pilot: ['시간 압박에서도 날았어! 다음엔 더 오래!'],
+        radio: ['시간 압박 너머까지 갔구나.'],
+      },
+      // 2분 안에 쓰러진 판
+      short: {
+        engineer: ['괜찮아, 기체는 멀쩡해. 바로 다시 가자.'],
+        supply: ['몸 풀기였지? 보급은 아직 넉넉해.'],
+        pilot: ['방금 건 연습! 다음 판이 진짜야.'],
+        radio: ['신호가 금방 끊겼어. 괜찮아?'],
+      },
+      // 그 밖의 판
+      after: {
+        engineer: ['이번 판 기록은 정비 노트에 적어 둘게.', '칼날이 조금 무뎌졌어. 다음 판 전에 갈아 둘게.'],
+        supply: ['수고했어! 오늘 번 건 잘 챙겨 뒀어.', 'B가 쌓이면 성장 탭에서 쓰자고!'],
+        pilot: ['좋은 비행이었어! 한 판 더?', '다음엔 Stage를 더 빨리 올려 보자!'],
+        radio: ['착륙 확인. 수고했어.', '다음 비행도 듣고 있을게.'],
+      },
+      // 옛 한 줄 남기기 꺼내기(약 10%, 남긴 기록이 있을 때): 인트로 · 결과(팁 없을 때)
+      recall: {
+        engineer: [note => '‘' + note + '’ — 예전에 이렇게 남겼더라. 기억나?'],
+        supply: [note => '‘' + note + '’ 이거 네가 남긴 거지? 아직 장부에 있어!'],
+        pilot: [note => '‘' + note + '’ — 그날 비행 생각난다!'],
+        radio: [note => '‘' + note + '’ … 옛 신호가 다시 잡혔어.'],
+      },
+      // 히든 탭이 열린 판의 결과(처음 만남, Q171 '드디어 만났네'): 정비사 미오
+      meet: { by: 'engineer', text: '드디어 만났네! 우린 고양이 비행사야. 히든 탭에서 기다릴게.' },
+      // ── 히든 탭(맨 위 말풍선) ──
+      // 동반 고양이
+      buddy: {
+        engineer: [
+          '기체 정비는 나한테 맡겨. 시작 스킬을 더 붙여 줄게.',
+          '오늘은 어느 기체로 갈 거야? 다 손봐 뒀어.',
+        ],
+        supply: ['G 보급은 내 담당이야. 오래 날수록 더 챙겨 줄게!', '보급 장부 정리 끝! 출격만 하면 돼.'],
+        pilot: ['대시는 나만 믿어! 더 자주 쓸 수 있게 해 줄게.', '조종석 따뜻하게 데워 놨어. 언제 갈래?'],
+      },
+      // 동반이 없을 때(해금한 고양이 중 하나가)
+      alone: '동반을 골라 줘. 나도 같이 나가고 싶어!',
+      // 아직 해금하지 않은 고양이(회색 얼굴, 해금 S는 balance cats.unlock)
+      wake: {
+        engineer: s => s + ' ' + SC + '면 나를 깨울 수 있어. 기체는 내가 책임질게.',
+        supply: s => s + ' ' + SC + '면 나도 합류! 보급은 확실하게.',
+        pilot: s => s + ' ' + SC + '면 바로 조종석에 앉을게!',
+      },
+    };
+    return { RADIO, lines, radioName: '???', radio: '무전', tip: 'TIP' };
+  })();
   const api = {
     nameRules,
     textRules,
@@ -7793,6 +7989,7 @@ return Plotly;
     analysis,
     lab,
     glossary,
+    talk,
   };
   root.NeonTerms = api;
   if (typeof module !== 'undefined') module.exports = api;
@@ -7842,11 +8039,13 @@ return Plotly;
   const MODE_IDS = Object.keys(BAL.modes);
   // 저장소 이름 접미사: 시험 경로 빌드(build.cjs --ns=-test)는 실제 기록과 다른 이름을 쓴다.
   // DB 버전 3(R-014): 구조는 버전 2와 같다. 버전을 올려 다른 탭에 남은 v4.0.0 화면이 연결을 끊고 쓰지 못하게 한다.
+  // DB 버전 4(R-100): 구조는 그대로. 프로필 schemaVersion 5와 함께 올려 v4.10 이하 화면(옛 탭)을 끊는다
+  // (옛 migrate는 schemaVersion 5 문서를 잔액 0으로 읽고 다시 저장한다).
   // DB_BASE: 실제 주소의 DB 이름. 밸런스 실험실(lab.html)이 시험 · 실제 기록을 읽기만 할 때도 쓴다.
   const NS = typeof root.NEON_NS === 'string' ? root.NEON_NS : '',
     DB_BASE = 'neon-arena-endless-v2',
     DB_NAME = DB_BASE + NS,
-    DB_VERSION = 3,
+    DB_VERSION = 4,
     RECORDS_KEY = 'neon-endless-records-v2' + NS,
     TELEMETRY = 4;
   const difficultyId = id =>
@@ -7864,24 +8063,65 @@ return Plotly;
     }
     return out;
   }
+  // 앞으로 호환(R-100, DATA.md 8절): 뒤 단계가 쓸 id · 값은 모양만 본다. id 꼴 하나 = 소문자 · 숫자로 시작, 40자 안.
+  const ID = /^[a-z0-9][a-z0-9._-]{0,39}$/,
+    isId = v => typeof v === 'string' && ID.test(v),
+    isNum = v => typeof v === 'number' && Number.isFinite(v),
+    intIn = (v, lo, hi) => (Number.isSafeInteger(v) && v >= lo && v <= hi ? v : null);
+  // 모르는 하위 키의 값: 유한수 · id · id 배열(50개 안) · { id: 유한수 } 묶음(50개 안, 예: 스킬 스택)
+  function keepValue(v) {
+    if (isNum(v) || isId(v)) return v;
+    if (Array.isArray(v)) return v.length <= 50 && v.every(isId) ? [...v] : undefined;
+    if (v && typeof v === 'object') {
+      const e = Object.entries(v);
+      return e.length <= 50 && e.every(([k, n]) => isId(k) && isNum(n)) ? { ...v } : undefined;
+    }
+    return undefined;
+  }
+  // known에 없는 id 꼴 키를 keepValue로 out에 옮긴다(아는 키는 호출한 쪽이 이미 고쳤다)
+  function keepUnknown(out, src, known) {
+    if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+    for (const [k, v] of Object.entries(src)) {
+      if (known.includes(k) || !isId(k)) continue;
+      const kept = keepValue(v);
+      if (kept !== undefined) out[k] = kept;
+    }
+    return out;
+  }
+  // 모르는 최상위 칸: JSON 값(글자 · 유한수 · 참거짓 · null · 객체 · 배열)이면 깊은 사본으로 둔다
+  function jsonCopy(v) {
+    if (v === null || typeof v === 'string' || typeof v === 'boolean' || isNum(v)) return v;
+    if (typeof v !== 'object') return undefined;
+    try {
+      return JSON.parse(JSON.stringify(v));
+    } catch {
+      return undefined;
+    }
+  }
   // v4·v5 기록 필드(docs/spec/DATA.md 8절). 없는 값은 기본값으로 읽어 v3 기록도 그대로 열린다.
+  // 출격 종류: 'super' · 'normal'(솔로) 말고도 id 꼴 종류(예: 15단계 'world')는 그대로 둔다.
   function safeLaunch(l) {
     return {
-      type: l?.type === 'super' ? 'super' : 'normal',
+      type: l?.type === 'super' ? 'super' : isId(l?.type) ? l.type : 'normal',
       launchId: typeof l?.launchId === 'string' ? l.launchId.slice(0, 100) : null,
       startStage: finiteCount(l?.startStage) || 1,
       startLevel: finiteCount(l?.startLevel) || 1,
     };
   }
   function safeStacks(s) {
-    return {
+    const out = {
       craft: safeSkills(s?.craft),
       perma: safeSkills(s?.perma),
       prep: safeSkills(s?.prep),
       cat: safeSkills(s?.cat),
     };
+    return keepUnknown(out, s, Object.keys(out));
   }
+  const EARNED_KEYS = ['gold', 'blue', 'boss', 'super', 'cat', 'autoGold', 'blueCoin', 'point'];
   function safeEarned(e) {
+    return keepUnknown(earnedKnown(e), e, EARNED_KEYS);
+  }
+  function earnedKnown(e) {
     return {
       gold: finiteCount(e?.gold),
       blue: finiteCount(e?.blue),
@@ -7901,6 +8141,86 @@ return Plotly;
     for (const id of CATS.list) out[id] = Math.min(CATS.maxLevel, finiteCount(c?.[id]));
     return out;
   }
+  // 모습(R-100 틀, 11 · 12 · 14단계가 채움): { paint: id · null, sets: [id], rank: 0~9, cos: { 칸: id } } + 모르는 키
+  function safeLook(l) {
+    const out = {};
+    if (!l || typeof l !== 'object' || Array.isArray(l)) return out;
+    if (l.paint === null || isId(l.paint)) out.paint = l.paint;
+    if (Array.isArray(l.sets)) out.sets = [...new Set(l.sets.filter(isId))].slice(0, 20);
+    if (intIn(l.rank, 0, 9) !== null) out.rank = l.rank;
+    if (l.cos && typeof l.cos === 'object' && !Array.isArray(l.cos))
+      out.cos = Object.fromEntries(
+        Object.entries(l.cos)
+          .filter(([k, v]) => isId(k) && isId(v))
+          .slice(0, 50),
+      );
+    return keepUnknown(out, l, ['paint', 'sets', 'rank', 'cos']);
+  }
+  // 월드 판(R-100 틀, 15단계가 채움): { week ≤ 20자, seed, mode, kind, sk: { 스킬: 0~99 } } + 모르는 키. 없으면 null
+  function safeWorld(w) {
+    if (!w || typeof w !== 'object' || Array.isArray(w)) return null;
+    const out = {};
+    if (typeof w.week === 'string' && w.week.length <= 20) out.week = w.week;
+    if (intIn(w.seed, 0, Number.MAX_SAFE_INTEGER) !== null) out.seed = w.seed;
+    if (isId(w.mode)) out.mode = w.mode;
+    if (w.kind === 'weekly' || w.kind === 'practice') out.kind = w.kind;
+    if (w.sk && typeof w.sk === 'object' && !Array.isArray(w.sk))
+      out.sk = Object.fromEntries(
+        Object.entries(w.sk)
+          .filter(([k, v]) => isId(k) && intIn(v, 0, 99) !== null)
+          .slice(0, 20),
+      );
+    return keepUnknown(out, w, ['week', 'seed', 'mode', 'kind', 'sk']);
+  }
+  // normalizeRecord가 아는 최상위 칸. 그 밖의 칸은 JSON 값이면 그대로 둔다(앞으로 호환, R-100)
+  const RECORD_KEYS = [
+    'id',
+    'version',
+    'balance',
+    'craft',
+    'date',
+    'reason',
+    'skills',
+    'summary',
+    'meta',
+    'partial',
+    'difficultyId',
+    'profileVersion',
+    'coinChoices',
+    'autoChoices',
+    'coinsEarned',
+    'blueCoins',
+    'autoUsed',
+    'note',
+    'noteConfirmed',
+    'noteCost',
+    'launch',
+    'stacks',
+    'earned',
+    'siegeWaves',
+    'starred',
+    'log',
+    'cats',
+    'buffs',
+    'revived',
+    'abilityUsage',
+    'companion',
+    'late',
+    'revives',
+    'careerAt',
+    'look',
+    'world',
+    'score',
+    'time',
+    'simulationTime',
+    'level',
+    'stage',
+    'kills',
+    'maxCombo',
+    'bossKills',
+    'damageTaken',
+    'activeTime',
+  ];
   function normalizeRecord(raw) {
     if (!raw || typeof raw.id !== 'string') return null;
     const r = {
@@ -7938,6 +8258,13 @@ return Plotly;
         raw.abilityUsage && typeof raw.abilityUsage === 'object'
           ? raw.abilityUsage
           : raw.summary?.abilityUsage || null,
+      // 10단계(R-100): 출격 순간 동반 고양이 · 시간 압박에 닿음 · 쓴 부활 수 · 경력에 더한 시각(0 = 아직)
+      companion: isId(raw.companion) ? raw.companion : null,
+      late: raw.late === true,
+      revives: intIn(raw.revives, 0, 9) ?? (raw.revived === true ? 1 : 0),
+      careerAt: intIn(raw.careerAt, 0, Number.MAX_SAFE_INTEGER) ?? 0,
+      look: safeLook(raw.look),
+      world: safeWorld(raw.world),
     };
     for (const k of [
       'score',
@@ -7955,7 +8282,24 @@ return Plotly;
     }
     if (raw.activeTime !== undefined && raw.activeTime !== null && Number.isFinite(Number(raw.activeTime)))
       r.activeTime = Math.max(0, Number(raw.activeTime));
+    for (const [k, v] of Object.entries(raw)) {
+      if (RECORD_KEYS.includes(k)) continue;
+      const kept = jsonCopy(v);
+      if (kept !== undefined) r[k] = kept;
+    }
     return r;
+  }
+  // 솔로 판(R-100): 일반 · S 출격. 순위 · 보호 · 자동 정리 · 최근 기록 · 기록 탭은 솔로 기록만 다룬다
+  const isSolo = r => r?.launch?.type === 'normal' || r?.launch?.type === 'super' || !r?.launch?.type;
+  // 출격 순간 동반 고양이. 옛 기록(칸 없음)은 Lv1~4로 적용된 고양이가 하나뿐일 때만 그 고양이로 읽는다
+  // (Lv5는 동반이 아니어도 적용되므로 알 수 없음)
+  function companionOf(record) {
+    if (CATS.list.includes(record?.companion)) return record.companion;
+    const mid = CATS.list.filter(id => {
+      const lv = finiteCount(record?.cats?.[id]);
+      return lv >= 1 && lv < CATS.maxLevel;
+    });
+    return mid.length === 1 ? mid[0] : null;
   }
   function rank(records) {
     return records
@@ -7968,8 +8312,9 @@ return Plotly;
   }
   // ── 순위(R-032): 일반 출격 판과 S 출격 판을 따로 순위 매긴다. 저장은 그대로, 보기만 나눈다. ──
   // 순서는 rank()와 같다(Point → 시간 → STAGE → LV, 모두 같으면 먼저 한 판). 남아 있는 기록 기준이다.
+  // 솔로가 아닌 종류(15단계 'world' 등)는 그 종류 이름이 순위 이름이라 'normal' · 'super' 순위에 섞이지 않는다
   const isSuperLaunch = r => r.launch?.type === 'super';
-  const rankingOf = r => (isSuperLaunch(r) ? 'super' : 'normal');
+  const rankingOf = r => (isSuperLaunch(r) ? 'super' : isSolo(r) ? 'normal' : r.launch.type);
   function ranking(records, kind) {
     return rank(records || []).filter(r => rankingOf(r) === kind);
   }
@@ -7991,7 +8336,8 @@ return Plotly;
     let last = null;
     for (const raw of records || []) {
       const r = normalizeRecord(raw);
-      if (r && (!last || r.date > last.date || (r.date === last.date && r.id > last.id))) last = r;
+      if (r && isSolo(r) && (!last || r.date > last.date || (r.date === last.date && r.id > last.id)))
+        last = r;
     }
     return last;
   }
@@ -7999,7 +8345,7 @@ return Plotly;
   // 보호 기록(R-035): 일반 TOP3 + S 출격 TOP3(각각 rank() 순 앞 3개)와 별표 기록.
   // 자동 정리·선택 삭제 모두 지우지 않는다.
   function protectedIds(records) {
-    const list = rank(records || []),
+    const list = rank(records || []).filter(isSolo),
       ids = new Set(
         [...list.filter(r => !isSuperLaunch(r)).slice(0, 3), ...list.filter(isSuperLaunch).slice(0, 3)].map(
           r => r.id,
@@ -8014,7 +8360,8 @@ return Plotly;
   function prunePlan(records, opts = {}) {
     const keep = finiteCount(opts.keep ?? KEEP.keep),
       logs = finiteCount(opts.logs ?? KEEP.logs),
-      list = (records || []).map(normalizeRecord).filter(Boolean),
+      // 솔로 기록만 세고 지운다(다른 종류의 보관 규칙은 그 단계에서)
+      list = (records || []).map(normalizeRecord).filter(r => r && isSolo(r)),
       safe = protectedIds(list),
       remove = [];
     let left = list.length;
@@ -8153,6 +8500,8 @@ return Plotly;
       await this.ready;
       // 같은 id로 다시 저장해도 한 줄 메모·별표·지워진 상세 로그 표시는 지킨다(별표 끄기는 setStar로만)
       const preserve = old => {
+        // 경력에 더한 시각(R-100)은 0으로 돌아가지 않는다(판 중간 저장 · 다시 저장)
+        if (old?.careerAt > 0 && !(r.careerAt > 0)) r.careerAt = old.careerAt;
         if (old?.noteConfirmed || old?.note) {
           r.note = old.note;
           r.noteConfirmed = true;
@@ -8466,6 +8815,8 @@ return Plotly;
     s_pick: ['t', 'id', 'x', 'y'],
     zone: ['t', 'id', 'x', 'y', 'r'],
     revive: ['t', 'x', 'y'],
+    // 시간 압박 시작(R-101)
+    late: ['t'],
   });
   for (const cols of Object.values(EVENT_COLUMNS)) Object.freeze(cols);
   // 짧게 적는 열(내보낸 파일의 columns.dict · columns.codecs):
@@ -8949,6 +9300,10 @@ return Plotly;
     modeBest,
     lastPlayed,
     normalizeRecord,
+    isSolo,
+    companionOf,
+    isId,
+    keepValue,
     safeSkills,
     difficultyId,
     protectedIds,
