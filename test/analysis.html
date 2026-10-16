@@ -229,17 +229,6 @@
   --fs-lg: 1.125rem;
   --fs-xl: 1.375rem;
   --fs-2xl: 1.75rem;
-  /* 굵기 4단(R-098): 1 보조 · 2 기본 · 3 라벨 · 제목 · 4 큰 숫자 · 로고 */
-  --fw-1: 500;
-  --fw-2: 700;
-  --fw-3: 800;
-  --fw-4: 900;
-  /* HUD 글자 단계(R-090 · R-098): 9 작은 표지 · 11 값 · 18 · 20 STAGE · 24 큰 수. px라 HUD zoom만 따른다 */
-  --hfs-1: 9px;
-  --hfs-2: 11px;
-  --hfs-3: 18px;
-  --hfs-4: 20px;
-  --hfs-5: 24px;
 
   /* 간격·모서리 */
   --sp-1: 4px;
@@ -4950,19 +4939,19 @@ return Plotly;
     },
   };
   const craftName = id => crafts[id]?.name || '';
-  // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · color: 카드 표기(값은 tokens.css --sk-<id>, R-054). 그림은 icons.js(R-097)
+  // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · icon · color: 카드 표기(값은 tokens.css --sk-<id>, R-054)
   const skills = {
-    power: { name: '화력', color: 'var(--sk-power)' },
-    rapid: { name: '속사', color: 'var(--sk-rapid)' },
-    multi: { name: '다연발', color: 'var(--sk-multi)' },
-    pierce: { name: '관통탄', color: 'var(--sk-pierce)' },
-    speed: { name: '부스터', color: 'var(--sk-speed)' },
-    magnet: { name: '자력 수집', color: 'var(--sk-magnet)' },
-    orbit: { name: '궤도 칼날', color: 'var(--sk-orbit)' },
-    vital: { name: '장갑 강화', color: 'var(--sk-vital)' },
-    nova: { name: '충격파', color: 'var(--sk-nova)' },
-    crit: { name: '치명 일격', color: 'var(--sk-crit)' },
-    shield: { name: '재생 실드', color: 'var(--sk-shield)' },
+    power: { name: '화력', icon: '✦', color: 'var(--sk-power)' },
+    rapid: { name: '속사', icon: '≋', color: 'var(--sk-rapid)' },
+    multi: { name: '다연발', icon: '⋔', color: 'var(--sk-multi)' },
+    pierce: { name: '관통탄', icon: '⟐', color: 'var(--sk-pierce)' },
+    speed: { name: '부스터', icon: '»', color: 'var(--sk-speed)' },
+    magnet: { name: '자력 수집', icon: '◎', color: 'var(--sk-magnet)' },
+    orbit: { name: '궤도 칼날', icon: '◈', color: 'var(--sk-orbit)' },
+    vital: { name: '장갑 강화', icon: '+', color: 'var(--sk-vital)' },
+    nova: { name: '충격파', icon: '⊕', color: 'var(--sk-nova)' },
+    crit: { name: '치명 일격', icon: '⌖', color: 'var(--sk-crit)' },
+    shield: { name: '재생 실드', icon: '⬡', color: 'var(--sk-shield)' },
   };
   const skillName = id => skills[id]?.name || id;
   // 스킬 나열 순서(성장 탭 묶음)
@@ -5518,7 +5507,6 @@ return Plotly;
       padCenter: '가운데 · 기본',
       padRight: '오른쪽',
       padLeft: '왼쪽',
-      padRow: '가로 한 줄',
       // 전투 알림 묶음 위치(R-064, 이 기기 설정)
       alertPos: '알림 위치',
       alertCenter: '가운데 · 기본',

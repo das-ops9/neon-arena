@@ -230,17 +230,6 @@
   --fs-lg: 1.125rem;
   --fs-xl: 1.375rem;
   --fs-2xl: 1.75rem;
-  /* 굵기 4단(R-098): 1 보조 · 2 기본 · 3 라벨 · 제목 · 4 큰 숫자 · 로고 */
-  --fw-1: 500;
-  --fw-2: 700;
-  --fw-3: 800;
-  --fw-4: 900;
-  /* HUD 글자 단계(R-090 · R-098): 9 작은 표지 · 11 값 · 18 · 20 STAGE · 24 큰 수. px라 HUD zoom만 따른다 */
-  --hfs-1: 9px;
-  --hfs-2: 11px;
-  --hfs-3: 18px;
-  --hfs-4: 20px;
-  --hfs-5: 24px;
 
   /* 간격·모서리 */
   --sp-1: 4px;
@@ -8150,19 +8139,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
   };
   const craftName = id => crafts[id]?.name || '';
-  // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · color: 카드 표기(값은 tokens.css --sk-<id>, R-054). 그림은 icons.js(R-097)
+  // 스킬. name: 모든 화면의 한 이름(줄임말 없음, I-06) · icon · color: 카드 표기(값은 tokens.css --sk-<id>, R-054)
   const skills = {
-    power: { name: '화력', color: 'var(--sk-power)' },
-    rapid: { name: '속사', color: 'var(--sk-rapid)' },
-    multi: { name: '다연발', color: 'var(--sk-multi)' },
-    pierce: { name: '관통탄', color: 'var(--sk-pierce)' },
-    speed: { name: '부스터', color: 'var(--sk-speed)' },
-    magnet: { name: '자력 수집', color: 'var(--sk-magnet)' },
-    orbit: { name: '궤도 칼날', color: 'var(--sk-orbit)' },
-    vital: { name: '장갑 강화', color: 'var(--sk-vital)' },
-    nova: { name: '충격파', color: 'var(--sk-nova)' },
-    crit: { name: '치명 일격', color: 'var(--sk-crit)' },
-    shield: { name: '재생 실드', color: 'var(--sk-shield)' },
+    power: { name: '화력', icon: '✦', color: 'var(--sk-power)' },
+    rapid: { name: '속사', icon: '≋', color: 'var(--sk-rapid)' },
+    multi: { name: '다연발', icon: '⋔', color: 'var(--sk-multi)' },
+    pierce: { name: '관통탄', icon: '⟐', color: 'var(--sk-pierce)' },
+    speed: { name: '부스터', icon: '»', color: 'var(--sk-speed)' },
+    magnet: { name: '자력 수집', icon: '◎', color: 'var(--sk-magnet)' },
+    orbit: { name: '궤도 칼날', icon: '◈', color: 'var(--sk-orbit)' },
+    vital: { name: '장갑 강화', icon: '+', color: 'var(--sk-vital)' },
+    nova: { name: '충격파', icon: '⊕', color: 'var(--sk-nova)' },
+    crit: { name: '치명 일격', icon: '⌖', color: 'var(--sk-crit)' },
+    shield: { name: '재생 실드', icon: '⬡', color: 'var(--sk-shield)' },
   };
   const skillName = id => skills[id]?.name || id;
   // 스킬 나열 순서(성장 탭 묶음)
@@ -8718,7 +8707,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       padCenter: '가운데 · 기본',
       padRight: '오른쪽',
       padLeft: '왼쪽',
-      padRow: '가로 한 줄',
       // 전투 알림 묶음 위치(R-064, 이 기기 설정)
       alertPos: '알림 위치',
       alertCenter: '가운데 · 기본',
@@ -11112,58 +11100,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 화면 흔들림 [세기(화면 px), 길이(초)]: 세기는 남은 시간만큼 줄어들고 방향은 무작위
     hurtShake: [6, 0.18],
     novaShake: [4, 0.2],
-    // 이펙트 단계(R-099): 설정 풍부하게 = rich, 자동 = base(프레임 평균 34ms를 넘으면 light), 가볍게 = light.
-    // glow 기체 빛(광 필터) · hit 피격 불꽃 · kill · big 처치 [불꽃, 조각](보통 · 큰 적 = 분열 · 보스) ·
-    // dash · nova · revive · phase 대시 · 충격파 · 부활 · 보스 단계 불꽃 · limit 불꽃 상한 ·
-    // rings 처치 고리('all' 모두 | 'big' 큰 적만) · flash 붕괴 구역 섬광 최고 투명도(흔들림 줄이기면 hazard.flash.low)
-    level: {
-      rich: {
-        glow: true,
-        hit: 2,
-        kill: [6, 5],
-        big: [16, 14],
-        dash: 18,
-        nova: 30,
-        revive: 30,
-        phase: 12,
-        limit: 550,
-        rings: 'all',
-        flash: 0.9,
-      },
-      base: {
-        glow: true,
-        hit: 1,
-        kill: [4, 3],
-        big: [10, 8],
-        dash: 10,
-        nova: 18,
-        revive: 20,
-        phase: 8,
-        limit: 350,
-        rings: 'all',
-        flash: 0.9,
-      },
-      light: {
-        glow: false,
-        hit: 1,
-        kill: [2, 2],
-        big: [4, 3],
-        dash: 5,
-        nova: 8,
-        revive: 8,
-        phase: 4,
-        limit: 150,
-        rings: 'big',
-        flash: 0.35,
-      },
-    },
+    // 처치 [불꽃, 조각] 수: 보통 · 분열 · 보스 · 가볍게. 합은 예전 불꽃 수와 같다(그리는 양 그대로)
+    kill: [6, 5],
+    big: [16, 14],
+    light: [2, 2],
     // 조각: 회전(rad/초) · 크기 · 수명(초)
     shard: { spin: 8, size: [1, 1.5], life: [0.35, 0.55] },
     // 보호막이 가득 차는 순간 반짝 고리: 길이 · 반지름(시작 → 끝) · 시작 투명도 · 굵기
     shieldFlash: { sec: 0.35, from: 52, to: 64, alpha: 0.9, width: 2.5 },
-    // 1회 부활(R-062): 흔들림 · 금빛 고리 길이(초). 불꽃 수는 level.*.revive
+    // 1회 부활(R-062): 흔들림 · 금빛 고리 길이(초) · 불꽃 수 [보통, 가볍게]
     reviveShake: [5, 0.25],
-    revive: { sec: 0.6 },
+    revive: { sec: 0.6, sparks: [30, 8] },
     // 회복 구역(R-061): 채움 · 테두리 투명도 [밖, 안] · 끝 깜빡임(남은 초 · 초당 횟수) · '+N'(healZone.hp) 글자 크기 · 수명(초)
     zone: { fill: [0.11, 0.2], line: [0.8, 1], blink: 5, hz: 4, size: 28, life: 0.8 },
     // 붕괴 구역(R-072): 예고 채움 투명도 · 가운데 차오르는 원 투명도 [보통, 달아오름] · 달아오르는 마지막 초 ·
@@ -11174,7 +11121,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       core: [0.24, 0.6],
       hot: 0.25,
       line: [2, 0.95],
-      flash: { hold: 0.12, fade: 0.18, tint: 0.1, low: 0.35 },
+      flash: { peak: 0.9, hold: 0.12, fade: 0.18, tint: 0.1, low: 0.35 },
       ring: { sec: 0.35, grow: 0.3, width: [4, 1], alpha: 0.9 },
       fade: 0.5,
     },
@@ -11497,37 +11444,34 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       const q = this.quake;
       if (!q || amp >= (q.amp * q.left) / q.sec) this.quake = { amp, sec, left: sec };
     }
-    // level: 이펙트 단계 이름(FX.level 키)
-    events(list, level = 'rich') {
-      const P = this.pal,
-        L = FX.level[level] || FX.level.rich;
+    events(list, quality = 1) {
+      const P = this.pal;
       for (const e of list) {
         if (e.type === 'hit') {
-          this.burst(e.x, e.y, this.enemyColor(e), L.hit);
+          this.burst(e.x, e.y, this.enemyColor(e), quality ? 2 : 1);
           if (e.critical && this.numbers.length < 24)
             this.numbers.push({ x: e.x, y: e.y - 20, text: String(e.value), life: 0.6 });
         }
         if (e.type === 'kill') {
           const color = this.enemyColor(e),
-            [sparks, shards] = e.big ? L.big : L.kill;
+            [sparks, shards] = quality ? (e.big ? FX.big : FX.kill) : FX.light;
           this.burst(e.x, e.y, color, sparks, e.big, shards);
-          if (e.big || L.rings === 'all')
-            this.rings.push({ x: e.x, y: e.y, r: e.big ? 75 : 30, life: 0.4, max: 0.4, color });
+          this.rings.push({ x: e.x, y: e.y, r: e.big ? 75 : 30, life: 0.4, max: 0.4, color });
         }
         // 보스 단계가 오르는 순간(R-057): 그 단계 색 고리 + 불꽃
         if (e.type === 'boss_phase') {
           const color = this.kindColor('boss' + e.phase);
           this.rings.push({ x: e.x, y: e.y, r: 90, life: 0.5, max: 0.5, color });
-          this.burst(e.x, e.y, color, L.phase, true);
+          this.burst(e.x, e.y, color, 12, true);
         }
-        if (e.type === 'dash') this.burst(e.x, e.y, P.dash, L.dash);
+        if (e.type === 'dash') this.burst(e.x, e.y, P.dash, quality ? 18 : 5);
         if (e.type === 'hurt') {
           this.burst(e.x, e.y, P.hurt, 10);
           this.kick(FX.hurtShake);
         }
         if (e.type === 'nova') {
           this.rings.push({ x: e.x, y: e.y, r: e.r, life: 0.6, max: 0.6, color: P.nova });
-          this.burst(e.x, e.y, P.nova, L.nova, true);
+          this.burst(e.x, e.y, P.nova, quality ? 30 : 8, true);
           this.kick(FX.novaShake);
         }
         // 붕괴 구역이 터짐(R-072): 섬광 · 흰 고리(동시 최대는 엔진 hazard.max라 따로 상한을 두지 않음)
@@ -11536,7 +11480,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         if (e.type === 'revive') {
           const R = FX.revive;
           this.rings.push({ x: e.x, y: e.y, r: e.r, life: R.sec, max: R.sec, color: P.revive });
-          this.burst(e.x, e.y, P.revive, L.revive, true);
+          this.burst(e.x, e.y, P.revive, R.sparks[quality ? 0 : 1], true);
           this.kick(FX.reviveShake);
         }
       }
@@ -11626,9 +11570,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.player.position.set(p.x, p.y);
       this.player.rotation = p.aim;
       this.player.alpha = p.invuln > 0 ? 0.65 : 1;
-      const L = FX.level[pref.level] || FX.level.rich;
-      if (this.glowLow !== !L.glow) {
-        this.glowLow = !L.glow;
+      if (this.glowLow !== Boolean(pref.low)) {
+        this.glowLow = Boolean(pref.low);
         this.glowFilters ??= [this.glow];
         this.player.filters = this.glowLow ? null : this.glowFilters;
       }
@@ -11684,7 +11627,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       for (const b of this.bursts) {
         if (b.t >= FL.hold + FL.fade) continue;
         const s = this.pool('flashes', j++, 'hazardFlash', this.flashes),
-          top = pref.motion ? L.flash : FL.low;
+          top = pref.motion ? FL.peak : FL.low;
         s.blendMode = 'add';
         s.position.set(b.x, b.y);
         s.scale.set(b.r / 128);
@@ -11801,7 +11744,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           .circle(r.x, r.y, 8 + r.r * (1 - r.life / r.max))
           .stroke({ color: r.color, width: r.r > 100 ? 2.5 : 1.5, alpha: r.life / r.max });
       j = 0;
-      const limit = L.limit;
+      const limit = pref.low ? 150 : 550;
       for (let i = Math.max(0, this.particles.length - limit); i < this.particles.length; i++) {
         const b = this.particles[i];
         const s = this.pool('particles', j++, b.shard ? 'shard' : 'spark');
