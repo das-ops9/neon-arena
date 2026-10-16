@@ -2050,6 +2050,190 @@ body[data-fx='low'] .title-start::after {
 p.cat-note {
   text-align: left;
 }
+/* 승진(R-112, 계약 design/v5-stage12/stage12.css).
+   이름: 승진하면 이름 왼쪽에 단계 칩 [중급] 정비사 미오(Lv 표시 · 레벨 막대 없음) · 승진 마름모 4개 · 아래 칸 [다음 승진 칸 | 동반]
+   고양이가 말하는 승진 줄(.talk--row): 결과 한마디 자리에 한 마리 한 줄 */
+.cat-card--lv5 .cat-icon {
+  /* Lv5는 동반이어도 얼굴 선을 금색(항상 적용)으로, 테두리 색만 동반이면 시안 */
+  color: var(--gold);
+}
+/* 승진 단계 칩: 이름 왼쪽(편집장 2026-10-16), 고양이 색. 카드 이름 줄 · 적용 중 줄 · 말풍선 이름 줄이 같은 칩 */
+.cat-rank {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid var(--rc);
+  background: color-mix(in srgb, var(--rc) 22%, transparent);
+  color: var(--rc);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-3);
+  line-height: 1.5;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+.cat-rank--engineer {
+  --rc: var(--cat-engineer);
+}
+.cat-rank--supply {
+  --rc: var(--cat-supply);
+}
+.cat-rank--pilot {
+  --rc: var(--cat-pilot);
+}
+/* 카드 이름 줄은 flex 간격(8px)이 있어 칩 오른쪽 여백을 뺀다 */
+.cat-main h3 .cat-rank {
+  margin-right: -4px;
+}
+.talk-name .cat-rank {
+  margin-right: 3px;
+  padding: 0 5px;
+  font-size: 0.625rem;
+  line-height: 1.4;
+}
+/* 승진 색 = 그 고양이 색 */
+.cat-card:has(.cat-icon--engineer) {
+  --rk-c: var(--cat-engineer);
+}
+.cat-card:has(.cat-icon--supply) {
+  --rk-c: var(--cat-supply);
+}
+.cat-card:has(.cat-icon--pilot) {
+  --rk-c: var(--cat-pilot);
+}
+.cat-card--lv5 .cat-pips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 8px;
+}
+.cat-card--lv5 .cat-pips i {
+  width: 22px;
+}
+.cat-card .cat-pips .rk {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: 0 2px;
+  transform: rotate(45deg);
+  border-radius: 1px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+}
+.cat-card .cat-pips i + .rk {
+  margin-left: 8px;
+}
+.cat-card .cat-pips .rk.on {
+  border-color: var(--rk-c, var(--gold));
+  background: var(--rk-c, var(--gold));
+}
+.cat-card .cat-pips .rk.is-final {
+  border-style: dashed;
+}
+.rk-plus {
+  color: var(--rk-c, var(--gold)) !important;
+}
+.rk-nova {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-3);
+  line-height: 1;
+  color: var(--rk-c, var(--gold));
+  white-space: nowrap;
+}
+/* Lv5 카드는 줄 사이를 4px · 아래 칸까지 8px로(세 장이 모두 Lv5여도 한 화면) */
+.cat-card--lv5 {
+  row-gap: var(--sp-2);
+}
+.cat-card--lv5 .cat-main {
+  gap: 4px;
+}
+/* 다음 승진 칸(구매 버튼 자리, 높이 44 이상) */
+.cat-try {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 4px var(--sp-2);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--line-strong);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-2);
+  color: var(--ink-2);
+  min-width: 0;
+}
+.cat-try small {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+.cat-try.is-open {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--rk-c, var(--gold)) 70%, transparent);
+}
+.cat-try.is-open small {
+  color: var(--rk-c, var(--gold));
+}
+.try-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+.try-bars:has(> :only-child) {
+  grid-template-columns: 1fr;
+}
+.try-bar {
+  display: grid;
+  gap: 2px;
+  font-size: var(--fs-2xs);
+  white-space: nowrap;
+}
+.try-bar b {
+  color: var(--ink);
+}
+.try-bar i {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--rk-c, var(--gold)) calc(var(--p) * 100%),
+    var(--surface-3) calc(var(--p) * 100%)
+  );
+}
+.try-bar.is-done b {
+  color: var(--rk-c, var(--gold));
+}
+/* 고양이가 말하는 승진 줄: 얼굴 28px · 이름 줄 + 글 한두 줄. 통과는 금색 테두리 */
+.talk-rows {
+  display: grid;
+  gap: 6px;
+}
+.talk--row {
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 6px;
+}
+.talk--row .talk-face {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.talk--row .talk-face svg {
+  width: 22px;
+  height: 22px;
+}
+.talk--row .talk-bubble {
+  padding: 3px 8px 4px;
+  border-radius: 10px;
+  font-size: var(--fs-xs);
+}
+.talk--row.is-pass .talk-bubble {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 12%, var(--bg-raise));
+}
+.talk--row.is-pass .talk-text {
+  color: var(--gold);
+  font-weight: var(--fw-3);
+}
 
 /* 격납고 · 도색(R-106, 샘플 design/v5-stage11). 성장 탭 아래 칸: 히든(넓게) 아래 한 줄에 격납고 | 준비 중(반씩) */
 .hangar-entry {
@@ -13015,7 +13199,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
     // (패배 · 직접 종료, 중단 제외) 열린다. 해금(Lv1) 비용은 unlock(S), Lv n(2~5)으로 올리는 비용은 levelCost[n − 2]
-    // (S와 B를 함께 낸다). 효과: Lv n의 값 = effect[고양이][n − 1]. 동반 고양이와 Lv5 고양이가 적용되고(겹치면 한 번),
+    // (S와 B를 함께 낸다). 효과: Lv n의 값 = effect[고양이][n − 1]. 동반 고양이(여러 마리, 12단계)와 Lv5 고양이가 적용되고(겹치면 한 번),
     // 출격 순간 값으로 고정한다. engineer: 기체 시작 스킬마다 더하는 스택 · supply: 분당 G · pilot: 대시 재충전 감소 비율
     cats: {
       maxLevel: 5,
@@ -13028,10 +13212,34 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         { s: 10, b: 150 },
         { s: 20, b: 300 },
       ],
+      // pilot은 12단계(I-89)에 낮춤(돌려주지 않음, CHANGELOG 알림)
       effect: {
         engineer: [3, 4, 5, 7, 9],
         supply: [5, 7, 9, 12, 15],
-        pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
+        pilot: [0.05, 0.1, 0.15, 0.2, 0.3],
+      },
+      // 승진(R-111, PLANNING-world 6-5 · Q196 a · Q197~Q204). 인덱스 0 = 중급 · 1 = 고급 · 2 = 전문 · 3 = 마스터.
+      // Lv5 고양이를 동반하고 open[i] STAGE 보스 웨이브를 다 잡으면 그 단계 시험이 열리고(다음 판부터), 정상 종료 한 판에
+      // test[i]의 처치 · 충격파로 지운 탄(충격파 버튼만, 부활 충격파 제외)을 넘기면 한 단계 오른다(고양이마다 한 판 한 단계).
+      // open null = 최종 보스(I-93 보류) → 열리지 않음(마스터 잠금). 효과는 동반 · 승진한 고양이만:
+      // nova 충격파 배율에 더하는 몫(고양이마다 더함, 1 + Σ) · engineer/pilot Lv5 값 대신 · supply 분당 G 그대로 +
+      // supplyBlue B/분 · supplySuper 이 분마다 1 S(0 = 없음), 둘 다 supplyFrom 모드부터
+      promo: {
+        open: [30, 60, 90, null],
+        test: [
+          { kills: 1000, clears: 0 },
+          { kills: 1500, clears: 8000 },
+          { kills: 2000, clears: 10000 },
+          { kills: 3000, clears: 15000 },
+        ],
+        nova: [0.1, 0.2, 0.3, 0.4],
+        effect: {
+          engineer: [10, 11, 13, 15],
+          pilot: [0.35, 0.4, 0.6, 0.75],
+          supplyBlue: [1, 2, 5, 5],
+          supplySuper: [0, 0, 0, 5],
+        },
+        supplyFrom: 'super',
       },
     },
     // 격납고 도색(R-106 · R-107, PLANNING-world 6-4 · Q195 a): 영구 스킬을 모두 MAX로 하면 열린다(opened 'hangar').
@@ -13141,7 +13349,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const nameRules = [
     '고유 이름(모드 · 기체 · 도색 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
     '처음 하는 사람이 Help 없이 이름만 보고 효과를 안다. 그 위에 우주 · 네온 느낌을 한 겹(화력 · 부스터 · 궤도 칼날).',
-    '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음).',
+    '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음). 고양이가 승진하면 이름 왼쪽에 단계 칩([중급] 정비사 미오)을 붙이고 이름 글자는 그대로 둔다.',
     '겹치지 않게: 다른 것에 같은 말을 쓰지 않는다(Super 모드 ↔ Super Coin → Star Coin).',
     "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point.",
     '지우는 일은 결과가 보이게(전체 초기화).',
@@ -13413,6 +13621,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
       value: v => '−' + pctOf(v) + '%',
     },
+  };
+  // 승진(R-111 · R-112): 단계 이름(1 = 중급 … 4 = 마스터, balance cats.promo 인덱스 + 1). 고양이 이름은 한 곳 —
+  // 글자만 쓰는 곳(aria · 기록 카드 글자 · 로그)은 catLabelText '중급 정비사 미오', 화면 HTML은 view.catLabel(이름 왼쪽 칩)
+  const promoRanks = ['중급', '고급', '전문', '마스터'];
+  const rankName = r => promoRanks[r - 1] || '';
+  const catLabelText = (id, rank) => (rank ? rankName(rank) + ' ' : '') + (cats[id]?.name || id);
+  // 승진하면 붙는 것 한 줄(고양이 말풍선): '충격파 +10% · 시작 스킬 +10' · '… · Super부터 B +1/분' · '… · 대시 −35%'
+  const promoGain = (r, id) => {
+    const P = B().cats.promo,
+      i = r - 1,
+      own =
+        id === 'engineer'
+          ? '시작 스킬 +' + P.effect.engineer[i]
+          : id === 'pilot'
+            ? abilities.dash + ' −' + pctOf(P.effect.pilot[i]) + '%'
+            : modeName(P.supplyFrom) + '부터 ' + BL + ' +' + P.effect.supplyBlue[i] + '/분';
+    return abilities.nova + ' +' + pctOf(P.nova[i]) + '% · ' + own;
   };
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
@@ -13815,7 +14040,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       title: 'GM 실험 칸',
       note: '따로 된 저장소에서 값을 바꿔 판을 해 봅니다. /test/의 재화 · 기록은 그대로입니다.',
       coins: '재화',
-      cats: '고양이 Lv',
+      cats: '고양이 Lv · 승진',
+      // 승진 칸(R-113): '정비사 미오 승진'(0 없음 · 1 중급 · 2 고급 · 3 전문)
+      promo: name => name + ' 승진',
       unlocks: '해금',
       hidden: '히든 탭',
       // 격납고(R-109): 열기 칸 · 도색 고르기(그대로 · 모두 가짐 · 없음)
@@ -14055,6 +14282,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       catUnlock: id => cats[id].name + ' 해금',
       catLevel: (id, lv) => cats[id].name + ' Lv' + lv,
       companion: id => (id ? cats[id].name + ' 동반' : '동반 해제'),
+      // 동반 켜고 끄기(R-111, 여러 마리)
+      party: (id, on) => cats[id].name + (on ? ' 동반' : ' 동반 해제'),
       // 도색(R-106): 사면 바로 입힘 · 입히기 · 벗기(기본)
       paintBuy: (craft, c) => craftName(craft) + ' ' + paint.names[c] + ' 도색 · 바로 입혔습니다',
       paintWear: (craft, c) =>
@@ -14151,6 +14380,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         autoGold: '자동 ' + G + ' 습득',
         // 세 기체가 가진 도색 수 합(R-109)
         paint: paint.group,
+        // 세 고양이 승진 단계 합(R-113)
+        promo: '승진',
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -14312,14 +14543,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       entry: '히든',
       // 잠김 줄은 모드 잠김 칩과 같은 꼴('🔒 조건', 자물쇠는 여기 한 번)
       entryLocked: () => '🔒 ' + modeName(B().cats.hiddenFrom) + ' 1판',
-      // 해금 뒤 성장 탭 칸(보완 10): '히든 · 고양이 비행사' + 동반 고양이 그림 · '동반 정비사 미오 Lv3'
+      // 해금 뒤 성장 탭 칸(보완 10 · R-112): '히든 · 고양이 비행사' + 동반 고양이 얼굴들 · '동반 2마리'
       entryOpen: '히든 · 고양이 비행사',
-      entryCompanion: (id, lv) => (id ? '동반 ' + cats[id].name + ' Lv' + lv : '동반 없음'),
+      entryParty: n => (n ? '동반 ' + n + '마리' : '동반 없음'),
       title: '히든 탭 · 고양이 비행사',
       back: '성장으로 돌아가기',
       applied: '적용 중',
-      appliedNone: '없음 · 해금한 고양이를 동반으로 고르세요',
-      appliedItem: (id, lv, always) => cats[id].name + ' Lv' + lv + ' ' + (always ? '항상' : '동반'),
+      appliedNone: '없음 · 해금한 고양이를 동반으로 켜세요',
+      // 적용 중 줄(R-112): 이름(승진하면 왼쪽 칩, Lv 없음) 뒤 '동반' · 동반이 아닌 Lv5는 '항상'(승진한 고양이는 '항상'도 없음)
+      appliedTail: { party: '동반', always: '항상' },
       always: '항상 적용',
       companion: '동반 중',
       locked: '미해금',
@@ -14335,11 +14567,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       have: n => '보유 ' + SC + ' ' + n,
       pick: '동반',
       picked: '동반 중',
-      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 해제' : ' 동반으로 고르기'),
-      note: () =>
-        '함께 출격할 고양이 1마리를 고르세요. Lv' +
-        B().cats.maxLevel +
-        ' 고양이는 고르지 않아도 항상 효과를 줍니다.',
+      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 끄기' : ' 동반 켜기'),
+      note: () => '동반은 여러 마리 · Lv' + B().cats.maxLevel + '는 늘 기본 효과 · 승진 효과는 동반만',
+      // 승진(R-112, 계약 design/v5-stage12/promo.js L). 값은 balance cats.promo(인덱스 = 단계 − 1)
+      promo: {
+        // Lv5 효과 뒤 '동반 +승진 값'
+        companionOnly: '동반',
+        plus: (id, r) => {
+          const P = B().cats.promo,
+            i = r - 1;
+          if (id === 'engineer') return '+' + P.effect.engineer[i];
+          if (id === 'pilot') return '−' + pctOf(P.effect.pilot[i]) + '%';
+          return BL + ' +' + P.effect.supplyBlue[i] + '/분(' + modeName(P.supplyFrom) + ' 이상)';
+        },
+        // 승진 마름모 뒤 그 고양이 몫
+        nova: r => abilities.nova + ' +' + pctOf(B().cats.promo.nova[r - 1]) + '%',
+        diamonds: (r, cap) => '승진 ' + r + ' / ' + cap,
+        next: r => '다음 ' + rankName(r),
+        lockStage: s => '🔒 동반으로 ' + stage.upper + ' ' + s + ' 보스',
+        lockFinal: () => '🔒 ' + stage.upper + ' 100 최종 보스',
+        trial: r => rankName(r) + ' 시험 · 한 판에',
+        kills: '처치',
+        clears: '탄',
+        top: r => rankName(r),
+      },
     },
     // 격납고 · 도색(R-106): 성장 탭 아래 칸 · 격납고 화면(page-hangar). 색 이름은 paint.names, 값 · 효과는 balance paint
     hangar: {
@@ -14736,6 +14987,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return 'Lv' + (Number(p[2]) + 2) + ' 비용 ' + (p[3] === 's' ? SC : BL);
       if (group === 'cats' && p[1] === 'effect')
         return (cats[p[2]]?.name || p[2]) + ' Lv' + (Number(p[3]) + 1) + ' 효과';
+      // 승진(R-111): '중급 승진 열림' · '고급 시험 처치' · '정비사 미오 전문 승진 효과'
+      if (group === 'cats' && p[1] === 'promo') {
+        const r = i => rankName(Number(i) + 1) || i;
+        if (p[2] === 'open') return r(p[3]) + ' 승진 열림';
+        if (p[2] === 'test') return r(p[3]) + ' 시험 ' + (p[4] === 'kills' ? '처치' : '탄');
+        if (p[2] === 'nova') return r(p[3]) + ' 승진 ' + abilities.nova + ' 몫';
+        if (p[2] === 'effect') {
+          const who = { supplyBlue: cats.supply.name + ' ' + BL, supplySuper: cats.supply.name + ' ' + SC };
+          return (who[p[3]] || cats[p[3]]?.name || p[3]) + ' ' + r(p[4]) + ' 승진 효과';
+        }
+      }
       // 숫자 배열(회복 구역 크기 배율 등): '이름 n'(1부터)
       if (p.length === 3 && /^\d+$/.test(p[2]) && names[group]?.[p[1]])
         return names[group][p[1]] + ' ' + (Number(p[2]) + 1);
@@ -15006,6 +15268,31 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'cats.effect.engineer.*': ['그 Lv 효과: 기체 시작 스킬마다 더하는 스택', '스택', 'easy'],
       'cats.effect.supply.*': ['그 Lv 효과: 분당 ' + G + ' +', G, 'more'],
       'cats.effect.pilot.*': ['그 Lv 효과: ' + DASH + ' 재충전 감소 비율', '비율', 'easy'],
+      // 승진(R-111): 동반한 Lv5 고양이만. 인덱스 0 = 중급 … 3 = 마스터
+      'cats.promo.open.*': [
+        '이 ' + ST + ' 보스 웨이브를 동반으로 다 잡으면 그 승진 시험이 열림(다음 판부터)',
+        ST,
+        'cost',
+      ],
+      'cats.promo.test.*.kills': ['승진 시험: 한 판에 충격파로 처치할 적 수', '마리', 'cost'],
+      'cats.promo.test.*.clears': ['승진 시험: 한 판에 충격파로 지울 적 탄 수', '개', 'cost'],
+      'cats.promo.nova.*': [
+        '그 단계 고양이 하나가 ' + abilities.nova + ' 배율에 더하는 몫(고양이마다 더함)',
+        '배',
+        'easy',
+      ],
+      'cats.promo.effect.engineer.*': [
+        '승진 효과: 기체 시작 스킬마다 더하는 스택(Lv5 값 대신)',
+        '스택',
+        'easy',
+      ],
+      'cats.promo.effect.pilot.*': ['승진 효과: ' + DASH + ' 재충전 감소 비율(Lv5 값 대신)', '비율', 'easy'],
+      'cats.promo.effect.supplyBlue.*': ['승진 효과: 분당 ' + BL + '(Super 이상 판)', BL, 'more'],
+      'cats.promo.effect.supplySuper.*': [
+        '승진 효과: 이 분마다 1 ' + SC + '(0 = 없음, Super 이상 판)',
+        '분',
+        'less',
+      ],
       'superCoin.every': ['전투 시계 이 간격마다 기체 근처에 1개(' + modeName('insane') + ')', '초', 'less'],
       'superCoin.near': ['시간마다 나오는 코인의 가까운 거리', '거리', ''],
       'superCoin.far': ['시간마다 나오는 코인의 먼 거리', '거리', ''],
@@ -15348,6 +15635,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           coin: BL + ' 코인',
           boss: '보스 ' + BL,
           field: '필드 ' + BL + ' 코인',
+          // 승진 보급관(R-113, Super 이상 판)
+          cat: cats.supply.name + ' 승진 ' + BL,
           point: '포인트 보너스',
         },
         super: SC,
@@ -15400,6 +15689,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           autoGold: '자동 ' + G,
           tier: '수입 단계',
           supplyLv: cats.supply.name + ' Lv',
+          // 승진 단계 0~4(R-113, 0 = 없음 · 1 = 중급 …)
+          supplyRank: cats.supply.name + ' 승진(0~4)',
         },
         resetRows: '예시 되돌리기',
         method: '계산 방법',
@@ -15804,9 +16095,24 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               BL +
               '로 Lv' +
               b.cats.maxLevel +
-              '까지 키웁니다. 동반 1마리와 Lv' +
+              '까지 키웁니다. 동반(여러 마리)과 Lv' +
               b.cats.maxLevel +
               ' 고양이의 효과가 출격 때 적용됩니다.',
+          ],
+          // 승진(R-112)
+          [
+            '승진',
+            '동반한 Lv' +
+              b.cats.maxLevel +
+              ' 고양이와 ' +
+              stage.upper +
+              ' ' +
+              b.cats.promo.open[0] +
+              ' 보스를 잡으면 시험이 열리고, 다음 판부터 ' +
+              abilities.nova +
+              '로 시험을 넘기면 승진합니다. 승진한 동반 고양이마다 ' +
+              abilities.nova +
+              '가 세집니다.',
           ],
           // 격납고 도색(R-106)
           [
@@ -16164,7 +16470,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               BL +
               '로 Lv' +
               b.cats.maxLevel +
-              '까지 키운다. 동반 1마리와 Lv' +
+              '까지 키운다. 동반(해금한 고양이마다 켜고 끄기, 여러 마리)과 Lv' +
               b.cats.maxLevel +
               ' 고양이의 효과가 출격 순간 적용된다(' +
               cats.engineer.name +
@@ -16177,6 +16483,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               ': ' +
               abilities.dash +
               ' 재충전).',
+          },
+          {
+            term: '승진',
+            desc:
+              '동반한 Lv' +
+              b.cats.maxLevel +
+              ' 고양이와 그 ' +
+              stage.upper +
+              ' 보스 웨이브(' +
+              b.cats.promo.open.filter(n => n !== null).join(' · ') +
+              ')를 잡으면 그 단계 시험이 열리고, 다음 판부터 한 판에 ' +
+              abilities.nova +
+              ' 처치 · 지운 탄을 넘기면 한 단계 오른다(' +
+              promoRanks.join(' · ') +
+              ', 마스터는 최종 보스 뒤). 승진하면 이름 왼쪽에 단계 칩이 붙고, 동반한 고양이마다 ' +
+              abilities.nova +
+              ' 배율이 더해진다.',
           },
           {
             term: view.hangar.title,
@@ -16378,6 +16701,39 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       },
       // 동반이 없을 때(해금한 고양이 중 하나가)
       alone: '동반을 골라 줘. 나도 같이 나가고 싶어!',
+      // 승진 줄(R-112, 결과 한마디 자리 · 고양이마다 한 줄). r = 단계(1 = 중급), 값은 balance cats.promo
+      promo: {
+        pass: {
+          engineer: r => rankName(r) + josa(rankName(r), '이/가') + ' 됐어! ' + promoGain(r, 'engineer'),
+          supply: r => rankName(r) + ' 보급관 승진! ' + promoGain(r, 'supply'),
+          pilot: r => rankName(r) + ' 조종사가 됐어! ' + promoGain(r, 'pilot'),
+        },
+        // 시험 판(통과 못 함): '고급 시험 처치 1,240/1,500 · 탄 6,100/8,000. ' + 끝말
+        trying: (r, k, c) => {
+          const t = B().cats.promo.test[r - 1];
+          return (
+            rankName(r) +
+            ' 시험 처치 ' +
+            num(k) +
+            '/' +
+            num(t.kills) +
+            (t.clears ? ' · 탄 ' + num(c) + '/' + num(t.clears) : '') +
+            '. '
+          );
+        },
+        tail: { engineer: '다음엔 넘자.', supply: '장부에 적어 뒀어!', pilot: '다음 판엔 갈 수 있어!' },
+        // 이번 판에 열림: 시험은 다음 판부터(이 판 값은 쓰지 않고 목표만)
+        opened: r => {
+          const t = B().cats.promo.test[r - 1];
+          return (
+            rankName(r) +
+            ' 시험이 열렸어! 다음 판부터 한 판에 처치 ' +
+            num(t.kills) +
+            (t.clears ? ' · 탄 ' + num(t.clears) : '') +
+            '.'
+          );
+        },
+      },
       // 아직 해금하지 않은 고양이(회색 얼굴, 해금 S는 balance cats.unlock)
       wake: {
         engineer: s => s + ' ' + SC + '면 나를 깨울 수 있어. 기체는 내가 책임질게.',
@@ -16412,6 +16768,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     enemies,
     enemyName,
     cats,
+    promoRanks,
+    rankName,
+    catLabelText,
     abilities,
     stage,
     level,
@@ -16598,7 +16957,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.12.0',
+  const VERSION = '4.13.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -16880,8 +17239,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       // 고양이 효과(R-026): 출격 순간 값(NeonProgress.catEffects)으로 고정한다.
       // 정비사 = 기체 시작 스킬마다 더하는 스택(출처 '고양이'), 조종사 = 대시 재충전 감소 비율.
       const engineer = Math.max(0, Math.floor(Number(launch?.cats?.engineer) || 0)),
-        pilot = Math.min(0.95, Math.max(0, Number(launch?.cats?.pilot) || 0));
-      this.cats = { engineer, pilot };
+        pilot = Math.min(0.95, Math.max(0, Number(launch?.cats?.pilot) || 0)),
+        // 승진(R-111): 충격파 배율 = 1 + 동반 · 승진한 고양이마다 몫(1~3으로 자름, 없으면 1). 부활 충격파도 같은 세기
+        novaX = Math.min(3, Math.max(1, Number(launch?.cats?.novaX) || 1));
+      this.cats = { engineer, pilot, novaX };
+      // 끝낸 보스 웨이브의 가장 높은 STAGE(R-111 승진 열림 · 기록 bossTop). snapshot에는 넣지 않는다
+      this.bossTop = 0;
       // 출격 버프(R-062): 출격 트랜잭션이 비용을 받고 적용한 것만 온다(launch.buffs). 1회 부활은 판에 한 번
       this.buffList = Array.isArray(launch?.buffs) ? BUFF_IDS.filter(id => launch.buffs.includes(id)) : [];
       this.buffs = Object.fromEntries(BUFF_IDS.map(id => [id, this.buffList.includes(id)]));
@@ -17387,6 +17750,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       });
       this.bossWaves.shift();
       this.pendingBoss = this.bossWaves.length;
+      this.bossTop = Math.max(this.bossTop, wave.originStage || 0);
       this.emit('boss_wave_complete', {
         waveId: wave.waveId,
         originStage: wave.originStage,
@@ -17525,7 +17889,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.orbits = Math.min(B.orbit.max, u('orbit'));
       p.orbitDamage = B.orbit.damage + p.level + S.orbit.step * u('orbit');
       p.maxHp = c.hp + S.vital.hp * u('vital');
-      p.novaDamage = B.nova.damage + S.nova.damage * u('nova');
+      p.novaDamage = (B.nova.damage + S.nova.damage * u('nova')) * this.cats.novaX;
       p.novaRadius = Math.min(S.nova.radiusMax, B.nova.radius + S.nova.radius * u('nova'));
       p.novaMax = Math.max(S.nova.cooldownMin, B.nova.cooldown - S.nova.cooldown * u('nova'));
       p.crit = Math.min(S.crit.max, B.player.crit + S.crit.step * u('crit'));
@@ -18343,6 +18707,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     'careerAt',
     'look',
     'world',
+    'bossTop',
+    'party',
+    'ranks',
     'score',
     'time',
     'simulationTime',
@@ -18398,6 +18765,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       careerAt: intIn(raw.careerAt, 0, Number.MAX_SAFE_INTEGER) ?? 0,
       look: safeLook(raw.look),
       world: safeWorld(raw.world),
+      // 12단계(R-111): 끝낸 보스 웨이브의 가장 높은 STAGE · 출격 순간 동반 고양이들(cats.list 순) · 동반 · 승진한 고양이 단계
+      bossTop: intIn(raw.bossTop, 0, 999) ?? 0,
+      party: Array.isArray(raw.party) ? CATS.list.filter(id => raw.party.includes(id)).slice(0, 3) : [],
+      ranks: safeRanks(raw.ranks),
     };
     for (const k of [
       'score',
@@ -18424,15 +18795,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   // 솔로 판(R-100): 일반 · S 출격. 순위 · 보호 · 자동 정리 · 최근 기록 · 기록 탭은 솔로 기록만 다룬다
   const isSolo = r => r?.launch?.type === 'normal' || r?.launch?.type === 'super' || !r?.launch?.type;
-  // 출격 순간 동반 고양이. 옛 기록(칸 없음)은 Lv1~4로 적용된 고양이가 하나뿐일 때만 그 고양이로 읽는다
-  // (Lv5는 동반이 아니어도 적용되므로 알 수 없음)
-  function companionOf(record) {
-    if (CATS.list.includes(record?.companion)) return record.companion;
+  // 출격 순간 동반 고양이들(12단계, 여러 마리): 기록 party가 있으면 그것. 옛 기록(party 없음)은 companion 한 마리,
+  // 그것도 없으면 Lv1~4로 적용된 고양이가 하나뿐일 때만 그 고양이(Lv5는 동반이 아니어도 적용되므로 알 수 없음)
+  function partyOf(record) {
+    if (Array.isArray(record?.party)) {
+      const list = CATS.list.filter(id => record.party.includes(id));
+      if (list.length) return list;
+    }
+    if (CATS.list.includes(record?.companion)) return [record.companion];
     const mid = CATS.list.filter(id => {
       const lv = finiteCount(record?.cats?.[id]);
       return lv >= 1 && lv < CATS.maxLevel;
     });
-    return mid.length === 1 ? mid[0] : null;
+    return mid.length === 1 ? [mid[0]] : [];
+  }
+  // 첫 동반 고양이(옛 한 마리 자리: 결과 한마디 등)
+  function companionOf(record) {
+    return partyOf(record)[0] ?? null;
+  }
+  // 승진 단계(R-111): { 고양이: 1~9 }
+  function safeRanks(v) {
+    const out = {};
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return out;
+    for (const id of CATS.list) if (intIn(v[id], 1, 9) !== null) out[id] = v[id];
+    return out;
   }
   function rank(records) {
     return records
@@ -18473,6 +18859,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         last = r;
     }
     return last;
+  }
+  // 기록 탭 목록 순서(I-94): 최신순, lastPlayed와 같은 기준(date → id). 원본은 그대로 두고 복사본을 정렬
+  function byRecent(records) {
+    const cmp = (a, b) => (a > b) - (a < b);
+    return [...(records || [])].sort((a, b) => cmp(b.date, a.date) || cmp(b.id, a.id));
   }
   // ── 기록 보관(R-018): 순수 함수. 저장 계층은 한 트랜잭션 안에서 이 함수들을 부르기만 한다. ──
   // 보호 기록(R-035): 일반 TOP3 + S 출격 TOP3(각각 rank() 순 앞 3개)와 별표 기록.
@@ -19432,9 +19823,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     rankPlace,
     modeBest,
     lastPlayed,
+    byRecent,
     normalizeRecord,
     isSolo,
     companionOf,
+    partyOf,
     isId,
     keepValue,
     safeSkills,
@@ -19854,7 +20247,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     add('sc', r?.launch?.type === 'super' ? 1 : 0);
     by('mode', r?.difficultyId);
     by('craft', r?.craft);
-    by('cat', Data().companionOf(r));
+    for (const id of Data().partyOf(r)) by('cat', id);
     top('score', r?.score);
     top('time', time);
     top('stage', r?.stage);
@@ -19966,18 +20359,119 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const dup = extra => ({ ok: true, duplicate: true, ...extra });
   // 고양이 레벨은 0~maxLevel 정수만 믿는다(이상한 값은 0).
   const catLevel = v => (Number.isSafeInteger(v) && v >= 0 && v <= B.cats.maxLevel ? v : 0);
-  // 고양이 효과(R-026): Lv5 고양이 전부 + 동반 고양이(Lv1 이상). 겹치면 한 번. 프로필을 바꾸지 않는다.
+  // 동반 고양이 목록(12단계, 여러 마리): 예비 칸 x.party(balance cats.list 순서), 읽을 때 해금(Lv1 이상)한 고양이만 남긴다.
+  // x.party가 없으면 옛 칸 companion 한 마리로 읽는다(지금 계정 = 지금 동반 그대로). 동반을 읽는 곳은 모두 여기로
+  function partyOf(p) {
+    const on = id => catLevel(p?.cats?.[id]) >= 1,
+      raw = p?.x?.party;
+    if (Array.isArray(raw)) return CATS.filter(id => raw.includes(id) && on(id));
+    return CATS.includes(p?.companion) && on(p.companion) ? [p.companion] : [];
+  }
+  // 동반 목록을 쓴다: x.party(다른 x 칸은 그대로) + companion = 첫 동반(옛 코드 · 옛 탭 호환)
+  function writeParty(p, list) {
+    p.x = { ...(isObj(p.x) ? p.x : {}), party: [...list] };
+    p.companion = list[0] ?? null;
+  }
+  // ── 승진(R-111). 값은 balance cats.promo(없으면 승진 없음)
+  const PROMO = B.cats.promo || null,
+    MAX_LV = B.cats.maxLevel;
+  // 마스터 잠금(Q201 a): 열 수 있는 단계 수 = open에서 null(최종 보스, I-93 보류) 앞까지
+  function promoCap() {
+    if (!PROMO) return 0;
+    const i = PROMO.open.indexOf(null);
+    return i < 0 ? PROMO.open.length : i;
+  }
+  // 저장된 승진 칸 사본(없으면 처음 값)
+  function promoOf(p, cat) {
+    const v = p?.promo?.[cat],
+      rk = intIn(0, 9);
+    return {
+      rank: rk(v?.rank) ?? 0,
+      open: rk(v?.open) ?? 0,
+      best: isObj(v?.best) ? cleanIdMap(v.best, 20, nonNeg) : {},
+    };
+  }
+  // 효과 · 이름에 쓰는 단계: Lv5일 때만, 마스터 잠금으로 자름(데이터 · GM · 백업으로 큰 값이 와도)
+  function promoRank(p, cat) {
+    return catLevel(p?.cats?.[cat]) === MAX_LV ? Math.min(promoOf(p, cat).rank, promoCap()) : 0;
+  }
+  // 고양이 효과(R-026 · R-111): Lv 효과 = 동반 고양이(여러 마리) + 동반이 아닌 Lv5(겹치면 한 번). 프로필을 바꾸지 않는다.
   // engineer: 기체 시작 스킬마다 더할 스택 · supply: 분당 G · pilot: 대시 재충전 감소 비율. 적용되지 않으면 0.
+  // 승진 효과는 동반한 Lv5 고양이만: engineer · pilot은 Lv5 값 대신 승진 값 · supply는 G 그대로 + supplyBlue · supplySuper ·
+  // 충격파 배율 novaX = 1 + 고양이마다 nova 몫(더함). ranks = 동반 · 승진한 고양이의 단계
   function catEffects(profile) {
     const levels = {},
-      out = { levels };
+      ranks = {},
+      party = partyOf(profile),
+      out = { levels, ranks, party, novaX: 1, supplyBlue: 0, supplySuper: 0 };
+    let nova = 0;
     for (const id of CATS) {
       const lv = catLevel(profile?.cats?.[id]),
-        on = lv >= 1 && (lv === B.cats.maxLevel || profile?.companion === id);
+        on = lv >= 1 && (lv === MAX_LV || party.includes(id)),
+        rk = party.includes(id) ? promoRank(profile, id) : 0;
       levels[id] = on ? lv : 0;
       out[id] = on ? B.cats.effect[id][lv - 1] : 0;
+      if (!rk) continue;
+      ranks[id] = rk;
+      nova += PROMO.nova[rk - 1] || 0;
+      const fx = PROMO.effect;
+      if (id === 'supply') {
+        out.supplyBlue = count(fx.supplyBlue?.[rk - 1]);
+        out.supplySuper = count(fx.supplySuper?.[rk - 1]);
+      } else if (fx[id]?.[rk - 1] !== undefined) out[id] = fx[id][rk - 1];
     }
+    out.novaX = Math.round((1 + nova) * 1000) / 1000;
     return out;
+  }
+  // 승진 판정(R-111): 판 끝 한 번(addCareer · sweepCareer — careerAt 중복 막이). 기록 값만 본다.
+  // 셈하는 고양이 = 정상 종료 판 · 기록 party에 있음 · 출격 순간 Lv5(기록 cats). 고양이마다:
+  // 1 시험 — 판 전에 열려 있던 시험만(이 판에 열린 시험은 다음 판부터): 처치 · 탄(충격파 버튼)을 넘기면 한 단계 · best 비움,
+  //   못 넘으면 best를 각각 큰 값으로. 2 열림 — 기록 bossTop ≥ open[i]인 가장 높은 i까지.
+  // 돌려줌 events: 고양이마다 하나(pass > opened > try), 통과 먼저 · cats.list 순
+  function promoRun(p, record) {
+    const events = [];
+    if (!PROMO || !careerRun(record)) return events;
+    const cap = promoCap(),
+      party = Data().partyOf(record),
+      u = record.abilityUsage || {},
+      num = v => nonNeg(Number(v)) || 0,
+      kills = num(u.nova?.kills),
+      clears = num(u.nova?.projectilesCleared),
+      top = natural(record.bossTop) || 0;
+    let reach = 0;
+    PROMO.open.forEach((stage, i) => {
+      if (stage !== null && top >= stage) reach = Math.max(reach, i + 1);
+    });
+    for (const cat of CATS) {
+      if (!party.includes(cat) || catLevel(record.cats?.[cat]) !== MAX_LV) continue;
+      const pr = promoOf(p, cat),
+        was = Math.min(pr.rank, cap),
+        openBefore = pr.open;
+      let ev = null;
+      if (openBefore > was && was < cap) {
+        const t = PROMO.test[was];
+        if (kills >= t.kills && clears >= t.clears) {
+          pr.rank = was + 1;
+          pr.best = {};
+          ev = { cat, kind: 'pass', rank: was + 1, nowRank: was + 1, kills, clears };
+        } else {
+          pr.best = {
+            ...pr.best,
+            kills: Math.max(pr.best.kills || 0, kills),
+            clears: Math.max(pr.best.clears || 0, clears),
+          };
+          ev = { cat, kind: 'try', rank: was + 1, nowRank: was, kills, clears };
+        }
+      }
+      if (reach > pr.open) pr.open = Math.min(9, reach);
+      const now = Math.min(pr.rank, cap);
+      // 다음 시험이 이 판에 처음 열렸으면 '열림'(통과 줄이 우선, 이미 열려 있던 시험이면 시험 줄 그대로)
+      if (ev?.kind !== 'pass' && now < cap && pr.open > now && !(openBefore > now))
+        ev = { cat, kind: 'opened', rank: now + 1, nowRank: now, kills, clears };
+      p.promo[cat] = pr;
+      if (ev) events.push(ev);
+    }
+    return [...events.filter(e => e.kind === 'pass'), ...events.filter(e => e.kind !== 'pass')];
   }
   // S 출격 준비에 예약된 S(30분 안의 예약 1개)는 쓸 수 없다. 시각을 모르면 예약을 지킨다.
   function spendableSC(p, now) {
@@ -20079,21 +20573,33 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         t: Number(now) || 0,
         bf: buffs,
       };
-      if (paint.gx !== 1) p.runs[runId].x = { gx: paint.gx };
+      // 판 고정값 x: 모음 분당 G 배율 gx(1이면 적지 않음) · 승진 보급관(R-111) B/분 cb · S 분 간격 cs(supplyFrom 모드부터, 0이면 적지 않음)
+      const x = {},
+        supplyOk = PROMO && MODES.indexOf(modeId(mode)) >= MODES.indexOf(PROMO.supplyFrom);
+      if (paint.gx !== 1) x.gx = paint.gx;
+      if (supplyOk && cats.supplyBlue > 0) x.cb = cats.supplyBlue;
+      if (supplyOk && cats.supplySuper > 0) x.cs = cats.supplySuper;
+      if (Object.keys(x).length) p.runs[runId].x = x;
       return { ok: true, cats, paint, buffs: [...buffs], skipped };
     },
     // 분마다 분당 G × 이 판의 모음 배율(x.gx, R-107) + 고양이 분당 G(cg, 배율 없음). cat은 그중 고양이 몫.
+    // 승진 보급관(R-111): 분마다 x.cb B · 전투 분이 x.cs의 배수를 지날 때마다 1 S(blue · super는 모두 고양이 몫)
     awardMinute(p, { runId, minute }) {
       const r = p.runs[runId];
       if (!r) return fail('run_unknown');
-      if (!Number.isSafeInteger(minute) || minute <= r.m) return dup({ gold: 0, cat: 0 });
+      if (!Number.isSafeInteger(minute) || minute <= r.m) return dup({ gold: 0, cat: 0, blue: 0, super: 0 });
       const minutes = minute - r.m,
         gx = r.x?.gx > 0 ? r.x.gx : 1,
         cat = minutes * count(r.cg),
-        gold = Math.floor(minutes * goldPerMinute(p.incomeTier, r.mode) * gx) + cat;
+        gold = Math.floor(minutes * goldPerMinute(p.incomeTier, r.mode) * gx) + cat,
+        cs = count(r.x?.cs),
+        blue = minutes * count(r.x?.cb),
+        sup = cs ? Math.floor(minute / cs) - Math.floor(r.m / cs) : 0;
       p.gold += gold;
+      p.blue += blue;
+      p.superCoins += sup;
       r.m = minute;
-      return { ok: true, gold, cat };
+      return { ok: true, gold, cat, blue, super: sup };
     },
     awardLevel(p, { runId, level }) {
       const r = p.runs[runId];
@@ -20266,6 +20772,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (short) return fail(short);
       p.superCoins -= s;
       p.cats[cat] = 1;
+      // 새로 해금한 고양이는 동반 켜짐(R-111)
+      const party = partyOf(p);
+      writeParty(
+        p,
+        CATS.filter(id => id === cat || party.includes(id)),
+      );
       remember(p, txId);
       return { ok: true, price: { s }, level: 1 };
     },
@@ -20287,18 +20799,32 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       remember(p, txId);
       return { ok: true, price: { s, b }, level: expectedLevel + 1 };
     },
-    // 동반 고양이: 해금된(Lv1 이상) 고양이 하나 또는 null. 판 도중 변경은 화면이 막는다.
+    // 동반(R-111, 여러 마리): 해금된(Lv1 이상) 고양이마다 켜고 끄기. x.party와 companion(첫 동반)을 함께 쓴다.
+    // 판 도중 바꿔도 다음 출격부터(출격 순간 고정)
+    setParty(p, { cat, on }) {
+      if (!CATS.includes(cat)) return fail('invalid');
+      const party = partyOf(p),
+        want = on === true;
+      if (party.includes(cat) === want) return dup({ party });
+      if (want && !p.hidden) return fail('hidden_locked');
+      if (want && !(p.cats[cat] >= 1)) return fail('locked');
+      const next = CATS.filter(id => (id === cat ? want : party.includes(id)));
+      writeParty(p, next);
+      return { ok: true, party: next };
+    },
+    // 옛 동반 한 마리(null = 모두 끔): 동반 목록을 [cat] 또는 []로
     setCompanion(p, { cat }) {
       if (cat === null) {
-        if (p.companion === null) return dup();
-        p.companion = null;
+        if (!partyOf(p).length && p.companion === null) return dup();
+        writeParty(p, []);
         return { ok: true };
       }
       if (!CATS.includes(cat)) return fail('invalid');
       if (!p.hidden) return fail('hidden_locked');
       if (!(p.cats[cat] >= 1)) return fail('locked');
-      if (p.companion === cat) return dup();
-      p.companion = cat;
+      const party = partyOf(p);
+      if (party.length === 1 && party[0] === cat && p.companion === cat) return dup();
+      writeParty(p, [cat]);
       return { ok: true };
     },
     // 도색 사기(R-106): 기체마다 first 색을 먼저, 값은 balance paint.price(G · B · S 중 하나 이상). 예약된 S는 쓰지 않는다.
@@ -20398,15 +20924,25 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (v.hangar === false) p.opened = p.opened.filter(id => id !== 'hangar');
       if (v.paint === 'all') for (const id of CRAFT_IDS) p.paint.own[id] = [...COLORS];
       if (v.paint === 'none') p.paint = { own: {}, wear: {} };
-      if (p.companion && !(p.cats[p.companion] >= 1)) p.companion = null;
+      // 승진(R-113): promo { 고양이: 0~cap } → rank = n · open = min(cap, n + 1)(다음 시험이 열린 상태) · best 비움
+      const cap = promoCap();
+      for (const id of CATS)
+        if (v.promo?.[id] !== undefined) {
+          const n = int(v.promo[id], cap);
+          p.promo[id] = { rank: n, open: Math.min(cap, n + 1), best: {} };
+        }
+      if ((p.companion && !(p.cats[p.companion] >= 1)) || Array.isArray(p.x?.party))
+        writeParty(p, partyOf(p));
       return { ok: true };
     },
     // 판 끝(R-100): 정상 종료이고 careerAt이 0인 기록이면 경력에 더하고 기록 careerAt = now(같은 트랜잭션).
     // 이미 더한 판은 중복(아무것도 안 함). 뒤 단계의 '판 끝에 한 번만' 일도 이 자리에 넣어 careerAt을 중복 막이로 쓴다
+    // 승진 판정(R-111)도 여기서 한 번 — events는 화면이 결과 고양이 말풍선에 쓴다
     addCareer(p, { record, now }) {
-      if (!careerRun(record) || record.careerAt > 0) return dup();
+      if (!careerRun(record) || record.careerAt > 0) return dup({ events: [] });
       p.career = careerAdd(p.career, record);
-      return { ok: true, record: { ...record, careerAt: natural(now) || 1 } };
+      const events = promoRun(p, record);
+      return { ok: true, record: { ...record, careerAt: natural(now) || 1 }, events };
     },
     // 열 때 줍기(R-100): 정상 종료 · careerAt 0 · date > since인 기록을 모두 더한다 → { records: [careerAt을 쓴 기록] }
     sweepCareer(p, { records, now }) {
@@ -20415,6 +20951,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         const r = Data().normalizeRecord(raw);
         if (!careerRun(r) || r.careerAt > 0 || !(r.date > p.career.since)) continue;
         p.career = careerAdd(p.career, r);
+        promoRun(p, r);
         out.push({ ...r, careerAt: natural(now) || 1 });
       }
       return out.length ? { ok: true, records: out } : dup({ records: [] });
@@ -21031,6 +21568,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     setCompanion(cat) {
       return this.mutate(p => rules.setCompanion(p, { cat }));
     }
+    // 동반 켜고 끄기(R-111, 여러 마리)
+    setParty(cat, on) {
+      return this.mutate(p => rules.setParty(p, { cat, on }));
+    }
     // 도색(R-106): txId는 화면이 누를 때마다 새로(같은 누름의 재시도만 같은 값)
     buyPaint(txId, craft, color) {
       const now = this.now();
@@ -21131,6 +21672,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     permaMax,
     permaExcess,
     catEffects,
+    // 동반 여러 마리 · 승진(R-111)
+    partyOf,
+    promoCap,
+    promoOf,
+    promoRank,
+    promoRun,
     // 격납고 도색(R-106 · R-107)
     paintEffects,
     paintOwn,
@@ -21282,6 +21829,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 가져오기 확인 창용: 항목마다 파일 값과 지금 값을 나란히 두고, 바꾸면 잃는 항목에 down을 붙인다.
   // 해금·영구 스택·고양이·도색은 합계가 아니라 항목별로 비교한다(다른 모드·다른 스킬·다른 고양이·다른 색을 잃는 경우).
   // 도색(R-109): 값 = 기체마다 가진 색 수의 합(모르는 색은 세지 않음), 지금 어떤 기체의 색이 파일의 그 기체에 없으면 down
+  // 줄 이름이 terms에 없으면 키 이름 그대로
   function compare(file, now) {
     const norm = p => profileFields(Progress().migrate({ ...p, schemaVersion: Progress().SCHEMA })),
       a = norm(file),
@@ -21289,6 +21837,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       total = o => Object.values(o).reduce((s, n) => s + n, 0),
       crafts = Object.keys(Balance().crafts),
       paints = p => crafts.reduce((s, c) => s + Progress().paintOwn(p, c).length, 0),
+      // 승진(R-113): 저장된 단계(자르지 않은 rank) — 세 고양이 합, 지금 어떤 고양이 단계가 파일보다 높으면 down
+      cats = Balance().cats.list,
+      rank = (p, c) => Progress().promoOf(p, c).rank,
+      promoSum = p => cats.reduce((s, c) => s + rank(p, c), 0),
       rows = [
         ['gold', a.gold, b.gold],
         ['blue', a.blue, b.blue],
@@ -21321,7 +21873,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               .some(color => !had.includes(color));
           }),
         ],
-      ].map(([key, f, n, down = f < n]) => ({ key, label: T.msg.backup.rows[key], file: f, now: n, down }));
+        ['promo', promoSum(a), promoSum(b), cats.some(c => rank(b, c) > rank(a, c))],
+      ].map(([key, f, n, down = f < n]) => ({
+        key,
+        label: T.msg.backup.rows[key] ?? key,
+        file: f,
+        now: n,
+        down,
+      }));
     return { rows, down: rows.some(r => r.down) };
   }
 
@@ -21506,6 +22065,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 1회 부활(R-062): 흔들림 · 금빛 고리 길이(초). 불꽃 수는 level.*.revive
     reviveShake: [5, 0.25],
     revive: { sec: 0.6 },
+    // 승진 문양(R-112): 충격파 버튼마다 동반 · 승진한 고양이 얼굴을 자리 고정 삼각대형으로(기체 아래 층, 부활 충격파엔 없음).
+    // alpha 단계별 최고 투명도(중급 · 고급 · 전문 · 마스터) × (남은 비율)^0.5 · sec 길이 · size 얼굴 = 반경 × 값 ·
+    // dist 가운데에서 반경 × 값 · from 시작 크기 비율(→ 1) · slot 고양이 자리 각도(도) · px 텍스처 크기 ·
+    // low 흔들림 줄이기면 투명도 배율(크기 고정)
+    glyph: {
+      alpha: [0.3, 0.5, 0.7, 1],
+      sec: 0.6,
+      size: 0.55,
+      dist: 0.4,
+      from: 0.85,
+      slot: { engineer: -90, supply: 150, pilot: 30 },
+      px: 128,
+      low: 0.5,
+    },
     // 회복 구역(R-061): 채움 · 테두리 투명도 [밖, 안] · 끝 깜빡임(남은 초 · 초당 횟수) · '+N'(healZone.hp) 글자 크기 · 수명(초)
     zone: { fill: [0.11, 0.2], line: [0.8, 1], blink: 5, hz: 4, size: 28, life: 0.8 },
     // 붕괴 구역(R-072): 예고 채움 투명도 · 가운데 차오르는 원 투명도 [보통, 달아오름] · 달아오르는 마지막 초 ·
@@ -21566,6 +22139,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.quake = null;
       this.shieldFull = null;
       this.shieldFlash = 0;
+      // 승진 문양(R-112): 이 판의 고양이 [{ cat, rank, img, tex }] · 마지막 충격파 { x, y, r, t } · 그릴 값 · 굽은 그림(고양이마다 한 번)
+      this.glyphs = [];
+      this.glyphFx = null;
+      this.glyphView = [];
+      this.glyphCache = {};
     }
     async init() {
       ({ pal: this.pal, css: this.css } = readPalette());
@@ -21596,6 +22174,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         this.app.stage.addChild(this.overlay);
         this.textures = {};
         this.makeTextures();
+        // 승진 문양 층(R-112): 기체 아래
+        this.glyphLayer = new PIXI.Container();
+        this.world.addChild(this.glyphLayer);
         this.player = this.sprite('player-striker');
         this.world.addChild(this.player);
         this.shield = new PIXI.Graphics();
@@ -21873,6 +22454,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           this.kick(FX.hurtShake);
         }
         if (e.type === 'nova') {
+          // 새 충격파면 문양을 바꾼다(최대 고양이 수만큼, 부활 충격파는 'revive'라 없음)
+          if (this.glyphs.length) this.glyphFx = { x: e.x, y: e.y, r: e.r, t: 0 };
           this.rings.push({ x: e.x, y: e.y, r: e.r, life: 0.6, max: 0.6, color: P.nova });
           this.burst(e.x, e.y, P.nova, L.nova, true);
           this.kick(FX.novaShake);
@@ -21889,8 +22472,79 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       if (this.rings.length > 35) this.rings.splice(0, this.rings.length - 35);
     }
+    // 승진 문양(R-112): 판 시작에 동반 · 승진한 고양이 [{ cat, rank, svg }]. SVG → 그림 → 텍스처(고양이마다 한 번, 준비 전이면 그리지 않음)
+    setGlyphs(list = []) {
+      this.glyphs = [];
+      this.glyphFx = null;
+      const css = getComputedStyle(document.documentElement),
+        px = FX.glyph.px;
+      for (const { cat, rank, svg } of list) {
+        const item = { cat, rank, img: null, tex: null };
+        this.glyphs.push(item);
+        const done = this.glyphCache[cat];
+        if (done) {
+          if (done.img) Object.assign(item, done);
+          continue;
+        }
+        const color = css.getPropertyValue('--cat-' + cat).trim() || '#ffffff',
+          img = new Image(),
+          slot = (this.glyphCache[cat] = { img: null, tex: null });
+        img.onload = () => {
+          const cv = document.createElement('canvas');
+          cv.width = cv.height = px;
+          cv.getContext('2d').drawImage(img, 0, 0, px, px);
+          slot.img = cv;
+          slot.tex = this.mode === 'webgl' ? PIXI.Texture.from(cv) : null;
+          for (const g of this.glyphs) if (g.cat === cat) Object.assign(g, slot);
+        };
+        img.onerror = () => delete this.glyphCache[cat];
+        img.src =
+          'data:image/svg+xml;charset=utf-8,' +
+          encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' +
+              px +
+              '" height="' +
+              px +
+              '" style="color:' +
+              color +
+              '">' +
+              svg +
+              '</svg>',
+          );
+      }
+    }
+    // 문양 그릴 값(webgl · 기본 그래픽 공통): 자리 · 크기 · 투명도
+    glyphFrame(dt, motion) {
+      const G = FX.glyph,
+        f = this.glyphFx,
+        out = this.glyphView;
+      out.length = 0;
+      if (!f) return out;
+      f.t += dt;
+      if (f.t >= G.sec) {
+        this.glyphFx = null;
+        return out;
+      }
+      const k = f.t / G.sec,
+        grow = motion ? G.from + (1 - G.from) * k : 1,
+        fade = Math.sqrt(1 - k) * (motion ? 1 : G.low);
+      for (const g of this.glyphs) {
+        if (!g.img) continue;
+        const a = ((G.slot[g.cat] ?? -90) * Math.PI) / 180;
+        out.push({
+          g,
+          x: f.x + Math.cos(a) * f.r * G.dist,
+          y: f.y + Math.sin(a) * f.r * G.dist,
+          size: f.r * G.size * grow,
+          alpha: (G.alpha[g.rank - 1] ?? G.alpha[0]) * fade,
+        });
+      }
+      return out;
+    }
     // 메뉴로 돌아갈 때 지난 판의 효과와 스프라이트를 모두 숨긴다.
     clear() {
+      this.glyphFx = null;
+      this.glyphView.length = 0;
       this.particles.length = 0;
       this.rings.length = 0;
       this.bursts.length = 0;
@@ -21949,6 +22603,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       this.cam.x += (p.x - this.cam.x) * Math.min(1, dt * 10);
       this.cam.y += (p.y - this.cam.y) * Math.min(1, dt * 10);
+      const glyphs = this.glyphFrame(dt, pref.motion);
       if (this.mode === '2d') {
         this.fallback(g);
         return;
@@ -22046,6 +22701,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         s.alpha = b.t < FL.hold ? top : top * Math.max(0, 1 - (b.t - FL.hold) / FL.fade);
       }
       this.hideAfter('flashes', j);
+      // 승진 문양(R-112): 기체 아래 층
+      j = 0;
+      for (const v of glyphs) {
+        if (!v.g.tex) continue;
+        const s = this.pool('glyphs', j++, 'hazardFlash', this.glyphLayer);
+        s.texture = v.g.tex;
+        s.position.set(v.x, v.y);
+        s.width = s.height = v.size;
+        s.alpha = v.alpha;
+      }
+      this.hideAfter('glyphs', j);
       j = 0;
       for (const e of g.enemies) {
         if (
@@ -22373,6 +23039,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c.fillStyle = S.bcoinInk;
         c.fillText(root.NeonTerms.coins.b.short, coin.x, coin.y + 1);
       }
+      // 승진 문양(R-112): 기체 아래
+      for (const v of this.glyphView) {
+        c.globalAlpha = v.alpha;
+        c.drawImage(v.g.img, v.x - v.size / 2, v.y - v.size / 2, v.size, v.size);
+      }
+      c.globalAlpha = 1;
       c.lineWidth = 0.6;
       c.translate(g.p.x, g.p.y);
       c.rotate(g.p.aim);
@@ -23504,13 +24176,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '</button></li>'
     );
   }
-  // 기록 목록: records는 순위 순(TOP3가 앞). select가 있으면 선택 모드.
+  // 기록 목록: 최신순(I-94). select가 있으면 선택 모드.
   function recordList(records, page, perPage = 10, select = null) {
     const pages = Math.max(1, Math.ceil(records.length / perPage)),
       p = Math.min(Math.max(0, page), pages - 1),
-      list = records.slice(p * perPage, p * perPage + perPage),
+      list = root.NeonData.byRecent(records).slice(p * perPage, p * perPage + perPage),
       RV = TV.rec,
-      // TOP3 표시는 두 순위(일반 · S 출격) 기준, 목록은 지금처럼 전체 Point 순(R-032)
+      // TOP3 표시는 두 순위(일반 · S 출격) 기준(R-032), 목록 순서와 무관
       top = new Set(
         ['normal', 'super'].flatMap(kind =>
           root.NeonData.ranking(records, kind)
@@ -23702,16 +24374,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
 
   // ── 히든 탭 · 고양이 비행사(R-026) ──
-  // 성장 탭 아래 칸 3개 중 첫 칸(R-033, 같은 자리). 잠겨 있으면 해제 조건, 열리면 동반 고양이(보완 10).
-  // companion = [고양이 id, 레벨] | null
-  function hiddenEntry(open, companion) {
+  // 성장 탭 아래 칸 3개 중 첫 칸(R-033, 같은 자리). 잠겨 있으면 해제 조건, 열리면 동반 고양이 얼굴들 + '동반 n마리'(R-112).
+  // party = 동반 고양이 id 배열
+  function hiddenEntry(open, party = []) {
     const H = TV.hidden;
     return open
       ? '<button class="hidden-entry is-open" id="hidden-open"><strong>' +
           H.entryOpen +
           '</strong><small>' +
-          (companion ? catFace(companion[0], 'cat-mini') : '') +
-          esc(H.entryCompanion(...(companion || []))) +
+          party.map(id => catFace(id, 'cat-mini')).join('') +
+          esc(H.entryParty(party.length)) +
           ' ›</small></button>'
       : '<div class="hidden-entry"><strong>' +
           H.entry +
@@ -23779,13 +24451,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const catIcon = id => catFace(id, 'cat-icon');
   // 고양이 얼굴 SVG 안쪽(기록 카드 R-103이 독립 SVG로 다시 씀)
   const catSvg = id => CAT_SVG[id] || CAT_SVG.engineer;
+  // 충격파 문양(R-112): 배지 원 · 배지 그림을 빼고 선 0.8로 가늘게(렌더러가 고양이 색 텍스처로 굽는다)
+  const catGlyphSvg = id =>
+    catSvg(id)
+      .replace(/<g [^>]*><circle class="cat-badge"[\s\S]*?<\/g>$/, '')
+      .replace(/stroke-width="1\.[45]"/g, 'stroke-width="0.8"');
+  // 고양이 이름 한 곳(R-112): 승진하면 이름 왼쪽에 단계 칩(고양이 색) + 이름, 아니면 이름만(Lv는 쓰는 곳이 따로 붙임).
+  // 글자만 쓰는 곳은 T.catLabelText
+  const catLabel = (id, rank) =>
+    (rank ? '<span class="cat-rank cat-rank--' + id + '">' + esc(T.rankName(rank)) + '</span>' : '') +
+    esc(T.cats[id]?.name || id);
   // 고양이 한마디(R-102): 얼굴 36px + 말풍선(이름을 글 앞 같은 줄에, 팁이면 TIP 표). line = NeonTalk.pick 결과.
   // 무전(히든 탭 열기 전)은 얼굴 실루엣 · 점선 말풍선 · 무전 아이콘 · '??? · 무전', 잠긴 고양이('깨워 줘')는 회색
   function talk(line) {
     if (!line) return '';
     const L = T.talk,
       radio = line.by === 'radio',
-      name = radio ? L.radioName + ' · ' + L.radio : T.cats[line.by]?.name || '';
+      name = radio ? esc(L.radioName + ' · ' + L.radio) : T.cats[line.by] ? catLabel(line.by, line.rank) : '';
     return (
       '<div class="talk talk--' +
       (radio ? 'radio' : line.by) +
@@ -23794,49 +24476,120 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       catFace(line.shape, 'talk-face') +
       '<p class="talk-bubble"><span class="talk-name">' +
       (radio ? Icons.svg('radio') : '') +
-      esc(name) +
+      name +
       (line.tip ? ' <em>' + L.tip + '</em>' : '') +
       '</span><span class="talk-text">' +
       esc(line.text) +
       '</span></p></div>'
     );
   }
-  // info = { cats: { id: 레벨 }, companion, sc, blue, ready, effects(NeonProgress.catEffects 결과) }
+  // info = { cats: { id: 레벨 }, party: [id], promo: { id: { rank, open, best } }, cap(승진 잠금), sc, blue, ready,
+  //   effects(NeonProgress.catEffects 결과) }. 동반 = 해금한 고양이마다 켜고 끄기(R-111, Lv5에도).
+  // Lv5 카드(R-112): 승진 전이면 레벨 막대 + 빈 마름모 4, 승진하면 이름 왼쪽 단계 칩 · 마름모만(Lv · '항상 적용' 없음) ·
+  // 아래 칸 [다음 승진 칸 | 동반]
   function hiddenPage(info) {
     const H = TV.hidden,
+      PR = H.promo,
       C = BAL.cats,
+      P = C.promo,
       max = C.maxLevel,
-      applied = C.list
-        .filter(id => info.effects.levels[id] > 0)
-        .map(
-          id =>
-            '<b>' + esc(H.appliedItem(id, info.effects.levels[id], info.effects.levels[id] >= max)) + '</b>',
+      party = info.party || [],
+      cap = info.cap ?? 0,
+      lvOn = id => info.effects.levels[id] || 0,
+      rankOf = id => (info.cats[id] >= max ? Math.min(cap, info.promo?.[id]?.rank || 0) : 0);
+    const applied = C.list
+      .filter(id => lvOn(id) > 0)
+      .map(id => {
+        const rank = rankOf(id),
+          inParty = party.includes(id);
+        return (
+          '<b>' +
+          catLabel(id, rank) +
+          (rank ? '' : ' ' + H.level(lvOn(id))) +
+          (inParty ? ' ' + H.appliedTail.party : rank ? '' : ' ' + H.appliedTail.always) +
+          '</b>'
         );
+      });
+    const bar = (label, have, need) =>
+      '<span class="try-bar' +
+      (have >= need ? ' is-done' : '') +
+      '"><span>' +
+      label +
+      ' <b>' +
+      num(have) +
+      '</b>/' +
+      num(need) +
+      '</span><i style="--p:' +
+      Math.min(1, have / need).toFixed(3) +
+      '"></i></span>';
     const card = id => {
       const lv = info.cats[id] || 0,
         cat = T.cats[id],
         values = C.effect[id],
         always = lv >= max,
-        picked = !always && lv >= 1 && info.companion === id,
-        state = lv < 1 ? 'locked' : always ? 'max' : picked ? 'pick' : 'open',
+        picked = lv >= 1 && party.includes(id),
+        pr = info.promo?.[id] || { rank: 0, open: 0, best: {} },
+        rank = rankOf(id),
+        state = lv < 1 ? 'locked' : picked ? 'pick' : always ? 'max' : 'open',
         tag =
           state === 'locked'
             ? '<span class="cat-tag cat-tag--locked"><span aria-hidden="true">🔒</span> ' +
               H.locked +
               '</span>'
-            : state === 'max'
+            : always && !rank
               ? '<span class="cat-tag cat-tag--max">' + H.always + '</span>'
-              : state === 'pick'
-                ? '<span class="cat-tag cat-tag--pick">' + H.companion + '</span>'
-                : '',
-        pips = Array.from({ length: max }, (_, i) => '<i' + (i < lv ? ' class="on"' : '') + '></i>').join(''),
+              : '',
+        diamonds =
+          always && P
+            ? P.open
+                .map(
+                  (stage, i) =>
+                    '<b class="rk' + (i < rank ? ' on' : '') + (stage === null ? ' is-final' : '') + '"></b>',
+                )
+                .join('') + (rank ? '<em class="rk-nova">' + esc(PR.nova(rank)) + '</em>' : '')
+            : '',
+        pips =
+          (rank
+            ? ''
+            : Array.from({ length: max }, (_, i) => '<i' + (i < lv ? ' class="on"' : '') + '></i>').join(
+                '',
+              )) + diamonds,
         effect =
           lv < 1
             ? esc(H.effectLocked(id, values[0], values[max - 1], max))
             : '<b>' +
               esc(cat.effect(values[lv - 1])) +
               '</b>' +
-              (always ? ' · ' + H.effectMax : ' → ' + H.level(lv + 1) + ' ' + esc(cat.value(values[lv]))),
+              (always
+                ? rank
+                  ? ' · ' + PR.companionOnly + ' <b class="rk-plus">' + esc(PR.plus(id, rank)) + '</b>'
+                  : ' · ' + H.effectMax
+                : ' → ' + H.level(lv + 1) + ' ' + esc(cat.value(values[lv]))),
+        nextR = rank + 1,
+        test = P?.test[nextR - 1],
+        tryBox =
+          !always || !P
+            ? ''
+            : nextR > P.open.length
+              ? '<div class="cat-try"><b>' + esc(PR.top(rank)) + '</b></div>'
+              : P.open[nextR - 1] === null || nextR > cap
+                ? '<div class="cat-try is-locked"><small>' +
+                  esc(PR.next(nextR)) +
+                  '</small><span>' +
+                  esc(PR.lockFinal()) +
+                  '</span></div>'
+                : pr.open >= nextR
+                  ? '<div class="cat-try is-open"><small>' +
+                    esc(PR.trial(nextR)) +
+                    '</small><span class="try-bars">' +
+                    bar(PR.kills, pr.best?.kills || 0, test.kills) +
+                    (test.clears ? bar(PR.clears, pr.best?.clears || 0, test.clears) : '') +
+                    '</span></div>'
+                  : '<div class="cat-try is-locked"><small>' +
+                    esc(PR.next(nextR)) +
+                    '</small><span>' +
+                    esc(PR.lockStage(P.open[nextR - 1])) +
+                    '</span></div>',
         cost = lv < 1 ? { s: C.unlock[id], b: 0 } : always ? null : C.levelCost[lv - 1],
         canPay = cost && info.ready && info.sc >= cost.s && info.blue >= cost.b,
         buy = !cost
@@ -23852,36 +24605,40 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             '<small>' +
             (lv < 1 ? H.have(info.sc) : H.levelTo(lv + 1)) +
             '</small></button>',
-        pick = always
-          ? ''
-          : '<button class="btn cat-pick" data-cat-pick="' +
-            id +
-            '" aria-pressed="' +
-            picked +
-            '" aria-label="' +
-            esc(H.pickLabel(id, picked)) +
-            '"' +
-            (lv >= 1 && info.ready ? '' : ' disabled') +
-            '>' +
-            (picked ? H.picked : H.pick) +
-            '</button>';
+        pick =
+          '<button class="btn cat-pick" data-cat-pick="' +
+          id +
+          '" aria-pressed="' +
+          picked +
+          '" aria-label="' +
+          esc(H.pickLabel(id, picked)) +
+          '"' +
+          (lv >= 1 && info.ready ? '' : ' disabled') +
+          '>' +
+          (picked ? H.picked : H.pick) +
+          '</button>',
+        label = rank ? PR.diamonds(rank, cap) : H.levelsLabel(lv, max);
       return (
         '<article class="cat-card cat-card--' +
         state +
+        (always ? ' cat-card--lv5' : '') +
         '">' +
         catIcon(id) +
         '<div class="cat-main"><h3>' +
-        cat.name +
-        (lv >= 1 ? ' <small>' + H.level(lv) + '</small>' : '') +
+        catLabel(id, rank) +
+        (lv >= 1 && !rank ? ' <small>' + H.level(lv) + '</small>' : '') +
         tag +
         '</h3><div class="cat-pips" role="img" aria-label="' +
-        H.levelsLabel(lv, max) +
+        esc(label) +
         '">' +
         pips +
         '</div><p>' +
         effect +
         '</p></div>' +
-        (buy || pick ? '<div class="cat-actions">' + buy + pick + '</div>' : '') +
+        '<div class="cat-actions">' +
+        (always ? tryBox : buy) +
+        pick +
+        '</div>' +
         '</article>'
       );
     };
@@ -23896,6 +24653,32 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       esc(H.note()) +
       '</p>'
     );
+  }
+  // 고양이가 말하는 승진 줄(R-112, 결과 한마디 자리 · 한 마리 한 줄). events = ProfileStore.addCareer의 events
+  // { cat, kind: 'pass' | 'opened' | 'try', rank, nowRank, kills, clears }. 이름 줄은 통과면 새 단계
+  function promoTalk(events = []) {
+    const S = T.talk.lines.promo,
+      row = e => {
+        const text =
+          e.kind === 'pass'
+            ? S.pass[e.cat](e.rank)
+            : e.kind === 'opened'
+              ? S.opened(e.rank)
+              : S.trying(e.rank, e.kills, e.clears) + S.tail[e.cat];
+        return (
+          '<div class="talk talk--row talk--' +
+          e.cat +
+          (e.kind === 'pass' ? ' is-pass' : '') +
+          '">' +
+          catFace(e.cat, 'talk-face') +
+          '<p class="talk-bubble"><span class="talk-name">' +
+          catLabel(e.cat, e.kind === 'pass' ? e.rank : e.nowRank) +
+          '</span><span class="talk-text">' +
+          esc(text) +
+          '</span></p></div>'
+        );
+      };
+    return events.length ? '<div class="talk-rows">' + events.slice(0, 3).map(row).join('') + '</div>' : '';
   }
 
   // ── 격납고 · 도색(R-106) ──
@@ -24415,6 +25198,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   root.NeonView = {
     talk,
     catSvg,
+    catGlyphSvg,
+    catLabel,
+    promoTalk,
     helpBody,
     esc,
     num,
@@ -26317,17 +27103,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 무전 실루엣 모양: 날짜(일)로 셋이 번갈아
   const radioShape = now => CATS()[dayNo(now) % CATS().length];
 
+  // 동반은 여러 마리(R-111): 프로필 x.party가 있으면 그것(해금한 고양이만), 없으면 companion 한 마리
   function speakers(profile) {
     const lv = profile?.cats || {},
       open = CATS().filter(id => (lv[id] || 0) >= 1),
-      companion = open.includes(profile?.companion) ? profile.companion : null;
-    return { open, companion, hidden: profile?.hidden === true };
+      raw = profile?.x?.party,
+      party = Array.isArray(raw)
+        ? open.filter(id => raw.includes(id))
+        : open.includes(profile?.companion)
+          ? [profile.companion]
+          : [];
+    return { open, party, hidden: profile?.hidden === true };
   }
-  // 한마디를 할 고양이: 히든 탭 열기 전이면 무전, 동반, 해금한 고양이 중 하나, 없으면 정비사 미오
+  // 한마디를 할 고양이: 히든 탭 열기 전이면 무전, 동반 중 하나, 해금한 고양이 중 하나, 없으면 정비사 미오
   function voice(ctx, rand) {
     const s = speakers(ctx.profile);
     if (!s.hidden) return 'radio';
-    if (s.companion) return s.companion;
+    if (s.party.length) return pickOne(s.party, rand);
     return s.open.length ? pickOne(s.open, rand) : 'engineer';
   }
   function out(ctx, by, id, text, extra = {}) {
@@ -26499,7 +27291,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       const id = pickOne(locked, rand);
       return out(ctx, id, 'wake.' + id, L.wake[id](B().cats.unlock[id]), { locked: true });
     }
-    if (s.companion) return says(ctx, rand, 'buddy', s.companion);
+    if (s.party.length) return says(ctx, rand, 'buddy', pickOne(s.party, rand));
     const by = s.open.length ? pickOne(s.open, rand) : 'engineer';
     return out(ctx, by, 'alone', L.alone);
   }
@@ -26578,7 +27370,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 //   시간 · LV · STAGE → (월드 스킬 줄) → 발(기체 이름 · 주 · 버전). 괄호 칸은 값이 있을 때만(11~15단계가 기록 look · world에 채우면 보임).
 //   주인공 칸 높이 = 남는 높이(최소 140).
 // 모델: { id, date, mode, scoreText, place?:{kind,place}, placeText?, stats:[[이름,값]…], shape, craftName, cat?:{id,name},
-//   title?:{ note:true, text } | { by, name, text }, version, paint?, sets?:[색], rank?(0~4), titleName?, week?, skills?:[[id,단계]…] }
+//   cats?:[{id,rank?}](동반 둘 이상), title?:{ note:true, text } | { by, name, text }, version, paint?, sets?:[색], rank?(0~4),
+//   titleName?, week?, skills?:[[id,단계]…] }
 (function (root) {
   'use strict';
   const FONT = "system-ui, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
@@ -26824,13 +27617,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '"/>',
       );
     o.push('</g>');
-    // 동반 고양이: 기체 오른쪽 위(배지와 겹치지 않게), 크기는 주인공 칸을 따라 34~44
-    if (m.cat) {
-      const z = Math.max(34, Math.min(44, r * 0.5)),
-        fx = cx + r * 0.58,
-        fy = cy - r * 0.66,
-        cc = pal.cat[m.cat.id] || pal.cyan;
-      if (m.rank)
+    // 동반 고양이: 기체 오른쪽 위(배지와 겹치지 않게), 크기는 주인공 칸을 따라 34~44. 승진한 고양이는 단계 고리.
+    // 동반이 여럿이면(R-112) 같은 자리를 가운데로 충격파 문양과 같은 삼각 자리(미오 위 · 토토 왼쪽 아래 · 루나 오른쪽 아래),
+    // 얼굴 × 0.75 · 이름 글자 없음
+    const face = (id, rank, fx, fy, z) => {
+      const cc = pal.cat[id] || pal.cyan;
+      if (rank)
         o.push(
           '<circle cx="' +
             (fx + z / 2) +
@@ -26841,11 +27633,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             '" fill="none" stroke="' +
             cc +
             '" stroke-width="' +
-            (1 + m.rank * 0.5) +
+            (1 + rank * 0.5) +
             '" stroke-opacity="' +
-            (0.3 + m.rank * 0.17) +
+            (0.3 + rank * 0.17) +
             '" stroke-dasharray="' +
-            (m.rank >= 4 ? 'none' : '3 3') +
+            (rank >= 4 ? 'none' : '3 3') +
             '"/>',
         );
       o.push(
@@ -26874,9 +27666,28 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '" viewBox="0 0 24 24" style="color:' +
           cc +
           '">' +
-          (parts.cat(m.cat.id) || '') +
+          (parts.cat(id) || '') +
           '</svg></g>',
       );
+      return cc;
+    };
+    const party = m.cats?.length > 1 ? m.cats.slice(0, 3) : null;
+    if (party) {
+      const z0 = Math.max(34, Math.min(44, r * 0.5)),
+        z = z0 * 0.75,
+        ax = cx + r * 0.58 + z0 / 2,
+        ay = cy - r * 0.66 + z0 / 2,
+        d = z * 0.72,
+        slot = { engineer: -90, supply: 150, pilot: 30 };
+      for (const c of party) {
+        const a = ((slot[c.id] ?? -90) * Math.PI) / 180;
+        face(c.id, c.rank, ax + Math.cos(a) * d - z / 2, ay + Math.sin(a) * d - z / 2, z);
+      }
+    } else if (m.cat) {
+      const z = Math.max(34, Math.min(44, r * 0.5)),
+        fx = cx + r * 0.58,
+        fy = cy - r * 0.66,
+        cc = face(m.cat.id, m.rank, fx, fy, z);
       o.push(t(fx + z / 2, fy + z + 13, m.cat.name, 9, cc, 800));
     }
     y += heroH;
@@ -27004,7 +27815,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       d = new Date(r.date),
       solo = D.isSolo(r),
       pos = solo ? D.rankPlace(ctx.records || [], r.id) : null,
-      cat = D.companionOf(r),
+      party = D.partyOf(r),
+      cat = party[0] ?? null,
+      ranks = r.ranks || {},
       line = ctx.talk,
       look = r.look || {},
       tm = Math.floor(Number(r.time) || 0);
@@ -27022,7 +27835,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ],
       shape: T.crafts[r.craft]?.shape || T.crafts.striker.shape,
       craftName: T.craftName(r.craft),
-      cat: cat ? { id: cat, name: T.cats[cat].name } : undefined,
+      // 첫 동반(이름은 승진하면 '중급 정비사 미오') · 동반 여럿(R-112, 단계 고리는 고양이마다)
+      cat: cat ? { id: cat, name: T.catLabelText(cat, ranks[cat] || look.rank || 0) } : undefined,
+      cats: party.length > 1 ? party.map(id => ({ id, rank: ranks[id] || undefined })) : undefined,
       title: r.note
         ? { note: true, text: r.note }
         : line
@@ -27031,7 +27846,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       version: r.version,
       paint: look.paint || undefined,
       sets: look.sets?.length ? look.sets : undefined,
-      rank: look.rank || undefined,
+      rank: (cat && ranks[cat]) || look.rank || undefined,
       week: r.world?.week ? 'WORLD · ' + r.world.week : undefined,
       skills: r.world?.sk ? Object.entries(r.world.sk) : undefined,
     };
@@ -27187,7 +28002,18 @@ let canvas = $('arena'),
   starting = false,
   automaticBudget = 4,
   frozen = false,
-  runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0, blueCoin: 0, point: 0 },
+  runEarned = {
+    gold: 0,
+    blue: 0,
+    boss: 0,
+    super: 0,
+    cat: 0,
+    catBlue: 0,
+    catSuper: 0,
+    autoGold: 0,
+    blueCoin: 0,
+    point: 0,
+  },
   runUnlocked = [],
   runHidden = false,
   rewards = Promise.resolve(),
@@ -27199,7 +28025,9 @@ let canvas = $('arena'),
   siegeEdgeUntil = 0,
   bossNoticeUntil = 0,
   runCats = {},
-  runCompanion = null,
+  // 출격 순간 동반 고양이들 · 동반 · 승진한 고양이 단계(R-111, 기록 party · ranks)
+  runParty = [],
+  runRanks = {},
   recSelect = null,
   // 격납고 화면에서 고른 기체(R-106, 열 때 플레이 탭에서 고른 기체)
   hangarCraft = 'striker',
@@ -27458,6 +28286,10 @@ function wallet() {
     perma: p.perma || {},
     cats: p.cats || {},
     companion: p.companion ?? null,
+    // 동반 여러 마리 · 승진(R-111): 동반 목록 · 승진 칸 · 열 수 있는 단계(마스터 잠금)
+    party: NeonProgress.partyOf(p),
+    promo: p.promo || {},
+    cap: NeonProgress.promoCap(),
     hidden: p.hidden === true,
     // 격납고 도색(R-106): 열림 · 가진 색 · 입힌 색(balance 색만) · 모음
     hangar: (p.opened || []).includes('hangar'),
@@ -27699,14 +28531,30 @@ async function begin(launch = {}) {
     siegeEdgeUntil = 0;
     resize();
     renderer.clear();
+    // 승진 문양(R-112): 동반 · 승진한 고양이만(충격파 버튼마다 삼각대형)
+    renderer.setGlyphs?.(
+      Object.entries(cats.ranks || {}).map(([cat, rank]) => ({ cat, rank, svg: V.catGlyphSvg(cat) })),
+    );
     renderer.cam.x = g.p.x;
     renderer.cam.y = g.p.y;
     runId = nextRunId;
-    runEarned = { gold: 0, blue: 0, boss: 0, super: 0, cat: 0, autoGold: 0, blueCoin: 0, point: 0 };
+    runEarned = {
+      gold: 0,
+      blue: 0,
+      boss: 0,
+      super: 0,
+      cat: 0,
+      catBlue: 0,
+      catSuper: 0,
+      autoGold: 0,
+      blueCoin: 0,
+      point: 0,
+    };
     // 기록의 cats는 이 판에 적용된 고양이의 레벨(적용되지 않은 고양이는 0)
     runCats = { ...cats.levels };
-    // 출격 순간 동반 고양이(R-100 기록 companion)
-    runCompanion = profile.snapshot().companion;
+    // 출격 순간 동반 고양이들(R-100 · R-111 기록 party · companion = 첫 동반) · 승진 단계
+    runParty = [...(cats.party || NeonProgress.partyOf(profile.snapshot()))];
+    runRanks = { ...(cats.ranks || {}) };
     runUnlocked = [];
     runHidden = false;
     lastCheckpoint = 0;
@@ -28085,12 +28933,21 @@ function makeRecord() {
     // 출격 버프(R-062): 낸 버프 · 1회 부활을 썼는지
     buffs: [...g.buffList],
     revived: g.revived === true,
-    // 10단계(R-100): 출격 순간 동반 · 시간 압박에 닿음 · 쓴 부활 수
-    companion: runCompanion,
+    // 10단계(R-100): 출격 순간 동반(12단계부터 첫 동반) · 시간 압박에 닿음 · 쓴 부활 수
+    companion: runParty[0] ?? null,
+    // 12단계(R-111): 동반 고양이들 · 동반 · 승진한 고양이 단계 · 끝낸 보스 웨이브의 가장 높은 STAGE
+    party: [...runParty],
+    ranks: { ...runRanks },
+    bossTop: g.bossTop || 0,
     late: g.lateOn === true,
     revives: g.revivesUsed || 0,
     // 11단계(R-108): 그 판 기체에 입힌 색 · 출격 순간 켜진 모음(기록 카드 · 결과 버프 줄)
-    look: { paint: g.paint.wear, sets: [...g.paint.sets] },
+    // 12단계: rank = 첫 동반 고양이의 승진 단계(옛 카드 호환, 있을 때만)
+    look: {
+      paint: g.paint.wear,
+      sets: [...g.paint.sets],
+      ...(runRanks[runParty[0]] ? { rank: runRanks[runParty[0]] } : {}),
+    },
     siegeWaves: g.siegeWaves || 0,
     abilityUsage: g.abilityUsage,
     meta: recorder?.meta || {},
@@ -28119,8 +28976,11 @@ function renderResultCoins() {
     superTotal = e.super || 0,
     blueCoin = e.blueCoin || 0,
     blueBoss = (r.bossKills || 0) * BAL.bCoin.boss,
+    // 승진 보급관(R-111)이 준 B · S
+    catBlue = e.catBlue || 0,
+    catSuper = e.catSuper || 0,
     // 필드 B는 저장하지 않는다: 합계에서 알려진 몫을 뺀 나머지(실험실과 같은 방식)
-    blueField = Math.max(0, blueTotal - blueLevel - blueCoin - blueBoss - (bonus.blue || 0)),
+    blueField = Math.max(0, blueTotal - blueLevel - blueCoin - blueBoss - catBlue - (bonus.blue || 0)),
     hasBonus = !!(bonus.gold || bonus.blue || bonus.super),
     // S는 Insane 판(또는 S를 받은 판)에만 보인다
     showS = superTotal > 0 || r.difficultyId === BAL.superCoin.mode,
@@ -28151,11 +29011,13 @@ function renderResultCoins() {
       ['coin', blueCoin],
       ['boss', blueBoss],
       ['field', blueField],
+      ['cat', catBlue],
       ['point', bonus.blue || 0],
     ]) +
     (showS
       ? line('s', superTotal, [
-          ['pick', Math.max(0, superTotal - (bonus.super || 0))],
+          ['pick', Math.max(0, superTotal - catSuper - (bonus.super || 0))],
+          ['cat', catSuper],
           ['point', bonus.super || 0],
         ])
       : '') +
@@ -28245,6 +29107,7 @@ function showResult() {
     });
     lastResult = r;
     resultUnlockSound = false;
+    resultPromo = null;
     g.onEvent = null;
     lastSavedPromise = (async () => {
       r.summary = await session.finish(g);
@@ -28267,8 +29130,19 @@ function showResult() {
       }
       await checkpointPromise;
       const ok = await store.save(r);
-      // 비행 경력(R-100): 저장 바로 뒤 · 정리 앞, 기록 careerAt과 한 트랜잭션
-      if (ok) await profile.addCareer(r.id);
+      // 비행 경력(R-100): 저장 바로 뒤 · 정리 앞, 기록 careerAt과 한 트랜잭션. 승진 판정(R-111)도 같은 자리 →
+      // 고양이 줄(R-112)이 결과 한마디를 대신하고, 통과가 있으면 해금 소리 한 번
+      const career = ok ? await profile.addCareer(r.id) : null;
+      if (career?.events?.length) {
+        resultPromo = career.events;
+        if (lastResult === r) {
+          renderResultTalk();
+          if (career.events.some(e => e.kind === 'pass') && !resultUnlockSound && !$('result').hidden) {
+            resultUnlockSound = true;
+            sfx('unlock');
+          }
+        }
+      }
       // 기록 보관(R-018): 판이 정상으로 끝나 저장된 뒤에만 정리한다(100판 · 상세 로그 10판, TOP3·별표 보호)
       if (ok) await store.prune();
       await profile.finishRun(r.id);
@@ -28607,6 +29481,8 @@ let coach = null,
   resultTipId = null,
   // 고양이 한마디(R-102): 결과 · 히든 탭에 보이는 줄(NeonTalk.pick 결과)
   resultTalk = null,
+  // 승진 줄(R-112): 이 판 addCareer의 events(있으면 결과 한마디 대신 고양이 줄)
+  resultPromo = null,
   hiddenTalk = null;
 // 고양이 한마디(R-102): 고르는 데 쓰는 것을 모아 pick, 한 번만 하는 줄은 기기 설정에 적는다
 function talkPick(kind, extra = {}) {
@@ -28623,10 +29499,12 @@ function talkPick(kind, extra = {}) {
     prefs.talk = NeonTalk.remember(prefs.talk, line.mark);
     savePrefs();
   }
+  // 승진한 고양이는 말풍선 이름 줄에도 단계 칩(R-112)
+  if (line && line.by !== 'radio' && !line.locked) line.rank = NeonProgress.promoRank(snap, line.by) || 0;
   return line;
 }
 function renderResultTalk() {
-  $('result-talk').innerHTML = V.talk(resultTalk);
+  $('result-talk').innerHTML = resultPromo?.length ? V.promoTalk(resultPromo) : V.talk(resultTalk);
 }
 // 줄이 가리키는 버튼 · 할 일 칩 시간(초, 임시값: ROADMAP 6단계 '임시값'): 전투 chips초면 칩이 끝남 · 이동 입력 move초면
 // 이동 ✓ · 줄 흐려짐 fade초 · 셋 다 ✓면 done초 뒤 접힘 · 첫 판 가리킴 차례 [전투 시계 초, 버튼](대시는 STAGE 가리킴
@@ -28835,7 +29713,14 @@ function awardMinute(id, minute) {
       runEarned.cat += r.cat || 0;
       sfx('coin');
     }
-    if (r.ok && r.gold) refreshProfileUI();
+    // 승진 보급관(R-111): B · S도 고양이 몫으로
+    if (r.ok && id === runId) {
+      runEarned.blue += r.blue || 0;
+      runEarned.catBlue += r.blue || 0;
+      runEarned.super += r.super || 0;
+      runEarned.catSuper += r.super || 0;
+    }
+    if (r.ok && (r.gold || r.blue || r.super)) refreshProfileUI();
   });
 }
 function awardLevel(id, level) {
@@ -29699,10 +30584,7 @@ function refreshProfileUI() {
       priceOf: id => NeonProgress.permaPrice(id, w.perma[id] || 0),
       maxOf: NeonProgress.permaMax,
     });
-    $('hidden-entry').innerHTML = V.hiddenEntry(
-      w.hidden,
-      w.companion ? [w.companion, w.cats[w.companion] || 0] : null,
-    );
+    $('hidden-entry').innerHTML = V.hiddenEntry(w.hidden, w.party);
     $('hangar-entry').innerHTML = V.hangarEntry({ open: w.hangar, wear: w.wear, sets: w.sets });
   }
   // 격납고가 닫혀 있으면(예: 백업 · GM으로 바꿈) 성장 탭으로 돌아간다
@@ -29827,14 +30709,14 @@ function buyCat(cat, level) {
     r => (level < 1 ? T.msg.purchase.catUnlock(cat) : T.msg.purchase.catLevel(cat, r.level)),
   );
 }
-// 동반: 같은 고양이를 다시 누르면 해제. 판 도중에는 바꾸지 않는다(메뉴에서만).
+// 동반(R-111, 여러 마리): 고양이마다 켜고 끄기. 판 도중에는 바꾸지 않는다(메뉴에서만).
 function pickCat(cat) {
   if (g.mode !== 'menu') return;
-  const next = wallet().companion === cat ? null : cat;
+  const on = !wallet().party.includes(cat);
   return purchase(
     'hidden-status',
-    () => profile.setCompanion(next),
-    () => T.msg.purchase.companion(next),
+    () => profile.setParty(cat, on),
+    () => T.msg.purchase.party(cat, on),
   );
 }
 function buyIncome() {
@@ -30451,6 +31333,19 @@ async function boot() {
           el.style.animationPlayState = 'paused';
         }
         if (kind === 'level' && !$('upgrade').hidden) upgradeTip('levelup');
+      },
+      // 승진 결과(R-112, 배치 검사용): 고양이 줄 셋(통과 · 시험 · 열림) + 해금 줄 + 버프 줄
+      promoDemo() {
+        resultPromo = [
+          { cat: 'engineer', kind: 'pass', rank: 2, nowRank: 2, kills: 1500, clears: 8000 },
+          { cat: 'supply', kind: 'try', rank: 3, nowRank: 2, kills: 1240, clears: 6100 },
+          { cat: 'pilot', kind: 'opened', rank: 2, nowRank: 1, kills: 0, clears: 0 },
+        ];
+        renderResultTalk();
+        runUnlocked = ['insane'];
+        renderResultUnlock();
+        text('result-buffs', V.buffLine({ buffs: NeonProgress.BUFFS, revived: true }) || '');
+        $('result-buffs').hidden = false;
       },
     };
   requestAnimationFrame(loop);

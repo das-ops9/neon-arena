@@ -4757,7 +4757,7 @@ return Plotly;
     },
     // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
     // (패배 · 직접 종료, 중단 제외) 열린다. 해금(Lv1) 비용은 unlock(S), Lv n(2~5)으로 올리는 비용은 levelCost[n − 2]
-    // (S와 B를 함께 낸다). 효과: Lv n의 값 = effect[고양이][n − 1]. 동반 고양이와 Lv5 고양이가 적용되고(겹치면 한 번),
+    // (S와 B를 함께 낸다). 효과: Lv n의 값 = effect[고양이][n − 1]. 동반 고양이(여러 마리, 12단계)와 Lv5 고양이가 적용되고(겹치면 한 번),
     // 출격 순간 값으로 고정한다. engineer: 기체 시작 스킬마다 더하는 스택 · supply: 분당 G · pilot: 대시 재충전 감소 비율
     cats: {
       maxLevel: 5,
@@ -4770,10 +4770,34 @@ return Plotly;
         { s: 10, b: 150 },
         { s: 20, b: 300 },
       ],
+      // pilot은 12단계(I-89)에 낮춤(돌려주지 않음, CHANGELOG 알림)
       effect: {
         engineer: [3, 4, 5, 7, 9],
         supply: [5, 7, 9, 12, 15],
-        pilot: [0.2, 0.3, 0.4, 0.5, 0.75],
+        pilot: [0.05, 0.1, 0.15, 0.2, 0.3],
+      },
+      // 승진(R-111, PLANNING-world 6-5 · Q196 a · Q197~Q204). 인덱스 0 = 중급 · 1 = 고급 · 2 = 전문 · 3 = 마스터.
+      // Lv5 고양이를 동반하고 open[i] STAGE 보스 웨이브를 다 잡으면 그 단계 시험이 열리고(다음 판부터), 정상 종료 한 판에
+      // test[i]의 처치 · 충격파로 지운 탄(충격파 버튼만, 부활 충격파 제외)을 넘기면 한 단계 오른다(고양이마다 한 판 한 단계).
+      // open null = 최종 보스(I-93 보류) → 열리지 않음(마스터 잠금). 효과는 동반 · 승진한 고양이만:
+      // nova 충격파 배율에 더하는 몫(고양이마다 더함, 1 + Σ) · engineer/pilot Lv5 값 대신 · supply 분당 G 그대로 +
+      // supplyBlue B/분 · supplySuper 이 분마다 1 S(0 = 없음), 둘 다 supplyFrom 모드부터
+      promo: {
+        open: [30, 60, 90, null],
+        test: [
+          { kills: 1000, clears: 0 },
+          { kills: 1500, clears: 8000 },
+          { kills: 2000, clears: 10000 },
+          { kills: 3000, clears: 15000 },
+        ],
+        nova: [0.1, 0.2, 0.3, 0.4],
+        effect: {
+          engineer: [10, 11, 13, 15],
+          pilot: [0.35, 0.4, 0.6, 0.75],
+          supplyBlue: [1, 2, 5, 5],
+          supplySuper: [0, 0, 0, 5],
+        },
+        supplyFrom: 'super',
       },
     },
     // 격납고 도색(R-106 · R-107, PLANNING-world 6-4 · Q195 a): 영구 스킬을 모두 MAX로 하면 열린다(opened 'hangar').
@@ -4883,7 +4907,7 @@ return Plotly;
   const nameRules = [
     '고유 이름(모드 · 기체 · 도색 · G · B · S · STAGE · LV · Point · AUTO)은 영어, 나머지 라벨 · 설명은 한글. 예외: 창 위 작은 영어 머리글(LEVEL UP · PAUSED 등)과 HUD 약어(HP · XP · BOSS · CHAIN)는 장식으로 영어 그대로.',
     '처음 하는 사람이 Help 없이 이름만 보고 효과를 안다. 그 위에 우주 · 네온 느낌을 한 겹(화력 · 부스터 · 궤도 칼날).',
-    '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음).',
+    '짧게: 스킬 이름은 2~5글자, 버튼은 짧은 동사구. 같은 것은 모든 화면에서 한 이름(줄임말을 따로 두지 않음). 고양이가 승진하면 이름 왼쪽에 단계 칩([중급] 정비사 미오)을 붙이고 이름 글자는 그대로 둔다.',
     '겹치지 않게: 다른 것에 같은 말을 쓰지 않는다(Super 모드 ↔ Super Coin → Star Coin).',
     "같은 무리는 같은 꼴: 역할은 '~형', 잠김은 '🔒 조건', 화면 라벨은 대문자 STAGE · POINT, 문장 속은 Stage · Point.",
     '지우는 일은 결과가 보이게(전체 초기화).',
@@ -5155,6 +5179,23 @@ return Plotly;
       effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
       value: v => '−' + pctOf(v) + '%',
     },
+  };
+  // 승진(R-111 · R-112): 단계 이름(1 = 중급 … 4 = 마스터, balance cats.promo 인덱스 + 1). 고양이 이름은 한 곳 —
+  // 글자만 쓰는 곳(aria · 기록 카드 글자 · 로그)은 catLabelText '중급 정비사 미오', 화면 HTML은 view.catLabel(이름 왼쪽 칩)
+  const promoRanks = ['중급', '고급', '전문', '마스터'];
+  const rankName = r => promoRanks[r - 1] || '';
+  const catLabelText = (id, rank) => (rank ? rankName(rank) + ' ' : '') + (cats[id]?.name || id);
+  // 승진하면 붙는 것 한 줄(고양이 말풍선): '충격파 +10% · 시작 스킬 +10' · '… · Super부터 B +1/분' · '… · 대시 −35%'
+  const promoGain = (r, id) => {
+    const P = B().cats.promo,
+      i = r - 1,
+      own =
+        id === 'engineer'
+          ? '시작 스킬 +' + P.effect.engineer[i]
+          : id === 'pilot'
+            ? abilities.dash + ' −' + pctOf(P.effect.pilot[i]) + '%'
+            : modeName(P.supplyFrom) + '부터 ' + BL + ' +' + P.effect.supplyBlue[i] + '/분';
+    return abilities.nova + ' +' + pctOf(P.nova[i]) + '% · ' + own;
   };
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
@@ -5557,7 +5598,9 @@ return Plotly;
       title: 'GM 실험 칸',
       note: '따로 된 저장소에서 값을 바꿔 판을 해 봅니다. /test/의 재화 · 기록은 그대로입니다.',
       coins: '재화',
-      cats: '고양이 Lv',
+      cats: '고양이 Lv · 승진',
+      // 승진 칸(R-113): '정비사 미오 승진'(0 없음 · 1 중급 · 2 고급 · 3 전문)
+      promo: name => name + ' 승진',
       unlocks: '해금',
       hidden: '히든 탭',
       // 격납고(R-109): 열기 칸 · 도색 고르기(그대로 · 모두 가짐 · 없음)
@@ -5797,6 +5840,8 @@ return Plotly;
       catUnlock: id => cats[id].name + ' 해금',
       catLevel: (id, lv) => cats[id].name + ' Lv' + lv,
       companion: id => (id ? cats[id].name + ' 동반' : '동반 해제'),
+      // 동반 켜고 끄기(R-111, 여러 마리)
+      party: (id, on) => cats[id].name + (on ? ' 동반' : ' 동반 해제'),
       // 도색(R-106): 사면 바로 입힘 · 입히기 · 벗기(기본)
       paintBuy: (craft, c) => craftName(craft) + ' ' + paint.names[c] + ' 도색 · 바로 입혔습니다',
       paintWear: (craft, c) =>
@@ -5893,6 +5938,8 @@ return Plotly;
         autoGold: '자동 ' + G + ' 습득',
         // 세 기체가 가진 도색 수 합(R-109)
         paint: paint.group,
+        // 세 고양이 승진 단계 합(R-113)
+        promo: '승진',
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -6054,14 +6101,15 @@ return Plotly;
       entry: '히든',
       // 잠김 줄은 모드 잠김 칩과 같은 꼴('🔒 조건', 자물쇠는 여기 한 번)
       entryLocked: () => '🔒 ' + modeName(B().cats.hiddenFrom) + ' 1판',
-      // 해금 뒤 성장 탭 칸(보완 10): '히든 · 고양이 비행사' + 동반 고양이 그림 · '동반 정비사 미오 Lv3'
+      // 해금 뒤 성장 탭 칸(보완 10 · R-112): '히든 · 고양이 비행사' + 동반 고양이 얼굴들 · '동반 2마리'
       entryOpen: '히든 · 고양이 비행사',
-      entryCompanion: (id, lv) => (id ? '동반 ' + cats[id].name + ' Lv' + lv : '동반 없음'),
+      entryParty: n => (n ? '동반 ' + n + '마리' : '동반 없음'),
       title: '히든 탭 · 고양이 비행사',
       back: '성장으로 돌아가기',
       applied: '적용 중',
-      appliedNone: '없음 · 해금한 고양이를 동반으로 고르세요',
-      appliedItem: (id, lv, always) => cats[id].name + ' Lv' + lv + ' ' + (always ? '항상' : '동반'),
+      appliedNone: '없음 · 해금한 고양이를 동반으로 켜세요',
+      // 적용 중 줄(R-112): 이름(승진하면 왼쪽 칩, Lv 없음) 뒤 '동반' · 동반이 아닌 Lv5는 '항상'(승진한 고양이는 '항상'도 없음)
+      appliedTail: { party: '동반', always: '항상' },
       always: '항상 적용',
       companion: '동반 중',
       locked: '미해금',
@@ -6077,11 +6125,30 @@ return Plotly;
       have: n => '보유 ' + SC + ' ' + n,
       pick: '동반',
       picked: '동반 중',
-      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 해제' : ' 동반으로 고르기'),
-      note: () =>
-        '함께 출격할 고양이 1마리를 고르세요. Lv' +
-        B().cats.maxLevel +
-        ' 고양이는 고르지 않아도 항상 효과를 줍니다.',
+      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 끄기' : ' 동반 켜기'),
+      note: () => '동반은 여러 마리 · Lv' + B().cats.maxLevel + '는 늘 기본 효과 · 승진 효과는 동반만',
+      // 승진(R-112, 계약 design/v5-stage12/promo.js L). 값은 balance cats.promo(인덱스 = 단계 − 1)
+      promo: {
+        // Lv5 효과 뒤 '동반 +승진 값'
+        companionOnly: '동반',
+        plus: (id, r) => {
+          const P = B().cats.promo,
+            i = r - 1;
+          if (id === 'engineer') return '+' + P.effect.engineer[i];
+          if (id === 'pilot') return '−' + pctOf(P.effect.pilot[i]) + '%';
+          return BL + ' +' + P.effect.supplyBlue[i] + '/분(' + modeName(P.supplyFrom) + ' 이상)';
+        },
+        // 승진 마름모 뒤 그 고양이 몫
+        nova: r => abilities.nova + ' +' + pctOf(B().cats.promo.nova[r - 1]) + '%',
+        diamonds: (r, cap) => '승진 ' + r + ' / ' + cap,
+        next: r => '다음 ' + rankName(r),
+        lockStage: s => '🔒 동반으로 ' + stage.upper + ' ' + s + ' 보스',
+        lockFinal: () => '🔒 ' + stage.upper + ' 100 최종 보스',
+        trial: r => rankName(r) + ' 시험 · 한 판에',
+        kills: '처치',
+        clears: '탄',
+        top: r => rankName(r),
+      },
     },
     // 격납고 · 도색(R-106): 성장 탭 아래 칸 · 격납고 화면(page-hangar). 색 이름은 paint.names, 값 · 효과는 balance paint
     hangar: {
@@ -6478,6 +6545,17 @@ return Plotly;
         return 'Lv' + (Number(p[2]) + 2) + ' 비용 ' + (p[3] === 's' ? SC : BL);
       if (group === 'cats' && p[1] === 'effect')
         return (cats[p[2]]?.name || p[2]) + ' Lv' + (Number(p[3]) + 1) + ' 효과';
+      // 승진(R-111): '중급 승진 열림' · '고급 시험 처치' · '정비사 미오 전문 승진 효과'
+      if (group === 'cats' && p[1] === 'promo') {
+        const r = i => rankName(Number(i) + 1) || i;
+        if (p[2] === 'open') return r(p[3]) + ' 승진 열림';
+        if (p[2] === 'test') return r(p[3]) + ' 시험 ' + (p[4] === 'kills' ? '처치' : '탄');
+        if (p[2] === 'nova') return r(p[3]) + ' 승진 ' + abilities.nova + ' 몫';
+        if (p[2] === 'effect') {
+          const who = { supplyBlue: cats.supply.name + ' ' + BL, supplySuper: cats.supply.name + ' ' + SC };
+          return (who[p[3]] || cats[p[3]]?.name || p[3]) + ' ' + r(p[4]) + ' 승진 효과';
+        }
+      }
       // 숫자 배열(회복 구역 크기 배율 등): '이름 n'(1부터)
       if (p.length === 3 && /^\d+$/.test(p[2]) && names[group]?.[p[1]])
         return names[group][p[1]] + ' ' + (Number(p[2]) + 1);
@@ -6748,6 +6826,31 @@ return Plotly;
       'cats.effect.engineer.*': ['그 Lv 효과: 기체 시작 스킬마다 더하는 스택', '스택', 'easy'],
       'cats.effect.supply.*': ['그 Lv 효과: 분당 ' + G + ' +', G, 'more'],
       'cats.effect.pilot.*': ['그 Lv 효과: ' + DASH + ' 재충전 감소 비율', '비율', 'easy'],
+      // 승진(R-111): 동반한 Lv5 고양이만. 인덱스 0 = 중급 … 3 = 마스터
+      'cats.promo.open.*': [
+        '이 ' + ST + ' 보스 웨이브를 동반으로 다 잡으면 그 승진 시험이 열림(다음 판부터)',
+        ST,
+        'cost',
+      ],
+      'cats.promo.test.*.kills': ['승진 시험: 한 판에 충격파로 처치할 적 수', '마리', 'cost'],
+      'cats.promo.test.*.clears': ['승진 시험: 한 판에 충격파로 지울 적 탄 수', '개', 'cost'],
+      'cats.promo.nova.*': [
+        '그 단계 고양이 하나가 ' + abilities.nova + ' 배율에 더하는 몫(고양이마다 더함)',
+        '배',
+        'easy',
+      ],
+      'cats.promo.effect.engineer.*': [
+        '승진 효과: 기체 시작 스킬마다 더하는 스택(Lv5 값 대신)',
+        '스택',
+        'easy',
+      ],
+      'cats.promo.effect.pilot.*': ['승진 효과: ' + DASH + ' 재충전 감소 비율(Lv5 값 대신)', '비율', 'easy'],
+      'cats.promo.effect.supplyBlue.*': ['승진 효과: 분당 ' + BL + '(Super 이상 판)', BL, 'more'],
+      'cats.promo.effect.supplySuper.*': [
+        '승진 효과: 이 분마다 1 ' + SC + '(0 = 없음, Super 이상 판)',
+        '분',
+        'less',
+      ],
       'superCoin.every': ['전투 시계 이 간격마다 기체 근처에 1개(' + modeName('insane') + ')', '초', 'less'],
       'superCoin.near': ['시간마다 나오는 코인의 가까운 거리', '거리', ''],
       'superCoin.far': ['시간마다 나오는 코인의 먼 거리', '거리', ''],
@@ -7090,6 +7193,8 @@ return Plotly;
           coin: BL + ' 코인',
           boss: '보스 ' + BL,
           field: '필드 ' + BL + ' 코인',
+          // 승진 보급관(R-113, Super 이상 판)
+          cat: cats.supply.name + ' 승진 ' + BL,
           point: '포인트 보너스',
         },
         super: SC,
@@ -7142,6 +7247,8 @@ return Plotly;
           autoGold: '자동 ' + G,
           tier: '수입 단계',
           supplyLv: cats.supply.name + ' Lv',
+          // 승진 단계 0~4(R-113, 0 = 없음 · 1 = 중급 …)
+          supplyRank: cats.supply.name + ' 승진(0~4)',
         },
         resetRows: '예시 되돌리기',
         method: '계산 방법',
@@ -7546,9 +7653,24 @@ return Plotly;
               BL +
               '로 Lv' +
               b.cats.maxLevel +
-              '까지 키웁니다. 동반 1마리와 Lv' +
+              '까지 키웁니다. 동반(여러 마리)과 Lv' +
               b.cats.maxLevel +
               ' 고양이의 효과가 출격 때 적용됩니다.',
+          ],
+          // 승진(R-112)
+          [
+            '승진',
+            '동반한 Lv' +
+              b.cats.maxLevel +
+              ' 고양이와 ' +
+              stage.upper +
+              ' ' +
+              b.cats.promo.open[0] +
+              ' 보스를 잡으면 시험이 열리고, 다음 판부터 ' +
+              abilities.nova +
+              '로 시험을 넘기면 승진합니다. 승진한 동반 고양이마다 ' +
+              abilities.nova +
+              '가 세집니다.',
           ],
           // 격납고 도색(R-106)
           [
@@ -7906,7 +8028,7 @@ return Plotly;
               BL +
               '로 Lv' +
               b.cats.maxLevel +
-              '까지 키운다. 동반 1마리와 Lv' +
+              '까지 키운다. 동반(해금한 고양이마다 켜고 끄기, 여러 마리)과 Lv' +
               b.cats.maxLevel +
               ' 고양이의 효과가 출격 순간 적용된다(' +
               cats.engineer.name +
@@ -7919,6 +8041,23 @@ return Plotly;
               ': ' +
               abilities.dash +
               ' 재충전).',
+          },
+          {
+            term: '승진',
+            desc:
+              '동반한 Lv' +
+              b.cats.maxLevel +
+              ' 고양이와 그 ' +
+              stage.upper +
+              ' 보스 웨이브(' +
+              b.cats.promo.open.filter(n => n !== null).join(' · ') +
+              ')를 잡으면 그 단계 시험이 열리고, 다음 판부터 한 판에 ' +
+              abilities.nova +
+              ' 처치 · 지운 탄을 넘기면 한 단계 오른다(' +
+              promoRanks.join(' · ') +
+              ', 마스터는 최종 보스 뒤). 승진하면 이름 왼쪽에 단계 칩이 붙고, 동반한 고양이마다 ' +
+              abilities.nova +
+              ' 배율이 더해진다.',
           },
           {
             term: view.hangar.title,
@@ -8120,6 +8259,39 @@ return Plotly;
       },
       // 동반이 없을 때(해금한 고양이 중 하나가)
       alone: '동반을 골라 줘. 나도 같이 나가고 싶어!',
+      // 승진 줄(R-112, 결과 한마디 자리 · 고양이마다 한 줄). r = 단계(1 = 중급), 값은 balance cats.promo
+      promo: {
+        pass: {
+          engineer: r => rankName(r) + josa(rankName(r), '이/가') + ' 됐어! ' + promoGain(r, 'engineer'),
+          supply: r => rankName(r) + ' 보급관 승진! ' + promoGain(r, 'supply'),
+          pilot: r => rankName(r) + ' 조종사가 됐어! ' + promoGain(r, 'pilot'),
+        },
+        // 시험 판(통과 못 함): '고급 시험 처치 1,240/1,500 · 탄 6,100/8,000. ' + 끝말
+        trying: (r, k, c) => {
+          const t = B().cats.promo.test[r - 1];
+          return (
+            rankName(r) +
+            ' 시험 처치 ' +
+            num(k) +
+            '/' +
+            num(t.kills) +
+            (t.clears ? ' · 탄 ' + num(c) + '/' + num(t.clears) : '') +
+            '. '
+          );
+        },
+        tail: { engineer: '다음엔 넘자.', supply: '장부에 적어 뒀어!', pilot: '다음 판엔 갈 수 있어!' },
+        // 이번 판에 열림: 시험은 다음 판부터(이 판 값은 쓰지 않고 목표만)
+        opened: r => {
+          const t = B().cats.promo.test[r - 1];
+          return (
+            rankName(r) +
+            ' 시험이 열렸어! 다음 판부터 한 판에 처치 ' +
+            num(t.kills) +
+            (t.clears ? ' · 탄 ' + num(t.clears) : '') +
+            '.'
+          );
+        },
+      },
       // 아직 해금하지 않은 고양이(회색 얼굴, 해금 S는 balance cats.unlock)
       wake: {
         engineer: s => s + ' ' + SC + '면 나를 깨울 수 있어. 기체는 내가 책임질게.',
@@ -8154,6 +8326,9 @@ return Plotly;
     enemies,
     enemyName,
     cats,
+    promoRanks,
+    rankName,
+    catLabelText,
     abilities,
     stage,
     level,
@@ -8397,6 +8572,9 @@ return Plotly;
     'careerAt',
     'look',
     'world',
+    'bossTop',
+    'party',
+    'ranks',
     'score',
     'time',
     'simulationTime',
@@ -8452,6 +8630,10 @@ return Plotly;
       careerAt: intIn(raw.careerAt, 0, Number.MAX_SAFE_INTEGER) ?? 0,
       look: safeLook(raw.look),
       world: safeWorld(raw.world),
+      // 12단계(R-111): 끝낸 보스 웨이브의 가장 높은 STAGE · 출격 순간 동반 고양이들(cats.list 순) · 동반 · 승진한 고양이 단계
+      bossTop: intIn(raw.bossTop, 0, 999) ?? 0,
+      party: Array.isArray(raw.party) ? CATS.list.filter(id => raw.party.includes(id)).slice(0, 3) : [],
+      ranks: safeRanks(raw.ranks),
     };
     for (const k of [
       'score',
@@ -8478,15 +8660,30 @@ return Plotly;
   }
   // 솔로 판(R-100): 일반 · S 출격. 순위 · 보호 · 자동 정리 · 최근 기록 · 기록 탭은 솔로 기록만 다룬다
   const isSolo = r => r?.launch?.type === 'normal' || r?.launch?.type === 'super' || !r?.launch?.type;
-  // 출격 순간 동반 고양이. 옛 기록(칸 없음)은 Lv1~4로 적용된 고양이가 하나뿐일 때만 그 고양이로 읽는다
-  // (Lv5는 동반이 아니어도 적용되므로 알 수 없음)
-  function companionOf(record) {
-    if (CATS.list.includes(record?.companion)) return record.companion;
+  // 출격 순간 동반 고양이들(12단계, 여러 마리): 기록 party가 있으면 그것. 옛 기록(party 없음)은 companion 한 마리,
+  // 그것도 없으면 Lv1~4로 적용된 고양이가 하나뿐일 때만 그 고양이(Lv5는 동반이 아니어도 적용되므로 알 수 없음)
+  function partyOf(record) {
+    if (Array.isArray(record?.party)) {
+      const list = CATS.list.filter(id => record.party.includes(id));
+      if (list.length) return list;
+    }
+    if (CATS.list.includes(record?.companion)) return [record.companion];
     const mid = CATS.list.filter(id => {
       const lv = finiteCount(record?.cats?.[id]);
       return lv >= 1 && lv < CATS.maxLevel;
     });
-    return mid.length === 1 ? mid[0] : null;
+    return mid.length === 1 ? [mid[0]] : [];
+  }
+  // 첫 동반 고양이(옛 한 마리 자리: 결과 한마디 등)
+  function companionOf(record) {
+    return partyOf(record)[0] ?? null;
+  }
+  // 승진 단계(R-111): { 고양이: 1~9 }
+  function safeRanks(v) {
+    const out = {};
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return out;
+    for (const id of CATS.list) if (intIn(v[id], 1, 9) !== null) out[id] = v[id];
+    return out;
   }
   function rank(records) {
     return records
@@ -8527,6 +8724,11 @@ return Plotly;
         last = r;
     }
     return last;
+  }
+  // 기록 탭 목록 순서(I-94): 최신순, lastPlayed와 같은 기준(date → id). 원본은 그대로 두고 복사본을 정렬
+  function byRecent(records) {
+    const cmp = (a, b) => (a > b) - (a < b);
+    return [...(records || [])].sort((a, b) => cmp(b.date, a.date) || cmp(b.id, a.id));
   }
   // ── 기록 보관(R-018): 순수 함수. 저장 계층은 한 트랜잭션 안에서 이 함수들을 부르기만 한다. ──
   // 보호 기록(R-035): 일반 TOP3 + S 출격 TOP3(각각 rank() 순 앞 3개)와 별표 기록.
@@ -9486,9 +9688,11 @@ return Plotly;
     rankPlace,
     modeBest,
     lastPlayed,
+    byRecent,
     normalizeRecord,
     isSolo,
     companionOf,
+    partyOf,
     isId,
     keepValue,
     safeSkills,
