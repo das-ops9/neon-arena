@@ -94,6 +94,14 @@
   --sk-nova: var(--sk-pierce);
   --sk-crit: var(--gold);
   --sk-shield: #50b6ff;
+  /* 연쇄 번개(R-120, 월드 전용): 연두 전기 — 적 탄(빨강 · 주황) · 칼날(흰빛) · 시안과 다른 색 */
+  --sk-chain: #d8ff5c;
+  /* 월드(R-122 · R-123): 흑백(은빛) 화면 색 · 연쇄 번개 */
+  --world: #dfe4ee;
+  --world-2: #aab1bf;
+  --world-line: #4c525e;
+  --world-deep: #15181f;
+  --chain: var(--sk-chain);
 
   /* 회복(R-061 회복 구역 · R-062 HP 회복 버프 · 버프 표시): 장갑 강화와 같은 초록 계열(전장에 없는 색) */
   --heal: var(--sk-vital);
@@ -195,6 +203,14 @@
   --cv-bcoin-ink: var(--blue-ink);
   --cv-heal: var(--heal);
   --cv-revive: var(--gold);
+  /* 월드 판(R-122): 모드와 상관없이 흑백 전장 · 필드 스킬 패(짙은 채움 · 잠김 회색) · 연쇄 번개(연두 빛 + 흰 심) */
+  --cv-world-bg: #0a0b0e;
+  --cv-world-grid: #22252c;
+  --cv-world-border: #5d626c;
+  --cv-item-fill: #0b1220;
+  --cv-item-lock: #7d8494;
+  --cv-chain: var(--chain);
+  --cv-chain-core: #f6ffd6;
   /* 도색(R-108): 몸체 선 · 빛(밝은 색) + 몸체 채움(짙은 색). 기체 가운데 흰 점은 그대로.
      구분: 칼(시안 + 흰 심) · 적 탄(빨강 · 주황)과 겹치지 않게 빨강 · 주황 계열 없음.
      노랑 = 레몬(54°) ↔ 경험치 젬 옅은 금색 · 보스 금색: 채도 · 밝기로 가름.
@@ -4933,6 +4949,73 @@ return Plotly;
         chance: { easy: 0.02, hard: 0.04, extream: 0.07, super: 0.1, ultra: 0.15, insane: 0.2 },
       },
     },
+    // 월드(R-120 · Q212~Q214 · Q216 · PLANNING-world 6-7): 주간 도전 · 연습 판만 읽는 값. 솔로 값(modes · skills · enemies)은 그대로다.
+    // 실험실 솔로 지문 밖(lab-core HIDDEN) — '월드' 묶음 · 월드 지문이 따로 본다.
+    // door: 이 모음(세 기체 모두 그 도색)을 가지면 월드 문이 열린다(R-121, 보라 = NEBULA)
+    // hp · damage: 모드 값 위에 곱하는 적 체력 · 피해(난이도 ×1.5, 실험실 시작값) · score: 처치 Point 배율(모드 score 대신)
+    // view: 화면과 상관없는 고정 조준 상자 반폭 hw · 반높이 hh(기체 중심) · 출현 거리 spawn · 조준 거리 range
+    //   (S25+ 세로 넓게 보기 줌 0.5 기준). 결정 조건: 월드 판은 앱의 g.view · spawnRadius · 마우스 조준을 읽지 않는다(재생 일치)
+    // rot: 이번 주 모드(주 번호 mod 5, week.js) · input: 입력 기록 이동 양자화 q · 저장 상한 max(바이트, 넘으면 'big')
+    // drop: 필드 스킬 — 레벨업마다 하나(12종 고르게, 전용 난수), 기체에서 near~far(맵 가장자리 margin 안) · 반경 r
+    //   (줍기 = 기체 반경 + r) · 사라지지 않음 · 상한 없음 · merge개가 넘으면 같은 종류 칸에 합침(메모리 막이)
+    // boss: every LV마다 월드 보스 하나(order 번갈아) · 동시에 alive마리(넘으면 줄 서서 대기)
+    // chain: 연쇄 번개(12번째 스킬, 월드 전용) — 탄환 · 칼날 · 충격파 처치 때 튐. 튀는 수 = 스택(max, 넘친 스택마다 탄환 피해
+    //   +overflow) · 튀는 거리 range · 피해 = 탄환 피해 × damage(치명 없음) · 그림 life초. 번개 처치는 새 번개를 만들지 않는다
+    // lancer(돌진형) · hive(소환형): 월드 보스 기본값. 체력 · 피해 × Stage 규칙 × 모드 × hp/damage
+    //   lancer: every초마다 tell초 예고(방향 고정) → dash 속도로 dashTime초 돌진 → 원형 탄 ring발
+    //   hive: near~far 거리 유지 · every초마다 돌격 brood마리(살아 있는 졸개 broodMax까지) · shot초마다 조준 탄 1발
+    // sk: 월드 스킬 5종 × 5단(S, price[지금 단계]) · 단마다 효과(hull 최대 체력 · amp 모든 피해 · coil 출격 연쇄 번개 +1 ·
+    //   salvage 필드 스킬을 주우면 최대 체력 비율 회복 · core 충격파 재충전 −)
+    // keep: 보관 — 이번 주 · 지난주 주간 도전 상위 top + 최근 1 · 옛 주 최고 weeks주 · 연습 · 중단 practice판 · 입력 기록 inputs개
+    world: {
+      door: 'violet',
+      hp: 1.5,
+      damage: 1.5,
+      score: 1,
+      view: { hw: 376, hh: 754, spawn: 904, range: 900 },
+      rot: ['hard', 'extream', 'super', 'ultra', 'insane'],
+      input: { q: 100, max: 300000 },
+      drop: { near: 300, far: 1200, margin: 80, r: 24, merge: 999 },
+      boss: { every: 10, alive: 2, order: ['lancer', 'hive'] },
+      chain: { max: 8, overflow: 0.03, range: 230, damage: 0.6, life: 0.14 },
+      lancer: {
+        r: 62,
+        hp: 4200,
+        speed: 50,
+        damage: 34,
+        xp: 60,
+        score: 9000,
+        tell: 0.8,
+        dash: 950,
+        dashTime: 0.55,
+        every: 3.6,
+        ring: 8,
+      },
+      hive: {
+        r: 66,
+        hp: 3600,
+        speed: 45,
+        damage: 18,
+        xp: 60,
+        score: 9000,
+        near: 420,
+        far: 560,
+        every: 5,
+        brood: 4,
+        broodMax: 24,
+        shot: 3,
+      },
+      sk: {
+        ids: ['hull', 'amp', 'coil', 'salvage', 'core'],
+        price: [2, 3, 4, 5, 6],
+        hull: 0.05,
+        amp: 0.04,
+        coil: 1,
+        salvage: 0.02,
+        core: 0.05,
+      },
+      keep: { top: 10, weeks: 52, practice: 20, inputs: 3 },
+    },
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
     log: {
@@ -5118,6 +5201,8 @@ return Plotly;
     nova: { name: '충격파', color: 'var(--sk-nova)' },
     crit: { name: '치명 일격', color: 'var(--sk-crit)' },
     shield: { name: '재생 실드', color: 'var(--sk-shield)' },
+    // 월드 전용 12번째 스킬(R-120): 필드 스킬로만 나온다(솔로 카드 · 성장 · S 출격 배분 밖 — skillGroups에 없음)
+    chain: { name: '연쇄 번개', color: 'var(--sk-chain)' },
   };
   const skillName = id => skills[id]?.name || id;
   // 스킬 나열 순서(성장 탭 묶음)
@@ -5128,6 +5213,8 @@ return Plotly;
   ];
   // 모든 화면의 스킬 목록은 이 순서로 보여 준다(R-015). 엔진의 카드 뽑기 순서와는 따로다.
   const skillOrder = skillGroups.flatMap(([, ids]) => ids);
+  // 월드 판 스킬 목록 순서(R-123): 솔로 순서 + 연쇄 번개
+  const worldSkillOrder = [...skillOrder, 'chain'];
   const sortSkills = (list, id = x => x?.id ?? x) =>
     [...list].sort((a, b) => skillOrder.indexOf(id(a)) - skillOrder.indexOf(id(b)));
   // 성장 탭·S 출격 준비의 스택당 효과 한 줄
@@ -5146,6 +5233,7 @@ return Plotly;
         magnet: '수집 범위 +' + S.magnet.step,
         orbit: '칼날 +1 · 피해 강화',
         nova: '충격파 피해 +' + S.nova.damage,
+        chain: '처치 때 번개 +1',
       }[id] || ''
     );
   }
@@ -5197,6 +5285,14 @@ return Plotly;
             ? '치명타 확률 +' + Math.round((Math.min(S.crit.max, p.crit + S.crit.step) - p.crit) * 100) + '%'
             : '치명타 피해 배율 +' + S.crit.overflow,
         shield: '보호막 +' + S.shield.amount + ' · 재생 속도 강화',
+        chain:
+          g.stack?.('chain') < B().world?.chain.max
+            ? '번개 튀는 수 +1'
+            : '탄환 피해 +' +
+              pct(B().world?.chain.overflow || 0) +
+              ' · 번개 ' +
+              (B().world?.chain.max || 0) +
+              '번 유지',
       }[id] || ''
     );
   }
@@ -5216,6 +5312,8 @@ return Plotly;
     cat: '고양이',
     perma: '영구',
     prep: '준비',
+    // 월드 스킬 번개 코일(R-120, 월드 판만)
+    world: '월드',
     earned: '획득',
   };
   // 적. name: 화면 · short: 짧은 이름
@@ -5225,6 +5323,9 @@ return Plotly;
     shooter: { name: '사수', short: '사수' },
     splitter: { name: '분열체', short: '분열' },
     boss: { name: '보스', short: '보스' },
+    // 월드 보스(R-120): 고유 이름이라 영어(이름 규칙 1)
+    lancer: { name: 'LANCER', short: 'LANCER' },
+    hive: { name: 'HIVE', short: 'HIVE' },
     hazard: { name: '붕괴 구역', short: '붕괴 구역' },
     unknown: { name: '미상', short: '미상' },
   };
@@ -5589,6 +5690,8 @@ return Plotly;
       text: (s, lv) => launches.super + ' · ' + stageLabel(s) + ' · ' + levelShort(lv),
     },
     startNormal: { sec: 3, text: mode => modeName(mode) + ' 출격' },
+    // 월드 판 출격(R-122): 'WORLD · Super 출격'
+    startWorld: { sec: 3, text: mode => world.launched(mode) },
     blue: { sec: 3, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
     boss: { major: true, tone: 'gold', sec: 4, text: () => '보스 접근' },
     bossWave: { sec: 3, text: () => '보스 웨이브 격파' },
@@ -5870,6 +5973,20 @@ return Plotly;
       apply: '적용',
       close: '닫기',
       exit: 'GM 나가기',
+      // 월드(R-121): 문(그대로 · 열기 · 닫기) · 월드 스킬 다섯 모두 n단 · 주(GM 저장소 시계만 −1 · 0 · +1주)
+      world: '월드',
+      worldDoor: '월드 문',
+      worldOpen: '열기',
+      worldClose: '닫기',
+      worldSk: '월드 스킬',
+      worldWeek: '주(GM 시계)',
+      weekShift: n => (n < 0 ? '지난주' : n > 0 ? '다음 주' : '이번 주'),
+      replay: '재생 확인',
+      replayWait: '월드 입력 기록을 재생합니다…',
+      replayNone: '재생 가능한 월드 입력 기록이 없습니다.',
+      replayDone: kb => '✓ 같음 · 입력 ' + kb + ' KB',
+      replayMismatch: (why, at) => '불일치 · ' + why + (at ? ' · ' + at + '스텝' : ''),
+      replayError: '재생 확인 중 오류가 났습니다. 다시 시도해 주세요.',
       applied: '적용했습니다',
       failed: '적용하지 못했습니다',
     },
@@ -6205,6 +6322,8 @@ return Plotly;
         promo: '승진',
         // 가진 꾸미기 조각 수(R-116)
         cos: cos.title,
+        // 월드 스킬 단계 합(R-121)
+        wsk: '월드 스킬',
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -6610,6 +6729,77 @@ return Plotly;
   // 값 이름은 label(경로)이 만든다: 표 묶음(모드 · 기체 · 적) → 묶음 규칙(스킬 · 영구 스택 · 해금 · 출현 비율 · 고양이)
   // → names(묶음별 키) → 키 그대로.
   const lab = (() => {
+    // 월드 값(R-124): 값 탭의 '월드' 묶음에서 이름 · 뜻 · 단위를 한 곳에 둔다.
+    const worldInfo = {
+      hp: ['적 체력 배율', '월드 적의 체력 = 모드 체력 × 값', '배', 'hard'],
+      damage: ['적 피해 배율', '월드 적의 피해 = 모드 피해 × 값', '배', 'hard'],
+      score: ['Point 배율', '월드 처치 Point 배율', '배', 'more'],
+      'view.hw': ['조준 상자 반너비', '기체가 적을 조준하는 고정 영역의 좌우 반경', '거리', ''],
+      'view.hh': ['조준 상자 반높이', '기체가 적을 조준하는 고정 영역의 위아래 반경', '거리', ''],
+      'view.spawn': ['출현 거리', '기체에서 적이 나타나는 고정 거리', '거리', ''],
+      'view.range': ['조준 거리', '자동 조준을 하는 최대 거리', '거리', ''],
+      'input.q': ['입력 양자화', '재생 기록 이동 입력의 배율', '정수 배율', ''],
+      'input.max': ['입력 기록 상한', '저장하는 월드 입력 기록의 최대 크기', '바이트', ''],
+      'drop.near': ['드롭 최소 거리', '필드 스킬이 기체에서 떨어지는 최소 거리', '거리', ''],
+      'drop.far': ['드롭 최대 거리', '필드 스킬이 기체에서 떨어지는 최대 거리', '거리', ''],
+      'drop.margin': ['가장자리 여백', '필드 스킬이 맵 가장자리에서 떨어지는 거리', '거리', ''],
+      'drop.r': ['줍기 반경', '기체에 더해 필드 스킬을 줍는 거리', '거리', ''],
+      'drop.merge': ['안전 합침 개수', '이 개수부터 같은 종류 필드 스킬을 합침', '개', ''],
+      'boss.every': ['월드 보스 간격', '월드 보스가 나오는 레벨 간격', 'LV', 'easy'],
+      'boss.alive': ['월드 보스 동시 수', '한 번에 전투할 수 있는 월드 보스 수', '마리', 'hard'],
+      'chain.max': ['번개 튀는 수 상한', '연쇄 번개가 한 번에 튀는 최대 수', '회', 'easy'],
+      'chain.overflow': [
+        '번개 넘침 피해',
+        '튀는 수 상한 뒤 스택마다 탄환 피해에 더하는 비율',
+        '비율',
+        'easy',
+      ],
+      'chain.range': ['번개 거리', '다음 적을 찾는 최대 거리', '거리', 'easy'],
+      'chain.damage': ['번개 피해', '한 번 튈 때 탄환 피해에 곱하는 값', '배', 'easy'],
+      'chain.life': ['번개 표시 시간', '번개가 화면에 남는 시간', '초', ''],
+      'lancer.r': ['LANCER 크기', 'LANCER 보스 충돌 반경', '거리', ''],
+      'lancer.hp': ['LANCER HP', 'LANCER 보스 기본 체력', 'HP', 'hard'],
+      'lancer.speed': ['LANCER 이동 속도', '예고 · 돌진 전 LANCER 이동 속도', '거리/초', 'hard'],
+      'lancer.damage': ['LANCER 접촉 피해', 'LANCER 돌진 접촉 기본 피해', 'HP', 'hard'],
+      'lancer.xp': ['LANCER XP', 'LANCER 처치로 얻는 경험치', 'XP', 'easy'],
+      'lancer.score': ['LANCER Point', 'LANCER 처치 Point', 'Point', 'more'],
+      'lancer.tell': ['LANCER 예고 시간', '돌진 방향을 알리는 시간', '초', 'easy'],
+      'lancer.dash': ['LANCER 돌진 속도', '예고 뒤 돌진하는 속도', '거리/초', 'hard'],
+      'lancer.dashTime': ['LANCER 돌진 시간', '돌진이 이어지는 시간', '초', 'hard'],
+      'lancer.every': ['LANCER 공격 간격', '돌진 예고가 시작되는 간격', '초', 'hard'],
+      'lancer.ring': ['LANCER 탄 수', '돌진 뒤 원형 탄 수', '발', 'hard'],
+      'hive.r': ['HIVE 크기', 'HIVE 보스 충돌 반경', '거리', ''],
+      'hive.hp': ['HIVE HP', 'HIVE 보스 기본 체력', 'HP', 'hard'],
+      'hive.speed': ['HIVE 이동 속도', 'HIVE 보스 이동 속도', '거리/초', 'hard'],
+      'hive.damage': ['HIVE 접촉 피해', 'HIVE 보스 접촉 기본 피해', 'HP', 'hard'],
+      'hive.xp': ['HIVE XP', 'HIVE 처치로 얻는 경험치', 'XP', 'easy'],
+      'hive.score': ['HIVE Point', 'HIVE 처치 Point', 'Point', 'more'],
+      'hive.near': ['HIVE 유지 거리(가까이)', 'HIVE가 유지하는 최소 거리', '거리', ''],
+      'hive.far': ['HIVE 유지 거리(멀리)', 'HIVE가 유지하는 최대 거리', '거리', ''],
+      'hive.every': ['HIVE 소환 간격', '돌격 졸개를 소환하는 간격', '초', 'hard'],
+      'hive.brood': ['HIVE 졸개 수', '한 번 소환하는 돌격 졸개 수', '마리', 'hard'],
+      'hive.broodMax': ['HIVE 졸개 상한', 'HIVE 하나가 거느릴 수 있는 졸개 수', '마리', 'hard'],
+      'hive.shot': ['HIVE 사격 간격', '조준 탄을 쏘는 간격', '초', 'hard'],
+      'sk.price.0': ['월드 스킬 첫 단계 가격', '월드 스킬을 1단 올리는 S 비용', 'S', 'cost'],
+      'sk.price.1': ['월드 스킬 둘째 단계 가격', '월드 스킬을 2단 올리는 S 비용', 'S', 'cost'],
+      'sk.price.2': ['월드 스킬 셋째 단계 가격', '월드 스킬을 3단 올리는 S 비용', 'S', 'cost'],
+      'sk.price.3': ['월드 스킬 넷째 단계 가격', '월드 스킬을 4단 올리는 S 비용', 'S', 'cost'],
+      'sk.price.4': ['월드 스킬 다섯째 단계 가격', '월드 스킬을 5단 올리는 S 비용', 'S', 'cost'],
+      'sk.hull': ['선체 보강 효과', '월드 스킬 한 단계마다 최대 HP에 더하는 비율', '비율/단', 'easy'],
+      'sk.amp': ['출력 증폭 효과', '월드 스킬 한 단계마다 모든 피해에 더하는 비율', '비율/단', 'easy'],
+      'sk.coil': ['번개 코일 효과', '월드 스킬 한 단계마다 출격 연쇄 번개 스택', '스택/단', 'easy'],
+      'sk.salvage': [
+        '회수 정비 효과',
+        '월드 스킬 한 단계마다 필드 스킬 획득 때 회복하는 최대 HP 비율',
+        '비율/단',
+        'easy',
+      ],
+      'sk.core': ['충격 코어 효과', '월드 스킬 한 단계마다 충격파 재충전을 줄이는 비율', '비율/단', 'easy'],
+      'keep.top': ['주간 보관 상위 판', '이번 주 · 지난주 주간 도전 보관 판 수', '판', ''],
+      'keep.weeks': ['지난주 보관 주 수', '주간 최고 판을 보관하는 지난 주 수', '주', ''],
+      'keep.practice': ['연습 보관 판', '연습 · 중단 기록의 최근 보관 판 수', '판', ''],
+      'keep.inputs': ['입력 보관 수', '입력 기록을 보관하는 월드 판 수', '판', ''],
+    };
     const groups = {
       economy: '경제',
       modes: '모드',
@@ -6639,6 +6829,7 @@ return Plotly;
       superCoin: coins.s.ko,
       healZone: '회복 구역',
       buffs: buffs.group,
+      world: '월드',
     };
     // 표로 보는 묶음의 줄 이름(열 = 모드 · 기체 · 적). 기체 start.<스킬>은 '시작 ' + 스킬 이름
     const rows = {
@@ -6825,6 +7016,7 @@ return Plotly;
         hp: '초당 회복',
         margin: '가장자리 여백',
       },
+      world: Object.fromEntries(Object.entries(worldInfo).map(([path, info]) => [path, info[0]])),
     };
     // 스킬 묶음의 키 이름(앞에 스킬 이름이 붙는다)
     const skillKeys = {
@@ -6858,6 +7050,7 @@ return Plotly;
       const p = String(path).split('.'),
         group = p[0],
         rest = p.slice(1).join('.');
+      if (group === 'world') return names.world?.[rest] || rest;
       if (rows[group] && p.length >= 3)
         return column(group, p[1]) + ' · ' + rowName(group, p.slice(2).join('.'));
       if (group === 'skills' && p.length === 3) return skillName(p[1]) + ' · ' + (skillKeys[p[2]] || p[2]);
@@ -7214,6 +7407,8 @@ return Plotly;
       'healZone.hp': ['안에 있으면 초당 회복', 'HP/초', 'easy'],
       'healZone.margin': ['맵 가장자리에서 떨어지는 거리', '거리', ''],
     };
+    for (const [path, [, meaning, unit, dir]] of Object.entries(worldInfo))
+      desc['world.' + path] = [meaning, unit, dir];
     // 정확한 키가 먼저, 아니면 마디 수가 같은 무늬 중 글자 마디(* 아닌 것)가 많은 것
     const descPatterns = Object.keys(desc)
       .filter(k => k.includes('*'))
@@ -7556,6 +7751,7 @@ return Plotly;
           // 꾸미기(R-116)
           cosG: cos.title + ' ' + G + ' 조각 전부',
           cosS: cos.title + ' 특별 전부',
+          wsk: '월드 스킬 모두 5단',
         },
         goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
         // 플레이 시간 표기: 'n분' · 'n시간 m분'
@@ -7591,6 +7787,26 @@ return Plotly;
         ],
       },
       sim: {
+        world: '판 종류',
+        worldKinds: { solo: '솔로', weekly: '주간 도전', practice: '연습' },
+        worldWeek: '월드 주(YYYY-Www)',
+        weekMode: mode => '선택한 주의 주간 도전 모드 · ' + mode,
+        worldResultTitle: '월드 실험 결과',
+        worldResultCols: [
+          '묶음',
+          '기체',
+          '모드',
+          '종류',
+          '주',
+          '시간',
+          'LV',
+          'Point',
+          '획득',
+          '드롭',
+          '보스',
+        ],
+        worldKindsShort: { weekly: '주간', practice: '연습' },
+        worldResultNote: '월드 판은 재화를 지급하지 않습니다. 획득 · 드롭 · 월드 보스 수를 따로 봅니다.',
         modes: '모드',
         crafts: '기체',
         launch: '출격',
@@ -8039,6 +8255,47 @@ return Plotly;
           ],
         ],
       },
+      // 월드(R-123): 열림 · 주간 도전 · 필드 스킬 · 월드 스킬(값은 balance world)
+      ...(b.world
+        ? [
+            {
+              title: world.name,
+              rows: [
+                [
+                  '열림',
+                  '격납고에서 세 기체 모두 ' +
+                    paint.names[b.world.door] +
+                    josa(paint.names[b.world.door], '을/를') +
+                    ' 가지면 탭 바에 ' +
+                    world.tab +
+                    '가 생깁니다.',
+                ],
+                [
+                  world.weekly,
+                  '매주 월요일 0시(한국)에 바뀌는 모드로, 그 주에는 모두 같은 판(같은 적 · 같은 스킬 순서)입니다. 횟수 무제한 · 최고 기록만 순위에. 적 체력 · 피해 ×' +
+                    b.world.hp +
+                    ', 재화는 없습니다.',
+                ],
+                [
+                  world.field,
+                  '카드 대신 레벨업마다 스킬 하나가 필드 어딘가에 떨어집니다. 찾아가 닿으면 얻습니다(방어 한도면 🔒). ' +
+                    world.chain.name +
+                    josa(world.chain.name, '은/는') +
+                    ' 월드에서만 나옵니다.',
+                ],
+                [
+                  world.wskEntry,
+                  SC +
+                    '로 사는 월드 전용 강화 ' +
+                    b.world.sk.ids.length +
+                    '종(솔로 판에는 효과 없음). ' +
+                    world.practice +
+                    '은 고른 모드 · 매번 다른 판이고 순위 밖입니다.',
+                ],
+              ],
+            },
+          ]
+        : []),
       {
         title: 'Tip',
         // 순서(R-066): 중요한 팁 7개(Stage · 대시 · 충격파 · 백업 · 성장 · 회복 구역 · 포위)가 먼저,
@@ -8715,6 +8972,80 @@ return Plotly;
     };
     return { RADIO, lines, radioName: '???', radio: '무전', tip: 'TIP' };
   })();
+  // 월드(R-120 · R-123): 주간 도전 · 연습 · 월드 스킬 · 필드 스킬 · 월드 보스 · 결과 · 기록 카드 글자. 숫자는 balance.world
+  const world = (() => {
+    const K = () => B().world.sk,
+      pc = v => +(v * 100).toFixed(2);
+    return {
+      tab: '월드',
+      name: '월드',
+      weekly: '주간 도전',
+      practice: '연습',
+      kicker: wk => 'WORLD · ' + wk,
+      practiceKicker: 'WORLD · 연습',
+      left: (d, h) => (d > 0 ? d + '일 ' : '') + h + '시간 남음',
+      modeNow: '이번 주 모드',
+      next: m => '다음 주 ' + modeName(m),
+      same: '이번 주는 모두 같은 판 · 횟수 무제한 · 최고 기록만',
+      rankThis: '이 기기',
+      rankAll: '전체',
+      allRecords: '월드 기록 ›',
+      lastWeek: (wk, m, s) => '지난주 최고 · ' + wk + ' ' + modeName(m) + ' · ' + s,
+      empty: '이번 주 주간 도전 기록이 아직 없습니다',
+      wskEntry: '월드 스킬',
+      wskSub: '월드에서만 · ' + SC + '로 삽니다',
+      wskHint: '솔로 판에는 효과가 없습니다',
+      launchWeekly: '주간 도전',
+      launchPractice: '연습',
+      practiceMode: '연습 모드',
+      practiceGo: '이 모드로 연습 출격',
+      launched: m => 'WORLD · ' + modeName(m) + ' 출격',
+      // 월드 스킬 5종(R-121, 값은 balance world.sk). fx(n) = n단 효과 한 줄
+      sk: {
+        hull: { name: '선체 보강', fx: n => '최대 체력 +' + pc(K().hull * n) + '%' },
+        amp: { name: '출력 증폭', fx: n => '모든 피해 +' + pc(K().amp * n) + '%' },
+        coil: { name: '번개 코일', fx: n => '출격 때 연쇄 번개 +' + K().coil * n },
+        salvage: {
+          name: '회수 정비',
+          fx: n => '필드 스킬을 주우면 체력 ' + pc(K().salvage * n) + '% 회복',
+        },
+        core: { name: '충격 코어', fx: n => '충격파 재충전 −' + pc(K().core * n) + '%' },
+      },
+      buy: s => s + ' ' + SC,
+      max: 'MAX',
+      now: '지금',
+      nextLv: '다음',
+      field: '필드 스킬',
+      chain: { name: '연쇄 번개', desc: '처치하면 번개가 가까운 적에게 튑니다(+1마다 한 번 더)' },
+      boss: { lancer: 'LANCER', hive: 'HIVE' },
+      res: {
+        weekly: (wk, m) => '주간 도전 · ' + wk + ' · ' + modeName(m),
+        practice: m => '연습 · ' + modeName(m),
+        place: n => '이 기기 ' + n + '위',
+        best: '이번 주 최고',
+        stats: (got, drop, wb) => '주운 스킬 ' + got + ' / ' + drop + ' · 월드 보스 ' + wb,
+        none: '월드는 재화를 주지 않습니다',
+        again: '다시 도전',
+        back: '월드로',
+      },
+      card: { weekly: n => 'WEEKLY ' + n + '위 · 이 기기', practice: 'PRACTICE' },
+      // 월드 스킬 화면 · 월드 기록 목록 · 기록 상세(R-123)
+      back: '월드로 돌아가기',
+      bought: (name, lv) => name + ' ' + lv + '단으로 올렸습니다',
+      thisWeek: '이번 주',
+      records: '월드 기록',
+      list: {
+        week: wk => '이번 주 · ' + wk,
+        last: wk => '지난주 · ' + wk,
+        old: '지난 주간 최고',
+        practice: '연습 · 중단 최근',
+        empty: '아직 월드 기록이 없습니다',
+        note: '이 기기에만 저장 · 이번 주 · 지난주는 상위 10판, 그 앞 주는 주마다 최고 1판',
+      },
+      detail: (kind, wk, m) =>
+        kind === 'weekly' ? 'WORLD · ' + wk + ' · ' + modeName(m) : 'WORLD · 연습 · ' + modeName(m),
+    };
+  })();
   const api = {
     nameRules,
     textRules,
@@ -8733,6 +9064,7 @@ return Plotly;
     skillName,
     skillGroups,
     skillOrder,
+    worldSkillOrder,
     sortSkills,
     skillEffect,
     skillChoice,
@@ -8774,6 +9106,7 @@ return Plotly;
     lab,
     glossary,
     talk,
+    world,
   };
   root.NeonTerms = api;
   if (typeof module !== 'undefined') module.exports = api;
@@ -8835,7 +9168,8 @@ return Plotly;
   const difficultyId = id =>
     MODE_IDS.includes(String(id || '').toLowerCase()) ? String(id).toLowerCase() : 'easy';
   const finiteCount = v => (Number.isFinite(Number(v)) ? Math.max(0, Math.floor(Number(v))) : 0);
-  const IDS = Object.keys(BAL.skills),
+  // 기록 스킬 목록: 솔로 11 + 월드 판의 연쇄 번개(R-120, 월드 기록에만 나온다)
+  const IDS = [...Object.keys(BAL.skills), ...(BAL.world ? ['chain'] : [])],
     CRAFT_IDS = Object.keys(BAL.crafts),
     // 출격 버프 id(R-062, balance buffs의 키에서 from 제외 = progression.js BUFFS)
     BUFF_IDS = Object.keys(BAL.buffs).filter(k => k !== 'from');
@@ -8954,7 +9288,32 @@ return Plotly;
           .filter(([k, v]) => isId(k) && intIn(v, 0, 99) !== null)
           .slice(0, 20),
       );
-    return keepUnknown(out, w, ['week', 'seed', 'mode', 'kind', 'sk']);
+    // 15단계(R-121): 출격 순간 엔진 값 fx { id: 수 } · 스텝 수 n · 비교 값 sig(8자 16진) · 주운 · 떨어진 필드 스킬 · 월드 보스 ·
+    // 입력 기록 상태 input('in' 저장됨 · 'none' 없음 · 'big' 상한 넘음)
+    if (w.fx && typeof w.fx === 'object' && !Array.isArray(w.fx))
+      out.fx = Object.fromEntries(
+        Object.entries(w.fx)
+          .filter(([k, v]) => isId(k) && isNum(v))
+          .slice(0, 20),
+      );
+    for (const k of ['n', 'got', 'drop', 'wb'])
+      if (intIn(w[k], 0, Number.MAX_SAFE_INTEGER) !== null) out[k] = w[k];
+    if (typeof w.sig === 'string' && /^[0-9a-f]{8}$/.test(w.sig)) out.sig = w.sig;
+    if (w.input === 'in' || w.input === 'none' || w.input === 'big') out.input = w.input;
+    return keepUnknown(out, w, [
+      'week',
+      'seed',
+      'mode',
+      'kind',
+      'sk',
+      'fx',
+      'n',
+      'sig',
+      'got',
+      'drop',
+      'wb',
+      'input',
+    ]);
   }
   // normalizeRecord가 아는 최상위 칸. 그 밖의 칸은 JSON 값이면 그대로 둔다(앞으로 호환, R-100)
   const RECORD_KEYS = [
@@ -9188,6 +9547,71 @@ return Plotly;
       dropLogs = kept.filter(r => !recent.has(r.id) && !safe.has(r.id) && r.log === 'full').map(r => r.id);
     return { remove, dropLogs };
   }
+  // ── 월드 기록(R-121) ──
+  const Week = () => root.NeonWeek || (typeof require === 'function' ? require('./week.js') : null);
+  const isWorld = r => r?.launch?.type === 'world';
+  // 입력 기록 조각 키(R-119): chunks 저장소 ['in:' + 기록 id, 0](상세 로그 조각 [id, seq]와 다른 run 값)
+  const inputKey = id => ['in:' + id, 0];
+  // 주간 도전 순위에 드는 판: 주간 도전 · 정상 종료(그만두기 · 쓰러짐) · 꼴이 맞는 주
+  const weeklyRun = r =>
+    isWorld(r) &&
+    r.world?.kind === 'weekly' &&
+    (r.reason === 'defeated' || r.reason === 'retired') &&
+    Week().indexOf(r.world.week) !== null;
+  // Point 큰 순 → 같으면 먼저 낸 판(날짜 · id)
+  const byPoint = (a, b) => b.score - a.score || a.date - b.date || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const newest = (a, b) => b.date - a.date || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
+  // 이 기기 순위(R-121): 그 주 주간 도전 · 정상 종료 판만, Point 큰 순(연습 · 중단 판은 밖)
+  function worldRank(records, week) {
+    return (records || [])
+      .map(normalizeRecord)
+      .filter(r => r && weeklyRun(r) && r.world.week === week)
+      .sort(byPoint);
+  }
+  // 월드 보관(R-121, 순수 — prunePlan과 같은 트랜잭션, 솔로 기록은 건드리지 않음):
+  // 주간 도전 — 이번 주 · 지난주(와 시계가 앞선 주)는 Point 상위 keep.top판 + 가장 최근 1판, 그 앞 주는 주마다 최고 1판(이번 주에서
+  // keep.weeks주 안) / 연습 · 중단 판 — 최근 keep.practice판 / 입력 기록 — 남는 판 중 이번 주 최고 · 지난주 최고 · 가장 최근 월드 판
+  // (최대 keep.inputs개). → { remove: [기록 id], dropInputs: [입력 기록만 지울 기록 id] }
+  function worldPlan(records, now) {
+    const K = BAL.world.keep,
+      W = Week(),
+      cur = W.index(Number(now) || 0),
+      list = (records || []).map(normalizeRecord).filter(r => r && isWorld(r)),
+      keep = new Set(),
+      weeks = new Map(),
+      rest = [];
+    const add = r => r && keep.add(r.id);
+    for (const r of list) {
+      if (!weeklyRun(r)) {
+        rest.push(r);
+        continue;
+      }
+      const i = W.indexOf(r.world.week);
+      if (!weeks.has(i)) weeks.set(i, []);
+      weeks.get(i).push(r);
+    }
+    for (const [i, rs] of weeks) {
+      const ranked = [...rs].sort(byPoint);
+      if (i >= cur - 1) {
+        ranked.slice(0, K.top).forEach(add);
+        add([...rs].sort(newest)[0]);
+      } else if (i > cur - K.weeks) add(ranked[0]);
+    }
+    rest.sort(newest).slice(0, K.practice).forEach(add);
+    const kept = list.filter(r => keep.has(r.id)),
+      withInput = kept.filter(r => r.world?.input === 'in'),
+      best = i => (weeks.get(i) || []).filter(r => keep.has(r.id) && r.world.input === 'in').sort(byPoint)[0],
+      keepIn = new Set(
+        [best(cur), best(cur - 1), [...withInput].sort(newest)[0]]
+          .filter(Boolean)
+          .map(r => r.id)
+          .slice(0, K.inputs),
+      );
+    return {
+      remove: list.filter(r => !keep.has(r.id)).map(r => r.id),
+      dropInputs: withInput.filter(r => !keepIn.has(r.id)).map(r => r.id),
+    };
+  }
   // 선택 삭제 계획: 보호 기록이 하나라도 있으면 아무것도 지우지 않는다.
   function removePlan(records, ids) {
     const want = [...new Set((Array.isArray(ids) ? ids : [ids]).filter(id => typeof id === 'string'))],
@@ -9305,7 +9729,8 @@ return Plotly;
         this.storageOK = false;
       }
     }
-    async save(record) {
+    // input(R-119): 월드 판 입력 기록 v1 — 기록과 같은 트랜잭션에서 조각 ['in:' + id, 0]으로 쓴다
+    async save(record, input) {
       let r = normalizeRecord(record);
       if (!r) return false;
       await this.ready;
@@ -9324,13 +9749,17 @@ return Plotly;
       if (this.db) {
         const ok = await new Promise(resolve => {
           try {
-            const tx = this.db.transaction('records', 'readwrite'),
+            const tx = this.db.transaction(input ? ['records', 'chunks'] : 'records', 'readwrite'),
               s = tx.objectStore('records'),
               req = s.get(r.id);
             req.onsuccess = () => {
               preserve(req.result);
               s.put(r);
             };
+            if (input) {
+              const [run, seq] = inputKey(r.id);
+              tx.objectStore('chunks').put({ run, seq, data: input });
+            }
             tx.oncomplete = () => resolve(true);
             tx.onerror = tx.onabort = () => resolve(false);
           } catch {
@@ -9343,6 +9772,7 @@ return Plotly;
         return true;
       }
       preserve(this.memory.get(r.id));
+      if (input) this.memoryChunks.set(inputKey(r.id)[0], [{ run: inputKey(r.id)[0], seq: 0, data: input }]);
       const next = new Map(this.memory);
       next.set(r.id, r);
       try {
@@ -9446,6 +9876,8 @@ return Plotly;
         this.memory = next;
         this.storageOK = true;
         for (const id of [...(out.remove || []), ...(out.dropLogs || [])]) this.memoryChunks.delete(id);
+        for (const id of [...(out.remove || []), ...(out.dropInputs || [])])
+          this.memoryChunks.delete(inputKey(id)[0]);
         return out.result;
       }
       return new Promise(resolve => {
@@ -9473,8 +9905,10 @@ return Plotly;
             for (const id of out.remove || []) {
               rs.delete(id);
               cs.delete(chunkRange(id));
+              cs.delete(inputKey(id));
             }
             for (const id of out.dropLogs || []) cs.delete(chunkRange(id));
+            for (const id of out.dropInputs || []) cs.delete(inputKey(id));
             for (const r of out.put || []) rs.put(r);
           };
           tx.oncomplete = () => {
@@ -9486,6 +9920,8 @@ return Plotly;
                 this.memoryChunks.delete(id);
               }
               for (const id of out.dropLogs || []) this.memoryChunks.delete(id);
+              for (const id of [...(out.remove || []), ...(out.dropInputs || [])])
+                this.memoryChunks.delete(inputKey(id)[0]);
               for (const r of out.put || []) byId.set(r.id, normalizeRecord(r) || r);
               this.memory = byId;
               this.cache();
@@ -9500,16 +9936,26 @@ return Plotly;
     }
     // 자동 정리(R-018): 판이 정상으로 끝나 저장한 직후에만 부른다(중간 저장 때는 부르지 않는다).
     // → { ok, removed: [지운 기록 id], dropped: [상세 로그만 지운 기록 id] }
-    prune(opts) {
+    // 월드 보관(R-121)도 같은 트랜잭션: 월드 기록 정리 · 입력 기록만 지운 기록은 world.input 'none'. opts.now = 주 계산 시각
+    prune(opts = {}) {
       return this.mutate(list => {
         const plan = prunePlan(list, opts),
-          byId = new Map(list.map(r => [r.id, r]));
+          wp = BAL.world ? worldPlan(list, opts.now ?? Date.now()) : { remove: [], dropInputs: [] },
+          byId = new Map(list.map(r => [r.id, r])),
+          remove = [...plan.remove, ...wp.remove];
         return {
           ok: true,
-          remove: plan.remove,
+          remove,
           dropLogs: plan.dropLogs,
-          put: plan.dropLogs.map(id => ({ ...byId.get(id), log: 'none' })),
-          result: { ok: true, removed: plan.remove, dropped: plan.dropLogs },
+          dropInputs: wp.dropInputs,
+          put: [
+            ...plan.dropLogs.map(id => ({ ...byId.get(id), log: 'none' })),
+            ...wp.dropInputs.map(id => {
+              const r = byId.get(id);
+              return { ...r, world: { ...r.world, input: 'none' } };
+            }),
+          ],
+          result: { ok: true, removed: remove, dropped: plan.dropLogs, inputs: wp.dropInputs },
         };
       });
     }
@@ -9539,6 +9985,11 @@ return Plotly;
       if (list.length > 12) list = list.slice(-12);
       this.memoryChunks.set(run, list);
       return false;
+    }
+    // 월드 판 입력 기록(R-119) — 없으면 null
+    async input(id) {
+      const list = await this.chunks(inputKey(id)[0]);
+      return list.length ? list[list.length - 1].data : null;
     }
     async chunks(run) {
       await this.ready;
@@ -10121,6 +10572,11 @@ return Plotly;
     difficultyId,
     protectedIds,
     prunePlan,
+    // 월드(R-121)
+    worldPlan,
+    worldRank,
+    weeklyRun,
+    inputKey,
     removePlan,
     exportLog,
     readLog,
