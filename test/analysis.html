@@ -212,6 +212,22 @@
   --cv-paint-blue-fill: var(--paint-blue-fill);
   --cv-paint-violet: var(--paint-violet);
   --cv-paint-violet-fill: var(--paint-violet-fill);
+  /* 꾸미기(R-116 · R-118): 무늬 색 · 엔진 불꽃 · 꼬리 자국(자국 색 = 불꽃 색). 빨강 · 주황 · 분홍 계열은 없다
+     (적 탄 · 붕괴 구역 · 추적 적 색과 구분). 오로라 = 시안 → 하늘 → 보라 → 민트 → 금빛 띠(렌더러가 이 다섯을 섞음) */
+  --cos-white: #f4fffd;
+  --cos-cyan: var(--cyan);
+  --cos-sky: #7fd4ff;
+  --cos-mint: #7cf2b4;
+  --cos-violet: var(--violet);
+  --cos-silver: #cfd8e6;
+  --cos-gold: var(--shine);
+  --cv-cos-white: var(--cos-white);
+  --cv-cos-cyan: var(--cos-cyan);
+  --cv-cos-sky: var(--cos-sky);
+  --cv-cos-mint: var(--cos-mint);
+  --cv-cos-violet: var(--cos-violet);
+  --cv-cos-silver: var(--cos-silver);
+  --cv-cos-gold: var(--cos-gold);
 
   /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
   --an-bg: #090f18;
@@ -4864,6 +4880,59 @@ return Plotly;
       { id: 'promo1', col: 'grow', rank: 1 },
       { id: 'promo3', col: 'grow', rank: 3, title: true },
     ],
+    // 꾸미기(R-116, PLANNING-world Q209~Q211): items 순서 = 꾸미기 화면 순서. id = '<칸>.<끝>'(저장 키, 바꾸지 않음).
+    // g: G 값 · s: S 값(특별 — 이정표 · 칭호 · 승진으로 열고 S로 산다). need: { mile: 이정표 id }(넘어야 열림, 'world'는 15단계 전 준비 중) ·
+    // { rank: n }(그 칸 고양이 승진 단계 ≥ n). 소품 칸(prop.<고양이>)은 그 고양이를 깨운 뒤(Lv 1 이상)부터.
+    // 꾸미기 문 = 상점 네 칸(시간 코인 모두 · 자동 강화 · 자동 G)을 모두 산 순간 열림. 세 기체 공통 · 출격 순간 고정 · 판 진행 영향 0.
+    // 보급 캡슐: 정상 종료 · 솔로 · time초 이상 판 끝에 chance[모드] 확률로 열렸고 없는 G 조각 하나(입히지 않음 · 재화 0)
+    cos: {
+      items: [
+        { id: 'mark.stripe', slot: 'mark', g: 600 },
+        { id: 'mark.star', slot: 'mark', g: 700 },
+        { id: 'mark.wing', slot: 'mark', g: 800 },
+        { id: 'mark.wave', slot: 'mark', g: 900 },
+        { id: 'mark.bolt', slot: 'mark', g: 1000, need: { mile: 'insane1' } },
+        { id: 'mark.paw', slot: 'mark', g: 1200 },
+        { id: 'mcol.cyan', slot: 'mcol', g: 300 },
+        { id: 'mcol.sky', slot: 'mcol', g: 300 },
+        { id: 'mcol.mint', slot: 'mcol', g: 400 },
+        { id: 'mcol.violet', slot: 'mcol', g: 400 },
+        { id: 'mcol.silver', slot: 'mcol', s: 20, need: { mile: 'hour10' } },
+        { id: 'mcol.gold', slot: 'mcol', s: 30, need: { mile: 'promo1' } },
+        { id: 'flame.cyan', slot: 'flame', g: 500 },
+        { id: 'flame.sky', slot: 'flame', g: 600 },
+        { id: 'flame.mint', slot: 'flame', g: 700 },
+        { id: 'flame.white', slot: 'flame', g: 800 },
+        { id: 'flame.gold', slot: 'flame', s: 30, need: { mile: 'kill100k' } },
+        { id: 'flame.aurora', slot: 'flame', s: 50, need: { mile: 'hour50' } },
+        { id: 'trail.line', slot: 'trail', g: 800 },
+        { id: 'trail.ribbon', slot: 'trail', g: 1000 },
+        { id: 'trail.double', slot: 'trail', g: 1000 },
+        { id: 'trail.pulse', slot: 'trail', g: 1200 },
+        { id: 'trail.comet', slot: 'trail', g: 1500, need: { mile: 'boss100' } },
+        { id: 'prop.engineer.scarf', slot: 'prop.engineer', g: 500 },
+        { id: 'prop.engineer.headset', slot: 'prop.engineer', g: 700 },
+        { id: 'prop.engineer.star', slot: 'prop.engineer', g: 900, need: { rank: 1 } },
+        { id: 'prop.supply.scarf', slot: 'prop.supply', g: 500 },
+        { id: 'prop.supply.headset', slot: 'prop.supply', g: 700 },
+        { id: 'prop.supply.star', slot: 'prop.supply', g: 900, need: { rank: 1 } },
+        { id: 'prop.pilot.scarf', slot: 'prop.pilot', g: 500 },
+        { id: 'prop.pilot.headset', slot: 'prop.pilot', g: 700 },
+        { id: 'prop.pilot.star', slot: 'prop.pilot', g: 900, need: { rank: 1 } },
+        { id: 'music.first', slot: 'music', g: 1200 },
+        { id: 'music.dark', slot: 'music', g: 1200 },
+        { id: 'music.dnb', slot: 'music', g: 1500 },
+        { id: 'frame.stars', slot: 'frame', g: 1000, need: { mile: 'hour1' } },
+        { id: 'frame.circuit', slot: 'frame', g: 1200 },
+        { id: 'frame.neon', slot: 'frame', g: 1500 },
+        { id: 'frame.gold', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
+        { id: 'frame.holo', slot: 'frame', s: 50, need: { mile: 'world' } },
+      ],
+      capsule: {
+        time: 300,
+        chance: { easy: 0.02, hard: 0.04, extream: 0.07, super: 0.1, ultra: 0.15, insane: 0.2 },
+      },
+    },
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
     log: {
@@ -5244,6 +5313,128 @@ return Plotly;
     boss1000: 'BOSS HUNTER',
     promo3: 'WING LEADER',
   };
+  // ── 꾸미기 · 보급 캡슐(R-116 · R-117): 키 = balance.cos id(저장 키, 바꾸지 않음) · 칸. 값 · 열림은 balance.cos.
+  // 조각 이름은 id 전체, 소품은 끝 이름(세 고양이 공통). 잠김 글의 이정표 · 칭호 이름은 위 mile · titles
+  const cos = {
+    title: '꾸미기',
+    back: '상점으로 돌아가기',
+    count: (n, all) => n + ' / ' + all,
+    entryLocked: '🔒 상점 네 칸을 모두 사면 열림',
+    entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
+    groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
+    slot: {
+      mark: '무늬',
+      mcol: '무늬 색',
+      flame: '엔진 불꽃',
+      trail: '꼬리 자국',
+      prop: '소품',
+      music: '전투 음악',
+      frame: '카드 틀',
+    },
+    base: {
+      mark: '없음',
+      mcol: '흰빛',
+      flame: '없음',
+      trail: '없음',
+      prop: '없음',
+      music: '아웃런 질주',
+      frame: '기본 틀',
+    },
+    names: {
+      'mark.stripe': '줄무늬',
+      'mark.star': '별',
+      'mark.wing': '날개 띠',
+      'mark.wave': '물결',
+      'mark.bolt': '번개',
+      'mark.paw': '발바닥',
+      'mcol.cyan': '시안',
+      'mcol.sky': '하늘',
+      'mcol.mint': '민트',
+      'mcol.violet': '보라',
+      'mcol.silver': '은빛',
+      'mcol.gold': '금빛',
+      'flame.cyan': '시안',
+      'flame.sky': '하늘',
+      'flame.mint': '민트',
+      'flame.white': '흰빛',
+      'flame.gold': '금빛',
+      'flame.aurora': '오로라',
+      'trail.line': '가는 선',
+      'trail.ribbon': '리본',
+      'trail.double': '이중선',
+      'trail.pulse': '파동',
+      'trail.comet': '혜성',
+      scarf: '비행 스카프',
+      headset: '무전 헤드셋',
+      star: '별 머리핀',
+      'music.first': '첫 질주',
+      'music.dark': '다크 사이버',
+      'music.dnb': '드럼앤베이스',
+      'frame.stars': '별자리',
+      'frame.circuit': '회로',
+      'frame.neon': '네온 이중선',
+      'frame.gold': '금빛 틀',
+      'frame.holo': '홀로 틀',
+    },
+    // 곡 줄 설명 · 카드 틀 설명(base = 기본)
+    music: {
+      base: '4박 킥 · 옥타브 베이스 · 톱니 리드',
+      'music.first': '16분 베이스 · 사각파 훅 · 처음 전투 곡',
+      'music.dark': '반박자 북 · 미끄러지는 베이스 · 어두운 단조',
+      'music.dnb': '빠른 브레이크 · 서브 베이스 · 전자 피아노',
+    },
+    frame: {
+      base: '모드 색 테두리',
+      'frame.stars': '네 귀퉁이 별자리',
+      'frame.circuit': '양옆 회로 선',
+      'frame.neon': '모드 색 두 겹',
+      'frame.gold': '금빛 두 겹 · 귀퉁이 장식',
+      'frame.holo': '빛에 따라 도는 무지개 테두리',
+    },
+    crafts: '미리보기 기체',
+    special: '특별',
+    buy: '사기',
+    wear: '입히기',
+    worn: '입힘',
+    toBase: '기본으로',
+    playing: '듣는 중',
+    making: '만드는 중',
+    noMark: '무늬를 입히면 이 색으로 보입니다',
+    open: id => mile[id] + (titles[id] ? ' · ' + titles[id] : '') + ' 열림',
+    lock: {
+      mile: id => '🔒 ' + mile[id] + (titles[id] ? ' · ' + titles[id] : ''),
+      rank: n => '🔒 이 고양이가 ' + rankName(n) + josa(rankName(n), '으로/로') + ' 승진하면',
+      cat: '🔒 히든 탭에서 이 고양이를 깨우면',
+      soon: '🔒 ' + mile.world + '(준비 중)',
+    },
+    capsuleNote: () =>
+      '보급 캡슐 — ' +
+      B().cos.capsule.time / 60 +
+      '분 넘게 날면 판 끝에 가끔 아직 없는 조각이 옵니다(높은 모드일수록 자주).',
+    capsuleTag: '보급 캡슐',
+    // 결과 줄: 토토(깨어 있으면) · 무전. slot = 칸 이름, name = 조각 이름
+    capsuleLine: {
+      supply: (slot, name) =>
+        '보급 캡슐 도착! ' + slot + " '" + name + "'" + josa(name, '을/를') + ' 꾸미기에 넣어 뒀어.',
+      radio: (slot, name) => '…치직… 보급 캡슐을 보냈어. 안에는 ' + slot + " '" + name + "'.",
+    },
+    // 상태 줄(R-117): 사면 바로 입힘 · 입히기 · 기본으로
+    bought: full => full + ' · 바로 입혔습니다',
+    wore: full => full + ' 입힘',
+    based: slot => slot + ' 기본으로',
+    // 모드마다 캡슐 확률(Help · 정본)
+    chances: () =>
+      Object.entries(B().cos.capsule.chance)
+        .map(([id, p]) => modeName(id) + ' ' + pctOf(p) + '%')
+        .join(' · '),
+  };
+  const cosLeaf = id => String(id).split('.').pop();
+  // 조각 칸: id에서 끝 이름을 뺀 앞(예: 'prop.supply.star' → 'prop.supply')
+  const cosSlotOf = id => String(id).split('.').slice(0, -1).join('.');
+  const cosSlotName = slot => cos.slot[String(slot).startsWith('prop.') ? 'prop' : slot] || slot;
+  const cosName = id => cos.names[id] || cos.names[cosLeaf(id)] || id;
+  // '꼬리 자국 · 혜성' · 소품은 '미오 · 무전 헤드셋'이 아니라 '소품 · 무전 헤드셋'
+  const cosFull = id => cosSlotName(cosSlotOf(id)) + ' · ' + cosName(id);
   // 큰 수 한 곳(R-115): 10만 미만 1,240 · 100만 미만 18.2만 · 1억 미만 4,721만 · 그 위 21.3억(모두 내림)
   const big = n => {
     const v = Math.floor(Number(n) || 0),
@@ -5667,6 +5858,9 @@ return Plotly;
       // 이정표(R-114): 고르기(그대로 · 모두 · 없음 — 없음이면 지금 상태로 다시 채움)
       mile: '이정표',
       mileAll: '모두',
+      // 꾸미기(R-116): 고르기(그대로 · 모두 · 없음 — 칭호는 그대로) · 판 끝 보급 캡슐 항상(확률 1 · 시간 0)
+      cos: cos.title,
+      capsule: '캡슐 항상',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
@@ -5911,6 +6105,10 @@ return Plotly;
       paintBuy: (craft, c) => craftName(craft) + ' ' + paint.names[c] + ' 도색 · 바로 입혔습니다',
       paintWear: (craft, c) =>
         c ? craftName(craft) + ' ' + paint.names[c] + ' 입힘' : craftName(craft) + ' 기본 색으로',
+      // 꾸미기(R-116): 문 · 시안의 문구(상태 줄은 cos.bought · wore · based)
+      cos_locked: '꾸미기가 아직 열리지 않았습니다.',
+      // opened: 이 구매로 열린 문(상점 네 칸 → 꾸미기)
+      cosOpened: '꾸미기가 열렸습니다(상점 맨 아래)',
     },
     // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
     permaCapped: c =>
@@ -6005,6 +6203,8 @@ return Plotly;
         paint: paint.group,
         // 세 고양이 승진 단계 합(R-113)
         promo: '승진',
+        // 가진 꾸미기 조각 수(R-116)
+        cos: cos.title,
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -7353,6 +7553,9 @@ return Plotly;
           paintYellow: paint.names.yellow + ' ' + paint.group + ' 셋',
           paintBlue: paint.names.blue + ' ' + paint.group + ' 셋',
           paintViolet: paint.names.violet + ' ' + paint.group + ' 셋',
+          // 꾸미기(R-116)
+          cosG: cos.title + ' ' + G + ' 조각 전부',
+          cosS: cos.title + ' 특별 전부',
         },
         goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
         // 플레이 시간 표기: 'n분' · 'n시간 m분'
@@ -7814,6 +8017,26 @@ return Plotly;
               b.mile.length +
               '개를 봅니다. 큰 이정표 다섯은 칭호가 되고, 고른 칭호는 다음 판부터 기록 카드에 붙습니다.',
           ],
+          // 꾸미기 · 보급 캡슐(R-116)
+          [
+            cos.title,
+            '상점 네 칸을 모두 사면 상점 탭 맨 아래에 열립니다. 무늬 · 엔진 불꽃 · 꼬리 자국 · 고양이 소품 · 전투 음악 · 카드 틀 ' +
+              b.cos.items.length +
+              '조각을 ' +
+              G +
+              '로 사서 입힙니다(★ 특별은 이정표 · 승진으로 열고 ' +
+              SC +
+              '로). 능력은 없고 세 기체 공통입니다.',
+          ],
+          [
+            cos.capsuleTag,
+            b.cos.capsule.time / 60 +
+              '분 넘게 난 판이 끝나면 가끔 아직 없는 ' +
+              G +
+              ' 조각 하나가 옵니다(' +
+              cos.chances() +
+              ').',
+          ],
         ],
       },
       {
@@ -8206,6 +8429,19 @@ return Plotly;
               SC +
               ' 제작 · 부활을 더한다.',
           },
+          {
+            term: cos.title,
+            desc: '상점 네 칸을 모두 사면 열리는 모양 바꾸기. 능력은 없고 세 기체 공통이며, 출격 순간 입은 것이 그 판 기록 카드에 남는다.',
+          },
+          { term: cos.slot.mark, desc: '기체 몸체 안의 가는 무늬. ' + cos.slot.mcol + '으로 색을 고른다.' },
+          { term: cos.slot.flame, desc: '전투 중 기체 꼬리에 붙는 빛.' },
+          { term: cos.slot.trail, desc: '기체가 지나간 자리에 남는 이어진 줄(색 = 엔진 불꽃 색).' },
+          { term: cos.slot.prop, desc: '고양이 얼굴에 붙는 스카프 · 헤드셋 · 머리핀(그 고양이를 깨운 뒤).' },
+          { term: cos.slot.frame, desc: '기록 카드 테두리 그림.' },
+          {
+            term: cos.capsuleTag,
+            desc: '오래 난 판이 끝날 때 가끔 오는 아직 없는 꾸미기 조각. 높은 모드일수록 자주 온다.',
+          },
         ],
       },
       {
@@ -8509,6 +8745,10 @@ return Plotly;
     catLabelText,
     mile,
     titles,
+    cos,
+    cosName,
+    cosFull,
+    cosSlotName,
     big,
     hm,
     abilities,

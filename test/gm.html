@@ -219,6 +219,22 @@
   --cv-paint-blue-fill: var(--paint-blue-fill);
   --cv-paint-violet: var(--paint-violet);
   --cv-paint-violet-fill: var(--paint-violet-fill);
+  /* 꾸미기(R-116 · R-118): 무늬 색 · 엔진 불꽃 · 꼬리 자국(자국 색 = 불꽃 색). 빨강 · 주황 · 분홍 계열은 없다
+     (적 탄 · 붕괴 구역 · 추적 적 색과 구분). 오로라 = 시안 → 하늘 → 보라 → 민트 → 금빛 띠(렌더러가 이 다섯을 섞음) */
+  --cos-white: #f4fffd;
+  --cos-cyan: var(--cyan);
+  --cos-sky: #7fd4ff;
+  --cos-mint: #7cf2b4;
+  --cos-violet: var(--violet);
+  --cos-silver: #cfd8e6;
+  --cos-gold: var(--shine);
+  --cv-cos-white: var(--cos-white);
+  --cv-cos-cyan: var(--cos-cyan);
+  --cv-cos-sky: var(--cos-sky);
+  --cv-cos-mint: var(--cos-mint);
+  --cv-cos-violet: var(--cos-violet);
+  --cv-cos-silver: var(--cos-silver);
+  --cv-cos-gold: var(--cos-gold);
 
   /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
   --an-bg: #090f18;
@@ -5845,6 +5861,629 @@ body[data-fx='low'] .boss-warn.is-on {
   font-size: 0.625rem;
 }
 
+/* ── 꾸미기 · 보급 캡슐(R-117, 계약 design/v5-stage14/stage14.css · 색은 tokens.css --cos-*) ──
+   상점 탭 입구(.cos-entry) · 꾸미기 화면(#page-cos: 미리보기 → 묶음 탭 → 본문 → 아래 줄 → 캡슐 안내) ·
+   결과 캡슐 줄(.talk--row.is-capsule) · 고양이 소품(.cos-prop). 누르는 칸은 모두 44px 이상 */
+
+/* ── 상점 탭 입구(격납고 입구와 같은 꼴, 가로) ── */
+.cos-entry.is-open {
+  position: relative;
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-items: start;
+  text-align: left;
+  gap: var(--sp-3);
+  border-color: var(--violet);
+  background: linear-gradient(160deg, var(--violet-deep), var(--surface));
+  color: var(--violet);
+}
+.cos-entry strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.cos-entry strong .ico {
+  width: 16px;
+  height: 16px;
+}
+.cos-entry small {
+  word-break: keep-all;
+}
+.cos-entry strong small {
+  margin-left: 4px;
+  color: var(--ink-2);
+  font-weight: var(--fw-2);
+}
+.cos-entry-art {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.cos-entry-art .cos-stage-art {
+  width: 74px;
+  height: 31px;
+}
+.cos-entry-text {
+  display: grid;
+  gap: 2px;
+}
+.cos-entry .cat-mini {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── 꾸미기 화면 ── */
+.cos {
+  display: grid;
+  gap: 8px;
+}
+.cos-count {
+  margin-left: 6px;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  font-weight: var(--fw-2);
+}
+.cos-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 148px;
+  padding: 6px 6px 6px 10px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--area-line);
+  background:
+    radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--cyan) 9%, transparent), transparent 62%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 23px,
+      color-mix(in srgb, var(--grid-line) 80%, transparent) 23px 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 23px,
+      color-mix(in srgb, var(--grid-line) 80%, transparent) 23px 24px
+    ),
+    var(--cv-base-bg);
+}
+.cos-stage-view {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-width: 0;
+}
+.cos-stage-art {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cos-stage-view .cos-stage-art {
+  max-height: 128px;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cyan) 35%, transparent));
+}
+.cos-stage-paint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 0.625rem;
+  font-weight: var(--fw-3);
+  letter-spacing: 0.08em;
+  color: var(--area-label);
+}
+.cos-stage-crafts {
+  display: grid;
+  gap: 0;
+}
+.cos-stage-craft {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+}
+.cos-stage-craft[aria-pressed='true'] {
+  border-color: var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 10%, transparent);
+}
+.cos-craft {
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+}
+.cos-craft .pc-edge,
+.cos-stage-art .pc-edge {
+  stroke: var(--pl);
+}
+.cos-stage--cats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+  padding: 8px;
+}
+.cos-cat {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+}
+.cos-cat-face.cat-icon {
+  width: 64px;
+  height: 64px;
+}
+.cos-cat-face.cat-icon svg {
+  width: 50px;
+  height: 50px;
+}
+.cos-stage--music,
+.cos-stage--card {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding: 8px 12px;
+}
+.cos-stage--music div,
+.cos-stage--card > div {
+  display: grid;
+  gap: 2px;
+}
+.cos-stage--music b,
+.cos-stage--card b {
+  font-size: var(--fs-md);
+}
+.cos-stage--music small,
+.cos-stage--card small {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.cos-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 52px;
+}
+.cos-eq i {
+  width: 6px;
+  border-radius: 2px;
+  background: linear-gradient(var(--cyan), var(--violet));
+}
+.cos-eq i:nth-child(1) {
+  height: 30%;
+}
+.cos-eq i:nth-child(2) {
+  height: 70%;
+}
+.cos-eq i:nth-child(3) {
+  height: 45%;
+}
+.cos-eq i:nth-child(4) {
+  height: 95%;
+}
+.cos-eq i:nth-child(5) {
+  height: 60%;
+}
+.cos-eq i:nth-child(6) {
+  height: 80%;
+}
+.cos-eq i:nth-child(7) {
+  height: 35%;
+}
+.cos-eq i:nth-child(8) {
+  height: 65%;
+}
+.cos-eq i:nth-child(9) {
+  height: 25%;
+}
+.cos-stage--card svg.cos-card-mini {
+  width: 92px;
+  height: 115px;
+  border-radius: 6px;
+}
+
+/* 묶음 탭 */
+.cos-groups {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-radius: var(--r-md);
+  border: 1px solid var(--area-line);
+  overflow: hidden;
+}
+.cos-group {
+  position: relative;
+  min-height: var(--tap);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-3);
+}
+.cos-group[aria-selected='true'] {
+  background: color-mix(in srgb, var(--violet) 14%, transparent);
+  color: var(--violet);
+}
+.cos-group .cos-new {
+  top: 9px;
+  right: 14px;
+}
+
+/* 본문: 줄(라벨 + 칸 44 × 44, 한 줄 최대 7칸 = 344px) */
+.cos-body {
+  display: grid;
+  gap: 8px;
+  min-height: 268px;
+  align-content: start;
+}
+.cos-row {
+  display: grid;
+  gap: 4px;
+}
+.cos-row-label {
+  font-size: 0.6875rem;
+  font-weight: var(--fw-3);
+  letter-spacing: 0.04em;
+  color: var(--area-label);
+}
+.cos-row-label small {
+  margin-left: 4px;
+  font-weight: var(--fw-1);
+  color: var(--muted);
+  letter-spacing: 0;
+}
+.cos-tiles {
+  display: flex;
+  gap: 6px;
+}
+.cos-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--tap);
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+.cos-tile.is-own {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+.cos-tile.is-worn {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 40%, transparent);
+}
+.cos-tile.is-lock > :first-child {
+  opacity: 0.35;
+}
+.cos-tile[aria-pressed='true'] {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+.cos-tile i {
+  position: absolute;
+  font-style: normal;
+  line-height: 1;
+}
+.cos-worn {
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--gold-deep);
+  font-size: 9px;
+  font-weight: var(--fw-4);
+}
+.cos-lock {
+  right: 2px;
+  bottom: 2px;
+  font-size: 10px;
+}
+.cos-cost {
+  right: 4px;
+  bottom: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.cos-cost--g {
+  background: var(--gold);
+}
+.cos-cost--s {
+  background: var(--violet);
+}
+.cos-star {
+  left: 3px;
+  top: 3px;
+  font-size: 9px;
+  color: var(--violet);
+}
+.cos-new {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 5px var(--gold);
+}
+.cos-tile.is-worn .cos-new {
+  display: none;
+}
+.cos-none {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--line-strong);
+}
+.cos-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--d);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--d) 60%, transparent);
+}
+.cos-dot--aurora {
+  background: conic-gradient(
+    var(--cos-cyan),
+    var(--cos-sky),
+    var(--cos-violet),
+    var(--cos-mint),
+    var(--cos-gold),
+    var(--cos-cyan)
+  );
+}
+.cos-flame {
+  width: 13px;
+  height: 22px;
+  border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+  transform: rotate(180deg);
+}
+.cos-flame.cos-dot--aurora {
+  background: linear-gradient(var(--cos-cyan), var(--cos-violet), var(--cos-gold));
+}
+.cos-trail-ico {
+  width: 30px;
+  height: 22px;
+  overflow: visible;
+}
+.cos-tile-face.cat-icon--engineer,
+.cos-tile-face.cat-icon--supply,
+.cos-tile-face.cat-icon--pilot {
+  display: grid;
+  place-items: center;
+}
+.cos-tile-face svg {
+  width: 30px;
+  height: 30px;
+}
+.cos-prop .is-fill {
+  fill: currentColor;
+  stroke: none;
+}
+/* 음악: 줄 넷(누르는 칸 48) */
+.cos-music {
+  display: grid;
+  gap: 6px;
+}
+.cos-song {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: 6px var(--sp-3);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  text-align: left;
+}
+.cos-song.is-own {
+  background: var(--surface);
+}
+.cos-song.is-worn {
+  border-color: var(--gold);
+}
+.cos-song[aria-pressed='true'] {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+.cos-play {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+}
+.cos-play .ico {
+  width: 14px;
+  height: 14px;
+}
+.cos-song-main {
+  display: grid;
+  gap: 1px;
+}
+.cos-song-main b {
+  font-size: var(--fs-sm);
+}
+.cos-song-main small {
+  font-size: var(--fs-2xs);
+  color: var(--muted);
+}
+.cos-song-state {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-3);
+  color: var(--gold);
+}
+/* 카드 틀: 3 × 2 견본 */
+.cos-frames {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.cos-tile--frame {
+  flex: none;
+  width: auto;
+  height: 112px;
+  align-content: center;
+  gap: 4px;
+}
+.cos-frame-name {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-2);
+  color: var(--ink-2);
+}
+.cos-frame-mini {
+  position: relative;
+  width: 56px;
+  height: 70px;
+  border-radius: 6px;
+  background: linear-gradient(var(--title-top), var(--bg));
+  border: 1px solid color-mix(in srgb, var(--mode-insane) 55%, transparent);
+}
+.cos-frame-mini i {
+  position: absolute;
+  inset: 22px 18px 26px;
+  border-radius: 50%;
+  background: radial-gradient(color-mix(in srgb, var(--mode-insane) 40%, transparent), transparent 70%);
+}
+.cos-fr--stars {
+  background:
+    radial-gradient(1.6px 1.6px at 8px 9px, var(--ink) 99%, transparent),
+    radial-gradient(1.2px 1.2px at 17px 13px, var(--ink) 99%, transparent),
+    radial-gradient(1.6px 1.6px at 48px 9px, var(--ink) 99%, transparent),
+    radial-gradient(1.2px 1.2px at 40px 14px, var(--ink) 99%, transparent),
+    radial-gradient(1.6px 1.6px at 9px 61px, var(--ink) 99%, transparent),
+    radial-gradient(1.6px 1.6px at 47px 60px, var(--ink) 99%, transparent),
+    linear-gradient(var(--title-top), var(--bg));
+}
+.cos-fr--circuit {
+  border-color: color-mix(in srgb, var(--cyan) 60%, transparent);
+  background:
+    linear-gradient(90deg, transparent 4px, var(--cyan) 4px 5px, transparent 5px) 0 18px / 100% 30px no-repeat,
+    linear-gradient(270deg, transparent 4px, var(--cyan) 4px 5px, transparent 5px) 0 18px / 100% 30px
+      no-repeat,
+    linear-gradient(var(--title-top), var(--bg));
+}
+.cos-fr--neon {
+  border: 2px solid var(--mode-insane);
+  box-shadow:
+    inset 0 0 0 3px var(--bg),
+    inset 0 0 0 4px color-mix(in srgb, var(--mode-insane) 50%, transparent);
+}
+.cos-fr--gold {
+  border: 1.5px solid var(--gold);
+  box-shadow:
+    inset 0 0 0 3px var(--bg),
+    inset 0 0 0 3.6px color-mix(in srgb, var(--gold) 60%, transparent);
+}
+.cos-fr--holo {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--title-top), var(--bg)) padding-box,
+    linear-gradient(135deg, #7fd4ff, #c4a3ff, #ff8fd0, #ffd36a, #7cf2b4) border-box;
+}
+
+/* 아래 줄: 고른 조각 + 버튼 하나 */
+.cos-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 56px;
+  padding: 6px 8px 6px 12px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.cos-bar-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.cos-bar-main b {
+  font-size: var(--fs-sm);
+}
+.cos-bar-main small {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.cos-act-lock {
+  color: var(--ink-2);
+}
+.cos-special {
+  color: var(--violet);
+  font-weight: var(--fw-3);
+}
+.cos-act {
+  min-width: 96px;
+  flex-direction: column;
+  gap: 0;
+}
+.cos-act small {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-2);
+  opacity: 0.85;
+}
+.cos-listen {
+  color: var(--cyan);
+  font-weight: var(--fw-3);
+}
+.cos-note {
+  word-break: keep-all;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: var(--fs-2xs);
+}
+.cos-note .ico {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--cyan);
+}
+
+/* ── 결과: 캡슐 줄(이정표 줄 다음 자리) ── */
+.talk--row.is-capsule .talk-bubble {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--cyan) 50%, transparent);
+}
+.cap-tag {
+  margin-left: 5px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--cyan) 14%, transparent);
+  color: var(--cyan) !important;
+  font-style: normal;
+  font-size: 0.625rem;
+  letter-spacing: 0 !important;
+  white-space: nowrap;
+}
+.cap-tag .ico {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 3px;
+  vertical-align: -1px;
+}
+
+/* 기체 그림 무늬 위 테두리(몸체 선 다시) · 잠든 고양이 · 곡 줄 새 점 */
+.paint-craft .pc-edge {
+  stroke: var(--pl);
+}
+.cos-cat.is-sleep {
+  opacity: 0.45;
+}
+.cos-song {
+  position: relative;
+}
+.cos-entry .cos-new {
+  top: 8px;
+  right: 8px;
+}
+
     </style>
   </head>
   <body data-mode="title">
@@ -5994,6 +6633,16 @@ body[data-fx='low'] .boss-warn.is-on {
           </div>
           <p class="overlay-note" id="shop-status" role="status"></p>
           <div id="shop-list" class="page"></div>
+          <!-- 꾸미기 입구(R-117): 상점 네 칸을 모두 사면 열림 -->
+          <div id="cos-entry" data-area="S-COS"></div>
+        </section>
+        <section class="page page--cos" id="page-cos" aria-label="꾸미기" hidden>
+          <div class="page-head page-head--back">
+            <button class="back-btn" id="cos-back" aria-label="상점으로 돌아가기"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.6 5.6 8.2 12l6.4 6.4"/></svg></button>
+            <h2>꾸미기 <small class="cos-count" id="cos-count"></small></h2>
+          </div>
+          <p class="overlay-note" id="cos-status" role="status"></p>
+          <div id="cos-view" class="page"></div>
         </section>
         <section class="page page--records" id="page-rec" aria-label="기록" hidden>
           <div class="page-head">
@@ -6048,7 +6697,9 @@ body[data-fx='low'] .boss-warn.is-on {
         ><button class="tab" data-tab="grow">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 3.9 1.1 5.6L12 16.2 6.9 19l1.1-5.6-4.2-3.9 5.7-.7Z"/></svg><span>성장</span
           ><i class="tab-dot" id="grow-dot" hidden aria-hidden="true"></i></button
-        ><button class="tab" data-tab="shop"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.4l7.4 4.3v8.6L12 20.6l-7.4-4.3V7.7Z"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2.6"/></svg><span>상점</span></button
+        ><button class="tab" data-tab="shop">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.4l7.4 4.3v8.6L12 20.6l-7.4-4.3V7.7Z"/><circle fill="currentColor" stroke="none" cx="12" cy="12" r="2.6"/></svg><span>상점</span
+          ><i class="tab-dot" id="shop-dot" hidden aria-hidden="true"></i></button
         ><button class="tab" data-tab="rec">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg><span>기록</span
           ><i class="tab-dot" id="rec-dot" hidden aria-hidden="true"></i>
@@ -13760,6 +14411,59 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       { id: 'promo1', col: 'grow', rank: 1 },
       { id: 'promo3', col: 'grow', rank: 3, title: true },
     ],
+    // 꾸미기(R-116, PLANNING-world Q209~Q211): items 순서 = 꾸미기 화면 순서. id = '<칸>.<끝>'(저장 키, 바꾸지 않음).
+    // g: G 값 · s: S 값(특별 — 이정표 · 칭호 · 승진으로 열고 S로 산다). need: { mile: 이정표 id }(넘어야 열림, 'world'는 15단계 전 준비 중) ·
+    // { rank: n }(그 칸 고양이 승진 단계 ≥ n). 소품 칸(prop.<고양이>)은 그 고양이를 깨운 뒤(Lv 1 이상)부터.
+    // 꾸미기 문 = 상점 네 칸(시간 코인 모두 · 자동 강화 · 자동 G)을 모두 산 순간 열림. 세 기체 공통 · 출격 순간 고정 · 판 진행 영향 0.
+    // 보급 캡슐: 정상 종료 · 솔로 · time초 이상 판 끝에 chance[모드] 확률로 열렸고 없는 G 조각 하나(입히지 않음 · 재화 0)
+    cos: {
+      items: [
+        { id: 'mark.stripe', slot: 'mark', g: 600 },
+        { id: 'mark.star', slot: 'mark', g: 700 },
+        { id: 'mark.wing', slot: 'mark', g: 800 },
+        { id: 'mark.wave', slot: 'mark', g: 900 },
+        { id: 'mark.bolt', slot: 'mark', g: 1000, need: { mile: 'insane1' } },
+        { id: 'mark.paw', slot: 'mark', g: 1200 },
+        { id: 'mcol.cyan', slot: 'mcol', g: 300 },
+        { id: 'mcol.sky', slot: 'mcol', g: 300 },
+        { id: 'mcol.mint', slot: 'mcol', g: 400 },
+        { id: 'mcol.violet', slot: 'mcol', g: 400 },
+        { id: 'mcol.silver', slot: 'mcol', s: 20, need: { mile: 'hour10' } },
+        { id: 'mcol.gold', slot: 'mcol', s: 30, need: { mile: 'promo1' } },
+        { id: 'flame.cyan', slot: 'flame', g: 500 },
+        { id: 'flame.sky', slot: 'flame', g: 600 },
+        { id: 'flame.mint', slot: 'flame', g: 700 },
+        { id: 'flame.white', slot: 'flame', g: 800 },
+        { id: 'flame.gold', slot: 'flame', s: 30, need: { mile: 'kill100k' } },
+        { id: 'flame.aurora', slot: 'flame', s: 50, need: { mile: 'hour50' } },
+        { id: 'trail.line', slot: 'trail', g: 800 },
+        { id: 'trail.ribbon', slot: 'trail', g: 1000 },
+        { id: 'trail.double', slot: 'trail', g: 1000 },
+        { id: 'trail.pulse', slot: 'trail', g: 1200 },
+        { id: 'trail.comet', slot: 'trail', g: 1500, need: { mile: 'boss100' } },
+        { id: 'prop.engineer.scarf', slot: 'prop.engineer', g: 500 },
+        { id: 'prop.engineer.headset', slot: 'prop.engineer', g: 700 },
+        { id: 'prop.engineer.star', slot: 'prop.engineer', g: 900, need: { rank: 1 } },
+        { id: 'prop.supply.scarf', slot: 'prop.supply', g: 500 },
+        { id: 'prop.supply.headset', slot: 'prop.supply', g: 700 },
+        { id: 'prop.supply.star', slot: 'prop.supply', g: 900, need: { rank: 1 } },
+        { id: 'prop.pilot.scarf', slot: 'prop.pilot', g: 500 },
+        { id: 'prop.pilot.headset', slot: 'prop.pilot', g: 700 },
+        { id: 'prop.pilot.star', slot: 'prop.pilot', g: 900, need: { rank: 1 } },
+        { id: 'music.first', slot: 'music', g: 1200 },
+        { id: 'music.dark', slot: 'music', g: 1200 },
+        { id: 'music.dnb', slot: 'music', g: 1500 },
+        { id: 'frame.stars', slot: 'frame', g: 1000, need: { mile: 'hour1' } },
+        { id: 'frame.circuit', slot: 'frame', g: 1200 },
+        { id: 'frame.neon', slot: 'frame', g: 1500 },
+        { id: 'frame.gold', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
+        { id: 'frame.holo', slot: 'frame', s: 50, need: { mile: 'world' } },
+      ],
+      capsule: {
+        time: 300,
+        chance: { easy: 0.02, hard: 0.04, extream: 0.07, super: 0.1, ultra: 0.15, insane: 0.2 },
+      },
+    },
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
     log: {
@@ -14140,6 +14844,128 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     boss1000: 'BOSS HUNTER',
     promo3: 'WING LEADER',
   };
+  // ── 꾸미기 · 보급 캡슐(R-116 · R-117): 키 = balance.cos id(저장 키, 바꾸지 않음) · 칸. 값 · 열림은 balance.cos.
+  // 조각 이름은 id 전체, 소품은 끝 이름(세 고양이 공통). 잠김 글의 이정표 · 칭호 이름은 위 mile · titles
+  const cos = {
+    title: '꾸미기',
+    back: '상점으로 돌아가기',
+    count: (n, all) => n + ' / ' + all,
+    entryLocked: '🔒 상점 네 칸을 모두 사면 열림',
+    entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
+    groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
+    slot: {
+      mark: '무늬',
+      mcol: '무늬 색',
+      flame: '엔진 불꽃',
+      trail: '꼬리 자국',
+      prop: '소품',
+      music: '전투 음악',
+      frame: '카드 틀',
+    },
+    base: {
+      mark: '없음',
+      mcol: '흰빛',
+      flame: '없음',
+      trail: '없음',
+      prop: '없음',
+      music: '아웃런 질주',
+      frame: '기본 틀',
+    },
+    names: {
+      'mark.stripe': '줄무늬',
+      'mark.star': '별',
+      'mark.wing': '날개 띠',
+      'mark.wave': '물결',
+      'mark.bolt': '번개',
+      'mark.paw': '발바닥',
+      'mcol.cyan': '시안',
+      'mcol.sky': '하늘',
+      'mcol.mint': '민트',
+      'mcol.violet': '보라',
+      'mcol.silver': '은빛',
+      'mcol.gold': '금빛',
+      'flame.cyan': '시안',
+      'flame.sky': '하늘',
+      'flame.mint': '민트',
+      'flame.white': '흰빛',
+      'flame.gold': '금빛',
+      'flame.aurora': '오로라',
+      'trail.line': '가는 선',
+      'trail.ribbon': '리본',
+      'trail.double': '이중선',
+      'trail.pulse': '파동',
+      'trail.comet': '혜성',
+      scarf: '비행 스카프',
+      headset: '무전 헤드셋',
+      star: '별 머리핀',
+      'music.first': '첫 질주',
+      'music.dark': '다크 사이버',
+      'music.dnb': '드럼앤베이스',
+      'frame.stars': '별자리',
+      'frame.circuit': '회로',
+      'frame.neon': '네온 이중선',
+      'frame.gold': '금빛 틀',
+      'frame.holo': '홀로 틀',
+    },
+    // 곡 줄 설명 · 카드 틀 설명(base = 기본)
+    music: {
+      base: '4박 킥 · 옥타브 베이스 · 톱니 리드',
+      'music.first': '16분 베이스 · 사각파 훅 · 처음 전투 곡',
+      'music.dark': '반박자 북 · 미끄러지는 베이스 · 어두운 단조',
+      'music.dnb': '빠른 브레이크 · 서브 베이스 · 전자 피아노',
+    },
+    frame: {
+      base: '모드 색 테두리',
+      'frame.stars': '네 귀퉁이 별자리',
+      'frame.circuit': '양옆 회로 선',
+      'frame.neon': '모드 색 두 겹',
+      'frame.gold': '금빛 두 겹 · 귀퉁이 장식',
+      'frame.holo': '빛에 따라 도는 무지개 테두리',
+    },
+    crafts: '미리보기 기체',
+    special: '특별',
+    buy: '사기',
+    wear: '입히기',
+    worn: '입힘',
+    toBase: '기본으로',
+    playing: '듣는 중',
+    making: '만드는 중',
+    noMark: '무늬를 입히면 이 색으로 보입니다',
+    open: id => mile[id] + (titles[id] ? ' · ' + titles[id] : '') + ' 열림',
+    lock: {
+      mile: id => '🔒 ' + mile[id] + (titles[id] ? ' · ' + titles[id] : ''),
+      rank: n => '🔒 이 고양이가 ' + rankName(n) + josa(rankName(n), '으로/로') + ' 승진하면',
+      cat: '🔒 히든 탭에서 이 고양이를 깨우면',
+      soon: '🔒 ' + mile.world + '(준비 중)',
+    },
+    capsuleNote: () =>
+      '보급 캡슐 — ' +
+      B().cos.capsule.time / 60 +
+      '분 넘게 날면 판 끝에 가끔 아직 없는 조각이 옵니다(높은 모드일수록 자주).',
+    capsuleTag: '보급 캡슐',
+    // 결과 줄: 토토(깨어 있으면) · 무전. slot = 칸 이름, name = 조각 이름
+    capsuleLine: {
+      supply: (slot, name) =>
+        '보급 캡슐 도착! ' + slot + " '" + name + "'" + josa(name, '을/를') + ' 꾸미기에 넣어 뒀어.',
+      radio: (slot, name) => '…치직… 보급 캡슐을 보냈어. 안에는 ' + slot + " '" + name + "'.",
+    },
+    // 상태 줄(R-117): 사면 바로 입힘 · 입히기 · 기본으로
+    bought: full => full + ' · 바로 입혔습니다',
+    wore: full => full + ' 입힘',
+    based: slot => slot + ' 기본으로',
+    // 모드마다 캡슐 확률(Help · 정본)
+    chances: () =>
+      Object.entries(B().cos.capsule.chance)
+        .map(([id, p]) => modeName(id) + ' ' + pctOf(p) + '%')
+        .join(' · '),
+  };
+  const cosLeaf = id => String(id).split('.').pop();
+  // 조각 칸: id에서 끝 이름을 뺀 앞(예: 'prop.supply.star' → 'prop.supply')
+  const cosSlotOf = id => String(id).split('.').slice(0, -1).join('.');
+  const cosSlotName = slot => cos.slot[String(slot).startsWith('prop.') ? 'prop' : slot] || slot;
+  const cosName = id => cos.names[id] || cos.names[cosLeaf(id)] || id;
+  // '꼬리 자국 · 혜성' · 소품은 '미오 · 무전 헤드셋'이 아니라 '소품 · 무전 헤드셋'
+  const cosFull = id => cosSlotName(cosSlotOf(id)) + ' · ' + cosName(id);
   // 큰 수 한 곳(R-115): 10만 미만 1,240 · 100만 미만 18.2만 · 1억 미만 4,721만 · 그 위 21.3억(모두 내림)
   const big = n => {
     const v = Math.floor(Number(n) || 0),
@@ -14563,6 +15389,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       // 이정표(R-114): 고르기(그대로 · 모두 · 없음 — 없음이면 지금 상태로 다시 채움)
       mile: '이정표',
       mileAll: '모두',
+      // 꾸미기(R-116): 고르기(그대로 · 모두 · 없음 — 칭호는 그대로) · 판 끝 보급 캡슐 항상(확률 1 · 시간 0)
+      cos: cos.title,
+      capsule: '캡슐 항상',
       start: '시작 ' + stage.upper,
       startNote: '일반 출격만',
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
@@ -14807,6 +15636,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       paintBuy: (craft, c) => craftName(craft) + ' ' + paint.names[c] + ' 도색 · 바로 입혔습니다',
       paintWear: (craft, c) =>
         c ? craftName(craft) + ' ' + paint.names[c] + ' 입힘' : craftName(craft) + ' 기본 색으로',
+      // 꾸미기(R-116): 문 · 시안의 문구(상태 줄은 cos.bought · wore · based)
+      cos_locked: '꾸미기가 아직 열리지 않았습니다.',
+      // opened: 이 구매로 열린 문(상점 네 칸 → 꾸미기)
+      cosOpened: '꾸미기가 열렸습니다(상점 맨 아래)',
     },
     // 앱을 열 때 MAX를 넘던 영구 스택을 줄이고 돌려줌(R-042). c = { blue, cut: { 스킬: [보유, MAX] } }
     permaCapped: c =>
@@ -14901,6 +15734,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         paint: paint.group,
         // 세 고양이 승진 단계 합(R-113)
         promo: '승진',
+        // 가진 꾸미기 조각 수(R-116)
+        cos: cos.title,
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -16249,6 +17084,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           paintYellow: paint.names.yellow + ' ' + paint.group + ' 셋',
           paintBlue: paint.names.blue + ' ' + paint.group + ' 셋',
           paintViolet: paint.names.violet + ' ' + paint.group + ' 셋',
+          // 꾸미기(R-116)
+          cosG: cos.title + ' ' + G + ' 조각 전부',
+          cosS: cos.title + ' 특별 전부',
         },
         goalNote: '이 줄의 분당 값으로만 모을 때. ' + SC + '는 ' + modeName('insane') + '에서만 생깁니다.',
         // 플레이 시간 표기: 'n분' · 'n시간 m분'
@@ -16710,6 +17548,26 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               b.mile.length +
               '개를 봅니다. 큰 이정표 다섯은 칭호가 되고, 고른 칭호는 다음 판부터 기록 카드에 붙습니다.',
           ],
+          // 꾸미기 · 보급 캡슐(R-116)
+          [
+            cos.title,
+            '상점 네 칸을 모두 사면 상점 탭 맨 아래에 열립니다. 무늬 · 엔진 불꽃 · 꼬리 자국 · 고양이 소품 · 전투 음악 · 카드 틀 ' +
+              b.cos.items.length +
+              '조각을 ' +
+              G +
+              '로 사서 입힙니다(★ 특별은 이정표 · 승진으로 열고 ' +
+              SC +
+              '로). 능력은 없고 세 기체 공통입니다.',
+          ],
+          [
+            cos.capsuleTag,
+            b.cos.capsule.time / 60 +
+              '분 넘게 난 판이 끝나면 가끔 아직 없는 ' +
+              G +
+              ' 조각 하나가 옵니다(' +
+              cos.chances() +
+              ').',
+          ],
         ],
       },
       {
@@ -17102,6 +17960,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               SC +
               ' 제작 · 부활을 더한다.',
           },
+          {
+            term: cos.title,
+            desc: '상점 네 칸을 모두 사면 열리는 모양 바꾸기. 능력은 없고 세 기체 공통이며, 출격 순간 입은 것이 그 판 기록 카드에 남는다.',
+          },
+          { term: cos.slot.mark, desc: '기체 몸체 안의 가는 무늬. ' + cos.slot.mcol + '으로 색을 고른다.' },
+          { term: cos.slot.flame, desc: '전투 중 기체 꼬리에 붙는 빛.' },
+          { term: cos.slot.trail, desc: '기체가 지나간 자리에 남는 이어진 줄(색 = 엔진 불꽃 색).' },
+          { term: cos.slot.prop, desc: '고양이 얼굴에 붙는 스카프 · 헤드셋 · 머리핀(그 고양이를 깨운 뒤).' },
+          { term: cos.slot.frame, desc: '기록 카드 테두리 그림.' },
+          {
+            term: cos.capsuleTag,
+            desc: '오래 난 판이 끝날 때 가끔 오는 아직 없는 꾸미기 조각. 높은 모드일수록 자주 온다.',
+          },
         ],
       },
       {
@@ -17405,6 +18276,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     catLabelText,
     mile,
     titles,
+    cos,
+    cosName,
+    cosFull,
+    cosSlotName,
     big,
     hm,
     abilities,
@@ -17593,7 +18468,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   'use strict';
   // 수치는 모두 balance.js(NeonBalance)에서 읽는다. 이름·문구는 terms.js가 맡고 엔진은 쓰지 않는다.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null);
-  const VERSION = '4.14.0',
+  const VERSION = '4.15.0',
     BALANCE = B.name,
     TAU = Math.PI * 2,
     W = B.map.width,
@@ -21214,6 +22089,79 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return titlesOf(p).includes(w) ? w : null;
   }
 
+  // ── 꾸미기 · 보급 캡슐(R-116). 목록 · 값 · 열림은 balance.cos(없는 옛 balance면 빈 목록), 이름 · 글은 terms.cos.
+  // 저장 = cos.own(가진 조각 id) · cos.wear(칸 → id, 13단계 title과 같은 곳) · cnt.capsule · opened 'cos'. 판 진행 영향 0
+  const COS = Object.freeze([...(B.cos?.items || [])]),
+    COS_BY = new Map(COS.map(x => [x.id, x])),
+    COS_SLOTS = Object.freeze([...new Set(COS.map(x => x.slot))]),
+    CAPSULE = B.cos?.capsule || null;
+  const cosItem = id => COS_BY.get(id) || null;
+  const cosOwn = p => (Array.isArray(p?.cos?.own) ? p.cos.own : []);
+  // 소품 칸(prop.<고양이>)의 고양이
+  const slotCat = slot => (typeof slot === 'string' && slot.startsWith('prop.') ? slot.slice(5) : null);
+  // 상점 네 칸(시간 코인 모두 · 자동 강화 · 자동 G)을 모두 샀다 → 꾸미기 문
+  const shopFull = p =>
+    count(p?.incomeTier) >= ECONOMY.incomeMax && p?.ownedAuto === true && p?.ownedAutoGold === true;
+  // 조각 열림(순수): null = 열림 · { kind: 'cat' | 'rank' | 'mile' | 'soon', id }. 모르는 id = { kind: 'invalid' }.
+  // 소품 = 그 고양이를 깨움(Lv ≥ 1) · rank = 그 고양이 승진 단계 · mile = 그 이정표 넘음('이전 기록' 1 포함) · world = 15단계 전 준비 중
+  function cosNeed(p, id) {
+    const it = cosItem(id);
+    if (!it) return { kind: 'invalid', id };
+    const cat = slotCat(it.slot);
+    if (cat && !(catLevel(p?.cats?.[cat]) >= 1)) return { kind: 'cat', id: cat };
+    if (it.need?.rank && !(promoRank(p, cat) >= it.need.rank))
+      return { kind: 'rank', id: cat, need: it.need.rank };
+    const m = it.need?.mile;
+    if (m === 'world' && !B.world) return { kind: 'soon', id: m };
+    if (m && !(natural(p?.mile?.[m]) > 0)) return { kind: 'mile', id: m };
+    return null;
+  }
+  // 입은 것(순수): 칸마다 가진 · 아는 · 그 칸 조각만(모르는 id · 안 가진 것은 기본으로 읽고 지우지 않는다 — 뒤 단계 조각 보존).
+  // 세 기체 공통. 기본인 칸은 빠진다. 출격 순간 고정(기록 look.cos · 렌더러 · 전투 음악)
+  function cosWorn(p) {
+    const wear = isObj(p?.cos?.wear) ? p.cos.wear : {},
+      own = cosOwn(p),
+      out = {};
+    for (const slot of COS_SLOTS) {
+      const id = wear[slot];
+      if (cosItem(id)?.slot === slot && own.includes(id)) out[slot] = id;
+    }
+    return out;
+  }
+  // 문자열 → 0 이상 1 미만(FNV-1a + 섞기). 보급 캡슐 전용 난수 줄 — 엔진 rng와 따로, 같은 글자 = 같은 값
+  function hash01(str) {
+    const s = String(str);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 0x01000193);
+    }
+    h ^= h >>> 16;
+    h = Math.imul(h, 0x85ebca6b);
+    h ^= h >>> 13;
+    h = Math.imul(h, 0xc2b2ae35);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  // 캡슐에서 나올 수 있는 조각: G 조각 중 열렸고 아직 없는 것(특별 S · 잠긴 조각은 안 나옴 — 노력형 원칙), 목록 순서
+  const capsulePool = p =>
+    COS.filter(x => x.g > 0 && !cosOwn(p).includes(x.id) && !cosNeed(p, x.id)).map(x => x.id);
+  // 보급 캡슐(Q211, 순수 — addCareer · sweepCareer 안에서만 불러 careerAt이 중복을 막는다): 정상 종료 · 솔로 · 문 'cos' ·
+  // time초 이상 · 고를 조각 있음 · 기록 id 해시 < 모드 확률이면 조각 하나를 own에 더하고 cnt.capsule += 1 → id(아니면 null).
+  // 입히지 않는다 · 재화 0. force(GM '캡슐 항상') = 확률 1 · 시간 0
+  function capsuleRun(p, record, { force } = {}) {
+    if (!CAPSULE || !careerRun(record) || !Data().isSolo(record) || !p.opened?.includes('cos')) return null;
+    if (!force && !((nonNeg(Number(record.time)) || 0) >= CAPSULE.time)) return null;
+    const pool = capsulePool(p);
+    if (!pool.length) return null;
+    if (!force && !(hash01('cap:' + record.id) < (CAPSULE.chance[modeId(record.difficultyId)] || 0)))
+      return null;
+    const id = pool[Math.floor(hash01('capp:' + record.id) * pool.length)];
+    p.cos = { ...p.cos, own: [...cosOwn(p), id] };
+    p.cnt = { ...(isObj(p.cnt) ? p.cnt : {}), capsule: count(p.cnt?.capsule) + 1 };
+    return id;
+  }
+
   // 순수 규칙: p(프로필 사본)를 바꾸고 결과를 돌려준다.
   const rules = {
     // 출격(R-062 출격 버프 포함): launch.buffs(요청 id 배열)를 BUFFS 순서로 본다. from 모드 아래면 건너뜀('mode'),
@@ -21398,11 +22346,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       r.noteCost = q.cost;
       return { ok: true, record: r, cost: q.cost };
     },
-    // 열린 문(R-106): 영구 스킬 11개가 모두 MAX인 순간 'hangar'. 한 번 열리면 MAX 값이 바뀌어도 닫지 않는다
+    // 열린 문(R-106): 영구 스킬 11개가 모두 MAX인 순간 'hangar' · 꾸미기(R-116): 상점 네 칸을 모두 산 순간 'cos'.
+    // 한 번 열리면 조건이 바뀌어도 닫지 않는다
     openDoors(p) {
-      if (p.opened.includes('hangar') || !permaFull(p)) return dup({ opened: [] });
-      p.opened.push('hangar');
-      return { ok: true, opened: ['hangar'] };
+      const opened = [];
+      if (!p.opened.includes('hangar') && permaFull(p)) opened.push('hangar');
+      if (COS.length && !p.opened.includes('cos') && shopFull(p)) opened.push('cos');
+      if (!opened.length) return dup({ opened });
+      p.opened.push(...opened);
+      return { ok: true, opened };
     },
     // 이정표(R-114): 프로필 쓰기 한 길(ProfileStore.mutate)을 감싼다. 규칙이 ok면 같은 트랜잭션에서 mileCheck →
     // 새 이정표가 있으면 결과에 mile: [id]를 붙이고 쓰기(규칙이 dup이어도). ok가 아니면 그대로
@@ -21437,7 +22389,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.gold -= ECONOMY.incomePrice;
       p.incomeTier++;
       remember(p, txId);
-      return { ok: true, price: ECONOMY.incomePrice };
+      return { ok: true, price: ECONOMY.incomePrice, opened: rules.openDoors(p).opened };
     },
     buyPerma(p, { txId, skill, expectedOwned }) {
       if (!validId(txId) || !SKILLS.includes(skill)) return fail('invalid');
@@ -21457,7 +22409,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (p.gold < ECONOMY.autoPrice) return fail('insufficient');
       p.gold -= ECONOMY.autoPrice;
       p.ownedAuto = true;
-      return { ok: true, price: ECONOMY.autoPrice };
+      return { ok: true, price: ECONOMY.autoPrice, opened: rules.openDoors(p).opened };
     },
     // 자동 G 습득(R-025): 자동 강화를 먼저 사야 하고 한 번만 산다. 켜기/끄기는 브라우저 설정이라 여기 없다.
     buyAutoGold(p, { txId }) {
@@ -21469,7 +22421,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.gold -= price;
       p.ownedAutoGold = true;
       remember(p, txId);
-      return { ok: true, price };
+      return { ok: true, price, opened: rules.openDoors(p).opened };
     },
     // 고양이 해금(R-026, Lv0 → Lv1): S만 낸다. 예약된 S는 쓰지 않는다.
     unlockCat(p, { txId, cat, now }) {
@@ -21570,6 +22522,38 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       else p.paint.wear[craft] = color;
       return { ok: true, craft, color };
     },
+    // 꾸미기 사기(R-116): 문 'cos' · 열림(cosNeed) · 값(G 또는 S, 예약된 S는 쓰지 않음)을 한 트랜잭션에서 보고 own 끝에 더하고
+    // 바로 입힌다(도색과 같게). 이미 가짐 = stale(화면이 본 값과 다름). txId로 두 번 눌러도 한 번만
+    buyCos(p, { txId, id, now }) {
+      const it = cosItem(id);
+      if (!validId(txId) || !it) return fail('invalid');
+      if (p.tx.includes(txId)) return dup();
+      if (!p.opened.includes('cos')) return fail('cos_locked');
+      if (cosOwn(p).includes(id)) return fail('stale');
+      if (cosNeed(p, id)) return fail('locked');
+      const g = count(it.g),
+        s = count(it.s),
+        short = (s && scShort(p, now, s)) || (p.gold < g ? 'insufficient' : null);
+      if (short) return fail(short);
+      p.gold -= g;
+      p.superCoins -= s;
+      p.cos = { own: [...cosOwn(p), id], wear: { ...(isObj(p.cos?.wear) ? p.cos.wear : {}), [it.slot]: id } };
+      remember(p, txId);
+      return { ok: true, price: { g, s }, id, slot: it.slot };
+    },
+    // 꾸미기 입히기(R-116): 가진 그 칸 조각 또는 null(기본으로). 칭호 칸은 setTitle만. 재화 없음 · 다음 출격부터
+    wearCos(p, { slot, id }) {
+      if (!COS_SLOTS.includes(slot)) return fail('invalid');
+      if (id !== null && cosItem(id)?.slot !== slot) return fail('invalid');
+      if (!p.opened.includes('cos')) return fail('cos_locked');
+      if (id !== null && !cosOwn(p).includes(id)) return fail('locked');
+      if ((cosWorn(p)[slot] ?? null) === id) return dup();
+      const wear = { ...(isObj(p.cos?.wear) ? p.cos.wear : {}) };
+      if (id === null) delete wear[slot];
+      else wear[slot] = id;
+      p.cos = { own: cosOwn(p), wear };
+      return { ok: true, slot, id };
+    },
     // 히든 탭 해금: hiddenFrom 모드 판이 패배 · 직접 종료로 끝났을 때만(중단 제외). 옛 기록으로 소급하지 않도록
     // evaluateRun(백업 가져오기에서도 불림)에는 넣지 않고, 화면이 실제 판이 끝날 때만 부른다.
     unlockHidden(p, { difficultyId, reason }) {
@@ -21651,32 +22635,43 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           if (!(natural(p.mile[m.id]) > 0) && !(m.rank > cap) && !(m.door === 'world' && !B.world))
             p.mile[m.id] = at;
       }
+      // 꾸미기(R-116): 'all' = 40조각 모두 가짐(입은 것 그대로) · 'none' = own 비우고 wear는 칭호만 남김. 문은 그대로
+      if (v.cos === 'all') p.cos = { ...p.cos, own: [...new Set([...cosOwn(p), ...COS.map(x => x.id)])] };
+      if (v.cos === 'none') {
+        const title = p.cos?.wear?.title;
+        p.cos = { own: [], wear: title ? { title } : {} };
+      }
       return { ok: true };
     },
     // 판 끝(R-100): 정상 종료이고 careerAt이 0인 기록이면 경력에 더하고 기록 careerAt = now(같은 트랜잭션).
     // 이미 더한 판은 중복(아무것도 안 함). 뒤 단계의 '판 끝에 한 번만' 일도 이 자리에 넣어 careerAt을 중복 막이로 쓴다
-    // 승진 판정(R-111)도 여기서 한 번 — events는 화면이 결과 고양이 말풍선에 쓴다
-    addCareer(p, { record, now }) {
-      if (!careerRun(record) || record.careerAt > 0) return dup({ events: [] });
+    // 승진 판정(R-111)도 여기서 한 번 — events는 화면이 결과 고양이 말풍선에 쓴다.
+    // 보급 캡슐(R-116)도 여기서 한 번 — capsule = 받은 조각 id(없으면 null). force = GM '캡슐 항상'
+    addCareer(p, { record, now, force }) {
+      if (!careerRun(record) || record.careerAt > 0) return dup({ events: [], capsule: null });
       p.career = careerAdd(p.career, record);
-      const events = promoRun(p, record);
-      return { ok: true, record: { ...record, careerAt: natural(now) || 1 }, events };
+      const events = promoRun(p, record),
+        capsule = capsuleRun(p, record, { force });
+      return { ok: true, record: { ...record, careerAt: natural(now) || 1 }, events, capsule };
     },
     // 열 때 줍기(R-100): 정상 종료 · careerAt 0 · date > since인 기록을 모두 더한다 → { records: [careerAt을 쓴 기록] }
     sweepCareer(p, { records, now }) {
-      const out = [];
+      const out = [],
+        capsules = [];
       for (const raw of Array.isArray(records) ? records : []) {
         const r = Data().normalizeRecord(raw);
         if (!careerRun(r) || r.careerAt > 0 || !(r.date > p.career.since)) continue;
         p.career = careerAdd(p.career, r);
         promoRun(p, r);
+        const cap = capsuleRun(p, r);
+        if (cap) capsules.push(cap);
         out.push({ ...r, careerAt: natural(now) || 1 });
       }
       // 이정표(R-114): 주운 판 · 다른 길로 넘은 것까지 이 자리에서 한 번
       const m = mileCheck(p, { now });
       return out.length || !m.duplicate
-        ? { ok: true, records: out, mile: m.ids }
-        : dup({ records: [], mile: [] });
+        ? { ok: true, records: out, mile: m.ids, capsules }
+        : dup({ records: [], mile: [], capsules: [] });
     },
     // 백업 가져오기(R-100): 경력 · 이정표는 '프로필 교체' 체크와 상관없이 합친다(잃는 것 없음)
     mergeMemory(p, { profile }) {
@@ -22312,6 +23307,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     wearPaint(craft, color) {
       return this.mutate(p => rules.wearPaint(p, { craft, color }));
     }
+    // 꾸미기(R-116): txId는 화면이 누를 때마다 새로
+    buyCos(txId, id) {
+      const now = this.now();
+      return this.mutate(p => rules.buyCos(p, { txId, id, now }));
+    }
+    wearCos(slot, id) {
+      return this.mutate(p => rules.wearCos(p, { slot, id }));
+    }
     // 화면이 실제 판이 끝날 때만 부른다(evaluateRun과 따로).
     unlockHidden(run) {
       return this.mutate(p =>
@@ -22340,9 +23343,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       return this.mutate(p => rules.gmSet(p, v, this.now()));
     }
     // 판 끝(R-100): store.save(r) 바로 뒤 · prune() 앞. 프로필 + 그 기록을 한 트랜잭션에서
-    addCareer(recordId) {
-      const now = this.now();
-      return this.mutate((p, record) => rules.addCareer(p, { record, now }), recordId);
+    // opts.capsule = GM '캡슐 항상'(GM 저장소에서만 힘을 씀)
+    addCareer(recordId, opts = {}) {
+      const now = this.now(),
+        force = opts.capsule === true && isGm();
+      return this.mutate((p, record) => rules.addCareer(p, { record, now, force }), recordId);
     }
     // 열 때 줍기(R-100): 저장과 더하기 사이에 앱이 꺼진 판 · 다른 기기에서 가져온 새 판. 한 트랜잭션, 기록 캐시는 한 번만
     sweepCareer() {
@@ -22356,7 +23361,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               if (got.main?.schemaVersion !== SCHEMA) return { ok: false, reason: 'migrate' };
               const p = migrate(got.main),
                 res = rules.sweepCareer(p, { records: got.records, now });
-              if (res.duplicate) return { ok: true, added: 0, records: [], mile: [] };
+              if (res.duplicate) return { ok: true, added: 0, records: [], mile: [], capsules: [] };
               os.profiles.put(p);
               for (const r of res.records) os.records.put(r);
               return {
@@ -22365,13 +23370,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
                 records: res.records,
                 profile: p,
                 mile: res.mile,
+                capsules: res.capsules,
               };
             },
           );
         if (!out?.ok) return this.result(false, { reason: out?.reason || 'storage' });
         if (out.profile) this.profile = out.profile;
         this.keepRecords(out.records);
-        return this.result(true, { added: out.added, mile: out.mile || [] });
+        return this.result(true, { added: out.added, mile: out.mile || [], capsules: out.capsules || [] });
       });
     }
     // 단 칭호(R-114): id = 칭호 이정표 id 또는 null(벗기)
@@ -22452,6 +23458,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     mileState,
     titlesOf,
     titleOf,
+    // 꾸미기 · 보급 캡슐(R-116)
+    COS,
+    COS_SLOTS,
+    cosItem,
+    shopFull,
+    cosNeed,
+    cosWorn,
+    hash01,
+    capsulePool,
+    capsuleRun,
     V5_FIELDS,
     HISTORY_KEEP,
     ECONOMY,
@@ -22590,6 +23606,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       cats = Balance().cats.list,
       rank = (p, c) => Progress().promoOf(p, c).rank,
       promoSum = p => cats.reduce((s, c) => s + rank(p, c), 0),
+      // 꾸미기(R-116): 가진 아는 조각 수, 지금 가진 조각이 파일에 없으면 down
+      cosIds = p => p.cos.own.filter(id => Progress().cosItem(id)),
       rows = [
         ['gold', a.gold, b.gold],
         ['blue', a.blue, b.blue],
@@ -22623,6 +23641,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           }),
         ],
         ['promo', promoSum(a), promoSum(b), cats.some(c => rank(b, c) > rank(a, c))],
+        ['cos', cosIds(a).length, cosIds(b).length, cosIds(b).some(id => !a.cos.own.includes(id))],
       ].map(([key, f, n, down = f < n]) => ({
         key,
         label: T.msg.backup.rows[key] ?? key,
@@ -22659,9 +23678,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       at = ([x, y]) => [(cy - y) * CRAFT_SCALE, (x - cx) * CRAFT_SCALE];
     return (craftShapes[key] = {
       key,
+      cx,
+      cy,
       body: s.body.map(at),
       inner: s.inner?.map(at) || null,
       line: s.line?.map(at) || null,
+      // 꾸미기(R-118): 꼬리 점(앞 = +x라 음수) · 기체 길이(world px)
+      tail: (cy - root.NeonView.craftTail(key)) * CRAFT_SCALE,
+      length: (Math.max(...ys) - Math.min(...ys)) * CRAFT_SCALE,
     });
   }
   // 전장 색(R-054): tokens.css의 --cv-… 토큰을 처음 한 번 읽어 숫자(pal)와 글자(css, 기본 그래픽용)로 둔다.
@@ -22733,11 +23757,24 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     'paint-blue-fill',
     'paint-violet',
     'paint-violet-fill',
+    // 꾸미기(R-118): 무늬 색 · 엔진 불꽃 · 꼬리 자국
+    'cos-white',
+    'cos-cyan',
+    'cos-sky',
+    'cos-mint',
+    'cos-violet',
+    'cos-silver',
+    'cos-gold',
   ];
   // 도색 색 id → 팔레트 키('blue' → paintBlue · paintBlueFill). 모르는 색은 기본(시안)
   const paintKey = c => 'paint' + c[0].toUpperCase() + c.slice(1),
     PAINTS = root.NeonBalance.paint.colors;
   const wornOf = g => (PAINTS.includes(g.paint?.wear) ? g.paint.wear : null);
+  // 꾸미기(R-118): id 끝 이름('flame.gold' → 'gold') · 색 팔레트 키('gold' → cosGold). 오로라 = 다섯 색 띠
+  const leaf = id => (typeof id === 'string' && id ? id.split('.').pop() : null),
+    cosKey = c => 'cos' + c[0].toUpperCase() + c.slice(1),
+    AURORA = ['cyan', 'sky', 'violet', 'mint', 'gold'],
+    TRAILS = ['line', 'ribbon', 'double', 'pulse', 'comet'];
   const MISSING = 0xff00ff;
   function readPalette() {
     const style = getComputedStyle(document.documentElement),
@@ -22828,6 +23865,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       px: 128,
       low: 0.5,
     },
+    // 꾸미기(R-118): flame 불꽃 길이(기체 길이 비율) · half 불꽃 반폭(world px) · flicker 깜빡임 크기 ± · hz 초당 깜빡임(라디안 속도) ·
+    // aurora 오로라 불꽃 색 한 바퀴(초) · mark 무늬 투명도 · points 자국 점 수(이펙트 단계) · step 점 간격(world px, 넘게 움직일 때만 새 점) ·
+    // idle 이 초 넘게 새 점이 없으면 꼬리로 모임 · gather 모이는 빠르기 · width 자국 텍스처 높이(world px) ·
+    // shape 자국 모양마다 [머리 굵기, 꼬리 굵기](double은 줄 둘이 ±gap) · gap · pulse 파동 폭 · alpha 머리 투명도
+    cos: {
+      flame: 0.4,
+      half: 4.2,
+      flicker: 0.12,
+      hz: 31,
+      aurora: 4,
+      mark: 0.92,
+      points: { rich: 24, base: 16, light: 8 },
+      step: 3,
+      idle: 0.08,
+      gather: 6,
+      width: 20,
+      shape: { line: [2.4, 0.8], ribbon: [7, 2], double: [1.8, 0.8], pulse: [2.4, 1], comet: [3, 0.8] },
+      gap: 4,
+      pulse: 6,
+      alpha: 0.85,
+    },
     // 회복 구역(R-061): 채움 · 테두리 투명도 [밖, 안] · 끝 깜빡임(남은 초 · 초당 횟수) · '+N'(healZone.hp) 글자 크기 · 수명(초)
     zone: { fill: [0.11, 0.2], line: [0.8, 1], blink: 5, hz: 4, size: 28, life: 0.8 },
     // 붕괴 구역(R-072): 예고 채움 투명도 · 가운데 차오르는 원 투명도 [보통, 달아오름] · 달아오르는 마지막 초 ·
@@ -22893,6 +23951,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.glyphFx = null;
       this.glyphView = [];
       this.glyphCache = {};
+      // 꾸미기(R-118): 이 판의 꾸밈 { mark, mcol, flame, trail }(끝 이름) · 자국 점(world, [0] = 꼬리) · 새 점 없이 지난 초
+      this.look = {};
+      this.trailPts = [];
+      this.trailIdle = 0;
     }
     async init() {
       ({ pal: this.pal, css: this.css } = readPalette());
@@ -22926,8 +23988,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         // 승진 문양 층(R-112): 기체 아래
         this.glyphLayer = new PIXI.Container();
         this.world.addChild(this.glyphLayer);
+        // 꾸미기 층(R-118): 자국 → 불꽃 → 기체 → 무늬. 자국은 setLook에서 점 수만큼 만든다(MeshRope 한 장)
+        this.trailLayer = new PIXI.Container();
+        this.world.addChild(this.trailLayer);
+        this.flame = new PIXI.Sprite(this.textures.flame);
+        this.flame.anchor.set(1, 0.5);
+        this.flame.visible = false;
+        this.world.addChild(this.flame);
         this.player = this.sprite('player-striker');
         this.world.addChild(this.player);
+        this.mark = this.sprite('player-striker');
+        this.mark.visible = false;
+        this.world.addChild(this.mark);
         this.shield = new PIXI.Graphics();
         this.world.addChild(this.shield);
         this.world.addChild(this.fx);
@@ -22981,28 +24053,64 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     }
     makeTextures() {
       const P = this.pal,
-        make = (name, fn) => {
+        // frame을 주면 그 영역(기체 무늬가 기체 텍스처와 같은 자리에 오게), 아니면 그린 것의 경계. 쓴 영역을 돌려준다
+        make = (name, fn, frame) => {
           const g = new PIXI.Graphics();
           fn(g);
-          this.textures[name] = this.app.renderer.generateTexture({ target: g, resolution: 2 });
+          const b = g.getLocalBounds(),
+            region = frame || new PIXI.Rectangle(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
+          this.textures[name] = this.app.renderer.generateTexture({
+            target: g,
+            resolution: 2,
+            frame: region,
+          });
           g.destroy();
+          return region;
         };
       // 기체 × (기본 + 도색 색) 텍스처(R-108, 처음 한 번): 'player-<기체>' · 'player-<기체>-<색>'. 흰 가운데 점 · 모양은 그대로
+      // 무늬(R-118): 'mark-<기체>-<무늬>' 흰색(기체 텍스처와 같은 영역, 몸체로 자름) → 기체 위 Sprite + tint(무늬 색)
+      const MARKS = root.NeonView.COS_MARK;
       for (const id of Object.keys(root.NeonTerms.crafts)) {
         const s = craftShape(id);
+        let frame = null;
         for (const c of [null, ...PAINTS]) {
           const fill = c ? P[paintKey(c) + 'Fill'] : P.craftFill,
             line = c ? P[paintKey(c)] : P.craftLine;
-          make('player-' + id + (c ? '-' + c : ''), g => {
-            g.poly(s.body.flat()).fill(fill).stroke({ color: line, width: 1.8 });
-            if (s.inner) g.poly(s.inner.flat()).stroke({ color: line, width: 1.1, alpha: 0.85 });
-            if (s.line)
-              g.moveTo(...s.line[0])
-                .lineTo(...s.line[1])
-                .stroke({ color: line, width: 1.2, alpha: 0.85 });
-            g.circle(CRAFT_SCALE, 0, 2.5).fill(P.craftCore);
-          });
+          frame = make(
+            'player-' + id + (c ? '-' + c : ''),
+            g => {
+              g.poly(s.body.flat()).fill(fill).stroke({ color: line, width: 1.8 });
+              if (s.inner) g.poly(s.inner.flat()).stroke({ color: line, width: 1.1, alpha: 0.85 });
+              if (s.line)
+                g.moveTo(...s.line[0])
+                  .lineTo(...s.line[1])
+                  .stroke({ color: line, width: 1.2, alpha: 0.85 });
+              g.circle(CRAFT_SCALE, 0, 2.5).fill(P.craftCore);
+            },
+            frame,
+          );
         }
+        for (const [mark, parts] of Object.entries(MARKS))
+          this.textures['mark-' + s.key + '-' + mark] = this.markTexture(s, parts, frame);
+      }
+      // 엔진 불꽃(R-118): 흰 물방울(끝 = 왼쪽) + 밝은 심 한 장 → 꼬리에 Sprite + tint. 오른쪽 가운데가 붙는 점
+      make('flame', g =>
+        g
+          .moveTo(0, -8)
+          .bezierCurveTo(-10, -6.6, -25.6, -2.4, -32, 0)
+          .bezierCurveTo(-25.6, 2.4, -10, 6.6, 0, 8)
+          .closePath()
+          .fill({ color: 0xffffff, alpha: 0.72 })
+          .moveTo(0, -4)
+          .bezierCurveTo(-5, -3.3, -12.8, -1.2, -16, 0)
+          .bezierCurveTo(-12.8, 1.2, -5, 3.3, 0, 4)
+          .closePath()
+          .fill(0xffffff),
+      );
+      // 꼬리 자국(R-118): 모양마다 줄 텍스처(머리 = 왼쪽 진하게 → 꼬리 투명) 흰색 + 오로라 색 띠. MeshRope가 길이로 늘려 쓴다
+      for (const kind of TRAILS) {
+        this.textures['trail-' + kind] = this.trailTexture(kind, false);
+        this.textures['trail-' + kind + '-aurora'] = this.trailTexture(kind, true);
       }
       // 적: 종류마다 하나, 보스는 단계마다 셋('boss' · 'boss2' · 'boss3', 바깥 선 · 가운데 점만 단계 색, R-057)
       for (const [kind, s] of Object.entries(Neon.STATS))
@@ -23112,6 +24220,75 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       c.fillStyle = grad;
       c.fillRect(0, 0, 256, 256);
       this.textures.hazardFlash = PIXI.Texture.from(glow);
+    }
+    // 캔버스 → 텍스처(해상도 r: 논리 크기 = 캔버스 크기 / r)
+    canvasTexture(cv, r) {
+      return new PIXI.Texture({ source: new PIXI.CanvasSource({ resource: cv, resolution: r }) });
+    }
+    // 무늬 텍스처(R-118): 기체 텍스처와 같은 영역(frame)에 22칸 격자 무늬를 흰색으로 그리고 몸체로 자른다(SVG 경로 그대로)
+    markTexture(s, parts, frame) {
+      const R = 4,
+        cv = document.createElement('canvas');
+      cv.width = Math.ceil(frame.width * R);
+      cv.height = Math.ceil(frame.height * R);
+      const c = cv.getContext('2d');
+      c.scale(R, R);
+      c.translate(-frame.x, -frame.y);
+      c.beginPath();
+      s.body.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)));
+      c.closePath();
+      c.clip();
+      // 격자(위 = 앞) → 전투 방향(오른쪽 = 앞): craftShape와 같은 변환
+      c.rotate(Math.PI / 2);
+      c.scale(CRAFT_SCALE, CRAFT_SCALE);
+      c.translate(-s.cx, -s.cy);
+      c.fillStyle = c.strokeStyle = '#ffffff';
+      c.lineCap = c.lineJoin = 'round';
+      for (const [d, f] of parts) {
+        const path = new Path2D(d);
+        if (f === true) c.fill(path);
+        else {
+          c.lineWidth = f;
+          c.stroke(path);
+        }
+      }
+      return this.canvasTexture(cv, R);
+    }
+    // 자국 줄 텍스처(R-118): 가로 = 길이(왼쪽 머리 → 오른쪽 꼬리), 세로 = FX.cos.width. 굵기 · 투명도가 꼬리로 줄어든다
+    trailTexture(kind, aurora) {
+      const C = FX.cos,
+        W = 128,
+        H = C.width,
+        R = 2,
+        cv = document.createElement('canvas');
+      cv.width = W * R;
+      cv.height = H * R;
+      const c = cv.getContext('2d'),
+        [w0, w1] = C.shape[kind],
+        cols = AURORA.map(k => this.pal[cosKey(k)]);
+      c.scale(R, R);
+      for (let x = 0; x < W; x++) {
+        const t = x / (W - 1),
+          a = C.alpha * (1 - t),
+          w = w0 + (w1 - w0) * t,
+          band = (y, width, alpha) => {
+            c.globalAlpha = alpha;
+            c.fillRect(x, H / 2 + y - width / 2, 1.02, width);
+          };
+        if (aurora) {
+          const at = t * (cols.length - 1),
+            i = Math.min(cols.length - 2, Math.floor(at));
+          c.fillStyle = hex(mixColor(cols[i], cols[i + 1], at - i));
+        } else c.fillStyle = '#ffffff';
+        if (kind === 'double') {
+          band(-C.gap, w, a);
+          band(C.gap, w, a);
+        } else if (kind === 'comet') {
+          band(0, 16 * (1 - t) + 3, a * 0.28);
+          band(0, w, a);
+        } else band(0, w, a);
+      }
+      return this.canvasTexture(cv, R);
     }
     sprite(key) {
       const s = new PIXI.Sprite(this.textures[key]);
@@ -23290,8 +24467,132 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       return out;
     }
+    // 꾸미기(R-118): 판 시작에 한 번 입은 꾸밈 { mark, mcol, flame, trail }(꾸미기 id). 엔진은 모른다(판 진행 영향 0).
+    // 모르는 조각은 기본(없음 · 흰빛)으로 그린다
+    setLook(look = {}) {
+      const ok = (v, list) => (list.includes(v) ? v : null),
+        COLORS = ['white', 'cyan', 'sky', 'mint', 'violet', 'silver', 'gold'];
+      this.look = {
+        mark: ok(leaf(look.mark), Object.keys(root.NeonView.COS_MARK)),
+        mcol: ok(leaf(look.mcol), COLORS) || 'white',
+        flame: ok(leaf(look.flame), [...COLORS, 'aurora']),
+        trail: ok(leaf(look.trail), TRAILS),
+      };
+      this.trailPts.length = 0;
+      this.trailIdle = 0;
+    }
+    // 자국 점(webgl · 기본 그래픽 공통): [0] = 지금 꼬리, 꼬리가 step보다 멀어지면 새 점. 새 점 없이 idle초가 지나면 꼬리로 모인다
+    trailFrame(g, dt, n) {
+      const C = FX.cos,
+        p = g.p,
+        s = craftShape(g.craft),
+        pts = this.trailPts,
+        tx = p.x + Math.cos(p.aim) * s.tail,
+        ty = p.y + Math.sin(p.aim) * s.tail;
+      if (pts.length !== n) {
+        pts.length = 0;
+        for (let i = 0; i < n; i++) pts.push({ x: tx, y: ty });
+      }
+      if (Math.hypot(tx - pts[1].x, ty - pts[1].y) > C.step) {
+        for (let i = n - 1; i > 1; i--) {
+          pts[i].x = pts[i - 1].x;
+          pts[i].y = pts[i - 1].y;
+        }
+        pts[1].x = tx;
+        pts[1].y = ty;
+        this.trailIdle = 0;
+      } else if ((this.trailIdle += dt) > C.idle) {
+        const k = Math.min(1, dt * C.gather);
+        for (let i = 1; i < n; i++) {
+          pts[i].x += (pts[i - 1].x - pts[i].x) * k;
+          pts[i].y += (pts[i - 1].y - pts[i].y) * k;
+        }
+      }
+      pts[0].x = tx;
+      pts[0].y = ty;
+      return pts;
+    }
+    // 자국 색: 불꽃 색(오로라면 흰색 = 색 띠 텍스처 그대로) · 불꽃이 없으면 기체 선 색(도색 · 시안)
+    trailColor(g) {
+      const f = this.look.flame,
+        worn = wornOf(g);
+      if (f) return f === 'aurora' ? 0xffffff : this.pal[cosKey(f)];
+      return worn ? this.pal[paintKey(worn)] : this.pal.craftLine;
+    }
+    // 꾸밈 그리기(webgl): 자국(MeshRope 한 장 · 점 수 = 이펙트 단계) · 불꽃(Sprite, 깜빡임) · 무늬(Sprite, 기체와 같은 자리)
+    lookFrame(g, dt, pref) {
+      const C = FX.cos,
+        look = this.look,
+        p = g.p,
+        s = craftShape(g.craft),
+        cos = Math.cos(p.aim),
+        sin = Math.sin(p.aim);
+      if (look.trail) {
+        const n = C.points[pref.level] || C.points.rich,
+          tex = this.textures['trail-' + look.trail + (look.flame === 'aurora' ? '-aurora' : '')],
+          pts = this.trailFrame(g, dt, n);
+        if (!this.rope || this.ropePts.length !== n || this.ropeTex !== tex) {
+          this.rope?.destroy();
+          this.ropeTex = tex;
+          // 점 배열은 기하가 참조로 쥔다(v8 MeshRope: 점을 바꾸면 autoUpdate로 다시 만듦)
+          this.ropePts = pts.map(q => new PIXI.Point(q.x, q.y));
+          this.rope = new PIXI.MeshRope({ texture: tex, points: this.ropePts });
+          this.trailLayer.addChild(this.rope);
+        }
+        const rp = this.ropePts,
+          wave = look.trail === 'pulse',
+          ph = pref.motion ? this.time * 10 : 0;
+        for (let i = 0; i < n; i++) {
+          let x = pts[i].x,
+            y = pts[i].y;
+          if (wave && i > 0) {
+            const a = pts[i - 1],
+              b = pts[Math.min(n - 1, i + 1)],
+              dx = a.x - b.x,
+              dy = a.y - b.y,
+              d = Math.hypot(dx, dy) || 1,
+              o = Math.sin(i * 1.3 - ph) * C.pulse * (i / (n - 1));
+            x += (-dy / d) * o;
+            y += (dx / d) * o;
+          }
+          rp[i].set(x, y);
+        }
+        this.rope.tint = this.trailColor(g);
+        this.rope.visible = true;
+      } else if (this.rope) this.rope.visible = false;
+      const f = look.flame;
+      this.flame.visible = !!f;
+      if (f) {
+        const k = pref.motion
+            ? 1 + C.flicker * (0.6 * Math.sin(this.time * C.hz) + 0.4 * Math.sin(this.time * C.hz * 1.53))
+            : 1,
+          at = s.tail + 0.8;
+        this.flame.position.set(p.x + cos * at, p.y + sin * at);
+        this.flame.rotation = p.aim;
+        this.flame.scale.set(((s.length * C.flame) / 32) * k, C.half / 8);
+        this.flame.alpha = this.player.alpha;
+        if (f === 'aurora') {
+          const cols = AURORA.map(c => this.pal[cosKey(c)]),
+            t = pref.motion ? ((this.time / C.aurora) % 1) * cols.length : 0,
+            i = Math.floor(t);
+          this.flame.tint = mixColor(cols[i % cols.length], cols[(i + 1) % cols.length], t - i);
+        } else this.flame.tint = this.pal[cosKey(f)];
+      }
+      const m = look.mark;
+      this.mark.visible = !!m;
+      if (m) {
+        const tex = this.textures['mark-' + s.key + '-' + m];
+        if (this.mark.texture !== tex) this.mark.texture = tex;
+        this.mark.position.set(p.x, p.y);
+        this.mark.rotation = p.aim;
+        this.mark.alpha = this.player.alpha * C.mark;
+        this.mark.tint = this.pal[cosKey(look.mcol)];
+      }
+    }
     // 메뉴로 돌아갈 때 지난 판의 효과와 스프라이트를 모두 숨긴다.
     clear() {
+      this.trailPts.length = 0;
+      this.trailIdle = 0;
       this.glyphFx = null;
       this.glyphView.length = 0;
       this.particles.length = 0;
@@ -23305,6 +24606,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.shieldFlash = 0;
       for (const list of Object.values(this.pools)) for (const s of list) s.visible = false;
       if (this.mode === 'webgl') {
+        if (this.rope) this.rope.visible = false;
+        this.flame.visible = this.mark.visible = false;
         this.floor.clear();
         this.fx.clear();
         this.shield.clear();
@@ -23354,6 +24657,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.cam.y += (p.y - this.cam.y) * Math.min(1, dt * 10);
       const glyphs = this.glyphFrame(dt, pref.motion);
       if (this.mode === '2d') {
+        if (this.look.trail) this.trailFrame(g, dt, FX.cos.points[pref.level] || FX.cos.points.rich);
         this.fallback(g);
         return;
       }
@@ -23384,6 +24688,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.player.position.set(p.x, p.y);
       this.player.rotation = p.aim;
       this.player.alpha = p.invuln > 0 ? 0.65 : 1;
+      this.lookFrame(g, dt, pref);
       const L = FX.level[pref.level] || FX.level.rich;
       if (this.glowLow !== !L.glow) {
         this.glowLow = !L.glow;
@@ -23788,6 +25093,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         c.fillStyle = S.bcoinInk;
         c.fillText(root.NeonTerms.coins.b.short, coin.x, coin.y + 1);
       }
+      // 꾸미기(R-118, 기본 그래픽): 자국은 한 줄(오로라 = 첫 색) · 불꽃은 삼각형 · 무늬는 그리지 않는다
+      const look = this.look,
+        flameCss = look.flame ? S[cosKey(look.flame === 'aurora' ? AURORA[0] : look.flame)] : null;
+      if (look.trail && this.trailPts.length > 1) {
+        const worn = wornOf(g);
+        c.strokeStyle = flameCss || (worn ? S[paintKey(worn)] : S.craftLine);
+        c.lineWidth = FX.cos.shape[look.trail][0];
+        c.lineCap = c.lineJoin = 'round';
+        c.globalAlpha = 0.6;
+        c.beginPath();
+        this.trailPts.forEach((q, i) => (i ? c.lineTo(q.x, q.y) : c.moveTo(q.x, q.y)));
+        c.stroke();
+        c.globalAlpha = 1;
+        c.lineCap = c.lineJoin = 'butt';
+      }
       // 승진 문양(R-112): 기체 아래
       for (const v of this.glyphView) {
         c.globalAlpha = v.alpha;
@@ -23800,14 +25120,26 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       // 도색(R-108): 기본 그래픽은 선 색만
       const worn = wornOf(g);
       c.strokeStyle = worn ? S[paintKey(worn)] : S.craft2d;
-      const s = craftShape(g.craft),
-        path = (points, close) => {
-          c.beginPath();
-          c.moveTo(...points[0]);
-          for (const q of points.slice(1)) c.lineTo(...q);
-          if (close) c.closePath();
-          c.stroke();
-        };
+      const s = craftShape(g.craft);
+      if (flameCss) {
+        const C = FX.cos;
+        c.fillStyle = flameCss;
+        c.globalAlpha = 0.85;
+        c.beginPath();
+        c.moveTo(s.tail + 0.8, -C.half);
+        c.lineTo(s.tail - s.length * C.flame, 0);
+        c.lineTo(s.tail + 0.8, C.half);
+        c.closePath();
+        c.fill();
+        c.globalAlpha = 1;
+      }
+      const path = (points, close) => {
+        c.beginPath();
+        c.moveTo(...points[0]);
+        for (const q of points.slice(1)) c.lineTo(...q);
+        if (close) c.closePath();
+        c.stroke();
+      };
       path(s.body, true);
       if (s.inner) path(s.inner, true);
       if (s.line) path(s.line, false);
@@ -24625,6 +25957,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       CF(9.4, 8.6, 1.5),
     share: S('M12 14.6V3.6M7.8 7.6 12 3.4l4.2 4.2M6 11.4v6.8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6.8'),
     radio: CF(12, 14.6, 1.8) + S('M8.4 11a5 5 0 0 1 7.2 0M5.6 8.2a9 9 0 0 1 12.8 0') + S('M12 16.4v4'),
+    // ── 14단계(R-117): 보급 캡슐 · 꾸미기(붓) ──
+    capsule:
+      '<rect x="4" y="7" width="16" height="10" rx="5"/>' + S('M12 7v10') + F('M7.4 10.6h2.2v2.8H7.4z'),
+    brush:
+      S('M14.6 4.4l5 5-7.4 7.4-5-5z') +
+      S('M7.2 11.8c-2.6.2-3.4 2.4-3.6 4.6-.1 1.4-.8 2.2-1.6 2.6 3.6.9 7.6.3 8.6-2.8'),
   };
   // <svg class="ico ..."> 한 개. label이 있으면 읽기 이름, 없으면 숨김
   function svg(id, cls = '', label = '') {
@@ -24801,8 +26139,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
 
   // 기체 카드(R-062 플레이 탭 배치 조율): 아이콘 옆 이름(글자를 키우면 이름이 아래 줄로) + 시작 스킬 / 역할 / HP 세 줄.
-  // 아이콘 = 입힌 색(R-108, wear = { 기체: 색 }, 없으면 기본 시안)
-  function crafts(selected, wear = {}) {
+  // 아이콘 = 입힌 색(R-108, wear = { 기체: 색 }, 없으면 기본 시안) + 입은 무늬(R-117, look = { mark, mcol })
+  function crafts(selected, wear = {}, look) {
     return Object.entries(Neon.CRAFTS)
       .map(
         ([id, c]) =>
@@ -24811,7 +26149,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '" aria-pressed="' +
           (id === selected) +
           '"><span class="craft-head">' +
-          paintCraft(id, wear[id], 'craft-icon') +
+          paintCraft(id, wear[id], 'craft-icon', look) +
           '<strong>' +
           T.craftName(id) +
           '</strong></span><small>' +
@@ -25188,14 +26526,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         '><circle cx="8.3" cy="9.1" r="1.8"/><circle cx="12.7" cy="9.1" r="1.8"/><path d="M3.9 9.1h2.6M10.1 9.1h.8M14.5 9.1h2.6"/></g>' +
         catBadge('<path d="M15.7 18.8l5.7-2.8-2.4 5.6-1.2-2z"/><path d="M17.8 19.6l3.6-3.6"/>'),
     };
-  // 그림만(cls: 'cat-mini' = 성장 탭 히든 칸 동반 줄 20px) · 카드 상자(52px, 그림 40px)
-  const catFace = (id, cls = '') =>
+  // 그림만(cls: 'cat-mini' = 성장 탭 히든 칸 동반 줄 20px) · 카드 상자(52px, 그림 40px).
+  // prop = 소품 끝 이름 | null(없음) — 빼면 입은 소품(R-117 setProps)
+  const catFace = (id, cls = '', prop) =>
     '<span class="' +
     (cls ? cls + ' ' : '') +
     'cat-icon--' +
     id +
     '" aria-hidden="true"><svg viewBox="0 0 24 24">' +
     (CAT_SVG[id] || CAT_SVG.engineer) +
+    catPropSvg(id, prop === undefined ? PROPS[id] : prop) +
     '</svg></span>';
   const catIcon = id => catFace(id, 'cat-icon');
   // 고양이 얼굴 SVG 안쪽(기록 카드 R-103이 독립 SVG로 다시 씀)
@@ -25205,6 +26545,77 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     catSvg(id)
       .replace(/<g [^>]*><circle class="cat-badge"[\s\S]*?<\/g>$/, '')
       .replace(/stroke-width="1\.[45]"/g, 'stroke-width="0.8"');
+
+  // ── 꾸미기 그림(R-116~R-118, 계약 design/v5-stage14/cos.js). 메뉴 · 기록 카드(card.js) · 전투(renderer.js)가 같은 모양을 쓴다.
+  // 별(가운데 · 반지름 · 안쪽 비율) 경로
+  const cosStar = (cx, cy, r, k = 0.45) => {
+    const pts = [];
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5,
+        rr = i % 2 ? r * k : r;
+      pts.push((cx + Math.cos(a) * rr).toFixed(2) + ' ' + (cy + Math.sin(a) * rr).toFixed(2));
+    }
+    return 'M' + pts.join('L') + 'Z';
+  };
+  // 무늬(22칸 기체 격자 · 위쪽이 앞): [경로, true = 채움 | 선 굵기]. 그릴 때 몸체로 잘라 몸체 색 · 선이 그대로 보인다
+  const COS_MARK = {
+    stripe: [['M9.2 0h1.3v22H9.2zM11.5 0h1.3v22h-1.3z', true]],
+    star: [[cosStar(11, 12.2, 3.4), true]],
+    wing: [['M0 14.4h22v1.6H0z', true]],
+    wave: [['M1 12.6q2.5-2.4 5 0t5 0 5 0 5 0', 1.2]],
+    bolt: [['M12.9 4.6 9.2 11.6h3.4l-3 7', 1.3]],
+    paw: [
+      ['M11 15.6m-2.3 0a2.3 1.8 0 1 0 4.6 0a2.3 1.8 0 1 0-4.6 0', true],
+      ['M8.5 12.6m-.85 0a.85 .85 0 1 0 1.7 0a.85 .85 0 1 0-1.7 0', true],
+      ['M10.2 11.4m-.85 0a.85 .85 0 1 0 1.7 0a.85 .85 0 1 0-1.7 0', true],
+      ['M11.8 11.4m-.85 0a.85 .85 0 1 0 1.7 0a.85 .85 0 1 0-1.7 0', true],
+      ['M13.5 12.6m-.85 0a.85 .85 0 1 0 1.7 0a.85 .85 0 1 0-1.7 0', true],
+    ],
+  };
+  // 꼬리 점(22칸 y): 몸체 가운데 줄(x = 11)에서 가장 뒤 — 엔진 불꽃 · 꼬리 자국이 붙는 곳
+  const craftTail = id => {
+    const body = (T.crafts[id] || T.crafts.striker).shape.body;
+    return Math.max(...body.filter(p => p[0] === 11).map(p => p[1]));
+  };
+  // 고양이 소품(R-117, 24칸 얼굴 격자): 끝 이름 → 고양이마다 머리 모양에 맞춘 자리. 선 = 고양이 색(.cat-prop), 별 머리핀은 채움
+  const COS_PROP = {
+    scarf: {
+      engineer: '<path d="M5 18.4q5.5 3.4 11 0"/><path d="M6.6 19.7 4.4 23M8 20.4 6.9 23.6"/>',
+      supply: '<path d="M5 18.4q5.5 3.4 11 0"/><path d="M6.6 19.7 4.4 23M8 20.4 6.9 23.6"/>',
+      pilot: '<path d="M5.2 18.8q5.3 3.3 10.6 0"/><path d="M6.8 20 4.6 23.2M8.2 20.7 7.1 23.8"/>',
+    },
+    headset: {
+      engineer:
+        '<path d="M3.4 11.6Q3 3.8 10.5 3.6 18 3.8 17.6 11.6"/><rect x="1.6" y="10.6" width="2.6" height="4.2" rx="1.2"/><rect x="16.8" y="10.6" width="2.6" height="4.2" rx="1.2"/><path d="M2.9 14.8q.4 3.2 4.6 3.1"/>',
+      supply:
+        '<path d="M3.4 11.8Q3.2 5.4 10.5 5.2 17.8 5.4 17.6 11.8"/><rect x="1.6" y="10.8" width="2.6" height="4.2" rx="1.2"/><rect x="16.8" y="10.8" width="2.6" height="4.2" rx="1.2"/><path d="M2.9 15q.4 3.2 4.6 3.1"/>',
+      pilot:
+        '<path d="M3.6 12.2Q3.4 5.8 10.5 5.6 17.6 5.8 17.4 12.2"/><rect x="1.8" y="11.4" width="2.6" height="4.2" rx="1.2"/><rect x="16.6" y="11.4" width="2.6" height="4.2" rx="1.2"/><path d="M3.1 15.6q.4 3 4.6 2.9"/>',
+    },
+    star: {
+      engineer: '<path fill="currentColor" stroke="none" d="' + cosStar(6.8, 7.6, 2) + '"/>',
+      supply: '<path fill="currentColor" stroke="none" d="' + cosStar(6.6, 7.8, 2) + '"/>',
+      pilot: '<path fill="currentColor" stroke="none" d="' + cosStar(6.4, 6.4, 1.9) + '"/>',
+    },
+  };
+  const cosLeaf = id => String(id).split('.').pop();
+  // 소품 그림(얼굴 svg 안쪽): prop = 끝 이름 또는 조각 id. 없으면 ''(기록 카드 card.js도 이것을 쓴다)
+  const catPropSvg = (cat, prop) => {
+    const d = prop ? COS_PROP[cosLeaf(prop)]?.[cat] : '';
+    return d
+      ? '<g class="cat-prop cos-prop" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">' +
+          d +
+          '</g>'
+      : '';
+  };
+  // 입은 소품(고양이 → 끝 이름, 깨운 고양이만): app.js가 프로필을 새로 그릴 때 넣고 얼굴 그림(catFace)이 붙인다
+  let PROPS = {};
+  const setProps = map => {
+    PROPS = map && typeof map === 'object' ? { ...map } : {};
+  };
+  // 말풍선 얼굴: 그 고양이가 말할 때만 소품(무전 · 잠긴 고양이는 없음)
+  const faceOf = line =>
+    catFace(line.shape, 'talk-face', line.by === line.shape && !line.locked ? undefined : null);
   // 고양이 이름 한 곳(R-112): 승진하면 이름 왼쪽에 단계 칩(고양이 색) + 이름, 아니면 이름만(Lv는 쓰는 곳이 따로 붙임).
   // 글자만 쓰는 곳은 T.catLabelText
   const catLabel = (id, rank) =>
@@ -25222,7 +26633,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       (radio ? 'radio' : line.by) +
       (line.locked ? ' talk--locked' : '') +
       '">' +
-      catFace(line.shape, 'talk-face') +
+      faceOf(line) +
       '<p class="talk-bubble"><span class="talk-name">' +
       (radio ? Icons.svg('radio') : '') +
       name +
@@ -25446,7 +26857,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '<div class="talk talk--row is-mile talk--' +
       line.by +
       '">' +
-      catFace(line.shape, 'talk-face') +
+      faceOf(line) +
       '<p class="talk-bubble"><span class="talk-name">' +
       lineName(line) +
       '<em class="mile-tag">' +
@@ -25461,7 +26872,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     '<div class="talk talk--row talk--' +
     line.by +
     '">' +
-    catFace(line.shape, 'talk-face') +
+    faceOf(line) +
     '<p class="talk-bubble"><span class="talk-name">' +
     lineName(line) +
     '</span><span class="talk-text">' +
@@ -25469,11 +26880,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     '</span></p></div>';
   // 결과 고양이 줄(R-112 · R-115): ['처음 만남'] → 승진 통과 → 이정표(사다리 순) → 시험 열림 · 시험, 최대 3줄.
   // rows = { meet: 줄 | null, events: addCareer events, miles: [[id, mileLine 결과]] } → { html, shown: [보인 이정표 id] }
-  function resultRows({ meet = null, events = [], miles = [] } = {}) {
+  // 보급 캡슐(R-117)은 이정표 다음: capsules = [[조각 id, { by, rank }]] (못 보인 캡슐은 새 조각 점으로 남는다)
+  function resultRows({ meet = null, events = [], miles = [], capsules = [] } = {}) {
     const list = [
       ...(meet ? [() => meetRow(meet)] : []),
       ...events.filter(e => e.kind === 'pass').map(e => () => promoRow(e)),
       ...miles.map(([id, line]) => Object.assign(() => mileRow(id, line), { mile: id })),
+      ...capsules.map(
+        ([id, who]) =>
+          () =>
+            capsuleRow(id, who),
+      ),
       ...events.filter(e => e.kind !== 'pass').map(e => () => promoRow(e)),
     ].slice(0, 3);
     return {
@@ -25611,7 +27028,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '<div class="talk journal-talk talk--' +
       line.by +
       '" data-area="J-TALK">' +
-      catFace(line.shape, 'talk-face') +
+      faceOf(line) +
       '<p class="talk-bubble"><span class="talk-name">' +
       lineName(line) +
       (pick ? '<em class="mile-tag">' + esc(T.mile[pick]) + '</em>' : '') +
@@ -25698,18 +27115,58 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     CRAFT_IDS = Object.keys(BAL.crafts),
     PN = T.paint.names;
   // 도색 기체 그림: terms.js 기체 모양(점 목록) 그대로, 몸체 채움 --pf · 선 --pl · 흰 가운데 점(ui.css .paint-craft).
-  // color = 색 id 또는 null(기본 = 시안)
-  function paintCraft(id, color, cls = '') {
-    const s = (T.crafts[id] || T.crafts.striker).shape;
+  // color = 색 id 또는 null(기본 = 시안) · look = 입은 꾸밈 { mark, mcol }(R-117, 무늬는 몸체로 잘라 겹침 — 격납고 색 줄은 없이)
+  function paintCraft(id, color, cls = '', look) {
     return (
       '<svg class="paint-craft paint--' +
       (color || 'base') +
       (cls ? ' ' + cls : '') +
-      '" viewBox="0 0 22 22" aria-hidden="true"><path class="pc-body" stroke-width="' +
+      '" viewBox="0 0 22 22" aria-hidden="true">' +
+      craftBody(id, look) +
+      '</svg>'
+    );
+  }
+  // 기체 그림 안쪽(22칸, 위가 앞): 몸체 → 무늬(몸체로 자름 + 테두리 다시) → 안쪽 선 → 가운데 점
+  let markUid = 0;
+  function craftBody(id, look) {
+    const s = (T.crafts[id] || T.crafts.striker).shape,
+      body = pathOf(s.body, true),
+      mk = look?.mark ? COS_MARK[cosLeaf(look.mark)] : null,
+      mc = cosVar(look?.mcol) || 'var(--cos-white)',
+      cid = mk ? 'cmk' + markUid++ : '';
+    return (
+      '<path class="pc-body" stroke-width="' +
       s.bodyStroke +
       '" d="' +
-      pathOf(s.body, true) +
+      body +
       '"/>' +
+      (mk
+        ? '<clipPath id="' +
+          cid +
+          '"><path d="' +
+          body +
+          '"/></clipPath><g clip-path="url(#' +
+          cid +
+          ')" opacity="0.92">' +
+          mk
+            .map(([d, f]) =>
+              f === true
+                ? '<path d="' + d + '" style="fill:' + mc + '"/>'
+                : '<path d="' +
+                  d +
+                  '" fill="none" style="stroke:' +
+                  mc +
+                  '" stroke-width="' +
+                  f +
+                  '" stroke-linecap="round" stroke-linejoin="round"/>',
+            )
+            .join('') +
+          '</g><path class="pc-edge" fill="none" stroke-width="' +
+          s.bodyStroke * 0.8 +
+          '" d="' +
+          body +
+          '"/>'
+        : '') +
       (s.inner
         ? '<path class="pc-line" stroke-width="' + s.innerStroke + '" d="' + pathOf(s.inner, true) + '"/>'
         : '') +
@@ -25718,7 +27175,502 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         : '') +
       '<circle class="pc-core" cx="11" cy="' +
       (s.body[0][1] + 5) +
-      '" r="1.1"/></svg>'
+      '" r="1.1"/>'
+    );
+  }
+  // ── 꾸미기 화면(R-117, 계약 design/v5-stage14/cos.js · ui.css '꾸미기') ──
+  // 색 = tokens.css --cos-*(빨강 · 주황 · 분홍 없음 — 적 탄 · 붕괴 구역 · 추적 적 색과 구분). 오로라 = 색 띠
+  const TC = T.cos,
+    COS = BAL.cos?.items || [],
+    COS_BY = Object.fromEntries(COS.map(x => [x.id, x])),
+    AURORA = ['cyan', 'sky', 'violet', 'mint', 'gold'].map(c => 'var(--cos-' + c + ')'),
+    COS_GROUPS = {
+      craft: ['mark', 'mcol', 'flame', 'trail'],
+      cat: BAL.cats.list.map(c => 'prop.' + c),
+      music: ['music'],
+      card: ['frame'],
+    };
+  const cosVar = id => (id ? 'var(--cos-' + cosLeaf(id) + ')' : null);
+  const cosKind = slot => (String(slot).startsWith('prop.') ? 'prop' : slot);
+  const cosItems = slot => COS.filter(x => x.slot === slot);
+  const cosPrice = it => (it.s ? num(it.s) + ' ' + T.coins.s.short : num(it.g) + ' ' + T.coins.g.short);
+  // 불꽃 색 목록(오로라 = 띠) · 없으면 null
+  const flameColors = id => (!id ? null : cosLeaf(id) === 'aurora' ? AURORA : [cosVar(id)]);
+  // 잠김 글: cosNeed 결과 → '🔒 …'
+  const cosLockText = need =>
+    !need
+      ? ''
+      : need.kind === 'cat'
+        ? TC.lock.cat
+        : need.kind === 'rank'
+          ? TC.lock.rank(need.need)
+          : need.kind === 'soon'
+            ? TC.lock.soon
+            : need.kind === 'mile'
+              ? TC.lock.mile(need.id)
+              : '';
+  let cosUid = 0;
+  // 그라디언트(꼬리 쪽 투명 → 머리 쪽 진함). colors = CSS 색 목록, 가로 x1 → x2
+  function cosGrad(id, colors, x1, x2) {
+    const cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+    return (
+      '<linearGradient id="' +
+      id +
+      '" gradientUnits="userSpaceOnUse" x1="' +
+      x1 +
+      '" y1="0" x2="' +
+      x2 +
+      '" y2="0">' +
+      cs
+        .map(
+          (c, i) =>
+            '<stop offset="' +
+            (i / (cs.length - 1)).toFixed(2) +
+            '" style="stop-color:' +
+            c +
+            ';stop-opacity:' +
+            (0.05 + 0.9 * (i / (cs.length - 1))).toFixed(2) +
+            '"/>',
+        )
+        .join('') +
+      '</linearGradient>'
+    );
+  }
+  // 자국 모양(가로: 꼬리 x0에서 왼쪽으로 len) → [[경로, 굵기, 투명도?]]
+  function cosTrailPath(kind, x0, len, y = 11) {
+    const n = 24,
+      pts = (amp, freq, off = 0) => {
+        const out = [];
+        for (let i = 0; i <= n; i++) {
+          const t = i / n;
+          out.push(
+            (x0 - t * len).toFixed(2) + ' ' + (y + off + Math.sin(t * Math.PI * freq) * amp * t).toFixed(2),
+          );
+        }
+        return 'M' + out.join('L');
+      };
+    if (kind === 'pulse') return [[pts(3.2, 7), 1.1]];
+    if (kind === 'double')
+      return [
+        [pts(2.2, 1.6, -1.7), 0.8],
+        [pts(2.2, 1.6, 1.7), 0.8],
+      ];
+    if (kind === 'ribbon') return [[pts(2.2, 1.6), 3.4]];
+    if (kind === 'comet')
+      return [
+        [pts(1.6, 1.4), 7, 0.28],
+        [pts(1.6, 1.4), 1.3],
+      ];
+    return [[pts(2.2, 1.6), 1]];
+  }
+  const cosFlamePath = (x0, y = 11, len = 9) =>
+    'M' +
+    [
+      [x0, y - 2.4],
+      'C',
+      [x0 - 3, y - 2],
+      [x0 - len * 0.8, y - 0.7],
+      [x0 - len, y],
+      'C',
+      [x0 - len * 0.8, y + 0.7],
+      [x0 - 3, y + 2],
+      [x0, y + 2.4],
+    ]
+      .map(p => (p === 'C' ? 'C' : p.map(v => +v.toFixed(2)).join(' ') + ' '))
+      .join('')
+      .trim() +
+    'Z';
+  // 가로 기체 그림(전투와 같은 방향: 앞 = 오른쪽): 자국 → 불꽃 → 기체(무늬). look = { paint, mark, mcol, flame, trail }
+  function stageArt(craft, look = {}, w = 92) {
+    const tx = 22 - craftTail(craft),
+      fc = flameColors(look.flame),
+      tc = fc || ['var(--paint-' + (look.paint || 'base') + ', var(--cyan))'],
+      gid = 'cst' + cosUid++,
+      fid = 'csf' + cosUid++,
+      tr = look.trail ? cosTrailPath(cosLeaf(look.trail), tx - (fc ? 6 : 0), w - 30) : [];
+    return (
+      '<svg class="cos-stage-art" viewBox="' +
+      (25 - w) +
+      ' -1.5 ' +
+      w +
+      ' 25" aria-hidden="true"><defs>' +
+      (tr.length ? cosGrad(gid, [...tc].reverse(), tx - w + 30, tx) : '') +
+      (fc ? cosGrad(fid, [...fc].reverse(), tx - 10, tx) : '') +
+      '</defs>' +
+      tr
+        .map(
+          ([d, sw, op]) =>
+            '<path d="' +
+            d +
+            '" fill="none" stroke="url(#' +
+            gid +
+            ')" stroke-width="' +
+            sw +
+            '" stroke-linecap="round"' +
+            (op ? ' opacity="' + op + '"' : '') +
+            '/>',
+        )
+        .join('') +
+      (fc
+        ? '<path d="' +
+          cosFlamePath(tx + 0.6) +
+          '" style="fill:' +
+          (fc.length > 1 ? 'url(#' + fid + ')' : fc[0]) +
+          '" opacity="0.92"/><path d="' +
+          cosFlamePath(tx + 0.4, 11, 4.6) +
+          '" fill="#ffffff" opacity="0.85"/>'
+        : '') +
+      '<g class="paint-craft paint--' +
+      (look.paint || 'base') +
+      '" transform="rotate(90 11 11)">' +
+      craftBody(craft, look) +
+      '</g></svg>'
+    );
+  }
+  // 칸 그림(44 × 44 안): 무늬 = 기체 그림 · 색 = 점 · 불꽃 = 물방울 · 자국 = 짧은 줄 · 소품 = 얼굴
+  function cosArt(slot, id, info) {
+    const kind = cosKind(slot),
+      none = '<span class="cos-none" aria-hidden="true"></span>';
+    if (kind === 'mark')
+      return id ? paintCraft(info.craft, info.paint, 'cos-craft', { mark: id, mcol: info.look.mcol }) : none;
+    if (kind === 'mcol')
+      return '<span class="cos-dot" style="--d:' + (cosVar(id) || 'var(--cos-white)') + '"></span>';
+    if (kind === 'flame')
+      return !id
+        ? none
+        : cosLeaf(id) === 'aurora'
+          ? '<span class="cos-dot cos-flame cos-dot--aurora"></span>'
+          : '<span class="cos-dot cos-flame" style="--d:' + cosVar(id) + '"></span>';
+    if (kind === 'trail') {
+      if (!id) return none;
+      const c = flameColors(info.look.flame)?.[0] || 'var(--cos-cyan)';
+      return (
+        '<svg class="cos-trail-ico" viewBox="0 0 30 22" aria-hidden="true">' +
+        cosTrailPath(cosLeaf(id), 27, 26)
+          .map(
+            ([d, sw, op]) =>
+              '<path d="' +
+              d +
+              '" fill="none" style="stroke:' +
+              c +
+              '" stroke-width="' +
+              sw * 0.9 +
+              '" stroke-linecap="round" opacity="' +
+              (op || 0.9) +
+              '"/>',
+          )
+          .join('') +
+        '</svg>'
+      );
+    }
+    if (kind === 'prop') return id ? catFace(slot.slice(5), 'cos-tile-face', cosLeaf(id)) : none;
+    if (kind === 'frame')
+      return '<span class="cos-frame-mini cos-fr--' + (id ? cosLeaf(id) : 'base') + '"><i></i></span>';
+    return '';
+  }
+  // 칸 하나(44 × 44): 입힘 금 테두리 ✓ · 가짐 진한 바탕 · 안 가짐 값 점 · 잠김 🔒 · 특별 ★ · 고름 시안 · 새 금 점
+  function cosTile(slot, id, info, extraCls = '', tail = '') {
+    const it = id ? COS_BY[id] : null,
+      own = !id || info.own.includes(id),
+      worn = (info.wear[slot] ?? null) === id,
+      lock = !own && cosLockText(info.need(id)),
+      pressed = info.slot === slot && info.sel === id;
+    return (
+      '<button class="cos-tile' +
+      extraCls +
+      (worn ? ' is-worn' : '') +
+      (own ? ' is-own' : '') +
+      (lock ? ' is-lock' : '') +
+      (it?.s ? ' is-special' : '') +
+      '" data-cos-pick="' +
+      (id || 'base:' + slot) +
+      '" aria-pressed="' +
+      pressed +
+      '" aria-label="' +
+      esc(id ? T.cosName(id) : TC.base[cosKind(slot)]) +
+      '">' +
+      cosArt(slot, id, info) +
+      (worn ? '<i class="cos-worn" aria-hidden="true">✓</i>' : '') +
+      (lock ? '<i class="cos-lock" aria-hidden="true">🔒</i>' : '') +
+      (!own && !lock
+        ? '<i class="cos-cost cos-cost--' + (it.s ? 's' : 'g') + '" aria-hidden="true"></i>'
+        : '') +
+      (it?.s ? '<i class="cos-star" aria-hidden="true">★</i>' : '') +
+      (id && info.fresh.includes(id) ? '<i class="cos-new" aria-hidden="true"></i>' : '') +
+      tail +
+      '</button>'
+    );
+  }
+  function cosRow(slot, info, label) {
+    return (
+      '<div class="cos-row"><span class="cos-row-label">' +
+      label +
+      (slot === 'mcol' && !info.look.mark ? ' <small>' + esc(TC.noMark) + '</small>' : '') +
+      '</span><div class="cos-tiles">' +
+      [null, ...cosItems(slot).map(x => x.id)].map(id => cosTile(slot, id, info)).join('') +
+      '</div></div>'
+    );
+  }
+  function cosBody(info) {
+    const g = info.group;
+    if (g === 'craft') return COS_GROUPS.craft.map(s => cosRow(s, info, TC.slot[s])).join('');
+    if (g === 'cat')
+      return BAL.cats.list
+        .map(c => cosRow('prop.' + c, info, catLabel(c, info.ranks[c] || 0) + ' · ' + TC.slot.prop))
+        .join('');
+    if (g === 'music')
+      return (
+        '<div class="cos-music">' +
+        [null, ...cosItems('music').map(x => x.id)]
+          .map(id => {
+            const own = !id || info.own.includes(id),
+              worn = (info.wear.music ?? null) === id;
+            return (
+              '<button class="cos-song' +
+              (worn ? ' is-worn' : '') +
+              (own ? ' is-own' : '') +
+              '" data-cos-pick="' +
+              (id || 'base:music') +
+              '" aria-pressed="' +
+              (info.slot === 'music' && info.sel === id) +
+              '"><span class="cos-play" aria-hidden="true">' +
+              Icons.svg('play') +
+              '</span><span class="cos-song-main"><b>' +
+              esc(id ? T.cosName(id) : TC.base.music) +
+              '</b><small>' +
+              esc(TC.music[id || 'base']) +
+              '</small></span><span class="cos-song-state">' +
+              (worn ? TC.worn + ' ✓' : own ? '' : esc(cosPrice(COS_BY[id]))) +
+              '</span>' +
+              (id && info.fresh.includes(id) ? '<i class="cos-new" aria-hidden="true"></i>' : '') +
+              '</button>'
+            );
+          })
+          .join('') +
+        '</div>'
+      );
+    return (
+      '<div class="cos-frames">' +
+      [null, ...cosItems('frame').map(x => x.id)]
+        .map(id =>
+          cosTile(
+            'frame',
+            id,
+            info,
+            ' cos-tile--frame',
+            '<b class="cos-frame-name">' + esc(id ? T.cosName(id) : TC.base.frame) + '</b>',
+          ),
+        )
+        .join('') +
+      '</div>'
+    );
+  }
+  // 아래 줄: 고른 조각 이름 · 상태 · 버튼 하나(사기 '900 G' · 입히기 · 기본으로 · 입힘 ✓ · 잠김이면 조건 글)
+  function cosBar(info) {
+    const { slot, sel: id } = info,
+      it = id ? COS_BY[id] : null,
+      name = id ? T.cosFull(id) : T.cosSlotName(slot) + ' · ' + TC.base[cosKind(slot)],
+      own = !id || info.own.includes(id),
+      worn = (info.wear[slot] ?? null) === id,
+      lock = !own && cosLockText(info.need(id)),
+      afford = it && (it.s ? info.sc >= it.s : info.gold >= it.g),
+      dis = info.ready ? '' : ' disabled';
+    let sub = '',
+      btn = '';
+    if (worn) btn = '<button class="btn cos-act" disabled>' + TC.worn + ' ✓</button>';
+    else if (own)
+      btn =
+        '<button class="btn btn--primary cos-act" data-cos-act="wear"' +
+        dis +
+        '>' +
+        (id ? TC.wear : TC.toBase) +
+        '</button>';
+    else if (lock) sub = '<span class="cos-act-lock">' + esc(lock) + '</span>';
+    else
+      btn =
+        '<button class="btn ' +
+        (it.s ? 'btn--sc' : 'btn--gold') +
+        ' cos-act" data-cos-act="buy"' +
+        (afford && info.ready ? '' : ' disabled') +
+        '>' +
+        esc(cosPrice(it)) +
+        '<small>' +
+        TC.buy +
+        '</small></button>';
+    if (!sub && it?.s && it.need?.mile)
+      sub = '<span class="cos-special">★ ' + TC.special + '</span> ' + esc(TC.open(it.need.mile));
+    // 음악은 줄을 누르면 고르고 바로 들려준다(이 화면에서만): 만드는 중 · 듣는 중
+    if (cosKind(slot) === 'music' && info.listen === id && info.play !== 'idle')
+      sub = '<span class="cos-listen">♪ ' + (info.play === 'making' ? TC.making : TC.playing) + '</span>';
+    return (
+      '<div class="cos-bar' +
+      (lock ? ' is-lock' : '') +
+      '" data-area="D-BAR"><div class="cos-bar-main"><b>' +
+      esc(name) +
+      '</b>' +
+      (sub ? '<small>' + sub + '</small>' : '') +
+      '</div>' +
+      btn +
+      '</div>'
+    );
+  }
+  // 미리보기 칸(148px, 묶음마다): 기체 = 큰 그림 + 미리보기 기체 셋 / 고양이 = 세 얼굴 / 음악 = 막대 + 곡 / 카드 = 최근 기록 카드 미니
+  function cosStage(info) {
+    const g = info.group,
+      look = info.look;
+    if (g === 'craft')
+      return (
+        '<div class="cos-stage" data-area="D-STAGE"><div class="cos-stage-view">' +
+        stageArt(info.craft, { paint: info.paint, ...look }, 66) +
+        '<span class="cos-stage-paint">' +
+        esc(T.craftName(info.craft) + ' · ' + PN[info.paint || 'base']) +
+        '</span></div><div class="cos-stage-crafts" role="group" aria-label="' +
+        esc(TC.crafts) +
+        '">' +
+        CRAFT_IDS.map(
+          c =>
+            '<button class="cos-stage-craft" data-cos-craft="' +
+            c +
+            '" aria-pressed="' +
+            (c === info.craft) +
+            '" aria-label="' +
+            esc(T.craftName(c)) +
+            '">' +
+            paintCraft(c, info.paints[c], 'cos-craft', look) +
+            '</button>',
+        ).join('') +
+        '</div></div>'
+      );
+    if (g === 'cat')
+      return (
+        '<div class="cos-stage cos-stage--cats" data-area="D-STAGE">' +
+        BAL.cats.list
+          .map(
+            c =>
+              '<div class="cos-cat' +
+              ((info.cats[c] || 0) < 1 ? ' is-sleep' : '') +
+              '">' +
+              catFace(c, 'cat-icon cos-cat-face', look['prop.' + c] ? cosLeaf(look['prop.' + c]) : null) +
+              '<small>' +
+              catLabel(c, info.ranks[c] || 0) +
+              '</small></div>',
+          )
+          .join('') +
+        '</div>'
+      );
+    const tag = g === 'music' ? 'music' : 'frame',
+      id = look[tag] || null,
+      desc = (g === 'music' ? TC.music : TC.frame)[id || 'base'];
+    return (
+      '<div class="cos-stage cos-stage--' +
+      g +
+      '" data-area="D-STAGE">' +
+      (g === 'music'
+        ? '<span class="cos-eq" aria-hidden="true">' + '<i></i>'.repeat(9) + '</span>'
+        : info.card || '') +
+      '<div><small>' +
+      TC.slot[tag] +
+      '</small><b>' +
+      esc(id ? T.cosName(id) : TC.base[tag]) +
+      '</b><small>' +
+      esc(desc) +
+      '</small></div></div>'
+    );
+  }
+  // 꾸미기 화면 본문(#cos-view). info = { own: [id], wear: { 칸: id }(입은 것), fresh: [id], group, slot, sel(id | null),
+  //   craft(미리보기 기체), paint(그 기체 색), paints: { 기체: 색 }, cats: { 고양이: Lv }, ranks: { 고양이: 단계 }, gold, sc,
+  //   ready, need(id) → cosNeed 결과, listen(듣는 곡 id | null | undefined), play('idle' | 'making' | 'playing'), card(카드 svg) }
+  // 미리보기(look)는 입은 것 위에 고른 조각을 입어 본 것(저장 안 함)
+  function cosPage(info) {
+    const look = { ...info.wear };
+    if (info.slot) {
+      if (info.sel) look[info.slot] = info.sel;
+      else delete look[info.slot];
+    }
+    const full = { ...info, look },
+      freshIn = g => COS.some(x => COS_GROUPS[g].includes(x.slot) && info.fresh.includes(x.id));
+    return (
+      '<div class="cos">' +
+      cosStage(full) +
+      '<div class="cos-groups" role="tablist" data-area="D-GROUP">' +
+      Object.entries(TC.groups)
+        .map(
+          ([g, label]) =>
+            '<button class="cos-group" role="tab" data-cos-group="' +
+            g +
+            '" aria-selected="' +
+            (g === info.group) +
+            '">' +
+            label +
+            (freshIn(g) ? '<i class="cos-new" aria-hidden="true"></i>' : '') +
+            '</button>',
+        )
+        .join('') +
+      '</div><div class="cos-body cos-body--' +
+      info.group +
+      '" data-area="D-BODY">' +
+      cosBody(full) +
+      '</div>' +
+      cosBar(full) +
+      '<p class="overlay-note cos-note">' +
+      Icons.svg('capsule') +
+      esc(TC.capsuleNote()) +
+      '</p></div>'
+    );
+  }
+  // 가진 조각 수 '12 / 40'
+  const cosCount = own => TC.count(COS.filter(x => own.includes(x.id)).length, COS.length);
+  // 상점 탭 맨 아래 입구(S-COS). info = { open, own, wear, craft, paint, cats, fresh(새 조각 있음) }
+  function cosEntry(info) {
+    if (!info.open)
+      return (
+        '<div class="hangar-entry cos-entry"><strong>' +
+        Icons.svg('brush') +
+        TC.title +
+        '</strong><small>' +
+        esc(TC.entryLocked) +
+        '</small></div>'
+      );
+    const w = info.wear;
+    return (
+      '<button class="hangar-entry is-open cos-entry" id="cos-open"><span class="cos-entry-art">' +
+      stageArt(
+        info.craft,
+        { paint: info.paint, mark: w.mark, mcol: w.mcol, flame: w.flame, trail: w.trail },
+        60,
+      ) +
+      BAL.cats.list
+        .filter(c => (info.cats[c] || 0) >= 1)
+        .map(c => catFace(c, 'cat-mini'))
+        .join('') +
+      '</span><span class="cos-entry-text"><strong>' +
+      Icons.svg('brush') +
+      TC.title +
+      ' <small>' +
+      cosCount(info.own) +
+      '</small></strong><small>' +
+      esc(TC.entryNote) +
+      '</small></span>' +
+      (info.fresh ? '<i class="cos-new" aria-hidden="true"></i>' : '') +
+      '</button>'
+    );
+  }
+  // 결과 캡슐 줄(12 · 13 고양이 줄 꼴): by = 'supply'(토토가 깨어 있음) | 'radio', rank = 토토 승진 단계
+  function capsuleRow(id, { by, rank = 0 }) {
+    const radio = by !== 'supply';
+    return (
+      '<div class="talk talk--row is-capsule talk--' +
+      (radio ? 'radio' : 'supply') +
+      '">' +
+      catFace(radio ? 'pilot' : 'supply', 'talk-face', radio ? null : undefined) +
+      '<p class="talk-bubble"><span class="talk-name">' +
+      (radio ? Icons.svg('radio') + esc(T.talk.radioName + ' · ' + T.talk.radio) : catLabel('supply', rank)) +
+      '<em class="cap-tag">' +
+      Icons.svg('capsule') +
+      TC.capsuleTag +
+      '</em></span><span class="talk-text">' +
+      esc(TC.capsuleLine[radio ? 'radio' : 'supply'](T.cosSlotName(COS_BY[id]?.slot || ''), T.cosName(id))) +
+      '</span></p></div>'
     );
   }
   // 가진 색 점 셋(balance 색 순서, 없으면 빈 테두리)
@@ -25741,7 +27693,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '<button class="hangar-entry is-open" id="hangar-open"><strong>' +
       H.entry +
       '</strong><small><span class="paint-crafts">' +
-      CRAFT_IDS.map(id => paintCraft(id, info.wear[id])).join('') +
+      CRAFT_IDS.map(id => paintCraft(id, info.wear[id], '', info.look)).join('') +
       '</span>' +
       info.sets.map(T.paint.setName).join(' · ') +
       ' ›</small></button>'
@@ -25783,7 +27735,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '" aria-pressed="' +
       (id === sel) +
       '">' +
-      paintCraft(id, info.wear[id]) +
+      paintCraft(id, info.wear[id], '', info.look) +
       '<strong>' +
       T.craftName(id) +
       '</strong>' +
@@ -26209,6 +28161,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 
   root.NeonView = {
     talk,
+    // 꾸미기 그림(R-116~R-118)
+    COS_MARK,
+    cosStar,
+    craftTail,
+    catPropSvg,
+    setProps,
+    stageArt,
+    cosEntry,
+    cosPage,
+    cosCount,
+    capsuleRow,
     catSvg,
     catGlyphSvg,
     catLabel,
@@ -26263,6 +28226,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // score()는 순수 함수라 node 검사(tests/music.test.cjs)에서도 돈다. 소리 기능이 없는 브라우저는 조용히 건너뛴다.
   // 곡(R-051 피드백 · 편집장 2026-10-05 고름): 인트로는 첫 버전(옛 꼴 파트), 대기실 로파이 칠 · 전투 아웃런 질주는
   // 새 꼴 파트(kind)로 쓴다. 후보 9곡 · 후보 페이지는 고른 뒤 지웠다(커밋 기록에 있다).
+  // 전투 음악 꾸미기(R-118): 후보였던 전투 곡 셋을 커밋 39b8330에서 되살렸다(battle-first · battle-dark · battle-dnb).
+  // 입은 곡은 setBattle, 꾸미기 화면 미리 듣기는 preview · previewState. 앱은 계속 want('battle')만 부른다.
 
   // ── 음량 · 페이드(임시값: 편집장 플레이 피드백으로 조정) ──
   const MIX = {
@@ -26568,10 +28533,377 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         },
       },
     },
+
+    // ── 전투 음악 꾸미기(R-118): 꾸미기 화면에서 고르는 전투 곡 셋. 출처 커밋 39b8330(R-051 음악 후보) ──
+    // 곡 표는 그 커밋 그대로(이름만 바꿈). 'battle-first' = 그 커밋의 battle(옛 꼴), 'battle-dark' = battle-b,
+    // 'battle-dnb' = battle-c. 꾸미기 id → 곡은 BATTLE_FOR, 이름 · 설명은 terms.js cos
+
+    // 첫 질주(39b8330의 처음 전투 곡): 16분 베이스 · 사각파 훅. 킥마다 pad · bass 펌프, 9~16마디만 리드 훅
+    'battle-first': {
+      bpm: 130,
+      bars: 16,
+      rms: 0.141,
+      pump: 0.35,
+      // A단조: Am · F · C · G · Am · F · C · G · Dm · F · Am · G · Dm · F · E · E
+      chords: [
+        'A3 C4 E4',
+        'A3 C4 F4',
+        'G3 C4 E4',
+        'G3 B3 D4',
+        'A3 C4 E4',
+        'A3 C4 F4',
+        'G3 C4 E4',
+        'G3 B3 D4',
+        'A3 D4 F4',
+        'A3 C4 F4',
+        'A3 C4 E4',
+        'G3 B3 D4',
+        'A3 D4 F4',
+        'A3 C4 F4',
+        'G#3 B3 E4',
+        'G#3 B3 E4',
+      ],
+      roots: 'A2 F2 C2 G2 A2 F2 C2 G2 D2 F2 A2 G2 D2 F2 E2 E2',
+      fx: { delay: { fb: 0.35, wet: 0.25 }, reverb: 0.15 },
+      parts: {
+        kick: { v: 0.6, lines: [['1-16', 'X...X...X...X...']] },
+        // 2 · 4박, 16마디 3~4박 스네어 연타
+        snare: {
+          v: 0.32,
+          rev: 0.8,
+          lines: [
+            ['1-15', '....X.......X...'],
+            ['16', '....X...xxxxXXXX'],
+          ],
+        },
+        // 16분(8분 강세), 9마디부터 뒷박 열림
+        hat: {
+          v: 0.05,
+          lines: [
+            ['1-8', 'XxXxXxXxXxXxXxXx'],
+            ['9-16', 'XxOxXxOxXxOxXxOx'],
+          ],
+        },
+        crash: { v: 0.2, rev: 0.4, lines: [['1,9', 'X...............']] },
+        riser: { v: 0.12, rev: 0.3, len: 16, lines: [['8,16', 'X...............']] },
+        // 16분 근음(8분 강세, 박 끝 16분은 옥타브 위) + 한 옥타브 아래 사인
+        bass: {
+          v: 0.26,
+          wave: 'saw',
+          env: [2000, 400],
+          sub: 0.4,
+          gate: 0.85,
+          lines: [['1-16', 'RrRORrRORrRORrRO']],
+        },
+        // 톱니 16분: 근음 · 5도 · 옥타브 · 10도
+        arp: {
+          v: 0.07,
+          wave: 'sawtooth',
+          cut: 2600,
+          decay: 0.12,
+          dly: 1,
+          base: 'C4',
+          tones: '1-5-8-10',
+          lines: [['1-16', '0123012301230123']],
+        },
+        pad: { v: 0.09, cut: 1800, atk: 0.5, rel: 1.0, rev: 0.4 },
+        // 사각 5옥타브 A단조 5음 음계(E 마디는 G# 허용) 8분 · 4분 훅
+        lead: {
+          v: 0.11,
+          gate: 0.65,
+          dly: 0.5,
+          rev: 0.2,
+          bars: {
+            9: 'A5 . A5 G5 A5 - D5 -',
+            10: 'C6 - A5 - G5 - C5 -',
+            11: 'A5 . A5 G5 A5 - E5 -',
+            12: 'D5 - E5 - G5 - - .',
+            13: 'A5 . A5 G5 A5 - D5 -',
+            14: 'C6 - A5 - C6 - A5 -',
+            15: 'E5 . E5 G#5 - - E5 -',
+            16: 'G#5 - - - E5 - - .',
+          },
+        },
+      },
+    },
+    // 다크 사이버: 반박자 북(3박 스네어) + 미끄러지는 리스 베이스 리프, 9~16마디 리드 · 높은 아르페지오
+    'battle-dark': {
+      seed: 'battle-b', // 세기 흔들림 씨앗 = 39b8330의 id(같은 소리)
+      bpm: 140,
+      bars: 16,
+      rms: 0.135,
+      // D단조. A: Dm · Dm · Bb · Bb · Gm · Gm · A · A7 / B: Dm · C · Bb · A · Dm · C · Bb · A7(b9)
+      chords: [
+        'D3 F3 A3 E4',
+        'D3 F3 A3 D4',
+        'D3 F3 Bb3 D4',
+        'D3 F3 Bb3 F4',
+        'D3 G3 Bb3 D4',
+        'D3 G3 Bb3 D4',
+        'E3 A3 C#4 E4',
+        'E3 G3 C#4 E4',
+        'D3 F3 A3 D4',
+        'E3 G3 C4 E4',
+        'D3 F3 Bb3 D4',
+        'C#3 E3 A3 C#4',
+        'D3 F3 A3 D4',
+        'E3 G3 C4 E4',
+        'D3 F3 Bb3 D4',
+        'C#3 G3 Bb3 E4',
+      ],
+      roots: 'D2 D2 Bb1 Bb1 G1 G1 A1 A1 D2 C2 Bb1 A1 D2 C2 Bb1 A1',
+      fx: {
+        delay: { fb: 0.35, wet: 0.2 },
+        room: { sec: 2.6, damp: 0.4 },
+        reverb: 0.22,
+        tone: { hp: 30, shelf: -2, low: -6, lowAt: 180 },
+      },
+      pump: { v: 0.45, rel: 0.2, parts: ['pad', 'stab'] },
+      parts: {
+        kick: {
+          kind: 'drum',
+          inst: 'kick2',
+          v: 0.52,
+          lines: [
+            ['1-7,9-15', 'X.....X.......X.'],
+            ['8,16', 'X.....X...X.X...'],
+          ],
+        },
+        snare: {
+          kind: 'drum',
+          inst: 'snare2',
+          v: 0.4,
+          rev: 0.35,
+          lines: [
+            ['1-7,9-15', '........X.......'],
+            ['8', '........X...xxXX'],
+            ['16', '........X.xxxxXX'],
+          ],
+        },
+        hat: {
+          kind: 'drum',
+          inst: 'hat2',
+          v: 0.07,
+          human: 0.2,
+          pan: 0.25,
+          lines: [['1-16', 'XxXxXxXxXxXxXxXx']],
+        },
+        crash: { kind: 'drum', inst: 'crash2', v: 0.18, rev: 0.3, lines: [['1,9', 'X...............']] },
+        riser: { kind: 'riser', v: 0.08, len: 16, rev: 0.3, lines: [['8,16', 'X...............']] },
+        bass: {
+          kind: 'melody',
+          inst: 'reese',
+          v: 0.3,
+          sub: 0.25,
+          gate: 0.9,
+          cut: 650,
+          glide: 0.03,
+          bars: {
+            '1,9,13': 'D2 - - D3 - D2 - F2',
+            2: 'D2 - - D3 - C3 - A2',
+            '3,11': 'Bb1 - - Bb2 - Bb1 - D2',
+            4: 'Bb1 - - Bb2 - A2 - F2',
+            5: 'G1 - - G2 - G1 - Bb1',
+            6: 'G1 - - G2 - A2 - Bb2',
+            7: 'A1 - - A2 - A1 - C#2',
+            8: 'A1 - - A2 - G2 - E2',
+            10: 'C2 - - C3 - C2 - E2',
+            12: 'A1 - - A2 - A1 - E2',
+            14: 'C2 - - C3 - C2 - G2',
+            15: 'Bb1 - - Bb2 - D2 - F2',
+            16: 'A1 - - A2 - G2 - C#2',
+          },
+        },
+        pad: { kind: 'pad', inst: 'pad2', v: 0.09, cut: 1100, atk: 0.3, rel: 1, rev: 0.5 },
+        stab: {
+          kind: 'chord',
+          inst: 'pluck',
+          v: 0.08,
+          decay: 0.25,
+          peak: 3000,
+          cut: 500,
+          rev: 0.4,
+          dly: 0.3,
+          lines: [['1-8', 'X.........X.....']],
+        },
+        arp: {
+          kind: 'arp',
+          inst: 'pluck',
+          v: 0.05,
+          decay: 0.12,
+          peak: 6000,
+          cut: 1500,
+          base: 'D5',
+          dly: 0.4,
+          pan: 0.25,
+          lines: [['9-16', '0123210123210123']],
+        },
+        lead: {
+          kind: 'melody',
+          inst: 'saw',
+          v: 0.1,
+          gate: 0.85,
+          cut: 2400,
+          rev: 0.25,
+          dly: 0.3,
+          bars: {
+            9: 'A5 - - - F5 - D5 -',
+            10: 'E5 - - - G5 - C5 -',
+            11: 'D5 - - - F5 - Bb5 -',
+            12: 'C#5 - - - E5 - A5 -',
+            13: 'A5 - - - G5 - F5 E5',
+            14: 'E5 - - - D5 - C5 -',
+            15: 'D5 - - - F5 - A5 -',
+            16: 'Bb5 - - - G5 - E5 C#5',
+          },
+        },
+      },
+    },
+    // 드럼앤베이스(리퀴드): 172bpm 브레이크 + 서브 · 리스, 전자 피아노 · 패드, 9~24마디 리드, 17~24마디 종
+    'battle-dnb': {
+      seed: 'battle-c', // 세기 흔들림 씨앗 = 39b8330의 id(같은 소리)
+      bpm: 172,
+      bars: 24,
+      rms: 0.13,
+      // A단조. 1~16: Am9 Am9 · Fmaj9 Fmaj9 · Dm9 Dm9 · Esus4 · E (두 번)
+      //        17~24: Fmaj9 Fmaj9 · G6 G6 · Em9 Em9 · Am9 · Esus4 E
+      chords: [
+        'E3 G3 B3 C4',
+        'E3 G3 B3 C4',
+        'E3 G3 A3 C4',
+        'E3 G3 A3 C4',
+        'F3 A3 C4 E4',
+        'F3 A3 C4 E4',
+        'E3 A3 B3 E4',
+        'E3 G#3 B3 E4',
+        'E3 G3 B3 C4',
+        'E3 G3 B3 C4',
+        'E3 G3 A3 C4',
+        'E3 G3 A3 C4',
+        'F3 A3 C4 E4',
+        'F3 A3 C4 E4',
+        'E3 A3 B3 E4',
+        'E3 G#3 B3 E4',
+        'E3 G3 A3 C4',
+        'E3 G3 A3 C4',
+        'D3 G3 B3 E4',
+        'D3 G3 B3 E4',
+        'G3 B3 D4 F#4',
+        'G3 B3 D4 F#4',
+        'E3 G3 B3 C4',
+        'E3 A3 B3 E4 | E3 G#3 B3 E4',
+      ],
+      roots: 'A2 A2 F2 F2 D2 D2 E2 E2 A2 A2 F2 F2 D2 D2 E2 E2 F2 F2 G2 G2 E2 E2 A2 E2',
+      fx: {
+        delay: { fb: 0.35, wet: 0.2 },
+        room: { sec: 2.4, damp: 0.45 },
+        reverb: 0.3,
+        tone: { hp: 30, shelf: -2, low: -6, lowAt: 180 },
+      },
+      pump: { v: 0.5, rel: 0.18, parts: ['pad', 'keys'] },
+      parts: {
+        kick: { kind: 'drum', inst: 'kick2', v: 0.5, lines: [['1-24', 'X.........X.....']] },
+        snare: {
+          kind: 'drum',
+          inst: 'snare2',
+          v: 0.42,
+          rev: 0.25,
+          lines: [
+            ['1-7,9-15,17-23', '....X..x....X..x'],
+            ['8,16', '....X..x....X.XX'],
+            ['24', '....X..x..x.xxXX'],
+          ],
+        },
+        hat: {
+          kind: 'drum',
+          inst: 'hat2',
+          v: 0.07,
+          human: 0.2,
+          pan: 0.2,
+          lines: [['1-24', 'x.x.x.x.x.x.x.O.']],
+        },
+        shaker: {
+          kind: 'drum',
+          inst: 'shaker',
+          v: 0.045,
+          human: 0.3,
+          pan: -0.25,
+          lines: [['9-24', 'xxxxxxxxxxxxxxxx']],
+        },
+        crash: { kind: 'drum', inst: 'crash2', v: 0.17, rev: 0.3, lines: [['1,9,17', 'X...............']] },
+        riser: { kind: 'riser', v: 0.07, len: 16, rev: 0.3, lines: [['8,16,24', 'X...............']] },
+        sub: {
+          kind: 'bass',
+          inst: 'sub',
+          v: 0.22,
+          gate: 0.95,
+          drive: 2.4,
+          lines: [['1-24', 'R.........R.....']],
+        },
+        reese: {
+          kind: 'bass',
+          inst: 'reese',
+          v: 0.11,
+          gate: 0.98,
+          cut: 600,
+          lines: [['9-24', 'R.......R.......']],
+        },
+        pad: { kind: 'pad', inst: 'pad2', v: 0.12, cut: 2400, atk: 0.5, rel: 1.4, rev: 0.6 },
+        keys: {
+          kind: 'chord',
+          inst: 'epiano',
+          v: 0.16,
+          gate: 0.95,
+          strum: 0.01,
+          rev: 0.35,
+          dly: 0.2,
+          wobble: { rate: 3, depth: 0.3 },
+          lines: [['1-24', 'X.......x.......']],
+        },
+        bells: {
+          kind: 'arp',
+          inst: 'glass',
+          v: 0.04,
+          decay: 1.2,
+          base: 'A4',
+          rev: 0.6,
+          dly: 0.3,
+          pan: 0.2,
+          lines: [['17-24', '0.1.2.3.2.1.3.2.']],
+        },
+        lead: {
+          kind: 'melody',
+          inst: 'soft',
+          v: 0.11,
+          gate: 0.92,
+          glide: 0.04,
+          rev: 0.4,
+          dly: 0.3,
+          bars: {
+            9: 'A5 - - -',
+            10: 'G5 - E5 -',
+            11: 'G5 - - -',
+            12: 'A5 - G5 -',
+            13: 'F5 - - -',
+            14: 'E5 - D5 -',
+            15: 'E5 - - -',
+            16: 'G#5 - - -',
+            17: 'A5 - - -',
+            18: 'C5 - E5 G5',
+            19: 'B4 - D5 -',
+            20: 'E5 - - -',
+            21: 'F#5 - - -',
+            22: 'G5 - B5 -',
+            23: 'A5 - - -',
+            24: 'B4 - - -',
+          },
+        },
+      },
+    },
   };
 
   // ── 곡 표 → 음 이벤트(순수) ──
-  // 새 꼴 파트(R-051 피드백): 파트에 kind가 있으면 아래 규칙으로 읽는다(없으면 인트로의 옛 꼴).
+  // 새 꼴 파트(R-051 피드백): 파트에 kind가 있으면 아래 규칙으로 읽는다(없으면 인트로 · 첫 질주의 옛 꼴).
   //   inst = 소리(PLAY 이름, 없으면 파트 이름) · pan(−1~1) · wobble { rate, depth }(좌우 흔들림) · human(세기 흔들림, 고정 씨앗)
   //   pad: 마디 화음을 길게 · chord: 16칸 X/x 자리에서 화음(top 위 n음 · oct 옥타브 · strum 초 · gate)
   //   bass: 16칸 R/r 근음 · O/o 옥타브 위 · 5 5도(근음은 roots, '|'로 마디를 나눈다) · arp: 16칸 숫자 = 화음 음 번호
@@ -26613,7 +28945,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return [...new Set(seg.notes.map(n => above(n, base)))].sort((a, b) => a - b);
   }
   // 옛 꼴 북 소리 길이(초). 열린 하이햇은 0.25
-  const DRUM = { kick: 0.35, hat: 0.04 };
+  // (snare · crash는 첫 질주, R-118 · 39b8330. 순서는 그 커밋 그대로 — 인트로 kick · hat 순서는 같다)
+  const DRUM = { kick: 0.35, snare: 0.18, hat: 0.04, crash: 1.5 };
   // 새 꼴 북 샘플 길이(초). 소리 만드는 법은 아래 합성 KIT
   const KIT_SEC = {
     kick2: 0.55,
@@ -26625,7 +28958,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     shaker: 0.16,
     crash2: 2.2,
   };
-  // 글자 → 고정 씨앗(세기 흔들림이 곡 · 파트마다 늘 같게)
+  // 글자 → 고정 씨앗(세기 흔들림이 곡 · 파트마다 늘 같게).
+  // 곡 표에 seed가 있으면 곡 id 대신 그 글자(되살린 곡이 옛 id 때와 같은 소리, R-118)
   const hash = s =>
     [...String(s)].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
 
@@ -26677,7 +29011,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           }
       }
     };
-    // 옛 꼴(kind 없음): 인트로
+    // 옛 꼴(kind 없음): 인트로 · 첫 질주(battle-first)
     const old = k => P[k] && !P[k].kind;
     if (old('pad'))
       for (const s of segs) for (const n of s.notes) add('pad', s.t, s.d, P.pad.v / s.notes.length, hz(n));
@@ -26701,13 +29035,32 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         add('arp', t, P.arp.decay, P.arp.v, hz(tones[k % tones.length] + 12 * Math.floor(k / tones.length)));
       });
     }
+    // 옛 꼴 사각파 리드(첫 질주, R-118 · 39b8330): 마디마다 8분 8칸, 길이는 gate만큼 줄인다(마디를 넘어 늘이지 않음)
+    if (old('lead'))
+      for (const [b, text] of Object.entries(P.lead.bars)) {
+        const cells = text.trim().split(/\s+/),
+          eighth = beat / 2;
+        if (cells.length !== 8) throw new Error(id + ' 멜로디 ' + b + '마디 칸 수 ' + cells.length);
+        for (let k = 0; k < 8; k++) {
+          if (cells[k] === '-' || cells[k] === '.') continue;
+          let n = k + 1;
+          while (n < 8 && cells[n] === '-') n++;
+          add(
+            'lead',
+            (b - 1) * bar + k * eighth,
+            (n - k) * eighth * P.lead.gate,
+            P.lead.v,
+            hz(midi(cells[k])),
+          );
+        }
+      }
     if (old('bell'))
       for (const b of barsOf(P.bell.bars, tr.bars)) {
         const s = segAt((b - 1) * bar);
         add('bell', (b - 1) * bar, 0.8, P.bell.v, hz(Math.max(...s.notes) + P.bell.up));
       }
 
-    // 새 꼴(kind 있음): 대기실 · 전투
+    // 새 꼴(kind 있음): 대기실 · 전투 · 다크 사이버 · 드럼앤베이스
     const sw = (tr.swing || 0) * step,
       at16 = (b, k) => (b - 1) * bar + k * step + (k % 2 ? sw : 0);
     // 16칸: '.' 늘임 · ',' 끊음(소리 없음). fn(글자, 시작, 다음 칸까지 길이)
@@ -26760,7 +29113,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     };
     for (const [name, p] of Object.entries(P)) {
       if (!p.kind) continue;
-      const r = seeded(hash(id + '/' + name)),
+      const r = seeded(hash((tr.seed || id) + '/' + name)),
         lv = ch => level(ch) * (1 - (p.human || 0) * r());
       if (p.kind === 'pad')
         for (const s of segs) {
@@ -27169,6 +29522,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       g.connect(out);
     },
+    // (첫 질주, R-118 · 39b8330) 사각파 + 비브라토(5.5Hz · 6cent, 0.12초 뒤) → 저역 4000Hz. 길이는 score가 줄여 둔다
+    lead(c, e, p, out) {
+      const end = e.t + e.d,
+        o = c.createOscillator(),
+        lfo = c.createOscillator(),
+        depth = c.createGain(),
+        g = c.createGain();
+      o.type = 'square';
+      o.frequency.value = e.f;
+      lfo.frequency.value = 5.5;
+      depth.gain.setValueAtTime(0, e.t);
+      depth.gain.setValueAtTime(0, e.t + 0.12);
+      depth.gain.linearRampToValueAtTime(6, e.t + 0.2);
+      link(lfo, depth, o.detune);
+      g.gain.setValueAtTime(0, e.t);
+      g.gain.linearRampToValueAtTime(e.v, e.t + 0.01);
+      g.gain.setValueAtTime(e.v, end);
+      g.gain.linearRampToValueAtTime(0, end + 0.04);
+      link(o, filter(c, 'lowpass', 4000), g, out);
+      o.start(e.t);
+      lfo.start(e.t);
+      o.stop(end + 0.06);
+      lfo.stop(end + 0.06);
+    },
     // 사인 + 2.76배 사인(작게), 감쇠 0.8초(잔향 많이)
     bell(c, e, p, out) {
       const g = hit(c, e.t, e.v, e.d);
@@ -27193,9 +29570,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       o.start(e.t);
       o.stop(e.t + e.d + 0.02);
     },
+    // (첫 질주, R-118 · 39b8330) 잡음 → 대역 1800Hz + 삼각 190Hz 0.1초
+    snare(c, e, p, out, nz) {
+      link(noiseFrom(c, nz, e.t, e.d), filter(c, 'bandpass', 1800, 0.9), hit(c, e.t, e.v, e.d, 0.002), out);
+      const o = c.createOscillator();
+      o.type = 'triangle';
+      o.frequency.value = 190;
+      link(o, hit(c, e.t, e.v * 0.6, 0.1, 0.002), out);
+      o.start(e.t);
+      o.stop(e.t + 0.12);
+    },
     // 잡음 → 고역 7000Hz, 닫힘 0.04초 · 열림 0.25초(길이는 score)
     hat(c, e, p, out, nz) {
       link(noiseFrom(c, nz, e.t, e.d), filter(c, 'highpass', 7000), hit(c, e.t, e.v, e.d, 0.001), out);
+    },
+    // (첫 질주, R-118 · 39b8330) 잡음 → 고역 5000Hz, 1.5초
+    crash(c, e, p, out, nz) {
+      link(noiseFrom(c, nz, e.t, e.d), filter(c, 'highpass', 5000), hit(c, e.t, e.v, e.d, 0.002), out);
     },
     // 잡음 대역 400 → 6000Hz 상승, 점점 크게
     riser(c, e, p, out, nz) {
@@ -27332,6 +29723,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       vib(c, oscs, t, end, p.vib ?? 7, 0.18);
       link(lp, sustain(c, t, end, e.v, 0.008, rel), out);
     },
+    // (드럼앤베이스, R-118 · 39b8330) 유리 종(FM): 3.5배 변조가 빨리 사라져 맑게 울린다
+    glass(c, e, p, out) {
+      const t = e.t,
+        dec = p.decay || 1.6,
+        car = osc(c, 'sine', t, t + dec + 0.05),
+        mod = osc(c, 'sine', t, t + dec + 0.05),
+        idx = c.createGain();
+      car.frequency.value = e.f;
+      mod.frequency.value = e.f * (p.ratio || 3.5);
+      idx.gain.setValueAtTime(e.f * (p.bright || 2), t);
+      idx.gain.setTargetAtTime(0, t, dec * 0.15);
+      link(mod, idx, car.frequency);
+      link(car, hit(c, t, e.v, dec, 0.002), out);
+    },
     // 둥근 베이스: 사인 → 포화(배음) → 저역 통과
     sub(c, e, p, out) {
       const t = e.t,
@@ -27362,6 +29767,27 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       lp.frequency.exponentialRampToValueAtTime(p.cut || 380, t + (p.env || 0.14));
       link(o, lp, g);
       link(s, gainOf(c, 0.6), g);
+      g.connect(out);
+    },
+    // (다크 사이버 · 드럼앤베이스, R-118 · 39b8330) 리스 베이스(어두움): 톱니 2개(±13 cent) → 저역 통과 → 포화
+    // + 사인 무게(sub, 기본 0.5)
+    reese(c, e, p, out) {
+      const t = e.t,
+        end = t + e.d,
+        rel = p.rel || 0.08,
+        stop = end + rel * 2,
+        lp = filter(c, 'lowpass', p.cut || 700, 1.2),
+        g = sustain(c, t, end, e.v / 2, 0.01, rel),
+        s = osc(c, 'sine', t, stop);
+      for (const cents of [-13, 13]) {
+        const o = osc(c, 'sawtooth', t, stop);
+        pitch(o, e, p.glide);
+        o.detune.value = cents;
+        o.connect(lp);
+      }
+      pitch(s, e, p.glide);
+      link(lp, shaper(c, p.drive || 1.6), g);
+      link(s, gainOf(c, p.sub ?? 0.5), g);
       g.connect(out);
     },
     // 레코드 잡음: 3.7초 고정 고리(낮은 쉬익 + 드문 틱)를 곡 내내
@@ -27518,14 +29944,34 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return { buffer: out, sec: n / R, rms: rms * k };
   }
 
+  // ── 전투 곡 고르기(R-118 꾸미기 · 전투 음악) ──
+  // 꾸미기 id → 전투 곡. 모르는 id · 없음(null) = 기본 전투 곡 'battle'(아웃런 질주)
+  const BATTLE_FOR = {
+    'music.first': 'battle-first',
+    'music.dark': 'battle-dark',
+    'music.dnb': 'battle-dnb',
+  };
+  const battleFor = id => (Object.prototype.hasOwnProperty.call(BATTLE_FOR, id) ? BATTLE_FOR[id] : 'battle');
+  // 미리 듣기 인자 → 곡: null · undefined = 미리 듣기 끝(null), 'battle' · 'base' = 기본 전투 곡, 나머지는 battleFor
+  const previewFor = id => (id == null ? null : id === 'battle' || id === 'base' ? 'battle' : battleFor(id));
+  // 전투 곡 무리('battle' · 'battle-*')
+  const isBattle = id => typeof id === 'string' && (id === 'battle' || id.startsWith('battle-'));
+  // 페이드 표 이름: 'battle-*'는 'battle'로 읽는다
+  const fadeName = id => (isBattle(id) ? 'battle' : id);
+  const fadeFor = (from, to) => MIX.fades[fadeName(from) + '>' + fadeName(to)] || MIX.fades.other;
+
   // ── 재생기 ──
   // 경로: 곡 → 곡 음량(페이드) → 숙임 → 음악 버스(MIX.music · 켜기/끄기) → 출력. 효과음 길은 sfx.js
+  // 장면(app.js want: intro · lobby · battle) → 곡: battle = 입은 전투 곡(setBattle), lobby = 미리 듣는 곡이 있으면 그 곡
   let ac = null,
     musicBus = null,
     duckBus = null,
     enabled = false,
     everEnabled = false,
+    wantScene = null,
     wantId = null,
+    battleId = 'battle',
+    previewId = null,
     ducked = false,
     cur = null,
     pendingIn = MIX.fades.other[1],
@@ -27533,7 +29979,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     building = null,
     buildTimer = 0;
   const ready = {},
-    failed = {};
+    failed = {},
+    waiters = [];
+
+  // 장면 → 곡
+  const trackFor = scene =>
+    scene === 'battle' ? battleId : scene === 'lobby' && previewId ? previewId : scene;
+  // 만든 곡을 들고 있을지: 인트로는 인트로 화면일 때만, 전투 곡은 입은 곡 · 미리 듣는 곡만(버퍼 최대 둘)
+  const keep = id =>
+    id === 'intro' ? wantId === 'intro' : isBattle(id) ? id === battleId || id === previewId : true;
+  // 들고 있지 않을 전투 곡 버퍼를 버린다(트는 중이면 소리 노드가 끝날 때까지 쥐고 있다)
+  function prune() {
+    for (const id of Object.keys(ready)) if (isBattle(id) && !keep(id)) delete ready[id];
+  }
 
   // 소리 장치(효과음과 같이 씀). 처음 부를 때 만든다(첫 손짓 · 효과음). 없으면 null
   function ensure() {
@@ -27579,13 +30037,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     ramp(g.gain, 0, fadeOut);
     src.stop(ac.currentTime + fadeOut + 0.05);
   }
+  // 만들 곡: 지금 원하는 곡 → 미리 듣는 곡 → 대기실 → 입은 전투 곡
   function needed() {
     const list = [];
-    for (const id of [wantId, 'lobby', 'battle'])
+    for (const id of [wantId, previewId, 'lobby', battleId])
       if (id && TRACKS[id] && !list.includes(id) && !ready[id] && !failed[id]) list.push(id);
     return list;
   }
-  // 곡을 하나씩 만든다: 지금 원하는 곡(인트로는 인트로 화면일 때만) → 대기실 → 전투
+  // 곡을 하나씩 만든다(인트로는 인트로 화면일 때만)
   function build(delay) {
     if (building || buildTimer || !enabled || !needed().length) return;
     buildTimer = setTimeout(async () => {
@@ -27595,41 +30054,95 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       building = id;
       try {
         const tr = await render(id);
-        // 만드는 동안 인트로 화면을 떠났으면 인트로 곡은 버린다
-        if (id !== 'intro' || wantId === 'intro') ready[id] = tr;
+        // 만드는 동안 인트로 화면을 떠났거나 고른 전투 곡 · 미리 듣는 곡이 바뀌었으면 버린다
+        if (keep(id)) ready[id] = tr;
       } catch (e) {
         failed[id] = true;
       }
       building = null;
       if (id === wantId) play(pendingIn, 0);
+      settle();
       build(0.05);
     }, delay * 1000);
   }
+  // 곡을 바꾼다(같은 곡이면 그대로). 페이드는 MIX.fades(전투 곡 무리는 'battle'로 읽음)
+  function switchTo(id) {
+    if (id === wantId) return;
+    const from = wantId,
+      [out, inn, gap] = fadeFor(from, id);
+    wantId = id;
+    pendingIn = inn;
+    // 인트로 곡은 START 뒤 페이드가 끝나면 버린다(다시 안 씀)
+    if (from === 'intro')
+      setTimeout(
+        () => {
+          if (wantId !== 'intro' && (!cur || cur.id !== 'intro')) delete ready.intro;
+        },
+        (out + 0.2) * 1000,
+      );
+    if (cur && ac) stop(out);
+    play(inn, gap);
+    build(0);
+  }
 
-  // 화면 상태가 바뀔 때 app.js syncMode가 부른다: 곡 고르기 · 일시정지 숙임
-  function want(id, duck) {
+  // 화면 상태가 바뀔 때 app.js syncMode가 부른다: 장면(intro · lobby · battle) 곡 고르기 · 일시정지 숙임
+  function want(scene, duck) {
     try {
       if (!!duck !== ducked) {
         ducked = !!duck;
         if (ac) ramp(duckBus.gain, ducked ? MIX.duck : 1, MIX.duckSec);
       }
-      if (id === wantId) return;
-      const from = wantId,
-        [out, inn, gap] = MIX.fades[from + '>' + id] || MIX.fades.other;
-      wantId = id;
-      pendingIn = inn;
-      // 인트로 곡은 START 뒤 페이드가 끝나면 버린다(다시 안 씀)
-      if (from === 'intro')
-        setTimeout(
-          () => {
-            if (wantId !== 'intro' && (!cur || cur.id !== 'intro')) delete ready.intro;
-          },
-          (out + 0.2) * 1000,
-        );
-      if (cur && ac) stop(out);
-      play(inn, gap);
-      build(0);
+      wantScene = scene;
+      switchTo(trackFor(scene));
     } catch {}
+  }
+  // 전투 곡 고르기(R-118): 꾸미기 id('music.dark' 등) → 전투 곡. 출격 때 app.js가 부른다(미리 부르면 미리 만든다).
+  // 입지 않은 전투 곡 버퍼는 버린다(미리 듣는 곡은 남김). → 고른 곡 id
+  function setBattle(id) {
+    try {
+      battleId = battleFor(id);
+      prune();
+      if (wantScene === 'battle') switchTo(battleId);
+      else build(0);
+    } catch {}
+    return battleId;
+  }
+  // 미리 듣는 곡이 지금 어떤지(꾸미기 화면 '만드는 중' · '듣는 중'):
+  // 'idle' 미리 듣기 없음 · 음악 꺼짐 · 만들기 실패 / 'making' 만드는 중(또는 만들 차례) / 'playing' 만들어 둠(대기실 자리에서 틂)
+  function previewState() {
+    if (!previewId || !enabled || failed[previewId]) return 'idle';
+    return ready[previewId] ? 'playing' : 'making';
+  }
+  // 'making'이 끝난 기다림을 푼다(다른 곡 · null로 바뀐 기다림은 'idle')
+  function settle() {
+    const now = previewState();
+    for (let k = waiters.length - 1; k >= 0; k--) {
+      const w = waiters[k];
+      if (w.id !== previewId) w.resolve('idle');
+      else if (now !== 'making') w.resolve(now);
+      else continue;
+      waiters.splice(k, 1);
+    }
+  }
+  // 꾸미기 화면 미리 듣기(R-118): id = 꾸미기 id('music.dark' 등) · 'battle' 또는 'base'(기본 곡 아웃런 질주) ·
+  // null(끝, 대기실 곡으로). 대기실 자리에서 그 전투 곡을 튼다(want와 같이 지금 곡은 나가고,
+  // 만드는 동안 조용하다가 다 만들면 들어온다).
+  // 미리 듣는 곡은 하나만 들고, 끝나거나 다른 곡으로 바뀌면 입지 않은 곡 버퍼는 버린다.
+  // → Promise(이 곡이 'making'에서 벗어나면 그때 previewState() 값으로 풀림. 다른 미리 듣기로 바뀌면 'idle'.
+  //   실패해도 거부하지 않는다)
+  function preview(id) {
+    let req = null;
+    try {
+      previewId = previewFor(id);
+      req = previewId;
+      prune();
+      if (wantScene === 'lobby') switchTo(trackFor('lobby'));
+      else build(0);
+    } catch {}
+    return new Promise(resolve => {
+      waiters.push({ id: req, resolve });
+      settle();
+    });
   }
   // 설정 '음악'(기기 설정). 켜면 아직 안 만든 곡을 만들기 시작한다
   function setEnabled(on) {
@@ -27646,6 +30159,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         build(everEnabled ? 0 : MIX.firstDelay);
         everEnabled = true;
       }
+      settle();
     } catch {}
   }
   // 손짓마다(app.js): 소리 장치를 만들거나 깨우고 지금 곡을 튼다(브라우저는 손짓 전에 소리를 막는다)
@@ -27684,12 +30198,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         );
     } catch {}
   }
-  // 확인용: 켜짐 · 원하는 곡 · 트는 곡 · 만든 곡(길이 초 · RMS)
+  // 확인용: 켜짐 · 장면 · 원하는 곡 · 트는 곡 · 고른 전투 곡 · 미리 듣는 곡 · 만든 곡(길이 초 · RMS)
   function state() {
     const out = {};
     for (const [id, t] of Object.entries(ready))
       out[id] = { sec: Math.round(t.sec * 10) / 10, rms: Math.round(t.rms * 1000) / 1000 };
-    return { enabled, want: wantId, playing: cur ? cur.id : null, ready: out };
+    return {
+      enabled,
+      scene: wantScene,
+      want: wantId,
+      playing: cur ? cur.id : null,
+      battle: battleId,
+      preview: previewId,
+      ready: out,
+    };
   }
   // 만드는 중이거나 만들 곡이 남았으면 false
   const idle = () => !building && !buildTimer && !(enabled && needed().length);
@@ -27698,6 +30220,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     MIX,
     TRACKS,
     score,
+    // 악기 이름(검사용: 곡 표 파트가 쓰는 소리가 모두 있는지)
+    INSTRUMENTS: Object.keys(PLAY),
+    BATTLE_FOR,
+    battleFor,
+    previewFor,
+    fadeName,
+    fadeFor,
     ctx() {
       try {
         return ensure();
@@ -27708,6 +30237,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     unlock,
     setEnabled,
     want,
+    setBattle,
+    preview,
+    previewState,
     suspend,
     resume,
     state,
@@ -28068,13 +30600,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
 
   // 탭 점: 기록(백업 뒤 기록 20판 이상 · 안 읽은 비행 일지가 있음, R-114) · 성장(살 수 있는 영구 스킬이 있고 B가 그 뒤 늘었음)
-  function dots({ records, backup, blue, growB, prices, unread } = {}) {
+  // 상점(R-117) = 보급 캡슐로 받은 새 조각이 있음(꾸미기 화면을 나가면 비움)
+  function dots({ records, backup, blue, growB, prices, unread, cosNew } = {}) {
     const recs = Array.isArray(records) ? records : [];
     const since = typeof backup === 'number' && Number.isFinite(backup) ? backup : 0;
     const rec = recs.filter(r => r && r.date > since).length >= 20 || Number(unread) > 0;
     const list = Array.isArray(prices) ? prices : [];
     const canBuy = list.some(p => typeof p === 'number' && Number.isFinite(p) && p <= blue);
-    return { rec, grow: canBuy && blue > growB };
+    return { rec, grow: canBuy && blue > growB, shop: Number(cosNew) > 0 };
   }
 
   const api = { RULE, LINES, HEAD, clean, fresh, again, isFirst, Session, resultTip, dots };
@@ -28425,7 +30958,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
 //   주인공 칸 높이 = 남는 높이(최소 140).
 // 모델: { id, date, mode, scoreText, place?:{kind,place}, placeText?, stats:[[이름,값]…], shape, craftName, cat?:{id,name},
 //   cats?:[{id,rank?}](동반 둘 이상), title?:{ note:true, text } | { by, name, text }, version, paint?, sets?:[색], rank?(0~4),
-//   titleName?, week?, skills?:[[id,단계]…] }
+//   titleName?, week?, skills?:[[id,단계]…], cos?:{ frame?, mark?, mcol?, flame?, trail?, props?:{ 고양이: 소품 } } }
+// 꾸미기(R-117, 14단계): 틀(기본 테두리 · 위 빛줄 대신) · 주인공 기체 무늬(몸체로 자름) · 기체 뒤 짧은 불꽃 + 자국(아래로) ·
+//   고양이 얼굴 소품 — 줄 높이 · 칸 배치는 그대로(칭호 띠와 안 겹침). 계약 design/v5-stage14/cos.js frameSvg · dressCard
 (function (root) {
   'use strict';
   const FONT = "system-ui, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
@@ -28466,6 +31001,210 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     '>' +
     esc(s) +
     '</text>';
+  // ── 꾸미기(R-117) 그림: 끝 이름 · 색(pal.cos) · 자국 모양(22칸 격자, 아래로) · 틀 ──
+  const leaf = id => (typeof id === 'string' && id ? id.split('.').pop() : null);
+  // 자국 경로(위 → 아래): 꼬리 x 11 · y0에서 len만큼, [경로, 굵기, 투명도?]
+  function trailPaths(kind, y0, len) {
+    const n = 16,
+      pts = (amp, freq, off = 0) => {
+        const out = [];
+        for (let i = 0; i <= n; i++) {
+          const k = i / n;
+          out.push([
+            (11 + off + Math.sin(k * Math.PI * freq) * amp * k).toFixed(2),
+            (y0 + k * len).toFixed(2),
+          ]);
+        }
+        return 'M' + out.map(p => p.join(' ')).join('L');
+      };
+    if (kind === 'pulse') return [[pts(2.4, 5), 1]];
+    if (kind === 'double')
+      return [
+        [pts(1.6, 1.6, -1.5), 0.7],
+        [pts(1.6, 1.6, 1.5), 0.7],
+      ];
+    if (kind === 'ribbon') return [[pts(1.6, 1.6), 2.8]];
+    if (kind === 'comet')
+      return [
+        [pts(1.2, 1.4), 6, 0.28],
+        [pts(1.2, 1.4), 1.1],
+      ];
+    return [[pts(1.6, 1.6), 0.9]];
+  }
+  // 불꽃(꼬리 y0에서 아래로 len, 반폭 w)
+  const flamePath = (y0, len, w) =>
+    'M' +
+    (11 - w) +
+    ' ' +
+    y0 +
+    'C' +
+    (11 - w * 0.83) +
+    ' ' +
+    (y0 + len * 0.33) +
+    ' ' +
+    (11 - w * 0.3) +
+    ' ' +
+    (y0 + len * 0.8) +
+    ' 11 ' +
+    (y0 + len) +
+    'C' +
+    (11 + w * 0.3) +
+    ' ' +
+    (y0 + len * 0.8) +
+    ' ' +
+    (11 + w * 0.83) +
+    ' ' +
+    (y0 + len * 0.33) +
+    ' ' +
+    (11 + w) +
+    ' ' +
+    y0 +
+    'Z';
+  // 카드 틀(기본 테두리 · 위 빛줄 대신): 별자리 · 회로 · 네온 이중선 · 금빛 틀 · 홀로 틀. 카드는 전장이 아니라 홀로는 무지개 그대로
+  function frameSvg(k, mc, pal) {
+    const rect = (inset, color, w, op) =>
+      '<rect x="' +
+      inset +
+      '" y="' +
+      inset +
+      '" width="' +
+      (W - inset * 2) +
+      '" height="' +
+      (H - inset * 2) +
+      '" rx="' +
+      Math.max(4, 18 - inset) +
+      '" fill="none" stroke="' +
+      color +
+      '" stroke-width="' +
+      w +
+      '" stroke-opacity="' +
+      op +
+      '"/>';
+    const dot = (x, y, r, fill, extra = '') =>
+      '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + fill + '"' + extra + '/>';
+    if (k === 'stars') {
+      const con = (ox, oy, sx, sy) => {
+        const p = [
+          [0, 0],
+          [16, 6],
+          [30, 2],
+          [40, 16],
+          [24, 24],
+        ].map(([x, y]) => [ox + x * sx, oy + y * sy]);
+        return (
+          '<path d="' +
+          pathOf(p, false) +
+          '" fill="none" stroke="' +
+          mc +
+          '" stroke-width="0.7" stroke-opacity="0.6"/>' +
+          p.map(([x, y], i) => dot(x, y, i % 2 ? 1.2 : 1.8, pal.ink, ' opacity="0.9"')).join('')
+        );
+      };
+      return (
+        rect(1, mc, 1, 0.55) +
+        con(14, 54, 1, 1) +
+        con(W - 14, 54, -1, 1) +
+        con(14, H - 40, 1, -1) +
+        con(W - 14, H - 40, -1, -1)
+      );
+    }
+    if (k === 'circuit') {
+      const c = pal.cyan,
+        side = flip => {
+          const fx = v => (flip ? W - v : v);
+          return (
+            '<path d="M' +
+            fx(1) +
+            ' 90H' +
+            fx(10) +
+            'L' +
+            fx(16) +
+            ' 96V170L' +
+            fx(10) +
+            ' 176H' +
+            fx(1) +
+            'M' +
+            fx(1) +
+            ' 250H' +
+            fx(8) +
+            'L' +
+            fx(14) +
+            ' 256V330M' +
+            fx(16) +
+            ' 130H' +
+            fx(24) +
+            '" fill="none" stroke="' +
+            c +
+            '" stroke-width="1" stroke-opacity="0.7"/>' +
+            [
+              [16, 133],
+              [24, 130],
+              [14, 330],
+              [16, 170],
+            ]
+              .map(([x, y]) => dot(fx(x), y, 1.8, pal.bg, ' stroke="' + c + '" stroke-width="1"'))
+              .join('')
+          );
+        };
+      return rect(1, c, 1, 0.6) + side(false) + side(true);
+    }
+    if (k === 'neon')
+      return (
+        rect(1, mc, 2, 0.9) +
+        rect(6, mc, 0.8, 0.45) +
+        [
+          [6, 6],
+          [W - 6, 6],
+          [6, H - 6],
+          [W - 6, H - 6],
+        ]
+          .map(([x, y]) => dot(x, y, 2.2, mc))
+          .join('')
+      );
+    if (k === 'gold') {
+      const g = pal.gold,
+        br = (x, y, sx, sy) =>
+          '<path d="M' +
+          (x + 24 * sx) +
+          ' ' +
+          y +
+          'H' +
+          x +
+          'V' +
+          (y + 24 * sy) +
+          '" fill="none" stroke="' +
+          g +
+          '" stroke-width="2.4" stroke-linecap="round"/>';
+      return (
+        rect(1, g, 1.6, 0.9) +
+        rect(5, g, 0.6, 0.55) +
+        br(10, 10, 1, 1) +
+        br(W - 10, 10, -1, 1) +
+        br(10, H - 10, 1, -1) +
+        br(W - 10, H - 10, -1, -1) +
+        '<rect x="40" y="0" width="280" height="2" fill="' +
+        g +
+        '" opacity="0.8"/>'
+      );
+    }
+    if (k === 'holo')
+      return (
+        '<defs><linearGradient id="holo" x1="0" y1="0" x2="1" y2="1">' +
+        ['#7fd4ff', '#c4a3ff', '#ff8fd0', '#ffd36a', '#7cf2b4']
+          .map((c, i) => '<stop offset="' + i / 4 + '" stop-color="' + c + '"/>')
+          .join('') +
+        '</linearGradient><linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0.35" stop-color="#ffffff" stop-opacity="0"/><stop offset="0.5" stop-color="#ffffff" stop-opacity="0.07"/><stop offset="0.65" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs>' +
+        '<rect width="' +
+        W +
+        '" height="' +
+        H +
+        '" rx="18" fill="url(#sheen)"/>' +
+        rect(1.2, 'url(#holo)', 2.4, 1) +
+        rect(6, 'url(#holo)', 0.6, 0.5)
+      );
+    // 기본: 모드 색 테두리 + 위 빛줄
+    return rect(1, mc, 1, 0.55) + '<rect x="40" y="0" width="280" height="2" fill="url(#ct)"/>';
+  }
   // 줄 높이(단위). 주인공 칸은 남는 높이
   const ROW = {
     head: 44,
@@ -28548,16 +31287,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           (0.25 + rnd() * 0.5).toFixed(2) +
           '"/>',
       );
-    o.push(
-      '<rect x="1" y="1" width="' +
-        (W - 2) +
-        '" height="' +
-        (H - 2) +
-        '" rx="17" fill="none" stroke="' +
-        mc +
-        '" stroke-opacity="0.55"/>',
-    );
-    o.push('<rect x="40" y="0" width="280" height="2" fill="url(#ct)"/>');
+    // 테두리: 기본(모드 색 + 위 빛줄) 또는 입은 카드 틀(R-117)
+    o.push(frameSvg(leaf(m.cos?.frame) || 'base', mc, pal));
     // 머리: 로고 · 날짜
     o.push(
       '<text x="20" y="31" font-size="13" font-weight="900" letter-spacing="1.6" fill="' +
@@ -28599,6 +31330,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           c +
           '">' +
           (parts.cat(m.title.by) || '') +
+          (parts.prop?.(m.title.by, m.cos?.props?.[m.title.by]) || '') +
           '</svg></g>',
       );
       o.push(t(66, y + 18, m.title.name || '', 9.5, c, 800, 'start'));
@@ -28627,7 +31359,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ),
     );
     const s = m.shape,
-      paint = m.paint ? pal.paint[m.paint] : null;
+      paint = m.paint ? pal.paint[m.paint] : null,
+      cos = m.cos || {},
+      flame = leaf(cos.flame),
+      trail = leaf(cos.trail),
+      mark = leaf(cos.mark),
+      ty = Math.max(...s.body.filter(p => p[0] === 11).map(p => p[1])),
+      fcol = flame ? pal.cos[flame === 'aurora' ? 'cyan' : flame] || pal.cyan : null;
     o.push(
       '<g transform="translate(' +
         (cx - 11 * k) +
@@ -28637,6 +31375,39 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         k +
         ')" stroke-linejoin="round">',
     );
+    // 꾸미기(R-117): 기체 뒤 짧은 자국(색 = 불꽃 색, 없으면 도색 · 기체 색) → 불꽃(오로라 = 색 띠)
+    if (trail)
+      for (const [d, sw, op] of trailPaths(trail, ty + (flame ? 4 : 0), 14))
+        o.push(
+          '<path d="' +
+            d +
+            '" fill="none" stroke="' +
+            (fcol || paint || pal.craftFill) +
+            '" stroke-width="' +
+            sw +
+            '" stroke-linecap="round" opacity="' +
+            (op || 0.6) +
+            '"/>',
+        );
+    if (flame) {
+      const aur = flame === 'aurora';
+      if (aur)
+        o.push(
+          '<defs><linearGradient id="cfa" x1="0" y1="0" x2="0" y2="1">' +
+            ['cyan', 'sky', 'violet', 'mint', 'gold']
+              .map((c, i) => '<stop offset="' + i / 4 + '" stop-color="' + pal.cos[c] + '"/>')
+              .join('') +
+            '</linearGradient></defs>',
+        );
+      o.push(
+        '<path d="' +
+          flamePath(ty - 0.6, 7, 2.2) +
+          '" fill="' +
+          (aur ? 'url(#cfa)' : fcol) +
+          '" opacity="0.9"/>',
+      );
+      o.push('<path d="' + flamePath(ty - 0.6, 3.6, 1.1) + '" fill="#ffffff" opacity="0.85"/>');
+    }
     o.push(
       '<path d="' +
         pathOf(s.body, true) +
@@ -28670,6 +31441,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           s.lineStroke * 0.7 +
           '"/>',
       );
+    // 무늬(R-117): 몸체로 자른 가는 무늬(무늬 색, 기본 흰빛) — 몸체 색 · 선은 그대로 보인다
+    const markParts = mark && parts.mark?.(mark);
+    if (markParts) {
+      const mcol = pal.cos[leaf(cos.mcol) || 'white'] || pal.ink;
+      o.push(
+        '<clipPath id="cmk"><path d="' +
+          pathOf(s.body, true) +
+          '"/></clipPath><g clip-path="url(#cmk)" opacity="0.92">' +
+          markParts
+            .map(([d, fw]) =>
+              fw === true
+                ? '<path d="' + d + '" fill="' + mcol + '"/>'
+                : '<path d="' +
+                  d +
+                  '" fill="none" stroke="' +
+                  mcol +
+                  '" stroke-width="' +
+                  fw +
+                  '" stroke-linecap="round" stroke-linejoin="round"/>',
+            )
+            .join('') +
+          '</g>',
+      );
+    }
     o.push('</g>');
     // 동반 고양이: 기체 오른쪽 위(배지와 겹치지 않게), 크기는 주인공 칸을 따라 34~44. 승진한 고양이는 단계 고리.
     // 동반이 여럿이면(R-112) 같은 자리를 가운데로 충격파 문양과 같은 삼각 자리(미오 위 · 토토 왼쪽 아래 · 루나 오른쪽 아래),
@@ -28721,6 +31516,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           cc +
           '">' +
           (parts.cat(id) || '') +
+          (parts.prop?.(id, m.cos?.props?.[id]) || '') +
           '</svg></g>',
       );
       return cc;
@@ -28903,9 +31699,24 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       rank: (cat && ranks[cat]) || look.rank || undefined,
       // 칭호 띠(R-115): 출격 순간 단 칭호(칭호 이정표 id일 때만)
       titleName: T.titles?.[look.cos?.title] || undefined,
+      // 꾸미기(R-117): 출격 순간 입은 틀 · 무늬 · 무늬 색 · 불꽃 · 자국 · 고양이마다 소품(끝 이름)
+      cos: cosModel(look.cos),
       week: r.world?.week ? 'WORLD · ' + r.world.week : undefined,
       skills: r.world?.sk ? Object.entries(r.world.sk) : undefined,
     };
+  }
+  // 기록 look.cos → 카드 꾸밈(아는 칸만, 비면 undefined)
+  function cosModel(c) {
+    if (!c || typeof c !== 'object') return undefined;
+    const out = {},
+      props = {};
+    for (const k of ['frame', 'mark', 'mcol', 'flame', 'trail']) if (typeof c[k] === 'string') out[k] = c[k];
+    for (const cat of root.NeonBalance.cats.list) {
+      const v = c['prop.' + cat];
+      if (typeof v === 'string') props[cat] = leaf(v);
+    }
+    if (Object.keys(props).length) out.props = props;
+    return Object.keys(out).length ? out : undefined;
   }
   // 색(토큰 값): 처음 한 번 읽어 둔다. CSS 변수는 값으로 풀어 SVG가 문서 밖에서도 같게 그려진다
   let PAL = null,
@@ -28942,6 +31753,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       skill: Object.fromEntries(
         Object.keys(T.skills).map(id => [id, resolve(String(T.skills[id].color || ''))]),
       ),
+      // 꾸미기 색(R-117): tokens.css --cos-<색>(전투와 같은 값)
+      cos: Object.fromEntries(
+        ['white', 'cyan', 'sky', 'mint', 'violet', 'silver', 'gold'].map(c => [
+          c,
+          resolve('var(--cos-' + c + ')'),
+        ]),
+      ),
     };
     PARTS = {
       badge: id => {
@@ -28950,6 +31768,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         return resolve(root.NeonBadges.defsMarkup() + (m ? m[1] : ''));
       },
       cat: id => resolve(root.NeonView.catSvg(id)),
+      // 꾸미기(R-117): 무늬 경로([d, 채움 | 굵기]) · 고양이 소품(끝 이름, 없으면 '')
+      mark: k => root.NeonView.COS_MARK[k] || null,
+      prop: (id, p) => (p ? resolve(root.NeonView.catPropSvg?.(id, p) || '') : ''),
       icon: id => root.NeonIcons.ICONS[id] || '',
     };
     return { pal: PAL, parts: PARTS };
@@ -29063,6 +31884,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       ['all', G().mileAll],
       ['none', G().paintNone],
     ]);
+  // 꾸미기(R-116): 그대로 · 모두 가짐 · 없음(칭호는 그대로)
+  const cosPick = () =>
+    pick('gm-cos', G().cos, [
+      ['keep', G().paintKeep],
+      ['all', G().paintAll],
+      ['none', G().paintNone],
+    ]);
   // 승진 단계 칸(R-113): 열 수 있는 단계까지(마스터 잠금)
   const cap = () => root.NeonProgress.promoCap(),
     rankOf = (p, id) => Math.min(cap(), p.promo?.[id]?.rank || 0);
@@ -29098,9 +31926,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       MODES.map(id => check('gm-mode-' + id, T.modeName(id))).join('') +
       check('gm-hidden', g.hidden) +
       check('gm-hangar', g.hangar) +
+      // 보급 캡슐 항상(R-116): 이 기기 설정 — 다음 판 끝에 확률 1 · 시간 0
+      check('gm-capsule', g.capsule) +
       '</div><div class="gm-grid">' +
       paintPick() +
       milePick() +
+      cosPick() +
       '</div></section><section class="gm-sec"><h3>' +
       esc(g.start) +
       '</h3><div class="gm-grid">' +
@@ -29140,6 +31971,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     $('gm-hangar').checked = (p.opened || []).includes('hangar');
     $('gm-paint').value = 'keep';
     $('gm-mile').value = 'keep';
+    $('gm-cos').value = 'keep';
+    $('gm-capsule').checked = ctx.prefs.gmCapsule === true;
     $('gm-stage').value = startStage();
     $('gm-late').value = lateMin() || '';
     $('gm-status').textContent = '';
@@ -29160,6 +31993,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     try {
       ctx.prefs.gmStage = Math.min(STAGE_MAX, Math.max(1, Math.floor(Number($('gm-stage').value) || 1)));
       ctx.prefs.gmLate = Math.min(60, Math.max(0, Math.floor(Number($('gm-late').value) || 0)));
+      ctx.prefs.gmCapsule = $('gm-capsule').checked;
       ctx.savePrefs();
       const now = ctx.profile.snapshot(),
         promo = Object.fromEntries(
@@ -29178,6 +32012,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         hangar: $('gm-hangar').checked,
         paint: $('gm-paint').value === 'keep' ? undefined : $('gm-paint').value,
         mile: $('gm-mile').value === 'keep' ? undefined : $('gm-mile').value,
+        cos: $('gm-cos').value === 'keep' ? undefined : $('gm-cos').value,
       });
       ctx.refreshProfileUI();
       await ctx.refreshRecords();
@@ -29292,6 +32127,8 @@ let canvas = $('arena'),
   runRanks = {},
   // 출격 순간 단 칭호(R-115, 기록 look.cos.title — 판 뒤에 바꿔도 그 판 카드는 그대로)
   runTitle = null,
+  // 출격 순간 입은 꾸밈(R-116 · R-118, 칸 → 조각 id — 렌더러 · 전투 음악 · 기록 look.cos, 판 뒤에 바꿔도 그 판은 그대로)
+  runCos = {},
   recSelect = null,
   // 기록 탭 경력 '자세히'(이 화면 동안만) · 비행 일지 화면에서 고른 별 · 배치 검사용 가짜 프로필(journalDemo)
   careerOpen = false,
@@ -29299,6 +32136,14 @@ let canvas = $('arena'),
   journalSnap = null,
   // 격납고 화면에서 고른 기체(R-106, 열 때 플레이 탭에서 고른 기체)
   hangarCraft = 'striker',
+  // 꾸미기 화면(R-117): 묶음 · 고른 칸 · 고른 조각(undefined = 입은 것, 입어 보기는 저장 안 함) · 미리보기 기체 ·
+  // 들어 보는 곡(undefined = 없음) · 그 곡 상태(NeonMusic.preview)
+  cosGroup = 'craft',
+  cosSlot = 'mark',
+  cosSel = undefined,
+  cosCraft = 'striker',
+  cosListen = undefined,
+  cosPlay = 'idle',
   // 획득 스킬 줄을 마지막으로 그린 스택(바뀔 때만 다시 그림)
   skillKey = '',
   // Point 보너스 구간을 마지막으로 넘은 횟수 { g, b, s }(R-090 튀어 오름, 판이 새로 시작해 줄면 다시 맞춘다)
@@ -29342,6 +32187,9 @@ let prefs = {
     tips: NeonCoach.clean(null),
     // 고양이 한마디(R-102): 한 번만 하는 줄 · 그날 한 번 · 지난 전략 팁. 이 기기 설정(백업 대상 아님)
     talk: NeonTalk.clean(null),
+    // 꾸미기 새 조각(R-117): 보급 캡슐로 받은 조각 id(꾸미기 화면을 나갈 때 비움) · GM '캡슐 항상'. 이 기기 설정(백업 대상 아님)
+    cosNew: [],
+    gmCapsule: false,
     craft: 'striker',
     mode: 'easy',
   },
@@ -29367,6 +32215,10 @@ try {
     prefs.gmLate = Math.min(60, Math.max(0, Math.floor(Number(p.gmLate) || 0)));
     prefs.tips = NeonCoach.clean(p.tips);
     prefs.talk = NeonTalk.clean(p.talk);
+    prefs.cosNew = Array.isArray(p.cosNew)
+      ? [...new Set(p.cosNew.filter(id => NeonProgress.cosItem(id)))].slice(0, 40)
+      : [];
+    prefs.gmCapsule = p.gmCapsule === true;
     if (Neon.CRAFTS[p.craft]) prefs.craft = p.craft;
     if (Neon.DIFFICULTIES[p.mode]) prefs.mode = p.mode;
   }
@@ -29564,6 +32416,10 @@ function wallet() {
     own: Object.fromEntries(Object.keys(BAL.crafts).map(id => [id, NeonProgress.paintOwn(p, id)])),
     wear: Object.fromEntries(Object.keys(BAL.crafts).map(id => [id, NeonProgress.paintWear(p, id)])),
     sets: NeonProgress.paintSets(p),
+    // 꾸미기(R-116 · R-117): 문 · 가진 조각 · 입은 것(세 기체 공통, 아는 · 가진 조각만)
+    cosOpen: (p.opened || []).includes('cos'),
+    cosOwn: Array.isArray(p.cos?.own) ? p.cos.own : [],
+    cosWear: NeonProgress.cosWorn(p),
   };
 }
 
@@ -29578,11 +32434,29 @@ function showPage(name) {
     ['page-hangar', 'hangar'],
     ['page-journal', 'journal'],
     ['page-shop', 'shop'],
+    ['page-cos', 'cos'],
     ['page-rec', 'rec'],
   ])
     $(id).hidden = key !== name;
-  // 히든 · 격납고는 성장 탭, 비행 일지는 기록 탭 안의 뒤로가기 화면
-  const tab = name === 'hidden' || name === 'hangar' ? 'grow' : name === 'journal' ? 'rec' : name;
+  // 히든 · 격납고는 성장 탭, 비행 일지는 기록 탭, 꾸미기는 상점 탭 안의 뒤로가기 화면
+  const tab =
+    name === 'hidden' || name === 'hangar'
+      ? 'grow'
+      : name === 'journal'
+        ? 'rec'
+        : name === 'cos'
+          ? 'shop'
+          : name;
+  // 꾸미기를 나가면(R-117): 미리 듣던 곡을 끝내고(대기실 곡) 새 조각 표시를 비운다
+  if (prev === 'cos' && name !== 'cos') {
+    if (cosListen !== undefined) NeonMusic.preview(null);
+    cosListen = undefined;
+    cosPlay = 'idle';
+    if (prefs.cosNew.length) {
+      prefs.cosNew = [];
+      savePrefs();
+    }
+  }
   // 경력 '자세히'는 기록 탭에 들어올 때 접고, 비행 일지는 열 때마다 처음 고르기(안 읽은 것부터)
   if (name === 'rec' && prev !== 'journal') careerOpen = false;
   if (name === 'journal') journalPick = null;
@@ -29611,10 +32485,11 @@ let craftKey = '';
 function renderCrafts() {
   const w = wallet(),
     sets = w.sets.join(' '),
-    key = selected + '|' + Object.values(w.wear).join(',') + '|' + sets;
+    look = { mark: w.cosWear.mark, mcol: w.cosWear.mcol },
+    key = selected + '|' + Object.values(w.wear).join(',') + '|' + sets + '|' + look.mark + look.mcol;
   if (key === craftKey) return;
   craftKey = key;
-  $('crafts').innerHTML = V.crafts(selected, w.wear);
+  $('crafts').innerHTML = V.crafts(selected, w.wear, look);
   const area = $('crafts').closest('.area--craft');
   if (sets) area.dataset.sets = sets;
   else delete area.dataset.sets;
@@ -29866,6 +32741,10 @@ async function begin(launch = {}) {
     renderer.setGlyphs?.(
       Object.entries(cats.ranks || {}).map(([cat, rank]) => ({ cat, rank, svg: V.catGlyphSvg(cat) })),
     );
+    // 꾸미기(R-118): 출격 순간 입은 꾸밈(세 기체 공통). 엔진은 모른다(판 진행 영향 0)
+    runCos = NeonProgress.cosWorn(profile.snapshot());
+    renderer.setLook?.(runCos);
+    NeonMusic.setBattle(runCos.music || null);
     renderer.cam.x = g.p.x;
     renderer.cam.y = g.p.y;
     runId = nextRunId;
@@ -30279,8 +33158,8 @@ function makeRecord() {
       paint: g.paint.wear,
       sets: [...g.paint.sets],
       ...(runRanks[runParty[0]] ? { rank: runRanks[runParty[0]] } : {}),
-      // 13단계(R-115): 출격 순간 단 칭호(이정표 id)
-      ...(runTitle ? { cos: { title: runTitle } } : {}),
+      // 13단계(R-115) · 14단계(R-116): 출격 순간 단 칭호(이정표 id) · 입은 꾸밈(전투 음악은 빼고)
+      ...lookCos(),
     },
     siegeWaves: g.siegeWaves || 0,
     abilityUsage: g.abilityUsage,
@@ -30288,6 +33167,12 @@ function makeRecord() {
     summary: recorder?.summary || {},
     partial: recorder?.partial || false,
   };
+}
+// 기록 look.cos: 출격 순간 꾸밈(음악 뺌) + 칭호. 비어 있으면 칸 없음(옛 기록과 같은 꼴)
+function lookCos() {
+  const { music, ...rest } = runCos,
+    cos = { ...rest, ...(runTitle ? { title: runTitle } : {}) };
+  return Object.keys(cos).length ? { cos } : {};
 }
 function renderResultCoins() {
   const r = lastResult;
@@ -30443,6 +33328,7 @@ function showResult() {
     resultUnlockSound = false;
     resultPromo = null;
     resultMile = [];
+    resultCapsule = [];
     g.onEvent = null;
     lastSavedPromise = (async () => {
       r.summary = await session.finish(g);
@@ -30467,7 +33353,13 @@ function showResult() {
       const ok = await store.save(r);
       // 비행 경력(R-100): 저장 바로 뒤 · 정리 앞, 기록 careerAt과 한 트랜잭션. 승진 판정(R-111)도 같은 자리 →
       // 고양이 줄(R-112)이 결과 한마디를 대신하고, 통과가 있으면 해금 소리 한 번
-      const career = ok ? await profile.addCareer(r.id) : null;
+      const career = ok ? await profile.addCareer(r.id, { capsule: prefs.gmCapsule }) : null;
+      // 보급 캡슐(R-117): 받은 조각 → 결과 줄(이정표 다음) + 새 조각 점
+      if (career?.capsule) {
+        resultCapsule = [career.capsule];
+        addCosNew(resultCapsule);
+        if (lastResult === r) renderResultTalk();
+      }
       // 이정표(R-114 · R-115): 이 판에 넘은 이정표 → 결과 고양이 줄(승진 통과 다음)
       if (career?.mile?.length) {
         resultMile = career.mile;
@@ -30830,6 +33722,8 @@ let coach = null,
   resultPromo = null,
   // 이정표 줄(R-115): 이 판에 넘은 이정표 id(사다리 순)
   resultMile = [],
+  // 보급 캡슐 줄(R-117): 이 판에 받은 조각 id
+  resultCapsule = [],
   hiddenTalk = null;
 // 고양이 한마디(R-102): 고르는 데 쓰는 것을 모아 pick, 한 번만 하는 줄은 기기 설정에 적는다
 function talkPick(kind, extra = {}) {
@@ -30850,6 +33744,13 @@ function talkPick(kind, extra = {}) {
   if (line && line.by !== 'radio' && !line.locked) line.rank = NeonProgress.promoRank(snap, line.by) || 0;
   return line;
 }
+// 꾸미기 새 조각 표시(R-117): 캡슐로 받은 조각(결과 · 줍기) → 상점 탭 · 입구 · 묶음 · 칸 점
+function addCosNew(ids) {
+  if (!ids?.length) return;
+  prefs.cosNew = [...new Set([...prefs.cosNew, ...ids])].slice(-40);
+  savePrefs();
+  if (g.mode === 'menu') refreshProfileUI();
+}
 // 결과 한마디 자리(R-112 · R-115): 승진 · 이정표 줄이 있으면 고양이 줄(['처음 만남'] → 통과 → 이정표 → 시험, 최대 3줄),
 // 없으면 한마디. 같은 판에 승진 통과가 있으면 승진 이정표(첫 승진 · 전문 · 마스터) 줄은 뺀다(일지는 안 읽음으로 남음)
 const RANK_MILES = NeonProgress.MILE.filter(m => m.rank).map(m => m.id);
@@ -30860,12 +33761,15 @@ function renderResultTalk() {
     miles = resultMile
       .filter(id => !(pass && RANK_MILES.includes(id)))
       .map(id => [id, NeonTalk.mileLine(id, snap)])
-      .filter(([, line]) => line);
-  if (!events.length && !miles.length) {
+      .filter(([, line]) => line),
+    // 캡슐을 전하는 이: 토토가 깨어 있으면(히든 탭 · Lv ≥ 1) 토토, 아니면 무전
+    by = snap.hidden && (snap.cats?.supply || 0) >= 1 ? 'supply' : 'radio',
+    capsules = resultCapsule.map(id => [id, { by, rank: NeonProgress.promoRank(snap, 'supply') || 0 }]);
+  if (!events.length && !miles.length && !capsules.length) {
     $('result-talk').innerHTML = V.talk(resultTalk);
     return;
   }
-  const out = V.resultRows({ meet: runHidden ? resultTalk : null, events, miles });
+  const out = V.resultRows({ meet: runHidden ? resultTalk : null, events, miles, capsules });
   $('result-talk').innerHTML = out.html;
   markRead(out.shown);
 }
@@ -31048,9 +33952,11 @@ function renderDots() {
     blue: w.blue,
     growB,
     prices: NeonProgress.SKILLS.map(id => NeonProgress.permaPrice(id, w.perma[id] || 0)),
+    cosNew: w.cosOpen ? prefs.cosNew.length : 0,
   });
   setDot('grow', d.grow);
   setDot('rec', d.rec);
+  setDot('shop', d.shop);
 }
 // 점은 탭 아이콘 오른쪽 위(ui.css .tab-dot), 읽기 이름에 '새 소식'. 바뀔 때만 쓴다
 function setDot(tab, on) {
@@ -31440,6 +34346,37 @@ function bind() {
       refreshProfileUI();
       document.querySelector('[data-hangar-craft="' + hangarCraft + '"]')?.focus();
     }
+    // 꾸미기(R-117): 상점 탭 아래 입구 → 꾸미기 화면(미리보기 기체는 플레이 탭에서 고른 기체부터)
+    if (b.id === 'cos-open' && wallet().cosOpen) {
+      cosCraft = selected;
+      cosGroup = 'craft';
+      cosSlot = 'mark';
+      cosSel = undefined;
+      text('cos-status', '');
+      showPage('cos');
+      $('cos-back').focus();
+    }
+    if (b.id === 'cos-back') {
+      showPage('shop');
+      $('menu-body').scrollTop = $('menu-body').scrollHeight;
+      $('cos-open')?.focus();
+    }
+    if (b.dataset.cosGroup) {
+      cosGroup = b.dataset.cosGroup;
+      cosSlot = { craft: 'mark', cat: 'prop.' + BAL.cats.list[0], music: 'music', card: 'frame' }[cosGroup];
+      cosSel = undefined;
+      text('cos-status', '');
+      refreshProfileUI();
+      document.querySelector('[data-cos-group="' + cosGroup + '"]')?.focus();
+    }
+    if (b.dataset.cosCraft) {
+      cosCraft = b.dataset.cosCraft;
+      refreshProfileUI();
+      document.querySelector('[data-cos-craft="' + cosCraft + '"]')?.focus();
+    }
+    if (b.dataset.cosPick) pickCos(b.dataset.cosPick);
+    if (b.dataset.cosAct === 'buy' && cosSel) buyCos(cosSel);
+    if (b.dataset.cosAct === 'wear') wearCos(cosSlot, cosSel ?? null);
     if (b.dataset.paintBuy) buyPaint(hangarCraft, b.dataset.paintBuy);
     if (b.dataset.paintWear) wearPaint(hangarCraft, b.dataset.paintWear);
     if (b.dataset.cat) buyCat(b.dataset.cat, Number(b.dataset.catLevel));
@@ -31940,6 +34877,14 @@ function refreshProfileUI() {
   if (lastResult) renderResultCoins();
   if (profile.storageLimited) text('storage-note', profile.storageReason || T.msg.storageLimited);
   if (g.mode !== 'menu') return;
+  // 고양이 소품(R-117): 깨운 고양이만 얼굴에 붙인다(히든 탭 · 말풍선 · 상점 입구 · 꾸미기)
+  V.setProps(
+    Object.fromEntries(
+      BAL.cats.list
+        .filter(id => (w.cats[id] || 0) >= 1 && w.cosWear['prop.' + id])
+        .map(id => [id, w.cosWear['prop.' + id].split('.').pop()]),
+    ),
+  );
   renderDots();
   if (!profile.isUnlocked(selectedDifficulty)) selectedDifficulty = 'easy';
   const badgeHost = $('mode-badge');
@@ -31969,12 +34914,22 @@ function refreshProfileUI() {
       maxOf: NeonProgress.permaMax,
     });
     $('hidden-entry').innerHTML = V.hiddenEntry(w.hidden, w.party);
-    $('hangar-entry').innerHTML = V.hangarEntry({ open: w.hangar, wear: w.wear, sets: w.sets });
+    $('hangar-entry').innerHTML = V.hangarEntry({
+      open: w.hangar,
+      wear: w.wear,
+      sets: w.sets,
+      look: { mark: w.cosWear.mark, mcol: w.cosWear.mcol },
+    });
   }
   // 격납고가 닫혀 있으면(예: 백업 · GM으로 바꿈) 성장 탭으로 돌아간다
   if (page === 'hangar' && !w.hangar) showPage('grow');
   else if (page === 'hangar')
-    $('hangar-view').innerHTML = V.hangarPage({ ...w, sel: hangarCraft, ready: !buyBusy });
+    $('hangar-view').innerHTML = V.hangarPage({
+      ...w,
+      sel: hangarCraft,
+      ready: !buyBusy,
+      look: { mark: w.cosWear.mark, mcol: w.cosWear.mcol },
+    });
   // 히든 탭이 닫혀 있으면(예: 백업으로 바꿈) 성장 탭으로 돌아간다
   if (page === 'hidden' && !w.hidden) showPage('grow');
   else if (page === 'hidden')
@@ -31997,6 +34952,102 @@ function refreshProfileUI() {
       },
       selectedDifficulty,
     );
+  if (page === 'shop')
+    $('cos-entry').innerHTML = V.cosEntry({
+      open: w.cosOpen,
+      own: w.cosOwn,
+      wear: w.cosWear,
+      craft: selected,
+      paint: w.wear[selected],
+      cats: w.cats,
+      fresh: prefs.cosNew.length > 0,
+    });
+  // 꾸미기가 닫혀 있으면(예: 백업 · GM으로 바꿈) 상점 탭으로 돌아간다
+  if (page === 'cos' && !w.cosOpen) showPage('shop');
+  else if (page === 'cos') renderCos(w);
+}
+// 꾸미기 화면(R-117): 묶음마다 미리보기 → 묶음 탭 → 본문 → 아래 줄. 카드 묶음 미리보기는 최근 기록의 실제 카드
+function renderCos(w = wallet()) {
+  const snap = profile.snapshot();
+  if (cosSel === undefined) cosSel = w.cosWear[cosSlot] ?? null;
+  text('cos-count', V.cosCount(w.cosOwn));
+  $('cos-view').innerHTML = V.cosPage({
+    own: w.cosOwn,
+    wear: w.cosWear,
+    fresh: prefs.cosNew,
+    group: cosGroup,
+    slot: cosSlot,
+    sel: cosSel,
+    craft: cosCraft,
+    paint: w.wear[cosCraft],
+    paints: w.wear,
+    cats: w.cats,
+    ranks: Object.fromEntries(BAL.cats.list.map(id => [id, NeonProgress.promoRank(snap, id) || 0])),
+    gold: w.gold,
+    sc: w.sc,
+    ready: !buyBusy,
+    need: id => NeonProgress.cosNeed(snap, id),
+    listen: cosListen,
+    play: cosPlay,
+    card: cosGroup === 'card' ? cosCard(cosSlot === 'frame' ? cosSel : w.cosWear.frame) : '',
+  });
+}
+// 카드 틀 미리보기: 가장 최근 기록 카드(없으면 그림 없이)에 고른 틀
+function cosCard(frame) {
+  const r = records.reduce((a, b) => (!a || b.date > a.date ? b : a), null);
+  if (!r) return '';
+  try {
+    const { pal, parts } = NeonCard.palette(),
+      m = NeonCard.model(r, { records });
+    m.cos = { ...(m.cos || {}), frame: frame || undefined };
+    return NeonCard.svg(m, pal, parts).replace('<svg ', '<svg class="cos-card-mini" aria-hidden="true" ');
+  } catch {
+    return '';
+  }
+}
+// 꾸미기 칸을 누름: 입어 보기(미리보기만). 음악 줄은 고르고 바로 들려준다
+function pickCos(key) {
+  const base = key.startsWith('base:'),
+    slot = base ? key.slice(5) : NeonProgress.cosItem(key)?.slot;
+  if (!slot) return;
+  cosSlot = slot;
+  cosSel = base ? null : key;
+  text('cos-status', '');
+  if (slot === 'music') listenCos(cosSel);
+  else refreshProfileUI();
+  document.querySelector('[data-cos-pick="' + key + '"]')?.focus();
+}
+async function listenCos(id) {
+  cosListen = id;
+  cosPlay = 'making';
+  refreshProfileUI();
+  const st = await NeonMusic.preview(id || 'base');
+  if (page !== 'cos' || cosListen !== id) return;
+  cosPlay = st;
+  refreshProfileUI();
+}
+// 사기(누를 때마다 새 거래 ID, 사면 바로 입힘) · 입히기 · 기본으로. 전투 곡이면 미리 만들어 둔다(setBattle)
+function buyCos(id) {
+  return purchase(
+    'cos-status',
+    async () => {
+      const r = await profile.buyCos(uid(), id);
+      if (r.ok && r.slot === 'music') NeonMusic.setBattle(id);
+      return r;
+    },
+    () => T.cos.bought(T.cosFull(id)),
+  );
+}
+function wearCos(slot, id) {
+  return purchase(
+    'cos-status',
+    async () => {
+      const r = await profile.wearCos(slot, id);
+      if (r.ok && slot === 'music') NeonMusic.setBattle(id);
+      return r;
+    },
+    () => (id ? T.cos.wore(T.cosFull(id)) : T.cos.based(T.cosSlotName(slot))),
+  );
 }
 async function chooseCoin() {
   if (choiceBusy || g.mode !== 'upgrade' || autoEnabled()) return;
@@ -32052,8 +35103,10 @@ async function purchase(statusId, run, okText) {
         ? m.duplicate
         : okText(r)
       : (typeof fail === 'function' ? fail() : fail) || m.failed;
-    // 판 밖에서 넘은 이정표(R-115: 격납고 열림 · 첫 도색 · 첫 모음): 상태 줄 한 줄 + 기록 탭 점
-    text(statusId, r.ok && r.mile?.length ? line + ' ' + T.msg.mile(r.mile) : line);
+    // 판 밖에서 넘은 이정표(R-115: 격납고 열림 · 첫 도색 · 첫 모음): 상태 줄 한 줄 + 기록 탭 점.
+    // 상점 네 칸을 모두 산 순간(R-116) 꾸미기 문
+    const opened = r.ok && r.opened?.includes('cos') ? ' · ' + T.msg.purchase.cosOpened : '';
+    text(statusId, (r.ok && r.mile?.length ? line + ' ' + T.msg.mile(r.mile) : line) + opened);
   } finally {
     buyBusy = false;
     refreshProfileUI();
@@ -32371,7 +35424,7 @@ async function confirmImport() {
     for (const r of plan.add) if (NeonData.isSolo(r)) await profile.evaluateRun(r);
     // schema 3 파일의 경력 · 이정표는 '프로필 교체' 체크와 상관없이 합친다(R-100). 가져온 새 판은 줍기가 경력에 더한다
     if (plan.profile && plan.profileSchema >= 3) await profile.mergeMemory(plan.profile);
-    if (added > 0) await profile.sweepCareer();
+    if (added > 0) addCosNew((await profile.sweepCareer()).capsules);
     const restored =
       plan.profile && $('import-profile').checked ? await profile.restoreFromBackup(plan.profile) : null;
     await profile.addHistory(
@@ -32631,7 +35684,9 @@ async function boot() {
   showPage('play');
   await refreshRecords();
   // 비행 경력 줍기(R-100): 저장과 더하기 사이에 꺼진 판 · 가져온 새 판(보통 0개)
-  profile.sweepCareer();
+  profile.sweepCareer().then(r => addCosNew(r?.capsules));
+  // 입은 전투 곡(R-118)을 미리 만들어 둔다(출격 때 조용한 몇 초 없게, 같은 곡이면 하는 일 없음)
+  NeonMusic.setBattle(NeonProgress.cosWorn(profile.snapshot()).music || null);
   refreshResetUI();
   initGm();
   renderer = await new NeonRenderer(canvas).init();
@@ -32797,6 +35852,28 @@ async function boot() {
         careerOpen = kind === 'rec';
         if (page === 'rec') renderCareer();
         if (page === 'journal') renderJournal();
+      },
+      // 꾸미기(R-117, 배치 검사용): 'result' = 결과 이정표 + 캡슐 + 시험 세 줄 + 해금 + 버프 ·
+      // 묶음('craft' · 'cat' · 'music' · 'card') = 꾸미기 화면 그 묶음, 아래 줄은 가장 긴 글(잠김 · 특별)
+      cosDemo(kind) {
+        if (kind === 'result') {
+          resultPromo = [{ cat: 'supply', kind: 'try', rank: 3, nowRank: 2, kills: 1240, clears: 6100 }];
+          resultMile = ['hour50'];
+          resultCapsule = ['trail.comet'];
+          renderResultTalk();
+          runUnlocked = ['insane'];
+          renderResultUnlock();
+          text('result-buffs', V.buffLine({ buffs: NeonProgress.BUFFS, revived: true }) || '');
+          $('result-buffs').hidden = false;
+          return;
+        }
+        const pick = { craft: 'mark.bolt', cat: 'prop.pilot.star', music: 'music.dnb', card: 'frame.gold' }[
+          kind
+        ];
+        cosGroup = kind;
+        cosSlot = NeonProgress.cosItem(pick).slot;
+        cosSel = pick;
+        showPage('cos');
       },
       // 승진 결과(R-112, 배치 검사용): 고양이 줄 셋(통과 · 시험 · 열림) + 해금 줄 + 버프 줄
       promoDemo() {
