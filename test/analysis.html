@@ -244,6 +244,43 @@
   --cv-cos-violet: var(--cos-violet);
   --cv-cos-silver: var(--cos-silver);
   --cv-cos-gold: var(--cos-gold);
+  /* 꾸미기 확장(R-160): 기본 · 고급 · 특별의 색. INSANE RED 색(진홍 · 적철 · 흑진홍 · 진홍 은맥 · 루비 유리)은
+     선체 안의 무광 면 · 짧은 점에만 쓴다. 불꽃 · 꼬리 자국의 빨강은 없다(백청 · 은백 · 흰빛). 등급 줄 색은 --tier-*. */
+  --cos-aqua: #2fc7e8;
+  --cos-ice: #c9f0ff;
+  --cos-cobalt: #4f6dff;
+  --cos-jade: #3fd9a0;
+  --cos-ion: #3d9bff;
+  --cos-pearlblue: #b4d2ff;
+  --cos-spectrum: #c9a8ff;
+  --cos-pearlchrome: #eef2fa;
+  --cos-prismshift: #f2c9ff;
+  --cos-deepblue: #2452d6;
+  --cos-whiteblue: #d6f7ff;
+  --cos-crimson: #8f1c31;
+  --cos-ironred: #b84a5e;
+  --cos-darkred: #5a1224;
+  --cos-redvein: #c8334f;
+  --cos-rubyglass: #e2506b;
+  --cv-cos-aqua: var(--cos-aqua);
+  --cv-cos-ice: var(--cos-ice);
+  --cv-cos-cobalt: var(--cos-cobalt);
+  --cv-cos-jade: var(--cos-jade);
+  --cv-cos-ion: var(--cos-ion);
+  --cv-cos-pearlblue: var(--cos-pearlblue);
+  --cv-cos-spectrum: var(--cos-spectrum);
+  --cv-cos-pearlchrome: var(--cos-pearlchrome);
+  --cv-cos-prismshift: var(--cos-prismshift);
+  --cv-cos-deepblue: var(--cos-deepblue);
+  --cv-cos-whiteblue: var(--cos-whiteblue);
+  --cv-cos-crimson: var(--cos-crimson);
+  --cv-cos-ironred: var(--cos-ironred);
+  --cv-cos-darkred: var(--cos-darkred);
+  --cv-cos-redvein: var(--cos-redvein);
+  --cv-cos-rubyglass: var(--cos-rubyglass);
+  /* 등급 줄(R-160 · 꾸미기 화면 안): INSANE RED 테두리 · 글자 = 은백, 면 = 무광 진홍 어두운 바탕 */
+  --tier-insane: var(--cos-silver);
+  --tier-insane-bg: #2a0f17;
 
   /* 분석 페이지(analysis.html, 그래프 색은 페이지를 열 때 읽는다) */
   --an-bg: #090f18;
@@ -4903,29 +4940,86 @@ return Plotly;
     // 보급 캡슐: 정상 종료 · 솔로 · time초 이상 판 끝에 chance[모드] 확률로 열렸고 없는 G 조각 하나(입히지 않음 · 재화 0)
     cos: {
       items: [
-        { id: 'mark.stripe', slot: 'mark', g: 600 },
-        { id: 'mark.star', slot: 'mark', g: 700 },
-        { id: 'mark.wing', slot: 'mark', g: 800 },
-        { id: 'mark.wave', slot: 'mark', g: 900 },
-        { id: 'mark.bolt', slot: 'mark', g: 1000, need: { mile: 'insane1' } },
-        { id: 'mark.paw', slot: 'mark', g: 1200 },
-        { id: 'mcol.cyan', slot: 'mcol', g: 300 },
-        { id: 'mcol.sky', slot: 'mcol', g: 300 },
-        { id: 'mcol.mint', slot: 'mcol', g: 400 },
-        { id: 'mcol.violet', slot: 'mcol', g: 400 },
-        { id: 'mcol.silver', slot: 'mcol', s: 20, need: { mile: 'hour10' } },
-        { id: 'mcol.gold', slot: 'mcol', s: 30, need: { mile: 'promo1' } },
-        { id: 'flame.cyan', slot: 'flame', g: 500 },
-        { id: 'flame.sky', slot: 'flame', g: 600 },
-        { id: 'flame.mint', slot: 'flame', g: 700 },
-        { id: 'flame.white', slot: 'flame', g: 800 },
-        { id: 'flame.gold', slot: 'flame', s: 30, need: { mile: 'kill100k' } },
-        { id: 'flame.aurora', slot: 'flame', s: 50, need: { mile: 'hour50' } },
-        { id: 'trail.line', slot: 'trail', g: 800 },
-        { id: 'trail.ribbon', slot: 'trail', g: 1000 },
-        { id: 'trail.double', slot: 'trail', g: 1000 },
-        { id: 'trail.pulse', slot: 'trail', g: 1200 },
-        { id: 'trail.comet', slot: 'trail', g: 1500, need: { mile: 'boss100' } },
+        { id: 'mark.stripe', slot: 'mark', tier: 'basic', g: 300 },
+        { id: 'mark.star', slot: 'mark', tier: 'basic', g: 400 },
+        { id: 'mark.wing', slot: 'mark', tier: 'basic', g: 500 },
+        { id: 'mark.wave', slot: 'mark', tier: 'basic', g: 600 },
+        { id: 'mark.wedge', slot: 'mark', tier: 'basic', g: 700 },
+        { id: 'mcol.cyan', slot: 'mcol', tier: 'basic', g: 300 },
+        { id: 'mcol.sky', slot: 'mcol', tier: 'basic', g: 300 },
+        { id: 'mcol.mint', slot: 'mcol', tier: 'basic', g: 400 },
+        { id: 'mcol.ice', slot: 'mcol', tier: 'basic', g: 700 },
+        { id: 'mcol.aqua', slot: 'mcol', tier: 'basic', g: 600 },
+        { id: 'flame.cyan', slot: 'flame', tier: 'basic', g: 500 },
+        { id: 'flame.sky', slot: 'flame', tier: 'basic', g: 600 },
+        { id: 'flame.mint', slot: 'flame', tier: 'basic', g: 700 },
+        { id: 'flame.white', slot: 'flame', tier: 'basic', g: 800 },
+        { id: 'flame.deepblue', slot: 'flame', tier: 'basic', g: 1000 },
+        { id: 'trail.line', slot: 'trail', tier: 'basic', g: 800 },
+        { id: 'trail.ribbon', slot: 'trail', tier: 'basic', g: 900 },
+        { id: 'trail.double', slot: 'trail', tier: 'basic', g: 1000 },
+        { id: 'trail.smooth', slot: 'trail', tier: 'basic', g: 1100 },
+        { id: 'trail.afterglow', slot: 'trail', tier: 'basic', g: 1200 },
+        { id: 'mark.bolt', slot: 'mark', tier: 'advanced', g: 1000, need: { mile: 'insane1' } },
+        { id: 'mark.paw', slot: 'mark', tier: 'advanced', g: 1200 },
+        { id: 'mark.triple', slot: 'mark', tier: 'advanced', g: 1500 },
+        { id: 'mark.circuit', slot: 'mark', tier: 'advanced', g: 1700 },
+        { id: 'mark.hex', slot: 'mark', tier: 'advanced', g: 1800 },
+        { id: 'mcol.violet', slot: 'mcol', tier: 'advanced', g: 900 },
+        { id: 'mcol.cobalt', slot: 'mcol', tier: 'advanced', g: 1200 },
+        { id: 'mcol.jade', slot: 'mcol', tier: 'advanced', g: 1300 },
+        { id: 'mcol.ion', slot: 'mcol', tier: 'advanced', g: 1500 },
+        { id: 'mcol.pearlblue', slot: 'mcol', tier: 'advanced', g: 1800 },
+        { id: 'flame.twin', slot: 'flame', tier: 'advanced', g: 1600 },
+        { id: 'flame.ring', slot: 'flame', tier: 'advanced', g: 1800 },
+        { id: 'flame.spiral', slot: 'flame', tier: 'advanced', g: 1900 },
+        { id: 'flame.arc', slot: 'flame', tier: 'advanced', g: 2100 },
+        { id: 'flame.glide', slot: 'flame', tier: 'advanced', g: 2200 },
+        { id: 'trail.pulse', slot: 'trail', tier: 'advanced', g: 1400 },
+        { id: 'trail.helix', slot: 'trail', tier: 'advanced', g: 1600 },
+        { id: 'trail.glass', slot: 'trail', tier: 'advanced', g: 1800 },
+        { id: 'trail.echo', slot: 'trail', tier: 'advanced', g: 2000 },
+        { id: 'trail.resonance', slot: 'trail', tier: 'advanced', g: 2300 },
+        { id: 'mark.orbit', slot: 'mark', tier: 'special', s: 20 },
+        { id: 'mark.twinwing', slot: 'mark', tier: 'special', s: 25 },
+        { id: 'mark.prism', slot: 'mark', tier: 'special', s: 30 },
+        { id: 'mark.constellation', slot: 'mark', tier: 'special', s: 35 },
+        { id: 'mark.radial', slot: 'mark', tier: 'special', s: 40 },
+        { id: 'mcol.silver', slot: 'mcol', tier: 'special', s: 20, need: { mile: 'hour10' } },
+        { id: 'mcol.gold', slot: 'mcol', tier: 'special', s: 30, need: { mile: 'promo1' } },
+        { id: 'mcol.spectrum', slot: 'mcol', tier: 'special', s: 35 },
+        { id: 'mcol.pearlchrome', slot: 'mcol', tier: 'special', s: 40 },
+        { id: 'mcol.prismshift', slot: 'mcol', tier: 'special', s: 45 },
+        { id: 'flame.gold', slot: 'flame', tier: 'special', s: 35, need: { mile: 'kill100k' } },
+        { id: 'flame.aurora', slot: 'flame', tier: 'special', s: 45, need: { mile: 'hour50' } },
+        { id: 'flame.crystal', slot: 'flame', tier: 'special', s: 45 },
+        { id: 'flame.prism', slot: 'flame', tier: 'special', s: 50 },
+        { id: 'flame.starcore', slot: 'flame', tier: 'special', s: 55 },
+        { id: 'trail.comet', slot: 'trail', tier: 'special', s: 45, need: { mile: 'boss100' } },
+        { id: 'trail.aurorawake', slot: 'trail', tier: 'special', s: 50 },
+        { id: 'trail.prismwake', slot: 'trail', tier: 'special', s: 55 },
+        { id: 'trail.starline', slot: 'trail', tier: 'special', s: 60 },
+        { id: 'trail.nebula', slot: 'trail', tier: 'special', s: 65 },
+        { id: 'mark.redcut', slot: 'mark', tier: 'insane', s: 60, need: { mile: 'insane1' } },
+        { id: 'mark.redv', slot: 'mark', tier: 'insane', s: 65, need: { mile: 'boss100' } },
+        { id: 'mark.redcircuit', slot: 'mark', tier: 'insane', s: 70, need: { mile: 'kill100k' } },
+        { id: 'mark.redgrid', slot: 'mark', tier: 'insane', s: 75, need: { mile: 'hour10' } },
+        { id: 'mark.redseal', slot: 'mark', tier: 'insane', s: 80, need: { mile: 'promo1' } },
+        { id: 'mcol.crimson', slot: 'mcol', tier: 'insane', s: 65, need: { mile: 'insane1' } },
+        { id: 'mcol.ironred', slot: 'mcol', tier: 'insane', s: 70, need: { mile: 'boss100' } },
+        { id: 'mcol.darkred', slot: 'mcol', tier: 'insane', s: 75, need: { mile: 'hour10' } },
+        { id: 'mcol.redvein', slot: 'mcol', tier: 'insane', s: 80, need: { mile: 'kill100k' } },
+        { id: 'mcol.rubyglass', slot: 'mcol', tier: 'insane', s: 85, need: { mile: 'hour50' } },
+        { id: 'flame.redtwin', slot: 'flame', tier: 'insane', s: 85, need: { mile: 'insane1' } },
+        { id: 'flame.redcore', slot: 'flame', tier: 'insane', s: 90, need: { mile: 'boss100' } },
+        { id: 'flame.redarc', slot: 'flame', tier: 'insane', s: 95, need: { mile: 'kill100k' } },
+        { id: 'flame.redwhite', slot: 'flame', tier: 'insane', s: 100, need: { mile: 'boss1000' } },
+        { id: 'flame.redflare', slot: 'flame', tier: 'insane', s: 105, need: { mile: 'hour50' } },
+        { id: 'trail.redwake', slot: 'trail', tier: 'insane', s: 90, need: { mile: 'boss100' } },
+        { id: 'trail.silverdouble', slot: 'trail', tier: 'insane', s: 100, need: { mile: 'insane1' } },
+        { id: 'trail.chromestar', slot: 'trail', tier: 'insane', s: 105, need: { mile: 'boss1000' } },
+        { id: 'trail.redorbit', slot: 'trail', tier: 'insane', s: 110, need: { mile: 'kill100k' } },
+        { id: 'trail.whitewake', slot: 'trail', tier: 'insane', s: 120, need: { mile: 'hour50' } },
         { id: 'prop.engineer.scarf', slot: 'prop.engineer', g: 500 },
         { id: 'prop.engineer.headset', slot: 'prop.engineer', g: 700 },
         { id: 'prop.engineer.star', slot: 'prop.engineer', g: 900, need: { rank: 1 } },
@@ -4944,6 +5038,8 @@ return Plotly;
         { id: 'frame.gold', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
         { id: 'frame.holo', slot: 'frame', s: 50, need: { mile: 'world' } },
       ],
+      // 등급(R-160): 전투 기체 칸 항목의 tier · 등급 문. insane = 첫 Insane(insane1) 넘어야 열림(항목 조건과 따로 확인)
+      tiers: { basic: {}, advanced: {}, special: {}, insane: { need: { mile: 'insane1' } } },
       capsule: {
         time: 300,
         chance: { easy: 0.02, hard: 0.04, extream: 0.07, super: 0.1, ultra: 0.15, insane: 0.2 },
@@ -5465,6 +5561,64 @@ return Plotly;
       'trail.double': '이중선',
       'trail.pulse': '파동',
       'trail.comet': '혜성',
+      // 전투 기체 확장(R-160 · 등급 기본 · 고급 · 특별 · INSANE RED)
+      'mark.wedge': '쐐기',
+      'mark.triple': '삼중 V',
+      'mark.circuit': '회로선',
+      'mark.hex': '육각망',
+      'mark.orbit': '궤도호',
+      'mark.twinwing': '쌍날개',
+      'mark.prism': '프리즘 결',
+      'mark.constellation': '별자리 회로',
+      'mark.radial': '방사 격자',
+      'mark.redcut': '진홍 절개',
+      'mark.redv': '쌍 V 봉인',
+      'mark.redcircuit': '은백 회로',
+      'mark.redgrid': '적철 격자',
+      'mark.redseal': '심홍 문장',
+      'mcol.ice': '빙정',
+      'mcol.aqua': '청록',
+      'mcol.cobalt': '코발트',
+      'mcol.jade': '제이드',
+      'mcol.ion': '이온 블루',
+      'mcol.pearlblue': '펄 블루',
+      'mcol.spectrum': '스펙트럼',
+      'mcol.pearlchrome': '펄 크롬',
+      'mcol.prismshift': '프리즘 편광',
+      'mcol.crimson': '무광 진홍',
+      'mcol.ironred': '적철 크롬',
+      'mcol.darkred': '흑진홍',
+      'mcol.redvein': '진홍 은맥',
+      'mcol.rubyglass': '루비 유리',
+      'flame.deepblue': '심청 분사',
+      'flame.twin': '이중 제트',
+      'flame.ring': '펄스 링',
+      'flame.spiral': '나선 이온',
+      'flame.arc': '아크 파형',
+      'flame.glide': '유선 분사',
+      'flame.crystal': '빙정 분사',
+      'flame.prism': '프리즘 점화',
+      'flame.starcore': '별빛 코어',
+      'flame.redtwin': '백청 이중분사',
+      'flame.redcore': '은심 수렴',
+      'flame.redarc': '진홍 노즐 아크',
+      'flame.redwhite': '백열 제트',
+      'flame.redflare': '크림슨 점화',
+      'trail.smooth': '잔잔 곡선',
+      'trail.afterglow': '직선 잔광',
+      'trail.helix': '쌍나선',
+      'trail.glass': '유리 리본',
+      'trail.echo': '잔상 웨이크',
+      'trail.resonance': '공명 파동',
+      'trail.aurorawake': '오로라 웨이크',
+      'trail.prismwake': '프리즘 꼬리',
+      'trail.starline': '별광 선',
+      'trail.nebula': '성운 파동',
+      'trail.redwake': '진홍 웨이크',
+      'trail.silverdouble': '은백 이중선',
+      'trail.chromestar': '크롬 별광',
+      'trail.redorbit': '심홍 궤적',
+      'trail.whitewake': '백청 봉인선',
       scarf: '비행 스카프',
       headset: '무전 헤드셋',
       star: '별 머리핀',
@@ -5502,7 +5656,17 @@ return Plotly;
     making: '만드는 중',
     noMark: '무늬를 입히면 이 색으로 보입니다',
     open: id => mile[id] + (titles[id] ? ' · ' + titles[id] : '') + ' 열림',
+    // 등급(R-160): 기체 칸 등급 줄 · 등급 문 잠김(tier) · 가격 범위(tierPrice · 보유 수는 count)
+    tier: { basic: '기본', advanced: '고급', special: '특별', insane: 'INSANE RED' },
+    tierPrice: tier => {
+      const items = (B().cos?.items || []).filter(x => x.tier === tier),
+        g = items.filter(x => x.g).map(x => x.g),
+        s = items.filter(x => x.s).map(x => x.s),
+        range = a => (a.length ? num(Math.min(...a)) + '~' + num(Math.max(...a)) : '');
+      return g.length ? range(g) + ' G' : range(s) + ' S';
+    },
     lock: {
+      tier: (tier, id) => '🔒 ' + tier + ' 문 · ' + mile[id] + ' 넘으면',
       mile: id => '🔒 ' + mile[id] + (titles[id] ? ' · ' + titles[id] : ''),
       rank: n => '🔒 이 고양이가 ' + rankName(n) + josa(rankName(n), '으로/로') + ' 승진하면',
       cat: '🔒 히든 탭에서 이 고양이를 깨우면',
