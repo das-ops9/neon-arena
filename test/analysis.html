@@ -37,6 +37,14 @@
   --danger: #ff5f6d;
   --orange: #ff9a4d;
 
+  /* 한 줄 남기기 글자색(R-161). 기존 팔레트를 가리키고, 색은 글자에만 적용 */
+  --note-base: var(--ink-2);
+  --note-cyan: var(--cyan);
+  --note-mint: var(--cos-mint);
+  --note-gold: var(--gold);
+  --note-pink: var(--pink);
+  --note-violet: var(--violet);
+
   /* 재화 */
   --c-gold: var(--gold);
   --c-blue: var(--blue);
@@ -4556,12 +4564,12 @@ return Plotly;
       },
       insane: {
         spawn: 1.8,
-        hp: 1.8,
-        damage: 1.8,
+        hp: 2.0,
+        damage: 2.0,
         fire: 1.8,
         bulletSpeed: 1.8,
         xp: 0.8,
-        score: 14,
+        score: 12,
         defenseCap: 15,
         choices: 2,
         auto: true,
@@ -4583,8 +4591,8 @@ return Plotly;
     unlock: {
       extream: { from: 'hard', score: 500000 },
       super: { from: 'extream', time: 480 },
-      ultra: { from: 'super', time: 600, score: 2000000 },
-      insane: { from: 'ultra', score: 4000000 },
+      ultra: { from: 'super', time: 600, score: 3000000 },
+      insane: { from: 'ultra', score: 5000000 },
     },
     // 기체: fire 발사 간격(초) · dash 대시 재충전(초) · start 출격 때 더하는 시작 스택(회복·XP 효과 없음)
     crafts: {
@@ -4629,13 +4637,13 @@ return Plotly;
       rapid: { rate: 0.14, minFire: 0.07, overflow: 0.03 },
       multi: { max: 6, overflow: 0.045 },
       pierce: { max: 6, overflow: 0.025 },
-      speed: { step: 12, max: 360, dash: 0.07, overflow: 0.025 },
-      magnet: { step: 35, max: 520, xp: 5, overflow: 0.035 },
+      speed: { step: 10, max: 400, dash: 0.07, overflow: 0.025 },
+      magnet: { step: 30, max: 510, xp: 5, overflow: 0.035 },
       orbit: { step: 7 },
-      vital: { hp: 25, heal: 50 },
-      nova: { damage: 100, radius: 50, radiusMax: 900, cooldown: 0.5, cooldownMin: 6 },
-      crit: { step: 0.07, max: 0.8, overflow: 0.035 },
-      shield: { amount: 16, regen: 1 },
+      vital: { hp: 30, heal: 50 },
+      nova: { damage: 100, radius: 50, radiusMax: 800, cooldown: 0.5, cooldownMin: 6 },
+      crit: { step: 0.05, max: 1.0, overflow: 0.035 },
+      shield: { amount: 15, regen: 1 },
     },
     // 방어 한도를 쓰는 스킬
     defense: ['vital', 'shield'],
@@ -4788,12 +4796,14 @@ return Plotly;
     map: { width: 4000, height: 3000 },
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
     superLaunch: { stage: 29, level: 29, picks: 28 },
+    // SS 출격(R-161): 한 번 해금하면 매 출격 10 S, STAGE · LV 59에서 58회 배분으로 시작한다.
+    ssLaunch: { stage: 59, level: 59, picks: 58, cost: 10, open: 10 },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
     // 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G. 보스 처치 G는 모드마다(modes.*.bossGold)
     // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
     // autoGoldChance 확률로 스킬 대신 레벨업 코인(coinChoice G)을 받는다. 제시된 카드가 모두 상한이면 autoGoldCapped 확률(1 = 항상).
-    // perma: 성장 탭 영구 스택(R-042). 스킬마다 max까지 B로 산다. 다음 하나의 값 = price + step × 이미 산 수.
-    // max를 낮추면 넘는 스택은 이관 때 max로 줄이고 B로 돌려준다(progression.js permaExcess, DATA.md 5절).
+    // perma: 성장 탭 스킬별 상한. door까지는 기존 B 가격, door 이후는 기존 식 × permaOver.x + S.
+    // max를 넘는 스택만 이관 때 새 max로 줄이고 낸 값을 돌려준다(progression.js permaExcess, DATA.md 5절).
     economy: {
       goldBase: 1,
       goldMax: 5,
@@ -4807,21 +4817,23 @@ return Plotly;
       scBlue: 10,
       notePerChar: 10,
       noteMax: 15,
+      noteColor: { price: 100, list: ['base', 'cyan', 'mint', 'gold', 'pink', 'violet'] },
       autoGoldPrice: 50,
       autoGoldChance: 0.25,
       autoGoldCapped: 1,
+      permaOver: { x: 2, s: 1 },
       perma: {
-        power: { max: 10, price: 2, step: 1 },
-        rapid: { max: 10, price: 2, step: 1 },
-        multi: { max: 3, price: 6, step: 4 },
-        pierce: { max: 3, price: 6, step: 4 },
-        speed: { max: 5, price: 3, step: 2 },
-        magnet: { max: 5, price: 3, step: 2 },
-        orbit: { max: 3, price: 6, step: 4 },
-        vital: { max: 5, price: 3, step: 2 },
-        nova: { max: 5, price: 3, step: 2 },
-        crit: { max: 5, price: 3, step: 2 },
-        shield: { max: 5, price: 3, step: 2 },
+        power: { door: 10, max: 20, price: 2, step: 1 },
+        rapid: { door: 10, max: 20, price: 2, step: 1 },
+        multi: { door: 3, max: 5, price: 6, step: 4 },
+        pierce: { door: 3, max: 5, price: 6, step: 4 },
+        speed: { door: 5, max: 10, price: 3, step: 2 },
+        magnet: { door: 5, max: 10, price: 3, step: 2 },
+        orbit: { door: 3, max: 5, price: 6, step: 4 },
+        vital: { door: 5, max: 10, price: 3, step: 2 },
+        nova: { door: 5, max: 10, price: 3, step: 2 },
+        crit: { door: 5, max: 10, price: 3, step: 2 },
+        shield: { door: 5, max: 10, price: 3, step: 2 },
       },
     },
     // 고양이 비행사(R-026): 고양이별 레벨 0~maxLevel(0은 미해금). 히든 탭은 hiddenFrom 모드로 한 판을 끝내면
@@ -4845,26 +4857,29 @@ return Plotly;
         supply: [5, 7, 9, 12, 15],
         pilot: [0.05, 0.1, 0.15, 0.2, 0.3],
       },
-      // 승진(R-111, PLANNING-world 6-5 · Q196 a · Q197~Q204). 인덱스 0 = 중급 · 1 = 고급 · 2 = 전문 · 3 = 마스터.
+      // 승진(R-111, R-161). 인덱스 0 = 중급 · 1 = 고급 · 2 = 전문 · 3 = 마스터 · 4 = 레전드.
       // Lv5 고양이를 동반하고 open[i] STAGE 보스 웨이브를 다 잡으면 그 단계 시험이 열리고(다음 판부터), 정상 종료 한 판에
       // test[i]의 처치 · 충격파로 지운 탄(충격파 버튼만, 부활 충격파 제외)을 넘기면 한 단계 오른다(고양이마다 한 판 한 단계).
-      // open null = 최종 보스(I-93 보류) → 열리지 않음(마스터 잠금). 효과는 동반 · 승진한 고양이만:
+      // 마스터는 STAGE 100 보스 웨이브, 레전드는 세 모드에서 각각 STAGE 100 보스를 끝내면 열린다.
+      // 효과는 동반 · 승진한 고양이만:
       // nova 충격파 배율에 더하는 몫(고양이마다 더함, 1 + Σ) · engineer/pilot Lv5 값 대신 · supply 분당 G 그대로 +
       // supplyBlue B/분 · supplySuper 이 분마다 1 S(0 = 없음), 둘 다 supplyFrom 모드부터
       promo: {
-        open: [30, 60, 90, null],
+        open: [30, 60, 90, 100, null],
         test: [
           { kills: 1000, clears: 0 },
           { kills: 1500, clears: 8000 },
           { kills: 2000, clears: 10000 },
           { kills: 3000, clears: 15000 },
+          { kills: 4000, clears: 20000 },
         ],
-        nova: [0.1, 0.2, 0.3, 0.4],
+        legend: { modes: ['super', 'ultra', 'insane'], stage: 100 },
+        nova: [0.1, 0.2, 0.3, 0.4, 0.5],
         effect: {
-          engineer: [10, 11, 13, 15],
-          pilot: [0.35, 0.4, 0.6, 0.75],
-          supplyBlue: [1, 2, 5, 5],
-          supplySuper: [0, 0, 0, 5],
+          engineer: [10, 11, 13, 15, 17],
+          pilot: [0.35, 0.4, 0.6, 0.75, 0.9],
+          supplyBlue: [1, 2, 5, 5, 8],
+          supplySuper: [0, 0, 0, 5, 4],
         },
         supplyFrom: 'super',
       },
@@ -4873,7 +4888,7 @@ return Plotly;
     // 기체마다 first 색을 먼저 사고 나머지는 아무 순서. price: g G · b B · s S. 사면 바로 입히고, 입힌 색 하나로 출격한다(출격 순간 고정).
     // 입힌 색 능력(그 기체 판만): start 기체 시작 스킬마다 더하는 스택(출처 '도색') · regen 초당 HP(시간 압박에서 멈춤) · revive 부활 수.
     // 모음(세 기체 모두 그 색을 가짐, 입힌 색과 무관): noteCost 한 줄 남기기 글자당 G · goldX 분당 G 배율 · shieldX 보호막 재생 배율 ·
-    // scMake S 제작 한 번에 만드는 S · revive 부활 수. 한 판 부활은 reviveMax까지(1회 부활 버프 + 도색 + 모음)
+    // scMake S 제작 한 번에 만드는 S · revive 부활 수. 한 판 부활은 reviveMax까지(출격 버프 단계 + 도색 + 모음)
     paint: {
       colors: ['yellow', 'blue', 'violet'],
       first: 'yellow',
@@ -4882,7 +4897,7 @@ return Plotly;
       regen: { blue: 1 },
       revive: { violet: 1 },
       sets: { yellow: { noteCost: 5, goldX: 2 }, blue: { shieldX: 2, scMake: 2 }, violet: { revive: 1 } },
-      reviveMax: 3,
+      reviveMax: 5,
     },
     // Insane S 코인(R-023 · R-061): mode 판(일반 · S 출격)에서 세 출처로 1개씩 생긴다. 크기 r, 자석 없이 기체가
     // 닿아야 1 S, 줍지 않으면 판 끝까지 남는다. ① 전투 시계 every초마다 기체에서 near~far 거리의 무작위 방향
@@ -4903,9 +4918,31 @@ return Plotly;
     bCoin: { every: 60, value: 1, boss: 1, r: 30, margin: 50, max: 7 },
     // Point 종료 보상: 구간마다 각각 누적 환산한다.
     pointBonus: { goldEvery: 500000, blueEvery: 1000000, superEvery: 10000000 },
-    // 출격 버프(R-062, I-36): from 모드부터 켤 수 있고, 켜 두면 출격할 때마다 비용(b: B · s: S)을 낸다. 키 순서 = 화면 위 → 아래.
-    // regen: 판 내내 초당 hp 회복 · revive: 한 번 쓰러지면 최대 HP × hp로 일어나 invuln초 무적 + 지금 충격파 한 번
-    buffs: { from: 'super', regen: { b: 10, hp: 1 }, revive: { s: 2, hp: 0.5, invuln: 4 } },
+    // 출격 버프(R-062 · R-161): from 모드부터 켜고, 계정 최고 Point 단계 값의 비용(b: B · s: S)을 출격 때 낸다.
+    // regen: 초당 hp 회복 · revive: 부활 횟수 n, 일어날 HP 비율 hp, invuln초 무적 + 지금 충격파 한 번
+    buffs: {
+      from: 'super',
+      regen: {
+        b: 10,
+        hp: 1,
+        tiers: [
+          { score: 40000000, hp: 2, b: 20 },
+          { score: 60000000, hp: 3, b: 40 },
+          { score: 80000000, hp: 5, b: 80 },
+          { score: 100000000, hp: 10, b: 200 },
+        ],
+      },
+      revive: {
+        s: 2,
+        n: 1,
+        hp: 0.5,
+        invuln: 4,
+        tiers: [
+          { score: 40000000, n: 2, s: 20 },
+          { score: 60000000, n: 3, s: 100 },
+        ],
+      },
+    },
     // 회복 구역(R-061, I-34): 전투 시계 first초부터 every초마다 맵 아무 곳(가장자리 margin 안)에 life초 동안 하나(동시 1개).
     // 반지름 = 보스 반지름(enemies.boss.r) × sizes 중 하나. 기체 중심이 원 안이면 초당 hp 회복(최대 HP까지)
     healZone: { first: 60, every: 60, life: 30, sizes: [1, 2, 3], hp: 5, margin: 150 },
@@ -5042,7 +5079,7 @@ return Plotly;
       tiers: { basic: {}, advanced: {}, special: {}, insane: { need: { mile: 'insane1' } } },
       capsule: {
         time: 300,
-        chance: { easy: 0.02, hard: 0.04, extream: 0.07, super: 0.1, ultra: 0.15, insane: 0.2 },
+        chance: { easy: 0.05, hard: 0.1, extream: 0.15, super: 0.2, ultra: 0.25, insane: 0.3 },
       },
     },
     // 월드(R-120 · Q212~Q214 · Q216 · PLANNING-world 6-7): 주간 도전 · 연습 판만 읽는 값. 솔로 값(modes · skills · enemies)은 그대로다.
@@ -5062,7 +5099,8 @@ return Plotly;
     //   hive: near~far 거리 유지 · every초마다 돌격 brood마리(살아 있는 졸개 broodMax까지) · shot초마다 조준 탄 1발
     // sk: 월드 스킬 5종 × 5단(S, price[지금 단계]) · 단마다 효과(hull 최대 체력 · amp 모든 피해 · coil 출격 연쇄 번개 +1 ·
     //   salvage 필드 스킬을 주우면 최대 체력 비율 회복 · core 충격파 재충전 −)
-    // keep: 보관 — 이번 주 · 지난주 주간 도전 상위 top + 최근 1 · 옛 주 최고 weeks주 · 연습 · 중단 practice판 · 입력 기록 inputs개
+    // keep: 보관 — 오늘 · 어제 매일 도전 상위 top + 최근 1 · 이전 날 최고 days일 · 옛 주 최고 weeks주 ·
+    // 연습 · 중단 practice판 · 오늘 최고 · 어제 최고 · 가장 최근 월드 판의 입력 기록 inputs개
     world: {
       door: 'violet',
       hp: 1.5,
@@ -5110,7 +5148,7 @@ return Plotly;
         salvage: 0.02,
         core: 0.05,
       },
-      keep: { top: 10, weeks: 52, practice: 20, inputs: 3 },
+      keep: { top: 10, weeks: 52, days: 365, practice: 20, inputs: 3 },
     },
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
@@ -5406,7 +5444,7 @@ return Plotly;
     craft: '기체',
     paint: '도색',
     cat: '고양이',
-    perma: '영구',
+    perma: '성장',
     prep: '준비',
     // 월드 스킬 번개 코일(R-120, 월드 판만)
     world: '월드',
@@ -5469,7 +5507,7 @@ return Plotly;
   };
   // 승진(R-111 · R-112): 단계 이름(1 = 중급 … 4 = 마스터, balance cats.promo 인덱스 + 1). 고양이 이름은 한 곳 —
   // 글자만 쓰는 곳(aria · 기록 카드 글자 · 로그)은 catLabelText '중급 정비사 미오', 화면 HTML은 view.catLabel(이름 왼쪽 칩)
-  const promoRanks = ['중급', '고급', '전문', '마스터'];
+  const promoRanks = ['중급', '고급', '전문', '마스터', '레전드'];
   const rankName = r => promoRanks[r - 1] || '';
   const catLabelText = (id, rank) => (rank ? rankName(rank) + ' ' : '') + (cats[id]?.name || id);
   // 승진하면 붙는 것 한 줄(고양이 말풍선): '충격파 +10% · 시작 스킬 +10' · '… · Super부터 B +1/분' · '… · 대시 −35%'
@@ -5724,6 +5762,9 @@ return Plotly;
     normal: '일반 출격',
     super: SC + ' 출격',
     superPrep: SC + ' 출격 준비',
+    ss: 'SS 출격',
+    ssPrep: 'SS 출격 준비',
+    ssMark: 'SS',
   };
   const auto = { name: '자동 강화', short: 'AUTO' };
   // 출격 버프(R-062, I-36): 플레이 탭 모드 칸 왼쪽 스위치(위 → 아래 = balance buffs 키 순서). 켜 두면 출격할 때마다 비용
@@ -5732,18 +5773,25 @@ return Plotly;
     tag: '버프',
     regen: { name: 'HP 회복' },
     revive: { name: '1회 부활', used: '1회 부활(씀)' },
-    // 비용 글자: '10 B' · '2 S'
-    cost: id => {
+    nameAt: (id, spec) => {
       const c = B().buffs[id];
+      if (id === 'regen') return buffs.regen.name + ' +' + (spec?.regen ?? spec?.hp ?? c.hp) + '/초';
+      const n = spec?.revive ?? spec?.n ?? c.n ?? 1;
+      return n === 1 ? buffs.revive.name : '부활 ' + n + '회';
+    },
+    usedAt: (id, spec) => (id === 'revive' ? buffs.nameAt(id, spec) + '(씀)' : buffs.nameAt(id, spec)),
+    // 비용 글자: '10 B' · '2 S'
+    cost: (id, spec) => {
+      const c = spec || B().buffs[id];
       return [c.b ? c.b + ' ' + BL : '', c.s ? c.s + ' ' + SC : ''].filter(Boolean).join(' + ');
     },
     // from 모드 아래: '🔒 Super'
     locked: () => '🔒 ' + modeName(B().buffs.from),
     // 스위치 읽기 이름: 'HP 회복 · 10 B · 켜면 출격할 때마다 씀'(잠기면 'HP 회복 · Super부터')
-    label: (id, open) =>
-      buffs[id].name +
+    label: (id, open, spec) =>
+      buffs.nameAt(id, spec) +
       ' · ' +
-      (open ? buffs.cost(id) + ' · 켜면 출격할 때마다 씀' : modeName(B().buffs.from) + '부터'),
+      (open ? buffs.cost(id, spec) + ' · 켜면 출격할 때마다 씀' : modeName(B().buffs.from) + '부터'),
   };
   // 순위(R-032): 일반 출격 판과 S 출격 판을 따로 매기는 Point 순위. kind = 'normal' | 'super'
   const ranking = { name: '순위', normal: '일반', super: launches.super };
@@ -6004,27 +6052,50 @@ return Plotly;
       reset: '전체 초기화',
       undo: '초기화 되돌리기',
     },
-    launch: { normal: launches.normal, super: launches.super, owned: '보유 0' },
+    launch: {
+      normal: launches.normal,
+      super: launches.super,
+      owned: () => '−1' + SC,
+      ss: () => launches.ss + ' −' + B().ssLaunch.cost + SC,
+    },
     prep: {
       back: '준비 취소',
       title: launches.superPrep,
+      titleSS: launches.ssPrep,
       start: '시작',
-      startValue: () => stage.upper + ' ' + B().superLaunch.stage + ' · ' + levelShort(B().superLaunch.level),
+      startValue: (kind = 'sc') => {
+        const launch = kind === 'ss' ? B().ssLaunch : B().superLaunch;
+        return (
+          stage.upper +
+          ' ' +
+          launch.stage +
+          ' · ' +
+          (kind === 'ss' ? level.short + ' ' + launch.level : levelShort(launch.level))
+        );
+      },
       left: '남은 강화',
-      picks: () => B().superLaunch.picks,
-      picksOf: () => '/ ' + B().superLaunch.picks,
+      leftSS: '남은 배분',
+      picks: (kind = 'sc') => (kind === 'ss' ? B().ssLaunch.picks : B().superLaunch.picks),
+      picksOf: (kind = 'sc') => '/ ' + (kind === 'ss' ? B().ssLaunch.picks : B().superLaunch.picks),
       allocLabel: '강화 배분',
       // 아이콘 버튼(R-063, 글자 없음 · 읽기 이름만): 주사위 = 남은 강화를 무작위로(다시 누르면 새로) · ↺ = 모두 0
       random: '무작위 배분',
       reset: '배분 초기화',
       cancel: '준비 취소',
-      launch: '출격 · ' + SC + ' 1 사용',
-      note: () =>
-        '강화 ' +
-        B().superLaunch.picks +
-        '회를 모두 나누면 출격할 수 있습니다. ' +
-        SC +
-        '는 출격할 때 1개 씁니다(취소하면 그대로).',
+      launch: (kind = 'sc') => '출격 · ' + SC + ' ' + (kind === 'ss' ? B().ssLaunch.cost : 1) + ' 사용',
+      note: (kind = 'sc') => {
+        const launch = kind === 'ss' ? B().ssLaunch : B().superLaunch,
+          cost = kind === 'ss' ? B().ssLaunch.cost : 1;
+        return (
+          '강화 ' +
+          launch.picks +
+          '회를 모두 나누면 출격할 수 있습니다. ' +
+          SC +
+          '는 출격할 때 ' +
+          cost +
+          '개 씁니다(취소하면 그대로).'
+        );
+      },
     },
     mode: { title: '모드 선택', close: '닫기', group: '모드', done: '선택 완료' },
     hud: {
@@ -6137,14 +6208,14 @@ return Plotly;
       apply: '적용',
       close: '닫기',
       exit: 'GM 나가기',
-      // 월드(R-121): 문(그대로 · 열기 · 닫기) · 월드 스킬 다섯 모두 n단 · 주(GM 저장소 시계만 −1 · 0 · +1주)
+      // 월드(R-161): 문(그대로 · 열기 · 닫기) · 월드 스킬 다섯 모두 n단 · 날(GM 저장소 시계만 −1 · 0 · +1일)
       world: '월드',
       worldDoor: '월드 문',
       worldOpen: '열기',
       worldClose: '닫기',
       worldSk: '월드 스킬',
-      worldWeek: '주(GM 시계)',
-      weekShift: n => (n < 0 ? '지난주' : n > 0 ? '다음 주' : '이번 주'),
+      worldWeek: '날(GM 시계)',
+      weekShift: n => (n < 0 ? '어제' : n > 0 ? '내일' : '오늘'),
       replay: '재생 확인',
       replayWait: '월드 입력 기록을 재생합니다…',
       replayNone: '재생 가능한 월드 입력 기록이 없습니다.',
@@ -6173,6 +6244,17 @@ return Plotly;
       rewardDetail: '보상 내역',
       noteLabel: '이 판을 한 줄로 남기기',
       notePlaceholder: () => '이 판을 한 줄로 · 글자당 ' + E().notePerChar + ' ' + G,
+      noteColor: {
+        label: '글자색',
+        colors: {
+          base: '기본',
+          cyan: '시안',
+          mint: '민트',
+          gold: '금색',
+          pink: '분홍',
+          violet: '보라',
+        },
+      },
       noteSave: '남기기',
       // 맨 아래 글자 버튼 줄(R-105): 펼침 둘 | 구석 둘
       more: { skills: '스킬 내역 ▾', play: '플레이 분석 ▾', log: '로그 저장', analysis: '상세 분석' },
@@ -6217,6 +6299,7 @@ return Plotly;
       // 두 묶음의 읽기 이름(R-073 설정 창 조율)
       groupScreen: '화면',
       groupSound: '소리 · 진동',
+      autoFull: '시작할 때 전체화면',
       fullscreen: '전체 화면',
       help: '도움말',
       done: '설정 완료',
@@ -6339,7 +6422,7 @@ return Plotly;
           ' 사면 ' +
           autoFrom() +
           '부터 레벨업 스킬을 대신 골라 줍니다.',
-    superNote: n => '보유 ' + num(n) + ' · ' + stageLabel(B().superLaunch.stage),
+    superNote: () => '−1' + SC + ' · ' + stageLabel(B().superLaunch.stage),
     purchase: {
       insufficient: '재화가 부족합니다.',
       stale: '가격이나 단계가 바뀌어 화면을 새로 고쳤습니다. 다시 확인해 주세요.',
@@ -6357,15 +6440,17 @@ return Plotly;
         auto.short +
         ' 버튼으로 켜고 끕니다.',
       income: tier => '시간 코인 ' + tier + '단계 · 분당 ' + G + ' +1',
+      ssLaunch: () => 'SS 출격을 열었습니다.',
       // n = 한 번에 만든 수(파랑 모음이면 2, R-107)
       craftSC: n => coins.s.ko + ' ' + n + '개를 만들었습니다 · ' + SC + ' +' + n,
       // opened: 이 구매로 열린 문(영구 11개 MAX → 격납고, R-106)
-      perma: (id, price, opened) =>
+      perma: (id, price, sc, opened) =>
         skillName(id) +
-        ' 영구 +1 · ' +
+        ' +1 · ' +
         price +
         ' ' +
         BL +
+        (sc ? ' · ' + sc + ' ' + SC : '') +
         ' 사용' +
         (opened?.includes('hangar') ? ' · 격납고 · 도색이 열렸습니다' : ''),
       needs_auto: auto.name + '를 먼저 사야 합니다.',
@@ -6409,7 +6494,8 @@ return Plotly;
       storage: '저장하지 못했습니다. ' + SC + '는 그대로입니다.',
       failed: '준비 실패',
       launchFailed: '출격하지 못했습니다. ' + SC + '는 그대로입니다.',
-      start: (s, lv) => stage.upper + ' ' + s + ' · ' + levelShort(lv),
+      start: (s, lv, kind = 'sc') =>
+        stage.upper + ' ' + s + ' · ' + (kind === 'ss' ? level.short + ' ' + lv : levelShort(lv)),
       craft: (id, hp) => craftName(id) + ' · 시작 HP ' + num(hp),
     },
     // 초기화 · 되돌리기(R-039). 직전 상태는 이 기기에 하나만 보관한다
@@ -6493,12 +6579,34 @@ return Plotly;
     },
     note: {
       saved: '한 줄 저장 완료',
-      quote: (count, cost, rest) =>
-        count + ' / ' + E().noteMax + '글자 · ' + cost + ' ' + G + ' · 저장 후 ' + num(rest) + ' ' + G,
+      colorOnly: n => '글자색 ' + n + ' ' + G + ' · 한 줄을 입력해 주세요.',
+      colorShort: n => '글자색 ' + n + ' ' + G + ' · 잔액 부족',
+      quote: (count, cost, rest, colorCost = 0) =>
+        count +
+        ' / ' +
+        E().noteMax +
+        '글자 · ' +
+        cost +
+        ' ' +
+        G +
+        (colorCost ? ' · 글자색 ' + colorCost + ' ' + G + ' 포함' : '') +
+        ' · 저장 후 ' +
+        num(rest) +
+        ' ' +
+        G,
       // 남기기 버튼 글자 = 값(R-105), 입력이 없으면 '남기기'
       save: (count, cost) => (count ? cost + ' ' + G : '남기기'),
       tooLong: () => E().noteMax + '글자까지 입력할 수 있습니다.',
-      short: (count, cost) => count + ' / ' + E().noteMax + '글자 · ' + cost + ' ' + G + ' · 잔액 부족',
+      short: (count, cost, colorCost = 0) =>
+        count +
+        ' / ' +
+        E().noteMax +
+        '글자 · ' +
+        cost +
+        ' ' +
+        G +
+        (colorCost ? ' · 글자색 ' + colorCost + ' ' + G + ' 포함' : '') +
+        ' · 잔액 부족',
       limited: '이 브라우저에서는 유료 한 줄 저장을 사용할 수 없습니다. ' + G + '는 차감하지 않습니다.',
       done: cost => '한 줄 저장 · ' + cost + ' ' + G + ' 사용',
       insufficient: G + '가 부족합니다.',
@@ -6562,15 +6670,21 @@ return Plotly;
     // 플레이 탭 모드 칸에서는 뺐다(R-062 스위치 자리, 모드 칸 읽기 이름 modeOpen에만 남김)
     modeBest: { card: '최고', cardNone: '최고 기록 없음' },
     // 출격 버프 표시(R-062): 결과 · 기록 상세 한 줄 '출격 버프 · HP 회복 · 1회 부활(씀)'
-    buffLine: (ids, revived) =>
+    buffLine: (ids, revived, buffLv) =>
       buffs.group +
       ' · ' +
-      ids.map(id => (id === 'revive' && revived ? buffs.revive.used : buffs[id].name)).join(' · '),
+      ids
+        .map(id =>
+          id === 'revive' && revived
+            ? buffs.usedAt(id, { revive: buffLv?.revive })
+            : buffs.nameAt(id, { regen: buffLv?.regen, revive: buffLv?.revive }),
+        )
+        .join(' · '),
     // 도색 · 부활이 둘 이상인 판(R-108): '도색 FROST · HP 회복 · 부활 2/3'(입힌 색 · 낸 버프 · 쓴 부활 / 모두)
-    lookLine: (color, ids, used, total) =>
+    lookLine: (color, ids, used, total, buffLv) =>
       [
         color && paint.group + ' ' + paint.names[color],
-        ...ids.map(id => buffs[id].name),
+        ...ids.map(id => buffs.nameAt(id, { regen: buffLv?.regen, revive: buffLv?.revive })),
         total > 0 && '부활 ' + used + '/' + total,
       ]
         .filter(Boolean)
@@ -6596,12 +6710,37 @@ return Plotly;
     prev: '이전',
     next: '다음',
     interrupted: '중단 기록',
-    perma: '영구',
+    perma: '',
     // 성장 카드: 더 살 수 없는 스킬의 버튼 자리(R-042)
     permaMax: 'MAX',
+    permaDoor: '1차 MAX',
     locked: id => '🔒 ' + unlockGate(id),
     // 모드 창 카드 칩(R-046): 자동 강화를 못 쓰는 모드 · S 코인이 나오는 모드
-    modeChips: { noAuto: () => auto.short + ' 불가', superCoin: () => SC + ' 출현' },
+    modeChips: { noAuto: () => auto.short + ' 불가', superCoin: () => SC + ' 획득' },
+    // 기체 정보 창(R-161): 판 시작 계산값 · 출처별 시작 스택 · 도색 · 고양이 효과 한 줄
+    craftInfo: {
+      title: '기체 정보',
+      close: '닫기',
+      stats: {
+        hp: '체력',
+        speed: '이동 속도',
+        damage: '피해',
+        fire: '발사 간격',
+        dash: abilities.dash + ' 재충전',
+        shield: '보호막',
+      },
+      startStacks: '시작 스택',
+      stackSources: {
+        craft: sources.craft,
+        paint: sources.paint,
+        growth: sources.perma,
+        cat: sources.cat,
+      },
+      effectLine: (paintEffect, catEffect) =>
+        [paintEffect && sources.paint + ' ' + paintEffect, catEffect && sources.cat + ' ' + catEffect]
+          .filter(Boolean)
+          .join(' · '),
+    },
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
@@ -6616,6 +6755,11 @@ return Plotly;
       scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
       scCraft: SC + ' 제작',
       scHave: n => '보유 ' + num(n),
+      ssTitle: launches.ss,
+      ssNote: () =>
+        stageLabel(B().ssLaunch.stage) + ' · ' + level.short + ' ' + B().ssLaunch.level + '에서 시작',
+      ssBuy: () => '열기 · ' + B().ssLaunch.open + SC,
+      ssOwned: '✓ 보유 중',
       autoTitle: auto.name,
       autoNote: () =>
         '레벨업 때 스킬을 대신 골라 줍니다. ' +
@@ -6688,10 +6832,22 @@ return Plotly;
         },
         // 승진 마름모 뒤 그 고양이 몫
         nova: r => abilities.nova + ' +' + pctOf(B().cats.promo.nova[r - 1]) + '%',
+        supplySuper: n => modeName(B().cats.promo.supplyFrom) + ' 이상 · 1 ' + SC + ' / ' + n + '분',
         diamonds: (r, cap) => '승진 ' + r + ' / ' + cap,
         next: r => '다음 ' + rankName(r),
         lockStage: s => '🔒 동반으로 ' + stage.upper + ' ' + s + ' 보스',
-        lockFinal: () => '🔒 ' + stage.upper + ' 100 최종 보스',
+        lockFinal: () => {
+          const legend = B().cats.promo.legend;
+          return (
+            '🔒 ' +
+            legend.modes.map(modeName).join(' · ') +
+            ' 모드 각각 ' +
+            stage.upper +
+            ' ' +
+            legend.stage +
+            ' 보스 웨이브'
+          );
+        },
         trial: r => rankName(r) + ' 시험 · 한 판에',
         kills: '처치',
         clears: '탄',
@@ -6701,7 +6857,7 @@ return Plotly;
     // 격납고 · 도색(R-106): 성장 탭 아래 칸 · 격납고 화면(page-hangar). 색 이름은 paint.names, 값 · 효과는 balance paint
     hangar: {
       entry: '격납고 · 도색',
-      entryLocked: () => '🔒 성장 ' + Object.keys(E().perma).length + '개 MAX',
+      entryLocked: () => '🔒 성장 스킬 ' + Object.keys(E().perma).length + '개 1차 MAX',
       title: '격납고 · 도색',
       back: '성장으로 돌아가기',
       applied: '적용 중',
@@ -6804,7 +6960,7 @@ return Plotly;
             : Math.floor(x.have / 3600) + '/' + m.need / 3600 + '시간';
         if (m.sum === 'mode.insane.runs') return modeName('insane') + ' 한 판';
         if (m.sum) return big(x.have) + '/' + big(m.need);
-        if (m.door === 'hangar') return '영구 ' + Object.keys(E().perma).length + '개 MAX';
+        if (m.door === 'hangar') return '성장 스킬 ' + Object.keys(E().perma).length + '개 1차 MAX';
         if (m.door === 'world') return paint.names.violet + ' 모음';
         if (m.paint) return '격납고 도색';
         if (m.set) return '세 기체 같은 색';
@@ -6959,8 +7115,14 @@ return Plotly;
         'easy',
       ],
       'sk.core': ['충격 코어 효과', '월드 스킬 한 단계마다 충격파 재충전을 줄이는 비율', '비율/단', 'easy'],
-      'keep.top': ['주간 보관 상위 판', '이번 주 · 지난주 주간 도전 보관 판 수', '판', ''],
+      'keep.top': [
+        '매일·주간 보관 상위 판',
+        '오늘 · 어제 매일 도전과 이번 주 · 지난주 주간 도전에서 보관하는 상위 판 수',
+        '판',
+        '',
+      ],
       'keep.weeks': ['지난주 보관 주 수', '주간 최고 판을 보관하는 지난 주 수', '주', ''],
+      'keep.days': ['매일 기록 보관 일수', '매일 최고 판을 보관할 날 수(기본 365일)', '일', ''],
       'keep.practice': ['연습 보관 판', '연습 · 중단 기록의 최근 보관 판 수', '판', ''],
       'keep.inputs': ['입력 보관 수', '입력 기록을 보관하는 월드 판 수', '판', ''],
     };
@@ -6989,6 +7151,7 @@ return Plotly;
       siege: '포위',
       map: '맵',
       superLaunch: SC + ' 출격',
+      ssLaunch: launches.ss,
       cats: '고양이',
       superCoin: coins.s.ko,
       healZone: '회복 구역',
@@ -7041,6 +7204,7 @@ return Plotly;
         scBlue: SC + ' 만들기 ' + BL,
         notePerChar: '한 줄 남기기 글자당 ' + G,
         noteMax: '한 줄 남기기 글자 수',
+        noteColor: '한 줄 글자색',
         autoGoldPrice: '자동 ' + G + ' 습득 가격 ' + G,
         autoGoldChance: '자동 ' + G + ' 확률',
         autoGoldCapped: '자동 ' + G + ' 확률(스킬 모두 최대)',
@@ -7155,6 +7319,13 @@ return Plotly;
       },
       map: { width: '가로', height: '세로' },
       superLaunch: { stage: '시작 ' + stage.name, level: '시작 LV', picks: '준비 배분 수' },
+      ssLaunch: {
+        stage: '시작 ' + stage.name,
+        level: '시작 LV',
+        picks: '준비 배분 수',
+        cost: '출격 비용',
+        open: '해금 비용',
+      },
       cats: { maxLevel: '최대 Lv' },
       superCoin: {
         every: '간격(초)',
@@ -7169,6 +7340,7 @@ return Plotly;
         'regen.b': buffs.regen.name + ' 비용 ' + BL,
         'regen.hp': buffs.regen.name + ' 초당 회복',
         'revive.s': buffs.revive.name + ' 비용 ' + SC,
+        'revive.n': '부활 기본 횟수',
         'revive.hp': '부활 HP 비율',
         'revive.invuln': '부활 무적(초)',
       },
@@ -7204,7 +7376,7 @@ return Plotly;
     const mixKeys = { base: '비율 기본', step: stage.name + '마다 +', max: '+ 상한' };
     const unlockKeys = { score: point.name, time: '시간(초)', level: 'LV' };
     // 영구 스택(R-042): 스킬마다 MAX · 첫 값 · 살 때마다 오르는 값
-    const permaKeys = { max: 'MAX', price: '첫 가격 ' + BL, step: '가격 증가 ' + BL };
+    const permaKeys = { door: '1차 MAX', max: 'MAX', price: '첫 가격 ' + BL, step: '가격 증가 ' + BL };
     // 표 칸 이름(모드 · 기체 · 적)
     const column = (group, id) =>
       group === 'modes' ? modeName(id) : group === 'crafts' ? craftName(id) : enemies[id]?.short || id;
@@ -7218,8 +7390,21 @@ return Plotly;
       if (rows[group] && p.length >= 3)
         return column(group, p[1]) + ' · ' + rowName(group, p.slice(2).join('.'));
       if (group === 'skills' && p.length === 3) return skillName(p[1]) + ' · ' + (skillKeys[p[2]] || p[2]);
+      if (group === 'buffs' && p[2] === 'tiers') {
+        const metric = { score: point.name, hp: '회복/초', n: '부활 횟수', b: '비용 ' + BL, s: '비용 ' + SC };
+        return (
+          (p[1] === 'regen' ? buffs.regen.name : buffs.revive.name) +
+          ' ' +
+          (Number(p[3]) + 1) +
+          '단계 ' +
+          (metric[p[4]] || p[4])
+        );
+      }
       if (group === 'economy' && p[1] === 'perma')
         return '영구 스택 ' + (permaKeys[p[3]] || p[3]) + ' · ' + skillName(p[2]);
+      if (group === 'economy' && p[1] === 'permaOver')
+        return '성장 문 뒤 · ' + (p[2] === 'x' ? 'B 가격 배율' : SC + ' 추가 비용');
+      if (group === 'economy' && p[1] === 'noteColor') return names.economy.noteColor + ' 추가 비용';
       if (group === 'unlock') return modeName(p[1]) + ' 해금 · ' + (unlockKeys[p[2]] || p[2]);
       if (group === 'spawn' && p[1] === 'mix' && p.length === 4)
         return (enemies[p[2]]?.name || p[2]) + ' ' + (mixKeys[p[3]] || p[3]);
@@ -7264,7 +7449,7 @@ return Plotly;
       'modes.*.xp': ['처치 XP 배율(레벨업이 빨라짐)', '배', 'easy'],
       'modes.*.score': ['처치 ' + PT + '에 곱하는 배율(콤보 보너스는 그대로)', '배', 'more'],
       'modes.*.defenseCap': [
-        skillName('vital') + ' · ' + skillName('shield') + '를 고를 수 있는 횟수(∞ = 제한 없음)',
+        skillName('vital') + ' · ' + skillName('shield') + ' 각각 고를 수 있는 횟수(∞ = 제한 없음)',
         '회',
         'easy',
       ],
@@ -7471,8 +7656,14 @@ return Plotly;
       'superLaunch.stage': [SC + ' 출격 시작 ' + ST, ST, 'hard'],
       'superLaunch.level': [SC + ' 출격 시작 LV(' + BL + '는 이 LV 뒤부터)', 'LV', 'easy'],
       'superLaunch.picks': [SC + ' 출격 준비에서 배분하는 스킬 수', '개', 'easy'],
+      'ssLaunch.stage': [launches.ss + ' 시작 ' + ST, ST, 'hard'],
+      'ssLaunch.level': [launches.ss + ' 시작 LV(' + BL + '는 이 LV 뒤부터)', 'LV', 'easy'],
+      'ssLaunch.picks': [launches.ss + ' 준비에서 배분하는 스킬 수', '개', 'easy'],
+      'ssLaunch.cost': [launches.ss + ' 한 번의 비용', SC, 'less'],
+      'ssLaunch.open': [launches.ss + ' 해금 비용', SC, 'less'],
       'economy.goldBase': ['분당 ' + G + ' 기본(+ 수입 단계, 상한까지)', G, 'more'],
       'economy.goldMax': ['분당 ' + G + ' 상한(모드 보너스는 따로 더함)', G, 'more'],
+      'economy.noteColor.price': ['기본 아닌 글자색을 고를 때 한 줄 저장에 더하는 비용', G, 'cost'],
       'economy.blueEvery': [BL + '를 받는 실제 LV 간격', 'LV', 'less'],
       'bCoin.every': ['모드별 확률로 필드 B 코인을 판정하는 간격', '초', 'less'],
       'bCoin.value': ['필드 B 코인 줍기 보상', BL, 'more'],
@@ -7499,6 +7690,9 @@ return Plotly;
         'more',
       ],
       'economy.autoGoldCapped': ['카드가 모두 MAX일 때 코인을 받을 확률(1 = 항상)', '확률(0~1)', 'more'],
+      'economy.permaOver.x': ['1차 MAX 이후 성장 스킬 B 가격 배율', '배', 'cost'],
+      'economy.permaOver.s': ['1차 MAX 이후 성장 스킬을 살 때 더하는 비용', SC, 'cost'],
+      'economy.perma.*.door': ['격납고 문을 여는 스킬별 1차 MAX', '스택', ''],
       'economy.perma.*.max': ['영구 스택으로 살 수 있는 최대 수', '스택', 'more'],
       'economy.perma.*.price': ['영구 스택 첫 가격', BL, 'cost'],
       'economy.perma.*.step': ['영구 스택 살 때마다 오르는 가격', BL, 'cost'],
@@ -7512,6 +7706,11 @@ return Plotly;
       // 승진(R-111): 동반한 Lv5 고양이만. 인덱스 0 = 중급 … 3 = 마스터
       'cats.promo.open.*': [
         '이 ' + ST + ' 보스 웨이브를 동반으로 다 잡으면 그 승진 시험이 열림(다음 판부터)',
+        ST,
+        'cost',
+      ],
+      'cats.promo.legend.stage': [
+        '마스터 후 세 모드 각각 이 ' + ST + ' 보스를 끝내면 레전드 시험이 열림',
         ST,
         'cost',
       ],
@@ -7544,7 +7743,14 @@ return Plotly;
       'superCoin.max': ['필드에 동시에 쌓이는 S 코인 최대 개수', '개', 'more'],
       'buffs.regen.b': [buffs.regen.name + ' 버프 비용(켜 두면 출격할 때마다)', BL, 'cost'],
       'buffs.regen.hp': [buffs.regen.name + ' 버프 초당 회복', 'HP/초', 'easy'],
+      'buffs.regen.tiers.*.score': ['이 단계에 닿는 계정 최고 ' + PT, PT, 'more'],
+      'buffs.regen.tiers.*.hp': [buffs.regen.name + ' 단계별 초당 회복', 'HP/초', 'more'],
+      'buffs.regen.tiers.*.b': [buffs.regen.name + ' 단계별 출격 비용', BL, 'cost'],
       'buffs.revive.s': [buffs.revive.name + ' 버프 비용(켜 두면 출격할 때마다)', SC, 'cost'],
+      'buffs.revive.n': ['기본 부활 횟수', '회', 'more'],
+      'buffs.revive.tiers.*.score': ['이 단계에 닿는 계정 최고 ' + PT, PT, 'more'],
+      'buffs.revive.tiers.*.n': ['단계별 부활 횟수', '회', 'more'],
+      'buffs.revive.tiers.*.s': ['단계별 출격 비용', SC, 'cost'],
       'buffs.revive.hp': ['부활 때 최대 HP의 이 비율로 일어남', '비율', 'easy'],
       'buffs.revive.invuln': ['부활 뒤 무적 시간', '초', 'easy'],
       // 격납고 도색(R-106 · R-107)
@@ -7937,7 +8143,7 @@ return Plotly;
           tier: '수입 단계',
           supplyLv: cats.supply.name + ' Lv',
           // 승진 단계 0~4(R-113, 0 = 없음 · 1 = 중급 …)
-          supplyRank: cats.supply.name + ' 승진(0~4)',
+          supplyRank: cats.supply.name + ' 승진(0~' + B().cats.promo.open.length + ')',
         },
         resetRows: '예시 되돌리기',
         method: '계산 방법',
@@ -7952,16 +8158,16 @@ return Plotly;
       },
       sim: {
         world: '판 종류',
-        worldKinds: { solo: '솔로', weekly: '주간 도전', practice: '연습' },
-        worldWeek: '월드 주(YYYY-Www)',
-        weekMode: mode => '선택한 주의 주간 도전 모드 · ' + mode,
+        worldKinds: { solo: '솔로', daily: '매일 도전', weekly: '주간 도전', practice: '연습' },
+        worldWeek: '월드 기간 ID(날 YYYY-MM-DD · 옛 주 YYYY-Www)',
+        weekMode: mode => '선택한 기간의 도전 모드 · ' + mode,
         worldResultTitle: '월드 실험 결과',
         worldResultCols: [
           '묶음',
           '기체',
           '모드',
           '종류',
-          '주',
+          '기간 ID',
           '시간',
           'LV',
           'Point',
@@ -7969,7 +8175,7 @@ return Plotly;
           '드롭',
           '보스',
         ],
-        worldKindsShort: { weekly: '주간', practice: '연습' },
+        worldKindsShort: { daily: '매일', weekly: '주간', practice: '연습' },
         worldResultNote: '월드 판은 재화를 지급하지 않습니다. 획득 · 드롭 · 월드 보스 수를 따로 봅니다.',
         modes: '모드',
         crafts: '기체',
@@ -8419,7 +8625,7 @@ return Plotly;
           ],
         ],
       },
-      // 월드(R-123): 열림 · 주간 도전 · 필드 스킬 · 월드 스킬(값은 balance world)
+      // 월드(R-161): 열림 · 매일 도전 · 필드 스킬 · 월드 스킬(값은 balance world)
       ...(b.world
         ? [
             {
@@ -8435,8 +8641,8 @@ return Plotly;
                     '가 생깁니다.',
                 ],
                 [
-                  world.weekly,
-                  '매주 월요일 0시(한국)에 바뀌는 모드로, 그 주에는 모두 같은 판(같은 적 · 같은 스킬 순서)입니다. 횟수 무제한 · 최고 기록만 순위에. 적 체력 · 피해 ×' +
+                  world.daily,
+                  '매일 한국 0시에 모드가 바뀝니다. 오늘은 모두 같은 판(같은 적 · 같은 스킬 순서)이며, 횟수 제한 없이 도전하고 오늘 최고 기록이 순위에 남습니다. 적 체력 · 피해 ×' +
                     b.world.hp +
                     ', 재화는 없습니다.',
                 ],
@@ -8601,8 +8807,7 @@ return Plotly;
               skillName('vital') +
               ' · ' +
               skillName('shield') +
-              josa(skillName('shield'), '을/를') +
-              ' 고를 수 있는 횟수. 높은 모드일수록 적다.',
+              ' 각각 모드 한도까지 고를 수 있는 횟수. 높은 모드일수록 적다.',
           },
           {
             term: '해금',
@@ -8832,7 +9037,13 @@ return Plotly;
               abilities.nova +
               ' 처치 · 지운 탄을 넘기면 한 단계 오른다(' +
               promoRanks.join(' · ') +
-              ', 마스터는 최종 보스 뒤). 승진하면 이름 왼쪽에 단계 칩이 붙고, 동반한 고양이마다 ' +
+              '). 레전드는 마스터가 된 뒤 ' +
+              b.cats.promo.legend.modes.map(modeName).join(' · ') +
+              ' 모드 각각에서 ' +
+              stage.upper +
+              ' ' +
+              b.cats.promo.legend.stage +
+              ' 보스 웨이브를 끝내면 다음 판부터 시험이 열린다. 승진하면 이름 왼쪽에 단계 칩이 붙고, 동반한 고양이마다 ' +
               abilities.nova +
               ' 배율이 더해진다.',
           },
@@ -9073,7 +9284,14 @@ return Plotly;
         boss100: { by: 'supply', text: '보스 100마리째! 장부 한 권이 꽉 찼어. 새 장부 꺼낼게!' },
         kill100k: { by: 'supply', text: '적 10만을 넘었어! 이 숫자면 별길 끝까지 소문났을걸?' },
         boss1000: { by: 'supply', text: '보스 1000마리! 장부가 책장 하나를 채웠어. 넌 진짜 사냥꾼이야.' },
-        master: { by: 'promo', text: '최종 보스를 넘었어. 이제 난 마스터야. 저 별까지 끝까지 같이 가자.' },
+        master: {
+          by: 'promo',
+          text:
+            stage.upper +
+            ' ' +
+            B().cats.promo.legend.stage +
+            ' 보스를 넘었어. 이제 난 마스터야. 저 별까지 끝까지 같이 가자.',
+        },
         hangar: { by: 'engineer', text: '격납고 문을 열었어. 이제 기체마다 네 색을 입힐 수 있어.' },
         paint1: { by: 'engineer', text: '첫 도색 끝! 저 별에서도 멀리서 너인 줄 알아보겠다.' },
         set1: { by: 'engineer', text: '세 기체가 같은 색이야. 나란히 서니까 빛이 달라 보여.' },
@@ -9136,29 +9354,40 @@ return Plotly;
     };
     return { RADIO, lines, radioName: '???', radio: '무전', tip: 'TIP' };
   })();
-  // 월드(R-120 · R-123): 주간 도전 · 연습 · 월드 스킬 · 필드 스킬 · 월드 보스 · 결과 · 기록 카드 글자. 숫자는 balance.world
+  // 월드(R-120 · R-161): 매일 도전 · 옛 주간 기록 · 연습 · 월드 스킬 · 결과 글자. 숫자는 balance.world
   const world = (() => {
     const K = () => B().world.sk,
       pc = v => +(v * 100).toFixed(2);
     return {
       tab: '월드',
       name: '월드',
+      daily: '매일 도전',
       weekly: '주간 도전',
       practice: '연습',
       kicker: wk => 'WORLD · ' + wk,
       practiceKicker: 'WORLD · 연습',
       left: (d, h) => (d > 0 ? d + '일 ' : '') + h + '시간 남음',
+      dayLeft: (h, m) => (h ? h + '시간 ' : '') + m + '분 남음',
       modeNow: '이번 주 모드',
       next: m => '다음 주 ' + modeName(m),
       same: '이번 주는 모두 같은 판 · 횟수 무제한 · 최고 기록만',
+      modeToday: '오늘 모드',
+      nextDay: m => '내일 ' + modeName(m),
+      dailySame: '한국 시간 자정마다 모드 변경 · 오늘은 모두 같은 판 · 횟수 무제한',
       rankThis: '이 기기',
       rankAll: '전체',
       allRecords: '월드 기록 ›',
       lastWeek: (wk, m, s) => '지난주 최고 · ' + wk + ' ' + modeName(m) + ' · ' + s,
       empty: '이번 주 주간 도전 기록이 아직 없습니다',
+      emptyDaily: '오늘 매일 도전 기록이 아직 없습니다',
+      todaySummary: (score, attempts) =>
+        (score ? '오늘 최고 ' + score + ' · ' : '') + '시도 ' + attempts + '회',
+      yesterdaySummary: (day, m, s) => '어제 최고 · ' + day + ' ' + modeName(m) + ' · ' + s,
+      yesterdayNone: '어제 기록 없음',
       wskEntry: '월드 스킬',
       wskSub: '월드에서만 · ' + SC + '로 삽니다',
       wskHint: '솔로 판에는 효과가 없습니다',
+      launchDaily: '매일 도전',
       launchWeekly: '주간 도전',
       launchPractice: '연습',
       practiceMode: '연습 모드',
@@ -9183,31 +9412,50 @@ return Plotly;
       chain: { name: '연쇄 번개', desc: '처치하면 번개가 가까운 적에게 튑니다(+1마다 한 번 더)' },
       boss: { lancer: 'LANCER', hive: 'HIVE' },
       res: {
+        daily: (day, m) => '매일 도전 · ' + day + ' · ' + modeName(m),
         weekly: (wk, m) => '주간 도전 · ' + wk + ' · ' + modeName(m),
         practice: m => '연습 · ' + modeName(m),
         place: n => '이 기기 ' + n + '위',
         best: '이번 주 최고',
+        dailyBest: '오늘 최고 갱신',
+        todaySummary: (score, attempts) =>
+          (score ? '오늘 최고 ' + score + ' · ' : '') + '시도 ' + attempts + '회',
+        periodSummary: (score, attempts) =>
+          (score ? '그날 최고 ' + score + ' · ' : '') + '시도 ' + attempts + '회',
         stats: (got, drop, wb) => '주운 스킬 ' + got + ' / ' + drop + ' · 월드 보스 ' + wb,
         none: '월드는 재화를 주지 않습니다',
         again: '다시 도전',
         back: '월드로',
       },
-      card: { weekly: n => 'WEEKLY ' + n + '위 · 이 기기', practice: 'PRACTICE' },
+      card: {
+        daily: n => (n ? 'DAILY ' + n + '위' : 'DAILY') + ' · 이 기기',
+        weekly: n => (n ? 'WEEKLY ' + n + '위' : 'WEEKLY') + ' · 이 기기',
+        practice: 'PRACTICE',
+      },
       // 월드 스킬 화면 · 월드 기록 목록 · 기록 상세(R-123)
       back: '월드로 돌아가기',
       bought: (name, lv) => name + ' ' + lv + '단으로 올렸습니다',
       thisWeek: '이번 주',
       records: '월드 기록',
       list: {
+        today: (day, attempts) => '오늘 · ' + day + ' · 시도 ' + attempts + '회',
+        yesterday: day => '어제 · ' + day,
+        day: day => '매일 최고 · ' + day,
+        weekly: week => '주간 · ' + week,
         week: wk => '이번 주 · ' + wk,
         last: wk => '지난주 · ' + wk,
         old: '지난 주간 최고',
         practice: '연습 · 중단 최근',
+        noTodayBest: '정상 종료한 오늘 매일 도전 기록이 없습니다',
         empty: '아직 월드 기록이 없습니다',
-        note: '이 기기에만 저장 · 이번 주 · 지난주는 상위 10판, 그 앞 주는 주마다 최고 1판',
+        note: '이 기기에만 저장 · 오늘 · 어제 매일 최고 1판 · 지난 날마다 최고 · 옛 주간 기록은 주 ID로 표시',
       },
       detail: (kind, wk, m) =>
-        kind === 'weekly' ? 'WORLD · ' + wk + ' · ' + modeName(m) : 'WORLD · 연습 · ' + modeName(m),
+        kind === 'daily'
+          ? 'WORLD · ' + wk + ' · ' + modeName(m)
+          : kind === 'weekly'
+            ? 'WORLD · ' + wk + ' · ' + modeName(m)
+            : 'WORLD · 연습 · ' + modeName(m),
     };
   })();
   const api = {
@@ -9390,6 +9638,16 @@ return Plotly;
       startLevel: finiteCount(l?.startLevel) || 1,
     };
   }
+  function safeBuffLv(v) {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+    const range = (n, max) => (Number.isSafeInteger(n) && n >= 0 && n <= max ? n : 0);
+    return { regen: range(v.regen, 100), revive: range(v.revive, 9) };
+  }
+  function safeNoteColor(v) {
+    const list = BAL.economy.noteColor?.list;
+    if (typeof v !== 'string' || v === 'base' || !Array.isArray(list)) return null;
+    return list.includes(v) ? v : null;
+  }
   function safeStacks(s) {
     const out = {
       craft: safeSkills(s?.craft),
@@ -9445,7 +9703,7 @@ return Plotly;
     if (typeof w.week === 'string' && w.week.length <= 20) out.week = w.week;
     if (intIn(w.seed, 0, Number.MAX_SAFE_INTEGER) !== null) out.seed = w.seed;
     if (isId(w.mode)) out.mode = w.mode;
-    if (w.kind === 'weekly' || w.kind === 'practice') out.kind = w.kind;
+    if (w.kind === 'weekly' || w.kind === 'daily' || w.kind === 'practice') out.kind = w.kind;
     if (w.sk && typeof w.sk === 'object' && !Array.isArray(w.sk))
       out.sk = Object.fromEntries(
         Object.entries(w.sk)
@@ -9499,6 +9757,7 @@ return Plotly;
     'blueCoins',
     'autoUsed',
     'note',
+    'noteColor',
     'noteConfirmed',
     'noteCost',
     'launch',
@@ -9509,6 +9768,7 @@ return Plotly;
     'log',
     'cats',
     'buffs',
+    'buffLv',
     'revived',
     'abilityUsage',
     'companion',
@@ -9533,6 +9793,8 @@ return Plotly;
   ];
   function normalizeRecord(raw) {
     if (!raw || typeof raw.id !== 'string') return null;
+    const buffLv = safeBuffLv(raw.buffLv),
+      noteColor = safeNoteColor(raw.noteColor);
     const r = {
       id: raw.id.slice(0, 100),
       version: String(raw.version || '2.2.0').slice(0, 40),
@@ -9552,6 +9814,7 @@ return Plotly;
       blueCoins: finiteCount(raw.blueCoins),
       autoUsed: raw.autoUsed === true,
       note: typeof raw.note === 'string' ? raw.note : null,
+      ...(noteColor ? { noteColor } : {}),
       noteConfirmed: raw.noteConfirmed === true || (typeof raw.note === 'string' && raw.note.length > 0),
       noteCost: finiteCount(raw.noteCost),
       launch: safeLaunch(raw.launch),
@@ -9561,8 +9824,9 @@ return Plotly;
       starred: raw.starred === true,
       log: raw.log === 'none' ? 'none' : 'full',
       cats: safeCats(raw.cats),
-      // 출격 버프(R-062): 낸 버프(BUFFS 순서, 모르는 id는 버림) · 1회 부활을 썼는지. 옛 기록은 [] · 거짓
+      // 출격 버프(R-062 · R-161): 낸 버프(BUFFS 순서) · 그 판에 적용한 단계(옛 기록은 필드 없음) · 부활 사용 여부.
       buffs: Array.isArray(raw.buffs) ? BUFF_IDS.filter(id => raw.buffs.includes(id)) : [],
+      ...(buffLv ? { buffLv } : {}),
       revived: raw.revived === true,
       abilityUsage:
         raw.abilityUsage && typeof raw.abilityUsage === 'object'
@@ -9716,43 +9980,55 @@ return Plotly;
   const isWorld = r => r?.launch?.type === 'world';
   // 입력 기록 조각 키(R-119): chunks 저장소 ['in:' + 기록 id, 0](상세 로그 조각 [id, seq]와 다른 run 값)
   const inputKey = id => ['in:' + id, 0];
-  // 주간 도전 순위에 드는 판: 주간 도전 · 정상 종료(그만두기 · 쓰러짐) · 꼴이 맞는 주
+  const challengeEnd = r => r?.reason === 'defeated' || r?.reason === 'retired';
+  const dayIndexOf = id => {
+    const W = Week();
+    return typeof W.dayIndexOf === 'function' ? W.dayIndexOf(id) : null;
+  };
+  // 주간 도전 순위 호환: 정상 종료(그만두기 · 쓰러짐) · 꼴이 맞는 주 id
   const weeklyRun = r =>
-    isWorld(r) &&
-    r.world?.kind === 'weekly' &&
-    (r.reason === 'defeated' || r.reason === 'retired') &&
-    Week().indexOf(r.world.week) !== null;
+    isWorld(r) && r.world?.kind === 'weekly' && challengeEnd(r) && Week().indexOf(r.world.week) !== null;
+  // 매일 도전 순위: 정상 종료 · 한국 날짜 id
+  const dailyRun = r =>
+    isWorld(r) && r.world?.kind === 'daily' && challengeEnd(r) && Number.isInteger(dayIndexOf(r.world.week));
+  const challengeRun = r => weeklyRun(r) || dailyRun(r);
   // Point 큰 순 → 같으면 먼저 낸 판(날짜 · id)
   const byPoint = (a, b) => b.score - a.score || a.date - b.date || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const newest = (a, b) => b.date - a.date || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
-  // 이 기기 순위(R-121): 그 주 주간 도전 · 정상 종료 판만, Point 큰 순(연습 · 중단 판은 밖)
-  function worldRank(records, week) {
+  // 이 기기 순위: 그 기간의 주간 · 매일 도전 정상 종료 판만, Point 큰 순(연습 · 중단 판은 밖)
+  function worldRank(records, period) {
     return (records || [])
       .map(normalizeRecord)
-      .filter(r => r && weeklyRun(r) && r.world.week === week)
+      .filter(r => r && challengeRun(r) && r.world.week === period)
       .sort(byPoint);
   }
-  // 월드 보관(R-121, 순수 — prunePlan과 같은 트랜잭션, 솔로 기록은 건드리지 않음):
-  // 주간 도전 — 이번 주 · 지난주(와 시계가 앞선 주)는 Point 상위 keep.top판 + 가장 최근 1판, 그 앞 주는 주마다 최고 1판(이번 주에서
-  // keep.weeks주 안) / 연습 · 중단 판 — 최근 keep.practice판 / 입력 기록 — 남는 판 중 이번 주 최고 · 지난주 최고 · 가장 최근 월드 판
-  // (최대 keep.inputs개). → { remove: [기록 id], dropInputs: [입력 기록만 지울 기록 id] }
+  // 월드 보관(R-121 · R-161, 순수 — prunePlan과 같은 트랜잭션, 솔로 기록은 건드리지 않음):
+  // 주간은 기존 규칙 · 매일은 오늘/어제 상위 keep.top + 최근 1, 더 지난 날은 keep.days 안에서 날마다 최고 1판.
+  // 연습 · 중단 판은 최근 keep.practice판 / 입력은 오늘 최고 · 어제 최고 · 가장 최근 월드 판(최대 keep.inputs개).
+  // → { remove: [기록 id], dropInputs: [입력 기록만 지울 기록 id] }
   function worldPlan(records, now) {
     const K = BAL.world.keep,
       W = Week(),
       cur = W.index(Number(now) || 0),
+      today = typeof W.dayIndex === 'function' ? W.dayIndex(Number(now) || 0) : null,
       list = (records || []).map(normalizeRecord).filter(r => r && isWorld(r)),
       keep = new Set(),
       weeks = new Map(),
+      days = new Map(),
       rest = [];
     const add = r => r && keep.add(r.id);
     for (const r of list) {
-      if (!weeklyRun(r)) {
+      if (weeklyRun(r)) {
+        const i = W.indexOf(r.world.week);
+        if (!weeks.has(i)) weeks.set(i, []);
+        weeks.get(i).push(r);
+      } else if (dailyRun(r) && Number.isInteger(today)) {
+        const i = dayIndexOf(r.world.week);
+        if (!days.has(i)) days.set(i, []);
+        days.get(i).push(r);
+      } else {
         rest.push(r);
-        continue;
       }
-      const i = W.indexOf(r.world.week);
-      if (!weeks.has(i)) weeks.set(i, []);
-      weeks.get(i).push(r);
     }
     for (const [i, rs] of weeks) {
       const ranked = [...rs].sort(byPoint);
@@ -9761,16 +10037,25 @@ return Plotly;
         add([...rs].sort(newest)[0]);
       } else if (i > cur - K.weeks) add(ranked[0]);
     }
+    for (const [i, rs] of days) {
+      const ranked = [...rs].sort(byPoint);
+      if (i === today || i === today - 1) {
+        ranked.slice(0, K.top).forEach(add);
+        add([...rs].sort(newest)[0]);
+      } else if (i < today - 1 && i > today - K.days) add(ranked[0]);
+    }
     rest.sort(newest).slice(0, K.practice).forEach(add);
     const kept = list.filter(r => keep.has(r.id)),
       withInput = kept.filter(r => r.world?.input === 'in'),
-      best = i => (weeks.get(i) || []).filter(r => keep.has(r.id) && r.world.input === 'in').sort(byPoint)[0],
-      keepIn = new Set(
-        [best(cur), best(cur - 1), [...withInput].sort(newest)[0]]
-          .filter(Boolean)
-          .map(r => r.id)
-          .slice(0, K.inputs),
-      );
+      bestDay = i =>
+        (days.get(i) || []).filter(r => keep.has(r.id) && r.world.input === 'in').sort(byPoint)[0],
+      keepIn = new Set(),
+      inputCandidates = [bestDay(today), bestDay(today - 1), [...withInput].sort(newest)[0]];
+    for (const r of inputCandidates) {
+      if (keepIn.size >= K.inputs) break;
+      if (!r) continue;
+      keepIn.add(r.id);
+    }
     return {
       remove: list.filter(r => !keep.has(r.id)).map(r => r.id),
       dropInputs: withInput.filter(r => !keepIn.has(r.id)).map(r => r.id),
@@ -10740,6 +11025,7 @@ return Plotly;
     worldPlan,
     worldRank,
     weeklyRun,
+    challengeRun,
     inputKey,
     removePlan,
     exportLog,
