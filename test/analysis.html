@@ -5557,6 +5557,24 @@ return Plotly;
     title: '꾸미기',
     back: '돌아가기',
     count: (n, all) => n + ' / ' + all,
+    groupCount: (group, n, all) =>
+      ({ craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '기록 카드' })[group] +
+      ' ' +
+      n +
+      ' / ' +
+      all,
+    appearance: '외형 · 능력 변화 없음',
+    hubBack: '꾸미기로 돌아가기',
+    hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '기록 카드 꾸미기' },
+    hubNotes: {
+      craft: '무늬 · 무늬 색 · 엔진 불꽃 · 꼬리 자국',
+      cat: '동반 고양이의 소품',
+      music: '출격할 때 들을 음악',
+      card: '기록 카드의 틀',
+    },
+    equipped: name => '장착 · ' + name,
+    preview: '미리보기',
+    growth: '성장으로 ›',
     entryLocked: '🔒 강화 장비 네 칸을 모두 사면 열림',
     entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
     groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
@@ -6048,8 +6066,10 @@ return Plotly;
       crewN: n => '동반 ' + n,
       crewNone: '없음',
       buffOff: '끔',
+      buffState: (id, spec) => (id === 'regen' ? '회복 +' + spec.hp + '/초' : '부활 ' + spec.n + '회'),
       buffNote: '켜 둔 버프는 출격할 때 비용을 내고 그 판에만 붙습니다.',
       stage: craft => craftName(craft) + ' · 격납고에서 바꾸기',
+      changeCraft: '기체 변경',
       launch: '출격',
     },
     grow: {
@@ -6080,6 +6100,9 @@ return Plotly;
       // 출격 줄 셋째 칸(R-163): S 출격처럼 이름 + 작은 비용 두 줄(384px 3칸에서 글자가 테두리에 닿지 않게)
       ssName: launches.ss,
       ssCost: () => '−' + B().ssLaunch.cost + SC,
+      ssUnlock: 'SS 해금',
+      craftMissing: 'S 제작 ›',
+      ssReady: 'SS 출격 준비',
     },
     prep: {
       back: '준비 취소',
@@ -6266,6 +6289,8 @@ return Plotly;
       skills: '스킬 내역',
       rewardDetail: '보상 내역',
       noteLabel: '이 판을 한 줄로 남기기',
+      noteEdit: '한 줄 남기기 ›',
+      normalReplay: '일반 재도전',
       notePlaceholder: () => '이 판을 한 줄로 · 글자당 ' + E().notePerChar + ' ' + G,
       noteColor: {
         label: '글자색',
@@ -6284,30 +6309,31 @@ return Plotly;
     },
     settings: {
       kicker: 'SETTINGS',
-      title: '화면 · 소리 설정',
+      title: '설정',
       // 꾸미기 음악 묶음으로 가는 줄(R-162)
       musicPick: '음악 고르기 ›',
+      musicMenu: '음악 고르기는 메뉴에서 사용할 수 있습니다',
       // 대시 · 충격파 버튼 위치(R-031, 이 기기 설정)
       pad: '버튼 위치',
-      padCenter: '가운데 · 기본',
+      padCenter: '가운데',
       padRight: '오른쪽',
       padLeft: '왼쪽',
       padRow: '가로 한 줄',
       // 전투 알림 묶음 위치(R-064, 이 기기 설정)
       alertPos: '알림 위치',
-      alertCenter: '가운데 · 기본',
+      alertCenter: '가운데',
       alertLeft: '왼쪽',
       alertRight: '오른쪽',
       view: '시야',
-      viewWide: '넓게 · 기본',
+      viewWide: '넓게',
       viewStandard: '표준',
       // HUD 크기(R-091): 위 덩어리 · 아래 행동 줄의 크기. 보통이 기본
-      hud: 'HUD 크기',
+      hud: '전투 정보 크기',
       hudSmall: '작게',
-      hudMedium: '보통 · 기본',
+      hudMedium: '보통',
       hudLarge: '크게',
-      effects: '이펙트',
-      effectsAuto: '자동 · 기본',
+      effects: '그래픽 효과',
+      effectsAuto: '자동',
       effectsHigh: '풍부하게 · 기체 빛',
       effectsLow: '가볍게 · 빛 끔',
       // 배경음악(R-051, 이 기기 설정, 기본 켜짐). '효과음'과 따로 켜고 끈다
@@ -6322,12 +6348,26 @@ return Plotly;
       tips: '팁 보기',
       tipsAgain: tips.again,
       // 두 묶음의 읽기 이름(R-073 설정 창 조율)
-      groupScreen: '화면',
-      groupSound: '소리 · 진동',
-      autoFull: '시작할 때 전체화면',
+      groupScreen: '보기 · 조작',
+      groupSound: '소리',
+      autoFull: '시작할 때 자동 전환',
       fullscreen: '전체 화면',
       help: '도움말',
-      done: '설정 완료',
+      done: '닫기',
+      menuData: '메뉴에서 사용할 수 있습니다',
+      dataSummary: '이 기기에 저장 · 백업 권장',
+      helpTips: '도움말 · 팁',
+      defaults: '기본: 전투 정보 보통 · 시야 넓게 · 버튼과 알림 가운데 · 그래픽 자동',
+      fullscreenState: on => (on ? '켜짐' : '꺼짐'),
+      fullscreenAction: on => (on ? '전체 화면 끄기' : '전체 화면 켜기'),
+      volume: value => value + '%',
+      fullVolume: '100%',
+      padPreview: value =>
+        '버튼 위치 · ' +
+        ui.settings[{ center: 'padCenter', right: 'padRight', left: 'padLeft', row: 'padRow' }[value]],
+      alertPreview: value =>
+        '알림 위치 · ' +
+        ui.settings[{ center: 'alertCenter', left: 'alertLeft', right: 'alertRight' }[value]],
     },
     detail: { back: '돌아가기' },
     del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
@@ -6738,6 +6778,7 @@ return Plotly;
     perma: '',
     // 성장 카드: 더 살 수 없는 스킬의 버튼 자리(R-042)
     permaMax: 'MAX',
+    permaShort: '재화 부족',
     permaDoor: '1차 MAX',
     locked: id => '🔒 ' + unlockGate(id),
     // 모드 창 카드 칩(R-046): 자동 강화를 못 쓰는 모드 · S 코인이 나오는 모드
@@ -6754,6 +6795,7 @@ return Plotly;
         dash: abilities.dash + ' 재충전',
         shield: '보호막',
       },
+      statValue: (id, value) => value + (id === 'fire' || id === 'dash' ? '초' : ''),
       startStacks: '시작 스택',
       stackSources: {
         craft: sources.craft,
@@ -6769,16 +6811,27 @@ return Plotly;
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
+      supplyTitle: '보급 강화',
+      autoGroup: '자동 기능',
+      autoOrder: 'AUTO → 자동 G',
+      more: '효과 자세히',
+      incomeDone: rate => '✓ 완료 · ' + rate + ' ' + G + '/분',
       // 큰 숫자는 고른 모드 기준 분당 G(모드 보너스 goldBonus 포함, 보완 11)
       perMinute: rate => '분당 <b>' + rate + '</b> ' + G,
-      incomeStep: () => '단계마다 분당 +1 ' + G,
+      incomeStep: (rate, next) => rate + ' → ' + next + ' ' + G + '/분',
       tierLabel: (tier, max) => '구매 단계 ' + tier + ' / ' + max,
       buyIncome: (tier, max) =>
         tier < max ? E().incomePrice + ' ' + G + ' 구매 (' + tier + '/' + max + ')' : '최대 단계',
       sc: coins.s.ko + ' ' + SC,
-      scGet: () => '→ 1 ' + SC,
+      scGet: (n = 1) => '→ ' + n + ' ' + SC,
       scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
       scCraft: SC + ' 제작',
+      scBalance: (g, b, s) => '보유 ' + num(g) + G + ' · ' + num(b) + BL + ' · ' + num(s) + SC,
+      scFormula: n => E().scGold + G + ' + ' + E().scBlue + BL + ' → ' + n + SC,
+      scOnce: '누를 때마다 한 번 제작',
+      ssOneTime: () => '일회 해금 · ' + B().ssLaunch.open + SC,
+      ssEach: () => '매회 출격 · ' + B().ssLaunch.cost + SC,
+      close: '닫기',
       scHave: n => '보유 ' + num(n),
       ssTitle: launches.ss,
       ssNote: () =>
@@ -6874,6 +6927,12 @@ return Plotly;
           );
         },
         trial: r => rankName(r) + ' 시험 · 한 판에',
+        progress: (kills, needKills, clears, needClears) =>
+          '처치 ' +
+          num(kills) +
+          ' / ' +
+          num(needKills) +
+          (needClears ? ' · 탄 ' + num(clears) + ' / ' + num(needClears) : ''),
         kills: '처치',
         clears: '탄',
         top: r => rankName(r),
@@ -6889,6 +6948,9 @@ return Plotly;
       worn: '입힘',
       wear: '입히기',
       needFirst: () => paint.names[B().paint.first] + ' 먼저',
+      locked: '🔒 조건',
+      paintDetail: c => paint.names[c] + ' 능력 효과',
+      paintNeed: c => '해금 조건 · ' + paint.names[B().paint.first] + ' 도색을 이 기체에서 먼저 구매',
       base: '능력 없음 · 처음 색',
       // 입힌 색 능력 한 줄: '부스터·속사 +3 · HP +1/초 · 부활 +1'(기체 시작 스킬 이름은 craftStart 그대로)
       ability: (craft, c) => {
@@ -6935,13 +6997,18 @@ return Plotly;
       none: '없음',
       detail: '내역 ›',
       less: '접기 ▴',
-      paintTitle: '도색',
+      paintTitle: '도색 · 능력 효과',
       baseName: '기본',
       owned: '✓ 가짐',
       paintLocked: (full, n) => '🔒 성장 스킬 ' + n + '개 1차 MAX면 열림 · ' + full + ' / ' + n,
       setsMore: (on, n) => paint.sets + ' ' + on + '/' + n + ' ›',
       cosLocked: (have, need) =>
-        '🔒 성장 탭 강화 장비(시간 코인 · 자동 강화 · 자동 G)를 모두 사면 열림 · ' + have + ' / ' + need,
+        '🔒 시간 코인 ' +
+        E().incomeMax +
+        '단계 · 자동 강화 · 자동 G를 모두 구매하면 열림 · ' +
+        have +
+        ' / ' +
+        need,
       cosAll: '전체 ›',
     },
     // 비행 경력 카드 · 비행 일지(R-115, 기록 탭). 이정표 이름 · 칭호는 위 mile · titles, 일지 조각은 talk.lines.mile
