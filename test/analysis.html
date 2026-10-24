@@ -6910,8 +6910,9 @@ return Plotly;
       effectLocked: (id, v1, vMax, max) =>
         '해금하면 ' + cats[id].effect(v1) + ' · Lv' + max + ' ' + cats[id].value(vMax),
       effectMax: '최대',
-      unlockBtn: n => n + ' ' + SC + '로 해금',
-      levelBtn: (sc, b) => sc + ' ' + SC + ' + ' + b + ' ' + BL,
+      // 값은 코인 그림 부품(V.coinPrice, R-193 · 성장 값과 같은 표기)을 받는다
+      unlockBtn: price => price + '로 해금',
+      levelBtn: (sc, b) => sc + ' + ' + b,
       levelTo: lv => 'Lv' + lv + '로 육성',
       have: n => '보유 ' + SC + ' ' + n,
       pick: '동반',
@@ -7041,7 +7042,8 @@ return Plotly;
       more: '자세히 ▾',
       less: '접기 ▴',
       title: '비행 일지',
-      back: '기록으로 돌아가기',
+      // 뒤로 = 연 화면(R-191: 승무원 · 기록 · 홈 목표)
+      back: '돌아가기',
       count: (n, all) => n + ' / ' + all,
       next: '다음',
       cols: { fly: '비행', fight: '전투', grow: '성장' },
