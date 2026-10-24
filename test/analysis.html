@@ -5572,7 +5572,8 @@ return Plotly;
       card: '기록 카드 틀 · 능력 변화 없음',
     },
     // 입구 이름(격납고 · 승무원 · 기록 · 설정의 '… ›')
-    hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '기록 카드 꾸미기' },
+    // 입구 글(cosEntry): 기록 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
+    hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '카드 꾸미기' },
     preview: '미리보기',
     growth: '성장으로 ›',
     // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
@@ -5736,10 +5737,9 @@ return Plotly;
       cat: '🔒 승무원 탭에서 이 고양이를 깨우면',
       soon: '🔒 ' + mile.world + '(준비 중)',
     },
+    // 한 줄(R-198): 꾸미기 · 격납고 맨 아래 두 줄이 꾸미기 한 화면을 8px 넘겼다
     capsuleNote: () =>
-      '보급 캡슐 — ' +
-      B().cos.capsule.time / 60 +
-      '분 넘게 날면 판 끝에 가끔 아직 없는 조각이 옵니다(높은 모드일수록 자주).',
+      '보급 캡슐: ' + B().cos.capsule.time / 60 + '분 넘긴 판 끝에 가끔 새 조각 · 높은 모드일수록 자주',
     capsuleTag: '보급 캡슐',
     // 결과 줄: 토토(깨어 있으면) · 무전. slot = 칸 이름, name = 조각 이름
     capsuleLine: {
@@ -6083,7 +6083,10 @@ return Plotly;
     },
     grow: {
       title: '공통 성장',
-      note: '산 단계만큼 모든 기체가 그 스킬로 출격합니다. 노란 눈금은 1차 MAX.',
+      // R-196: 2열 칸이라 '1단계마다'는 칸마다 쓰지 않고 이 한 줄에
+      note: '모든 기체 공통 · 효과는 1단계마다 · 노란 눈금 = 1차 MAX',
+      gearDone: '닫기',
+      gearKicker: 'UPGRADE GEAR',
       // 성장 아래 강화 장비 묶음(R-162 · R-172): 시간 코인 · 자동 강화 · 자동 G 세 행
       gear: '강화 장비',
     },
@@ -6796,14 +6799,16 @@ return Plotly;
     },
     prev: '이전',
     next: '다음',
+    // 기록 넘김 처음 · 끝(R-195, 5줄씩이라 쪽이 많을 때)
+    pageFirst: '첫 쪽',
+    pageLast: '마지막 쪽',
     interrupted: '중단 기록',
     perma: '',
     // 성장 카드: 더 살 수 없는 스킬의 버튼 자리(R-042)
     permaMax: 'MAX',
     permaShort: '재화 부족',
     permaDoor: '1차 MAX',
-    // 성장 한 줄형(R-172): 효과는 한 단계 값 · 1차 MAX 뒤 구간 꼬리표 · B 0일 때 얻는 길
-    permaEach: effect => '1단계마다 ' + effect,
+    // 성장 칸(R-172 · R-196): 1차 MAX 뒤 구간 꼬리표 · B 0일 때 얻는 길('1단계마다'는 머리 설명 grow.note)
     permaSecond: '2차',
     permaWhere: () => BL + '는 전투 중 파란 코인으로 모읍니다',
     locked: id => '🔒 ' + unlockGate(id),
@@ -6838,6 +6843,8 @@ return Plotly;
     shop: {
       income: '시간 코인',
       more: '효과 자세히',
+      // 성장 열두째 칸(R-196): 다음 살 것
+      next: name => '다음 · ' + name,
       // 강화 장비 한 행(R-172): 끝난 일은 '✓ …' 한 줄
       incomeDone: rate => '✓ ' + rate + ' ' + G + '/분',
       // 큰 숫자는 고른 모드 기준 분당 G(모드 보너스 goldBonus 포함, 보완 11)
@@ -7039,8 +7046,9 @@ return Plotly;
       since: d => d + '부터',
       stats: ['비행 시간', '판', '처치', '보스'],
       best: (pt, st, ch) => '최고 ' + pt + ' ' + point.name + ' · ' + stageLabel(st) + ' · CHAIN ' + ch,
-      more: '자세히 ▾',
-      less: '접기 ▴',
+      // 경력 창(R-195): 기록 탭 '비행 경력' 칸을 누르면
+      careerKicker: 'FLIGHT CAREER',
+      careerDone: '닫기',
       title: '비행 일지',
       // 뒤로 = 연 화면(R-191: 승무원 · 기록 · 홈 목표)
       back: '돌아가기',
