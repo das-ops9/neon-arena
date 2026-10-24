@@ -5564,17 +5564,19 @@ return Plotly;
       ' / ' +
       all,
     appearance: '외형 · 능력 변화 없음',
-    hubBack: '꾸미기로 돌아가기',
-    hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '기록 카드 꾸미기' },
-    hubNotes: {
-      craft: '무늬 · 무늬 색 · 엔진 불꽃 · 꼬리 자국',
-      cat: '동반 고양이의 소품',
-      music: '출격할 때 들을 음악',
-      card: '기록 카드의 틀',
+    // 묶음별 목적 줄(R-173 C3): 머리 아래 한 줄
+    purpose: {
+      craft: '전투 기체 겉모습 · 능력 변화 없음',
+      cat: '동반 고양이 소품 · 능력 변화 없음',
+      music: '출격할 때 듣는 곡 · 능력 변화 없음',
+      card: '기록 카드 틀 · 능력 변화 없음',
     },
-    equipped: name => '장착 · ' + name,
+    // 입구 이름(격납고 · 승무원 · 기록 · 설정의 '… ›')
+    hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '기록 카드 꾸미기' },
     preview: '미리보기',
     growth: '성장으로 ›',
+    // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
+    lockLead: '강화 장비 세 가지를 모두 사면 꾸미기가 열립니다',
     entryLocked: '🔒 강화 장비 네 칸을 모두 사면 열림',
     entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
     groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
@@ -5710,6 +5712,9 @@ return Plotly;
     buy: '사기',
     wear: '입히기',
     worn: '입힘',
+    // 음악 · 카드 틀(R-173 C3): 입는 것이 아니라 쓰는 것
+    use: '사용하기',
+    inUse: '사용 중',
     toBase: '기본으로',
     playing: '듣는 중',
     making: '만드는 중',
@@ -5743,8 +5748,8 @@ return Plotly;
       radio: (slot, name) => '…치직… 보급 캡슐을 보냈어. 안에는 ' + slot + " '" + name + "'.",
     },
     // 상태 줄(R-117): 사면 바로 입힘 · 입히기 · 기본으로
-    bought: full => full + ' · 바로 입혔습니다',
-    wore: full => full + ' 입힘',
+    bought: (full, use) => full + (use ? ' · 바로 씁니다' : ' · 바로 입혔습니다'),
+    wore: (full, use) => full + (use ? ' 사용' : ' 입힘'),
     based: slot => slot + ' 기본으로',
     // 모드마다 캡슐 확률(Help · 정본)
     chances: () =>
@@ -5806,8 +5811,8 @@ return Plotly;
       const c = spec || B().buffs[id];
       return [c.b ? c.b + ' ' + BL : '', c.s ? c.s + ' ' + SC : ''].filter(Boolean).join(' + ');
     },
-    // from 모드 아래: '🔒 Super'
-    locked: () => '🔒 ' + modeName(B().buffs.from),
+    // from 모드 아래: '🔒 Super부터'(R-171 H5: 언제 열리는지)
+    locked: () => '🔒 ' + modeName(B().buffs.from) + '부터',
     // 스위치 읽기 이름: 'HP 회복 · 10 B · 켜면 출격할 때마다 씀'(잠기면 'HP 회복 · Super부터')
     label: (id, open, spec) =>
       buffs.nameAt(id, spec) +
@@ -6071,11 +6076,15 @@ return Plotly;
       stage: craft => craftName(craft) + ' · 격납고에서 바꾸기',
       changeCraft: '기체 변경',
       launch: '출격',
+      // 꾸미기 버튼 잠김 표시(R-171 H6): 강화 장비 산 칸 / 전체
+      cosLock: (n, all) => '🔒 ' + n + '/' + all,
+      // 기록 0일 때 순위 칸 한 줄(R-171 H7)
+      rankFirst: '첫 판을 마치면 TOP3가 여기에',
     },
     grow: {
       title: '공통 성장',
-      note: '산 만큼 모든 기체가 그 스킬을 갖고 출격합니다. 한 번에 +1, 스킬마다 MAX까지.',
-      // 성장 아래 강화 장비 묶음(R-162): 예전 상점 칸 다섯(시간 코인 · S 출격 · SS · 자동 강화 · 자동 G)
+      note: '산 단계만큼 모든 기체가 그 스킬로 출격합니다. 노란 눈금은 1차 MAX.',
+      // 성장 아래 강화 장비 묶음(R-162 · R-172): 시간 코인 · 자동 강화 · 자동 G 세 행
       gear: '강화 장비',
     },
     // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
@@ -6101,6 +6110,8 @@ return Plotly;
       ssName: launches.ss,
       ssCost: () => '−' + B().ssLaunch.cost + SC,
       ssUnlock: 'SS 해금',
+      // 출격 머리 오른쪽 작은 입구(R-171): S를 알고 SS가 닫혀 있을 때만
+      ssEntry: 'SS 출격 열기 ›',
       craftMissing: 'S 제작 ›',
       ssReady: 'SS 출격 준비',
     },
@@ -6310,8 +6321,10 @@ return Plotly;
     settings: {
       kicker: 'SETTINGS',
       title: '설정',
-      // 꾸미기 음악 묶음으로 가는 줄(R-162)
-      musicPick: '음악 고르기 ›',
+      // 꾸미기 음악 묶음으로 가는 소리 머리 오른쪽 입구(R-162 · R-174). 잠김 · 전투 중이면 누르면 이유 한 줄
+      musicPick: '전투 음악 고르기 ›',
+      musicPickLocked: '🔒 전투 음악 고르기',
+      musicPickOff: '전투 음악 고르기',
       musicMenu: '음악 고르기는 메뉴에서 사용할 수 있습니다',
       // 대시 · 충격파 버튼 위치(R-031, 이 기기 설정)
       pad: '버튼 위치',
@@ -6350,7 +6363,7 @@ return Plotly;
       // 두 묶음의 읽기 이름(R-073 설정 창 조율)
       groupScreen: '보기 · 조작',
       groupSound: '소리',
-      autoFull: '시작할 때 자동 전환',
+      autoFull: '시작할 때 전체 화면',
       fullscreen: '전체 화면',
       help: '도움말',
       done: '닫기',
@@ -6368,6 +6381,14 @@ return Plotly;
       alertPreview: value =>
         '알림 위치 · ' +
         ui.settings[{ center: 'alertCenter', left: 'alertLeft', right: 'alertRight' }[value]],
+      // 접힌 묶음 오른쪽 요약(R-174): 보기 · 조작 = 전투 정보 크기 · 시야 · 버튼 위치 지금 값, 도움말 = 팁 켜짐/꺼짐
+      screenSummary: (hud, view, pad) =>
+        [
+          ui.settings[{ s: 'hudSmall', m: 'hudMedium', l: 'hudLarge' }[hud]],
+          ui.settings[{ wide: 'viewWide', standard: 'viewStandard' }[view]],
+          ui.settings[{ center: 'padCenter', right: 'padRight', left: 'padLeft', row: 'padRow' }[pad]],
+        ].join(' · '),
+      tipsSummary: on => (on ? '팁 켜짐' : '팁 꺼짐'),
     },
     detail: { back: '돌아가기' },
     del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
@@ -6487,7 +6508,8 @@ return Plotly;
           ' 사면 ' +
           autoFrom() +
           '부터 레벨업 스킬을 대신 골라 줍니다.',
-    superNote: () => '−1' + SC + ' · ' + stageLabel(B().superLaunch.stage),
+    // 출격 줄 S 칸 작은 줄(R-171): 'STAGE 29 · 1S'. 좁으면 'STAGE' 뒤에서만 줄바꿈
+    superNote: () => stageLabel(B().superLaunch.stage) + '\u00a0·\u00a01' + SC,
     purchase: {
       insufficient: '재화가 부족합니다.',
       stale: '가격이나 단계가 바뀌어 화면을 새로 고쳤습니다. 다시 확인해 주세요.',
@@ -6780,6 +6802,10 @@ return Plotly;
     permaMax: 'MAX',
     permaShort: '재화 부족',
     permaDoor: '1차 MAX',
+    // 성장 한 줄형(R-172): 효과는 한 단계 값 · 1차 MAX 뒤 구간 꼬리표 · B 0일 때 얻는 길
+    permaEach: effect => '1단계마다 ' + effect,
+    permaSecond: '2차',
+    permaWhere: () => BL + '는 전투 중 파란 코인으로 모읍니다',
     locked: id => '🔒 ' + unlockGate(id),
     // 모드 창 카드 칩(R-046): 자동 강화를 못 쓰는 모드 · S 코인이 나오는 모드
     modeChips: { noAuto: () => auto.short + ' 불가', superCoin: () => SC + ' 획득' },
@@ -6811,17 +6837,12 @@ return Plotly;
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
-      supplyTitle: '보급 강화',
-      autoGroup: '자동 기능',
-      autoOrder: 'AUTO → 자동 G',
       more: '효과 자세히',
-      incomeDone: rate => '✓ 완료 · ' + rate + ' ' + G + '/분',
+      // 강화 장비 한 행(R-172): 끝난 일은 '✓ …' 한 줄
+      incomeDone: rate => '✓ ' + rate + ' ' + G + '/분',
       // 큰 숫자는 고른 모드 기준 분당 G(모드 보너스 goldBonus 포함, 보완 11)
       perMinute: rate => '분당 <b>' + rate + '</b> ' + G,
       incomeStep: (rate, next) => rate + ' → ' + next + ' ' + G + '/분',
-      tierLabel: (tier, max) => '구매 단계 ' + tier + ' / ' + max,
-      buyIncome: (tier, max) =>
-        tier < max ? E().incomePrice + ' ' + G + ' 구매 (' + tier + '/' + max + ')' : '최대 단계',
       sc: coins.s.ko + ' ' + SC,
       scGet: (n = 1) => '→ ' + n + ' ' + SC,
       scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
@@ -6839,14 +6860,14 @@ return Plotly;
       ssBuy: () => '열기 · ' + B().ssLaunch.open + SC,
       ssOwned: '✓ 보유 중',
       autoTitle: auto.name,
+      autoSub: '레벨업 스킬을 대신 고릅니다',
       autoNote: () =>
         '레벨업 때 스킬을 대신 골라 줍니다. ' +
         autoFrom() +
         '부터, 전투 중 ' +
         auto.short +
         ' 버튼으로 켜고 끕니다.',
-      owned: '✓ 보유 중',
-      buyAuto: () => E().autoPrice + ' ' + G + ' · 한 번 구매',
+      owned: '✓ 보유',
       // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님)
       autoGold: '자동 ' + G + ' 습득',
       autoGoldNote: () =>
@@ -6860,8 +6881,8 @@ return Plotly;
         G +
         '를 받습니다.' +
         autoGoldCappedNote(),
-      buyAutoGold: () => E().autoGoldPrice + ' ' + G + ' · 한 번 구매',
-      needAuto: () => auto.name + ' 보유 필요',
+      autoGoldSub: () => auto.name + josa(auto.name, '이/가') + ' 고를 때 가끔 스킬 대신 ' + G,
+      needAuto: () => '🔒 ' + auto.name + ' 먼저',
       on: '켜짐',
       off: '꺼짐',
       toggleLabel: on => '자동 ' + G + ' 습득 ' + (on ? '켜짐' : '꺼짐'),
@@ -9596,7 +9617,7 @@ return Plotly;
         daily: () => '오늘 매일 도전을 아직 안 했어요',
         mode: a => modeName(a.mode) + ' 열기',
         gear: () => '시간 코인 · 자동 강화 · 자동 G 모두 사기',
-        grow: a => '성장 스킬 ' + a.skills + '개 1차 MAX',
+        grow: a => '성장 스킬 ' + a.skills + '개 모두 1차 MAX',
         paint: a => '세 기체 모두 ' + paint.names[a.color],
         mile: a => mile[a.id],
         legend: a => a.modes.map(modeName).join(' · ') + ' ' + stage.upper + ' ' + a.stage + ' 보스',
@@ -9616,8 +9637,8 @@ return Plotly;
                 : v => n(v) + ' ' + point.name;
           return modeName(a.from) + ' 최고 ' + f(g.have) + ' / ' + f(g.need);
         }
-        if (g.kind === 'grow')
-          return '1차 MAX ' + a.full + ' / ' + a.skills + ' · 단계 ' + g.have + ' / ' + g.need;
+        // 성장: 막대와 같은 수 하나(R-171 H2, 1차 MAX 스킬 수는 성장 탭 눈금으로)
+        if (g.kind === 'grow') return '단계 ' + g.have + ' / ' + g.need;
         return n(g.have) + ' / ' + n(g.need);
       },
       go: '›',
