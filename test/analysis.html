@@ -5592,7 +5592,7 @@ return Plotly;
     growth: '성장으로 ›',
     // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
     lockLead: '강화 장비 세 가지를 모두 사면 꾸미기가 열립니다',
-    entryLocked: '🔒 강화 장비 네 칸을 모두 사면 열림',
+    entryLocked: '🔒 시간 코인·자동 기능을 모두 구매하면 열림',
     entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
     groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
     slot: {
@@ -6892,6 +6892,8 @@ return Plotly;
         paint: sources.paint,
         growth: sources.perma,
         cat: sources.cat,
+        prep: 'S 준비',
+        world: '월드 스킬',
       },
       effectLine: (paintEffect, catEffect) =>
         [paintEffect && sources.paint + ' ' + paintEffect, catEffect && sources.cat + ' ' + catEffect]
@@ -7086,7 +7088,7 @@ return Plotly;
       none: '없음',
       detail: '내역',
       less: '접기',
-      paintTitle: '도색 · 능력 효과',
+      paintTitle: '전투 도색 · 능력 효과',
       baseName: '기본',
       owned: '✓ 가짐',
       paintLocked: (full, n) => '🔒 성장 스킬 ' + n + '개 1차 MAX면 열림 · ' + full + ' / ' + n,
@@ -8800,7 +8802,9 @@ return Plotly;
           // 꾸미기 · 보급 캡슐(R-116)
           [
             cos.title,
-            '성장 탭 강화 장비 네 칸을 모두 사면 열리고, 격납고(기체) · 승무원(소품) · 기록 카드(틀) · 설정(음악)에서 들어갑니다. 무늬 · 엔진 불꽃 · 꼬리 자국 · 고양이 소품 · 전투 음악 · 카드 틀 ' +
+            '시간 코인을 ' +
+              E().incomeMax +
+              '단계까지 사고 자동 강화·자동 G를 모두 사면 열리고, 격납고(기체) · 승무원(소품) · 기록 카드(틀) · 설정(음악)에서 들어갑니다. 무늬 · 엔진 불꽃 · 꼬리 자국 · 고양이 소품 · 전투 음악 · 카드 틀 ' +
               b.cos.items.length +
               '조각을 ' +
               G +
@@ -8830,9 +8834,7 @@ return Plotly;
                   '격납고에서 세 기체 모두 ' +
                     paint.names[b.world.door] +
                     josa(paint.names[b.world.door], '을/를') +
-                    ' 가지면 탭 바에 ' +
-                    world.tab +
-                    '가 생깁니다.',
+                    ' 가지면 홈의 월드 쪽에서 매일 도전·월드 스킬이 열립니다. 성장 스킬 1차 MAX로 도색이 열리면 월드 연습을 먼저 할 수 있습니다.',
                 ],
                 [
                   world.daily,
@@ -9257,7 +9259,7 @@ return Plotly;
           },
           {
             term: cos.title,
-            desc: '강화 장비 네 칸을 모두 사면 열리는 모양 바꾸기. 능력은 없고 세 기체 공통이며, 출격 순간 입은 것이 그 판 기록 카드에 남는다.',
+            desc: '시간 코인·자동 기능을 모두 구매하면 열리는 모양 바꾸기. 능력은 없고 세 기체 공통이며, 출격 순간 입은 것이 그 판 기록 카드에 남는다.',
           },
           { term: cos.slot.mark, desc: '기체 몸체 안의 가는 무늬. ' + cos.slot.mcol + '으로 색을 고른다.' },
           { term: cos.slot.flame, desc: '전투 중 기체 꼬리에 붙는 빛.' },
@@ -9797,6 +9799,96 @@ return Plotly;
       },
     },
   };
+  const power = {
+    title: (type, kind) =>
+      (type === 'world' ? '월드' : type === 'super' ? (kind === 'ss' ? 'SS 출격' : 'S 출격') : '솔로 일반') +
+      ' 능력치',
+    details: '이번 출격 능력치',
+    normal: '솔로 일반',
+    world: '월드',
+    change: '다른 출격 기준 보기',
+    note: type =>
+      type === 'world'
+        ? '도색·고양이 전투 효과·월드 스킬 적용 · 영구 성장·출격 버프 제외'
+        : type === 'super'
+          ? '기체·성장·도색·고양이와 현재 배분을 반영합니다'
+          : '기체·성장·도색·고양이 적용 · S/SS는 준비에서 배분 추가',
+    worldStage: hp => '월드 HP ' + num(hp) + ' · 기체·능력치 변경 ›',
+    prepNote: '현재 배분까지 반영한 시작 능력치입니다. 출격할 때만 S를 사용합니다.',
+    recWorld: '월드 기록 ›',
+    recWorldLocked: '🔒 월드 기록',
+    recBack: '기록으로 돌아가기',
+    soloRecords: '솔로 기록 ›',
+    worldRecordsNote: '솔로 기록은 기록 탭에서 확인할 수 있습니다.',
+  };
+  journey.overview = {
+    entry: '열림 조건',
+    title: '열림 조건·진행',
+    note: '지금 진행과 열리는 기능을 모았습니다. 각 항목에서 해당 화면으로 갈 수 있습니다.',
+    close: '열림 조건 닫기',
+    next: '진행 중',
+    complete: n => '이미 열린 기능 ' + n + '개',
+    opened: '열림',
+    locked: '진행 중',
+    go: '보러 가기 ›',
+    titleOf: row => {
+      const a = row.args || {};
+      return {
+        mode: () => modeName(a.mode),
+        grow: () => '전투 도색 · 월드 연습',
+        gear: () => cos.title,
+        crew: () => '승무원',
+        buff: () => buffs.group,
+        sc: () => launches.super + ' · S 제작',
+        ss: () => 'SS 출격',
+        paint: () => '월드 매일 도전 · 월드 스킬',
+        mile: () => '비행 일지 · 칭호',
+      }[row.kind]();
+    },
+    condition: row => {
+      const a = row.args || {},
+        mode = B().unlock[a.mode];
+      if (row.kind === 'mode')
+        return (
+          modeName(mode.from) +
+          ' 한 판에서 ' +
+          [
+            mode.time && timeString(mode.time) + ' 생존',
+            mode.score && num(mode.score) + ' Point',
+            mode.level && 'LV' + mode.level,
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        );
+      if (row.kind === 'grow') return '성장 스킬 ' + a.skills + '종 모두 1차 MAX';
+      if (row.kind === 'gear') return '시간 코인 ' + a.tierMax + '단계 + 자동 강화 + 자동 G 구매';
+      if (row.kind === 'crew') return modeName(a.mode) + ' 한 판 종료 · 패배/기록 남기고 종료';
+      if (row.kind === 'buff') return modeName(a.mode) + ' 이상 모드에서 사용';
+      if (row.kind === 'sc') return modeName(a.mode) + '에서 S를 처음 얻으면 사용';
+      if (row.kind === 'ss')
+        return 'S를 안 뒤 ' + B().ssLaunch.open + ' S로 한 번 열기 · 매 출격 ' + B().ssLaunch.cost + ' S';
+      if (row.kind === 'paint') return '세 기체 모두 ' + paint.names[a.color] + ' 보유 · 입힌 색은 무관';
+      return '이정표를 넘으면 일지와 칭호가 남습니다';
+    },
+    progress: row => {
+      if (row.kind === 'mode')
+        return row.checks
+          .map(c =>
+            c.key === 'time'
+              ? timeString(c.have) + ' / ' + timeString(c.need)
+              : c.key === 'level'
+                ? 'LV ' + num(c.have) + ' / ' + num(c.need)
+                : num(c.have) + ' / ' + num(c.need) + ' Point',
+          )
+          .join(' · ');
+      if (row.kind === 'grow') return row.args.full + ' / ' + row.args.skills + '종 1차 MAX';
+      if (row.kind === 'gear') return row.have + ' / ' + row.need + '단계 구매';
+      if (row.kind === 'paint') return row.have + ' / ' + row.need + '기체 보유';
+      if (row.kind === 'mile') return row.have + ' / ' + row.need + '개 달성';
+      return row.done ? '열림' : '아직 열리지 않음';
+    },
+  };
+
   const api = {
     nameRules,
     textRules,
@@ -9859,6 +9951,7 @@ return Plotly;
     talk,
     world,
     journey,
+    power,
   };
   root.NeonTerms = api;
   if (typeof module !== 'undefined') module.exports = api;
