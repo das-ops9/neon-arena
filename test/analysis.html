@@ -5077,6 +5077,16 @@ return Plotly;
         { id: 'frame.neon', slot: 'frame', g: 1500 },
         { id: 'frame.gold', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
         { id: 'frame.holo', slot: 'frame', s: 50, need: { mile: 'world' } },
+        // 편집장 추가 요청(R-205): 기존 카드 가격군·조건을 재사용하는 틀 9종. 기존 항목 불변.
+        { id: 'frame.orbit', slot: 'frame', g: 1000 },
+        { id: 'frame.hex', slot: 'frame', g: 1200 },
+        { id: 'frame.scan', slot: 'frame', g: 1200 },
+        { id: 'frame.wings', slot: 'frame', g: 1500 },
+        { id: 'frame.pulse', slot: 'frame', g: 1500 },
+        { id: 'frame.laurel', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
+        { id: 'frame.prism', slot: 'frame', s: 50, need: { mile: 'world' } },
+        { id: 'frame.aurora', slot: 'frame', s: 50, need: { mile: 'world' } },
+        { id: 'frame.eclipse', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
       ],
       // 등급(R-160): 전투 기체 칸 항목의 tier · 등급 문. insane = 첫 Insane(insane1) 넘어야 열림(항목 조건과 따로 확인)
       tiers: { basic: {}, advanced: {}, special: {}, insane: { need: { mile: 'insane1' } } },
@@ -5575,6 +5585,8 @@ return Plotly;
     // 입구 글(cosEntry): 기록 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
     hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '카드 꾸미기' },
     preview: '미리보기',
+    browse: '옆으로 넘겨 보세요',
+    browseAll: n => n + '개 · 옆으로 넘기기',
     growth: '성장으로 ›',
     // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
     lockLead: '강화 장비 세 가지를 모두 사면 꾸미기가 열립니다',
@@ -5692,6 +5704,15 @@ return Plotly;
       'frame.neon': '네온 이중선',
       'frame.gold': '금빛 틀',
       'frame.holo': '홀로 틀',
+      'frame.orbit': '궤도 링',
+      'frame.hex': '육각 실드',
+      'frame.scan': '스캔 라인',
+      'frame.wings': '비행 날개',
+      'frame.pulse': '펄스 파형',
+      'frame.laurel': '월계관',
+      'frame.prism': '프리즘',
+      'frame.aurora': '오로라',
+      'frame.eclipse': '일식',
     },
     // 곡 줄 설명 · 카드 틀 설명(base = 기본)
     music: {
@@ -5707,6 +5728,15 @@ return Plotly;
       'frame.neon': '모드 색 두 겹',
       'frame.gold': '금빛 두 겹 · 귀퉁이 장식',
       'frame.holo': '빛에 따라 도는 무지개 테두리',
+      'frame.orbit': '푸른 궤도와 네 귀퉁이 위성',
+      'frame.hex': '육각 연결로 두른 에너지 실드',
+      'frame.scan': '민트 스캔 선과 좌표 눈금',
+      'frame.wings': '은빛 날개와 비행 방향 표식',
+      'frame.pulse': '양옆을 흐르는 푸른 신호 파형',
+      'frame.laurel': '금빛 월계 잎과 중앙 훈장',
+      'frame.prism': '보라와 시안으로 갈라지는 결정',
+      'frame.aurora': '곡선을 따라 겹치는 오로라 빛',
+      'frame.eclipse': '금빛 일식 고리와 방사형 빛살',
     },
     crafts: '미리보기 기체',
     special: '특별',
@@ -5723,6 +5753,7 @@ return Plotly;
     open: id => mile[id] + (titles[id] ? ' · ' + titles[id] : '') + ' 열림',
     // 등급(R-160): 기체 칸 등급 줄 · 등급 문 잠김(tier) · 가격 범위(tierPrice · 보유 수는 count)
     tier: { basic: '기본', advanced: '고급', special: '특별', insane: 'INSANE RED' },
+    tierShort: { basic: '기본', advanced: '고급', special: '특별', insane: 'RED' },
     tierPrice: tier => {
       const items = (B().cos?.items || []).filter(x => x.tier === tier),
         g = items.filter(x => x.g).map(x => x.g),
@@ -6083,8 +6114,10 @@ return Plotly;
     },
     grow: {
       title: '공통 성장',
-      // R-196: 2열 칸이라 '1단계마다'는 칸마다 쓰지 않고 이 한 줄에
-      note: '모든 기체 공통 · 효과는 1단계마다 · 노란 눈금 = 1차 MAX',
+      skills: '스킬',
+      note: '모든 기체 공통 · 효과는 1단계마다',
+      skillsNote: '파랑 1차 · 금색 2차',
+      gearNote: '시간 코인과 자동 기능 · 모든 기체 공통',
       gearDone: '닫기',
       gearKicker: 'UPGRADE GEAR',
       // 성장 아래 강화 장비 묶음(R-162 · R-172): 시간 코인 · 자동 강화 · 자동 G 세 행
