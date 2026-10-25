@@ -4951,7 +4951,7 @@ return Plotly;
     healZone: { first: 60, every: 60, life: 30, sizes: [1, 2, 3], hp: 5, margin: 150 },
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
-    records: { keep: 100, logs: 10 },
+    records: { keep: 50, logs: 10 },
     // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
     // 판정 종류 하나씩 — sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
     // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름 — 마스터는 최종 보스 전 잠김).
@@ -6093,8 +6093,13 @@ return Plotly;
     // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
     rec: {
       title: '기록',
-      note: () =>
-        '최신순 · 최근 ' + B().records.keep + '판 보관, 상세 로그는 최근 ' + B().records.logs + '판',
+      note: () => '최신순 · ' + B().records.keep + '판 보관 · TOP3·별표 보호',
+      keepDetail: () =>
+        '다음 판을 정상 종료하면 오래된 기록부터 ' +
+        B().records.keep +
+        '판으로 정리합니다. 일반·S 출격 TOP3와 별표는 남고, 보호 기록만으로 한도를 넘을 수 있습니다. 경력 누적은 그대로입니다. 상세 로그는 최근 ' +
+        B().records.logs +
+        '판과 보호 기록에 남습니다. 지워진 판은 복구할 수 없으니 설정의 데이터 관리에서 먼저 백업해 두세요.',
       data: '데이터 관리',
       dataNote:
         '재화와 기록은 이 브라우저에만 저장됩니다. 파일로 백업해 두면 다른 기기에서도 가져올 수 있습니다.',
@@ -6393,7 +6398,8 @@ return Plotly;
         ].join(' · '),
       tipsSummary: on => (on ? '팁 켜짐' : '팁 꺼짐'),
     },
-    detail: { back: '돌아가기' },
+    dialog: { close: '닫기' },
+    detail: { title: '기록 상세', back: '닫기' },
     del: { kicker: 'DELETE', title: '기록 삭제', cancel: '취소', confirm: '지우기' },
     reset: { kicker: 'RESET', cancel: '취소' },
     import: {
@@ -6854,11 +6860,12 @@ return Plotly;
       scGet: (n = 1) => '→ ' + n + ' ' + SC,
       scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
       scCraft: SC + ' 제작',
-      scBalance: (g, b, s) => '보유 ' + num(g) + G + ' · ' + num(b) + BL + ' · ' + num(s) + SC,
-      scFormula: n => E().scGold + G + ' + ' + E().scBlue + BL + ' → ' + n + SC,
+      scBalance: (g, b, s) => '보유 ' + g + ' · ' + b + ' · ' + s,
+      scFormula: (g, b, s) => g + ' + ' + b + ' → ' + s,
       scOnce: '누를 때마다 한 번 제작',
-      ssOneTime: () => '일회 해금 · ' + B().ssLaunch.open + SC,
-      ssEach: () => '매회 출격 · ' + B().ssLaunch.cost + SC,
+      ssOneTime: '일회 해금',
+      ssEach: '매회 출격',
+      ssOpen: '열기',
       close: '닫기',
       scHave: n => '보유 ' + num(n),
       ssTitle: launches.ss,
@@ -7024,13 +7031,13 @@ return Plotly;
       picked: '지금 출격 기체 ✓',
       statsTitle: '출격 능력치(실제 값)',
       none: '없음',
-      detail: '내역 ›',
-      less: '접기 ▴',
+      detail: '내역',
+      less: '접기',
       paintTitle: '도색 · 능력 효과',
       baseName: '기본',
       owned: '✓ 가짐',
       paintLocked: (full, n) => '🔒 성장 스킬 ' + n + '개 1차 MAX면 열림 · ' + full + ' / ' + n,
-      setsMore: (on, n) => paint.sets + ' ' + on + '/' + n + ' ›',
+      setsMore: (on, n) => paint.sets + ' ' + on + '/' + n,
       cosLocked: (have, need) =>
         '🔒 시간 코인 ' +
         E().incomeMax +
