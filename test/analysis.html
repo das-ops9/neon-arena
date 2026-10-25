@@ -5585,8 +5585,10 @@ return Plotly;
     // 입구 글(cosEntry): 기록 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
     hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '카드 꾸미기' },
     preview: '미리보기',
+    previewPending: '미리보기 · 적용 전',
     browse: '옆으로 넘겨 보세요',
     browseAll: n => n + '개 · 옆으로 넘기기',
+    browseCount: n => n + '개 ↔',
     growth: '성장으로 ›',
     // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
     lockLead: '강화 장비 세 가지를 모두 사면 꾸미기가 열립니다',
@@ -5741,6 +5743,10 @@ return Plotly;
     crafts: '미리보기 기체',
     special: '특별',
     buy: '사기',
+    buyApply: use => (use ? '사서 사용' : '사서 입히기'),
+    shortage: kind => coins[kind].short + ' 부족',
+    buying: '구매 중…',
+    applying: '적용 중…',
     wear: '입히기',
     worn: '입힘',
     // 음악 · 카드 틀(R-173 C3): 입는 것이 아니라 쓰는 것
@@ -6176,18 +6182,17 @@ return Plotly;
       picks: (kind = 'sc') => (kind === 'ss' ? B().ssLaunch.picks : B().superLaunch.picks),
       picksOf: (kind = 'sc') => '/ ' + (kind === 'ss' ? B().ssLaunch.picks : B().superLaunch.picks),
       allocLabel: '강화 배분',
+      controls: '−/+ 길게 누르기 · 주사위로 남은 강화 채우기',
       // 아이콘 버튼(R-063, 글자 없음 · 읽기 이름만): 주사위 = 남은 강화를 무작위로(다시 누르면 새로) · ↺ = 모두 0
       random: '무작위 배분',
       reset: '배분 초기화',
       cancel: '준비 취소',
       launch: (kind = 'sc') => '출격 · ' + SC + ' ' + (kind === 'ss' ? B().ssLaunch.cost : 1) + ' 사용',
-      note: (kind = 'sc') => {
+      note: (kind = 'sc', ready = false) => {
         const launch = kind === 'ss' ? B().ssLaunch : B().superLaunch,
           cost = kind === 'ss' ? B().ssLaunch.cost : 1;
         return (
-          '강화 ' +
-          launch.picks +
-          '회를 모두 나누면 출격할 수 있습니다. ' +
+          (ready ? '배분 완료. ' : '강화 ' + launch.picks + '회를 모두 나누면 출격할 수 있습니다. ') +
           SC +
           '는 출격할 때 ' +
           cost +
@@ -6332,7 +6337,7 @@ return Plotly;
       help: '도움말',
     },
     result: {
-      kicker: 'RUN RECORDED',
+      kicker: 'RUN ENDED',
       super: launches.super,
       title: '결과',
       best: 'NEW BEST',
@@ -6520,7 +6525,10 @@ return Plotly;
     },
     resultUnlock: ids => '새 모드 해금 · ' + ids.map(modeName).join(' · '),
     resultHidden: '승무원 탭 열림 · 고양이 비행사',
-    resultKicker: defeated => (defeated ? 'SIGNAL LOST · RUN RECORDED' : 'RUN SAVED · SIGNAL ON HOLD'),
+    resultKicker: (defeated, saved = false) =>
+      defeated
+        ? 'SIGNAL LOST · ' + (saved ? 'RUN RECORDED' : 'RUN ENDED')
+        : (saved ? 'RUN SAVED' : 'RUN ENDED') + ' · SIGNAL ON HOLD',
     resultAnnounce: (score, lv) => '도전 기록. ' + num(score) + '점, 레벨 ' + lv,
     // 결과 NEW BEST는 그 판이 속한 순위 기준(R-032)
     newBest: kind => 'NEW BEST · ' + rankingName(kind) + ' 1위',
@@ -9587,6 +9595,8 @@ return Plotly;
       },
       buy: s => s + ' ' + SC,
       max: 'MAX',
+      shortage: 'S 부족',
+      skillLevel: (n, max) => n + ' / ' + max,
       now: '지금',
       nextLv: '다음',
       field: '필드 스킬',
@@ -9619,6 +9629,13 @@ return Plotly;
       thisWeek: '이번 주',
       records: '월드 기록',
       list: {
+        kinds: '월드 기록 종류',
+        practiceTab: '연습·중단',
+        period: '기간',
+        allPeriods: '전체 기간',
+        count: n => '목록 ' + n + '개',
+        keep: '이 기기 기록 · 보관 안내',
+        emptyKind: name => name + ' 기록이 없습니다',
         today: (day, attempts) => '오늘 · ' + day + ' · 시도 ' + attempts + '회',
         yesterday: day => '어제 · ' + day,
         day: day => '매일 최고 · ' + day,
