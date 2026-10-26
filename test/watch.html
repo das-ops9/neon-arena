@@ -74,7 +74,6 @@
   --area-line: #24394b;
   --area-bg: #08101a;
   --area-label: #8fb3c4;
-  --s-tab-ink: #b9a3e8;
   --gold-tint: #2a2412;
   --cyan-tint: #10302d;
   --danger-tint: #2a1218;
@@ -349,8 +348,8 @@
 
   /* 터치 영역 */
   --tap: 44px;
-  /* HUD 크기(R-091): body[data-hud] s | m(기본) | l. 위 덩어리 · 아래 행동 줄에만 zoom으로 걸린다(ui.css) */
-  --hud-z: 1;
+  /* HUD 크기(R-091 · R-232): body[data-hud] m(기본 1.1) | s(작게 1.0). 위 덩어리 · 아래 행동 줄에만 zoom으로 걸린다(ui.css) */
+  --hud-z: 1.1;
   --tap-lg: 48px;
   --action-h: 56px;
   --action-w: 72px;
@@ -570,14 +569,11 @@ body[data-fx='low'] .nb-spark {
   animation: none !important;
 }
 body[data-hud='s'] {
-  --hud-z: 0.9;
+  --hud-z: 1;
 }
-body[data-hud='l'] {
-  --hud-z: 1.15;
-}
-/* 가로 화면은 알림 기준선 위에 들어가야 해서 크게를 적용하지 않는다(PC · 가로는 깨지지 않는지만) */
+/* 가로 낮은 화면은 알림 기준선 위에 들어가야 해서 기본도 1.0(PC · 가로는 깨지지 않는지만) */
 @media (orientation: landscape) and (max-height: 520px) {
-  body[data-hud='l'] {
+  body {
     --hud-z: 1;
   }
 }
@@ -7998,9 +7994,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 맵 크기(시작 위치는 가운데)
     map: { width: 4000, height: 3000 },
     // S 출격: 출격 전 picks회 배분 후 Stage·LV에서 시작
-    superLaunch: { stage: 29, level: 29, picks: 28 },
+    superLaunch: { stage: 29, level: 29, picks: 28, cost: 1 },
     // SS 출격(R-161): 한 번 해금하면 매 출격 10 S, STAGE · LV 59에서 58회 배분으로 시작한다.
     ssLaunch: { stage: 59, level: 59, picks: 58, cost: 10, open: 10 },
+    // SSS 출격(R-240): SS를 연 뒤 open S로 한 번 해금 · 매 출격 cost S, STAGE · LV 89에서 88회 배분으로 시작한다.
+    sssLaunch: { stage: 89, level: 89, picks: 88, cost: 30, open: 30 },
+    // 출격 단계표(R-240): 낮은 단계부터 종류 → 위 칸 이름(값은 각 칸 한 곳, progression launchTier가 읽는다)
+    launchTiers: { sc: 'superLaunch', ss: 'ssLaunch', sss: 'sssLaunch' },
     // 재화. 분당 G = min(goldMax, goldBase + 시간 코인 단계) + 모드 goldBonus. B는 실제 LV blueEvery마다 모드 blue.
     // 한 줄 남기기는 noteMax글자까지 글자당 notePerChar G. 보스 처치 G는 모드마다(modes.*.bossGold)
     // 자동 G 습득(R-025): autoGoldPrice G로 한 번 산다(자동 강화를 먼저 사야 함). 켜 두면 AUTO가 레벨업을 고를 때
@@ -8260,35 +8260,47 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         { id: 'trail.chromestar', slot: 'trail', tier: 'insane', s: 105, need: { mile: 'boss1000' } },
         { id: 'trail.redorbit', slot: 'trail', tier: 'insane', s: 110, need: { mile: 'kill100k' } },
         { id: 'trail.whitewake', slot: 'trail', tier: 'insane', s: 120, need: { mile: 'hour50' } },
-        { id: 'prop.engineer.scarf', slot: 'prop.engineer', g: 500 },
-        { id: 'prop.engineer.headset', slot: 'prop.engineer', g: 700 },
-        { id: 'prop.engineer.star', slot: 'prop.engineer', g: 900, need: { rank: 1 } },
-        { id: 'prop.supply.scarf', slot: 'prop.supply', g: 500 },
-        { id: 'prop.supply.headset', slot: 'prop.supply', g: 700 },
-        { id: 'prop.supply.star', slot: 'prop.supply', g: 900, need: { rank: 1 } },
-        { id: 'prop.pilot.scarf', slot: 'prop.pilot', g: 500 },
-        { id: 'prop.pilot.headset', slot: 'prop.pilot', g: 700 },
-        { id: 'prop.pilot.star', slot: 'prop.pilot', g: 900, need: { rank: 1 } },
+        { id: 'prop.engineer.scarf', slot: 'prop.engineer', tier: 'basic', g: 500 },
+        { id: 'prop.engineer.headset', slot: 'prop.engineer', tier: 'basic', g: 700 },
+        { id: 'prop.engineer.star', slot: 'prop.engineer', tier: 'advanced', g: 900, need: { rank: 1 } },
+        { id: 'prop.engineer.goggles', slot: 'prop.engineer', tier: 'special', s: 30 },
+        { id: 'prop.engineer.crest', slot: 'prop.engineer', tier: 'insane', s: 60 },
+        { id: 'prop.supply.scarf', slot: 'prop.supply', tier: 'basic', g: 500 },
+        { id: 'prop.supply.headset', slot: 'prop.supply', tier: 'basic', g: 700 },
+        { id: 'prop.supply.star', slot: 'prop.supply', tier: 'advanced', g: 900, need: { rank: 1 } },
+        { id: 'prop.supply.goggles', slot: 'prop.supply', tier: 'special', s: 30 },
+        { id: 'prop.supply.crest', slot: 'prop.supply', tier: 'insane', s: 60 },
+        { id: 'prop.pilot.scarf', slot: 'prop.pilot', tier: 'basic', g: 500 },
+        { id: 'prop.pilot.headset', slot: 'prop.pilot', tier: 'basic', g: 700 },
+        { id: 'prop.pilot.star', slot: 'prop.pilot', tier: 'advanced', g: 900, need: { rank: 1 } },
+        { id: 'prop.pilot.goggles', slot: 'prop.pilot', tier: 'special', s: 30 },
+        { id: 'prop.pilot.crest', slot: 'prop.pilot', tier: 'insane', s: 60 },
         { id: 'music.first', slot: 'music', g: 1200 },
         { id: 'music.dark', slot: 'music', g: 1200 },
         { id: 'music.dnb', slot: 'music', g: 1500 },
-        { id: 'frame.stars', slot: 'frame', g: 1000, need: { mile: 'hour1' } },
-        { id: 'frame.circuit', slot: 'frame', g: 1200 },
-        { id: 'frame.neon', slot: 'frame', g: 1500 },
-        { id: 'frame.gold', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
-        { id: 'frame.holo', slot: 'frame', s: 50, need: { mile: 'world' } },
-        // 편집장 추가 요청(R-205): 기존 카드 가격군·조건을 재사용하는 틀 9종. 기존 항목 불변.
-        { id: 'frame.orbit', slot: 'frame', g: 1000 },
-        { id: 'frame.hex', slot: 'frame', g: 1200 },
-        { id: 'frame.scan', slot: 'frame', g: 1200 },
-        { id: 'frame.wings', slot: 'frame', g: 1500 },
-        { id: 'frame.pulse', slot: 'frame', g: 1500 },
-        { id: 'frame.laurel', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
-        { id: 'frame.prism', slot: 'frame', s: 50, need: { mile: 'world' } },
-        { id: 'frame.aurora', slot: 'frame', s: 50, need: { mile: 'world' } },
-        { id: 'frame.eclipse', slot: 'frame', s: 40, need: { mile: 'boss1000' } },
+        // 카드 틀(R-244): 등급순(기본 → 고급 → 특별 → INSANE RED). orbit · hex · scan · wings · pulse · laurel · prism ·
+        // aurora · eclipse는 편집장 추가 요청(R-205) — 기존 카드 가격군 · 조건 재사용. id · 값 · 조건은 순서를 바꿔도 그대로
+        { id: 'frame.stars', slot: 'frame', tier: 'basic', g: 1000, need: { mile: 'hour1' } },
+        { id: 'frame.circuit', slot: 'frame', tier: 'basic', g: 1200 },
+        { id: 'frame.orbit', slot: 'frame', tier: 'basic', g: 1000 },
+        { id: 'frame.hex', slot: 'frame', tier: 'basic', g: 1200 },
+        { id: 'frame.scan', slot: 'frame', tier: 'basic', g: 1200 },
+        { id: 'frame.neon', slot: 'frame', tier: 'advanced', g: 1500 },
+        { id: 'frame.wings', slot: 'frame', tier: 'advanced', g: 1500 },
+        { id: 'frame.pulse', slot: 'frame', tier: 'advanced', g: 1500 },
+        { id: 'frame.gold', slot: 'frame', tier: 'special', s: 40, need: { mile: 'boss1000' } },
+        { id: 'frame.holo', slot: 'frame', tier: 'special', s: 50, need: { mile: 'world' } },
+        { id: 'frame.laurel', slot: 'frame', tier: 'special', s: 40, need: { mile: 'boss1000' } },
+        { id: 'frame.prism', slot: 'frame', tier: 'special', s: 50, need: { mile: 'world' } },
+        { id: 'frame.aurora', slot: 'frame', tier: 'special', s: 50, need: { mile: 'world' } },
+        { id: 'frame.eclipse', slot: 'frame', tier: 'special', s: 40, need: { mile: 'boss1000' } },
+        { id: 'frame.redline', slot: 'frame', tier: 'insane', s: 60 },
+        { id: 'frame.redhex', slot: 'frame', tier: 'insane', s: 70, need: { mile: 'boss100' } },
+        { id: 'frame.redwing', slot: 'frame', tier: 'insane', s: 80, need: { mile: 'kill100k' } },
+        { id: 'frame.redcrown', slot: 'frame', tier: 'insane', s: 90, need: { mile: 'hour50' } },
+        { id: 'frame.redeclipse', slot: 'frame', tier: 'insane', s: 100, need: { mile: 'boss1000' } },
       ],
-      // 등급(R-160): 전투 기체 칸 항목의 tier · 등급 문. insane = 첫 Insane(insane1) 넘어야 열림(항목 조건과 따로 확인)
+      // 등급(R-160 · R-244): 기체 칸 · 고양이 소품 · 카드 틀 항목의 tier · 등급 문(음악은 등급 없음). insane = 첫 Insane(insane1) 넘어야 열림(항목 조건과 따로 확인)
       tiers: { basic: {}, advanced: {}, special: {}, insane: { need: { mile: 'insane1' } } },
       capsule: {
         time: 300,
@@ -8710,10 +8722,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 고양이 비행사(R-026 · R-075). 이름 = 역할 + 이름 한 꼴(이름 규칙 3, 모든 화면 같음 — 내부 id · 저장 키는 그대로).
   // 그림은 view.js catIcon(고양이마다 귀 · 무늬 · 소품 배지). effect: 효과 한 줄, value: 짧은 값(레벨 미리보기)
   const cats = {
-    engineer: { name: '정비사 미오', effect: v => '기체 시작 스킬 +' + v, value: v => '+' + v },
-    supply: { name: '보급관 토토', effect: v => '분당 +' + v + ' ' + G, value: v => '+' + v + ' ' + G },
+    engineer: {
+      name: '정비사 미오',
+      short: '미오',
+      effect: v => '기체 시작 스킬 +' + v,
+      value: v => '+' + v,
+    },
+    supply: {
+      name: '보급관 토토',
+      short: '토토',
+      effect: v => '분당 +' + v + ' ' + G,
+      value: v => '+' + v + ' ' + G,
+    },
     pilot: {
       name: '조종사 루나',
+      short: '루나',
       effect: v => abilities.dash + ' 재충전 −' + pctOf(v) + '%',
       value: v => '−' + pctOf(v) + '%',
     },
@@ -8767,31 +8790,32 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     title: '꾸미기',
     back: '돌아가기',
     count: (n, all) => n + ' / ' + all,
-    groupCount: (group, n, all) =>
-      ({ craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '기록 카드' })[group] +
-      ' ' +
-      n +
-      ' / ' +
-      all,
-    appearance: '외형 · 능력 변화 없음',
-    // 묶음별 목적 줄(R-173 C3): 머리 아래 한 줄
-    purpose: {
-      craft: '전투 기체 겉모습 · 능력 변화 없음',
-      cat: '동반 고양이 소품 · 능력 변화 없음',
-      music: '출격할 때 듣는 곡 · 능력 변화 없음',
-      card: '기록 카드 틀 · 능력 변화 없음',
-    },
+    // 머리 한 줄(R-245): '꾸미기' · 묶음 수집 수 'n / 총' · '능력 변화 없음'
+    noPower: '능력 변화 없음',
+    // 거래 줄 · 일괄 구매(R-243): 입은 것과 다른 칸 목록 → '적용' 한 번(안 가진 것은 합계를 사서 입힘)
+    same: '지금 입은 그대로',
+    // 되돌리기(R-243): 적용 버튼 왼쪽 칸 — 위 ↺ · 아래 작은 글(거래 줄 높이를 버튼 하나로)
+    reset: '입은 대로',
+    resetIcon: '↺',
+    resetLabel: '입어 본 것을 지우고 입은 대로',
+    secured: '(확보)',
+    apply: '적용',
+    lockedApply: '🔒 잠긴 조각을 빼면 적용할 수 있습니다',
+    // 잠긴 조각이 있을 때 '적용' 버튼 둘째 줄(합계 · 부족 자리, 거래 줄 높이를 늘리지 않음) — 긴 말은 읽기 이름
+    lockedShort: '🔒 잠긴 조각 빼기',
+    confirm: { title: '한 번에 사기', go: '사서 적용', cancel: '취소', total: '합계' },
+    applied: '적용했습니다',
+    appliedN: n => n + '개를 사서 적용했습니다',
     // 입구 이름(격납고 · 승무원 · 기록 · 설정의 '… ›')
     // 입구 글(cosEntry): 기록 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
     hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '카드 꾸미기' },
     preview: '미리보기',
-    previewPending: '미리보기 · 적용 전',
     browse: '옆으로 넘겨 보세요',
     browseAll: n => n + '개 · 옆으로 넘기기',
     browseCount: n => n + '개 ↔',
     growth: '성장으로 ›',
     // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
-    lockLead: '강화 장비 세 가지를 모두 사면 꾸미기가 열립니다',
+    lockLead: '상점의 시간 코인 · 자동 강화 · 자동 G를 모두 사면 꾸미기가 열립니다',
     entryLocked: '🔒 시간 코인·자동 기능을 모두 구매하면 열림',
     entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
     groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
@@ -8898,6 +8922,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       scarf: '비행 스카프',
       headset: '무전 헤드셋',
       star: '별 머리핀',
+      goggles: '비행 고글',
+      crest: '진홍 깃장식',
       'music.first': '첫 질주',
       'music.dark': '다크 사이버',
       'music.dnb': '드럼앤베이스',
@@ -8915,6 +8941,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'frame.prism': '프리즘',
       'frame.aurora': '오로라',
       'frame.eclipse': '일식',
+      // INSANE RED 카드 틀(R-244)
+      'frame.redline': '진홍 이중선',
+      'frame.redhex': '적철 육각',
+      'frame.redwing': '진홍 날개',
+      'frame.redcrown': '심홍 왕관',
+      'frame.redeclipse': '붉은 일식',
     },
     // 곡 줄 설명 · 카드 틀 설명(base = 기본)
     music: {
@@ -8939,20 +8971,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'frame.prism': '보라와 시안으로 갈라지는 결정',
       'frame.aurora': '곡선을 따라 겹치는 오로라 빛',
       'frame.eclipse': '금빛 일식 고리와 방사형 빛살',
+      'frame.redline': '무광 진홍 면 · 은백 두 겹 선',
+      'frame.redhex': '진홍 육각 연결과 은백 경계',
+      'frame.redwing': '진홍 날개와 은백 비행 표식',
+      'frame.redcrown': '위 가운데 심홍 왕관과 은백 테',
+      'frame.redeclipse': '진홍 코로나가 번지는 일식 고리',
     },
     crafts: '미리보기 기체',
     special: '특별',
-    buy: '사기',
-    buyApply: use => (use ? '사서 사용' : '사서 입히기'),
     shortage: kind => coins[kind].short + ' 부족',
-    buying: '구매 중…',
     applying: '적용 중…',
-    wear: '입히기',
     worn: '입힘',
     // 음악 · 카드 틀(R-173 C3): 입는 것이 아니라 쓰는 것
-    use: '사용하기',
     inUse: '사용 중',
-    toBase: '기본으로',
     playing: '듣는 중',
     making: '만드는 중',
     noMark: '무늬를 입히면 이 색으로 보입니다',
@@ -8971,7 +9002,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       tier: (tier, id) => '🔒 ' + tier + ' 문 · ' + mile[id] + ' 넘으면',
       mile: id => '🔒 ' + mile[id] + (titles[id] ? ' · ' + titles[id] : ''),
       rank: n => '🔒 이 고양이가 ' + rankName(n) + josa(rankName(n), '으로/로') + ' 승진하면',
-      cat: '🔒 승무원 탭에서 이 고양이를 깨우면',
+      cat: '🔒 성장 › 승무원에서 이 고양이를 깨우면',
       soon: '🔒 ' + mile.world + '(준비 중)',
     },
     // 한 줄(R-198): 꾸미기 · 격납고 맨 아래 두 줄이 꾸미기 한 화면을 8px 넘겼다
@@ -8985,9 +9016,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       radio: (slot, name) => '…치직… 보급 캡슐을 보냈어. 안에는 ' + slot + " '" + name + "'.",
     },
     // 상태 줄(R-117): 사면 바로 입힘 · 입히기 · 기본으로
-    bought: (full, use) => full + (use ? ' · 바로 씁니다' : ' · 바로 입혔습니다'),
-    wore: (full, use) => full + (use ? ' 사용' : ' 입힘'),
-    based: slot => slot + ' 기본으로',
     // 모드마다 캡슐 확률(Help · 정본)
     chances: () =>
       Object.entries(B().cos.capsule.chance)
@@ -9027,8 +9055,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     superPrep: SC + ' 출격 준비',
     ss: 'SS 출격',
     ssPrep: 'SS 출격 준비',
-    ssMark: 'SS',
+    sss: 'SSS 출격',
+    sssPrep: 'SSS 출격 준비',
+    // 출격 단계 칩(R-240): 결과 머리 · 순위 · 기록 줄의 S · SS · SSS(단계표 종류 → 글자)
+    tierMark: kind => ({ ss: 'SS', sss: 'SSS' })[kind] || 'S',
   };
+  // 출격 단계 값(R-240): balance launchTiers(종류 → 칸 이름) 한 곳에서 읽는다. 모르는 종류는 S 출격
+  const launchOf = kind => {
+    const b = B(),
+      t = b[(b.launchTiers || {})[kind]] || b.superLaunch;
+    return { stage: t.stage, level: t.level, picks: t.picks, cost: t.cost ?? 1, open: t.open ?? 0 };
+  };
+  // 단계 목록 줄(R-240): 좁으면 ' · '에서만 줄이 바뀌게 낱말과 숫자 사이는 붙는 공백
+  const tierStart = kind =>
+    stage.upper + '\u00a0' + launchOf(kind).stage + ' · ' + level.short + '\u00a0' + launchOf(kind).level;
   const auto = { name: '자동 강화', short: 'AUTO' };
   // 출격 버프(R-062, I-36): 홈 출격 버프 칸 → 아래 시트 스위치(위 → 아래 = balance buffs 키 순서). 켜 두면 출격할 때마다 비용
   const buffs = {
@@ -9251,16 +9291,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     const n = Math.round(1 / p);
     return p >= 1 ? '항상' : n > 1 && Math.abs(n * p - 1) < 1e-9 ? n + '번 중 1번은' : pctOf(p) + '% 확률로';
   };
-  // 더 올릴 스킬이 없을 때의 자동 G 확률(autoGoldCapped): 일반 확률과 같으면 문구를 붙이지 않는다
-  const autoGoldCappedNote = () => {
-    const e = E(),
-      c = e.autoGoldCapped;
-    if (c === e.autoGoldChance) return '';
-    return (
-      ' 더 올릴 스킬이 없으면 ' +
-      (c <= 0 ? G + '를 받지 않습니다.' : chanceText(c) + ' ' + e.coinChoice + ' ' + G + '.')
-    );
-  };
   const ui = {
     meta: {
       title: 'NEON ARENA · ENDLESS',
@@ -9290,47 +9320,53 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       test: 'TEST',
     },
     menu: { label: '메뉴', wallet: '보유 재화', settings: '설정', tabs: '메뉴 탭' },
-    // 탭 5칸(R-162): 격납고 · 성장 · 홈(가운데, 출격 화면) · 승무원 · 기록. 상점 탭은 없앴다(강화 장비 → 성장)
-    tabs: { play: '홈', hangar: '격납고', grow: '성장', crew: '승무원', rec: '기록' },
+    // 탭 5칸(R-248): 격납고 · 성장 · 홈(가운데, 출격 화면) · 월드(world.tab) · 기록. 승무원은 성장 안 칸(R-249)
+    tabs: { play: '홈', hangar: '격납고', grow: '성장', rec: '기록' },
     // 플레이 탭 영역(R-032): 테두리 위 라벨 순위 · 모드 · 기체 · 최근 기록 · 출격
     home: {
-      // 출격 화면 위 전환(R-162): 솔로 | 월드(월드 탭 → 홈 스위치)
-      solo: '솔로',
-      side: '출격 방식',
       rank: ranking.name,
-      rankTabs: ranking.name + ' 종류',
-      rankNormal: ranking.normal,
-      rankSuper: ranking.super,
       allRecords: '전체 기록 ›',
-      mode: '모드',
-      modeChange: '변경 ›',
+      // 전체 기록 창(R-236): 일반 출격 TOP3 · S 출격 TOP3 두 칸 + 기록 탭 링크(v3 보존 Q44)
+      records: {
+        title: '전체 기록',
+        normal: launches.normal + ' TOP3',
+        super: launches.super + ' TOP3',
+        more: '기록 탭에서 모두 보기 ›',
+      },
+      // 출격 준비(R-237 P-LOAD): 박스 하나 → 3열 시트(모드 · 버프 · 고양이)
+      load: '출격 준비',
+      loadLabel: (mode, buff, crew) => '출격 준비 · ' + mode + ' · ' + buff + ' · ' + crew,
+      // 출격 준비 칸이 비었을 때
+      crewNone: '동반 없음',
+      buffOff: '버프 끔',
       // 최근 기록: 홈 칸은 없앴고(R-163) 용어(TERMS.md)와 기록 탭이 쓴다
       last: '최근 기록',
-      // 탑재 줄(R-163 P-LOAD) · 무대(P-STAGE)
-      crew: '동반',
-      crewN: n => '동반 ' + n,
-      crewNone: '없음',
-      buffOff: '끔',
-      buffState: (id, spec) => (id === 'regen' ? '회복 +' + spec.hp + '/초' : '부활 ' + spec.n + '회'),
-      buffNote: '켜 둔 버프는 출격할 때 비용을 내고 그 판에만 붙습니다.',
       stage: craft => craftName(craft) + ' · 격납고에서 바꾸기',
-      changeCraft: '기체 변경',
+      // 홈 기체 박스(R-251): 이름 아래 도색 한 줄
+      paintLine: c => (c && c !== 'base' ? paint.names[c] : paint.names.base + ' ' + paint.group),
+      // 부팅 동반 정리(R-237)로 빠진 고양이가 있으면 첫 홈에서 한 번(탭 위 알림 줄)
+      partyCut: names =>
+        '동반은 Lv' +
+        B().cats.maxLevel +
+        ' 아닌 고양이 1마리 + Lv' +
+        B().cats.maxLevel +
+        ' · ' +
+        names +
+        ' 쉬어요',
       launch: '출격',
       // 꾸미기 버튼 잠김 표시(R-171 H6): 강화 장비 산 칸 / 전체
       cosLock: (n, all) => '🔒 ' + n + '/' + all,
       // 기록 0일 때 순위 칸 한 줄(R-171 H7)
       rankFirst: '첫 판을 마치면 TOP3가 여기에',
     },
+    // 성장 세 칸(R-249): 머리 줄 없이 전환 줄이 맨 위 · 옛 머리 한 줄(note)은 스킬 칸 맨 위 안내 줄
     grow: {
-      title: '공통 성장',
       skills: '스킬',
       note: '모든 기체 공통 · 효과는 1단계마다',
       skillsNote: '파랑 1차 · 금색 2차',
-      gearNote: '시간 코인과 자동 기능 · 모든 기체 공통',
-      gearDone: '닫기',
-      gearKicker: 'UPGRADE GEAR',
-      // 성장 아래 강화 장비 묶음(R-162 · R-172): 시간 코인 · 자동 강화 · 자동 G 세 행
-      gear: '강화 장비',
+      // 성장 안 상점 칸(R-239 · R-250): 코인 · 자동 · 출격 열기 묶음
+      gear: '상점',
+      crew: '승무원',
     },
     // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
     rec: {
@@ -9358,62 +9394,54 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     launch: {
       normal: launches.normal,
       super: launches.super,
-      owned: () => '−1' + SC,
-      ss: () => launches.ss + ' −' + B().ssLaunch.cost + SC,
-      // 출격 줄 셋째 칸(R-163): S 출격처럼 이름 + 작은 비용 두 줄(384px 3칸에서 글자가 테두리에 닿지 않게)
-      ssName: launches.ss,
-      ssCost: () => '−' + B().ssLaunch.cost + SC,
-      ssUnlock: 'SS 해금',
-      // 출격 머리 오른쪽 작은 입구(R-171): S를 알고 SS가 닫혀 있을 때만
-      ssEntry: 'SS 출격 열기 ›',
-      craftMissing: 'S 제작 ›',
-      ssReady: 'SS 출격 준비',
     },
     prep: {
       back: '준비 취소',
-      title: launches.superPrep,
-      titleSS: launches.ssPrep,
-      start: '시작',
-      startValue: (kind = 'sc') => {
-        const launch = kind === 'ss' ? B().ssLaunch : B().superLaunch;
-        return (
-          stage.upper +
-          ' ' +
-          launch.stage +
-          ' · ' +
-          (kind === 'ss' ? level.short + ' ' + launch.level : levelShort(launch.level))
-        );
-      },
+      // 출격 단계(R-240): 제목 · 시작 값 · 배분 수 · 비용은 단계표 한 곳(launchOf)
+      title: (kind = 'sc') => ({ ss: launches.ssPrep, sss: launches.sssPrep })[kind] || launches.superPrep,
+      startStage: (kind = 'sc') => stage.upper + ' ' + launchOf(kind).stage,
+      startLevel: (kind = 'sc') => level.short + ' ' + launchOf(kind).level,
+      // 단계 ▾(R-240): 누르면 S · SS · SSS 목록(지금 단계 ✓ · 잠김 🔒 + 조건 · 잔액 부족은 비용 위험 색)
+      tierLabel: '출격 단계 바꾸기',
+      tierList: '출격 단계',
+      tierMark: launches.tierMark,
+      tierStart,
+      tierNeedSS: 'SS를 먼저 열면 열 수 있습니다 · 상점 ›',
+      tierOpen: n => '상점에서 ' + n + SC + '로 열기 ›',
+      tierShort: '보유 ' + SC + ' 부족',
+      // 단계를 바꿨을 때 이미 나눈 배분이 새 총수보다 많으면 비운다(R-240)
+      tierCut: '새 단계 배분 수보다 많이 나눠 배분을 비웠습니다.',
+      // 홈 S 출격이 마지막 단계를 못 열 때(잠김 · 잔액 부족) 아래 단계로 연다
+      tierDown: kind => '마지막 단계를 열 수 없어 ' + launches.tierMark(kind) + ' 출격으로 준비합니다.',
       left: '남은 강화',
-      leftSS: '남은 배분',
-      picks: (kind = 'sc') => (kind === 'ss' ? B().ssLaunch.picks : B().superLaunch.picks),
-      picksOf: (kind = 'sc') => '/ ' + (kind === 'ss' ? B().ssLaunch.picks : B().superLaunch.picks),
+      picks: (kind = 'sc') => launchOf(kind).picks,
+      picksOf: (kind = 'sc') => '/ ' + launchOf(kind).picks,
       allocLabel: '강화 배분',
-      controls: '−/+ 길게 누르기 · 주사위로 남은 강화 채우기',
       // 아이콘 버튼(R-063, 글자 없음 · 읽기 이름만): 주사위 = 남은 강화를 무작위로(다시 누르면 새로) · ↺ = 모두 0
       random: '무작위 배분',
       reset: '배분 초기화',
       cancel: '준비 취소',
-      launch: (kind = 'sc') => '출격 · ' + SC + ' ' + (kind === 'ss' ? B().ssLaunch.cost : 1) + ' 사용',
-      note: (kind = 'sc', ready = false) => {
-        const launch = kind === 'ss' ? B().ssLaunch : B().superLaunch,
-          cost = kind === 'ss' ? B().ssLaunch.cost : 1;
-        return (
-          (ready ? '배분 완료. ' : '강화 ' + launch.picks + '회를 모두 나누면 출격할 수 있습니다. ') +
-          SC +
-          '는 출격할 때 ' +
-          cost +
-          '개 씁니다(취소하면 그대로).'
-        );
-      },
+      launch: (kind = 'sc') => '출격 · ' + SC + ' ' + launchOf(kind).cost + ' 사용',
+      note: (kind = 'sc', ready = false) =>
+        (ready ? '배분 완료. ' : '강화 ' + launchOf(kind).picks + '회를 모두 나누면 출격할 수 있습니다. ') +
+        SC +
+        '는 출격할 때 ' +
+        launchOf(kind).cost +
+        '개 씁니다(취소하면 그대로).',
     },
+    // 출격 준비 시트(R-237): 3열(모드 · 버프 · 고양이) + 아래 안내 줄(잠긴 칸 이유 · AUTO 상태) · 완료
     mode: {
-      title: '모드 선택',
+      title: '출격 준비',
       close: '닫기',
-      group: '모드',
-      done: '선택 완료',
-      // 잠긴 출격 버프 칸에서 열었을 때만(R-219): 왜 이 창이 열렸는지 한 줄
+      done: '완료',
+      cols: { mode: 'MODE', buff: '버프', crew: () => '고양이 1 + Lv' + B().cats.maxLevel },
+      // 잠긴 버프 칸(R-219): 왜 못 켜는지 한 줄
       buffWhy: () => buffs.group + '는 ' + modeName(B().buffs.from) + ' 모드부터 켤 수 있어요',
+      // 잠긴 모드 칸: 열림 조건 한 줄(뒤에 'MISSION ›')
+      lockWhy: (id, cond) => modeName(id) + ' · ' + cond,
+      // 안 깬 고양이 · 승무원 전
+      catWhy: id => cats[id].name + '는 성장 › 승무원에서 깨워요',
+      noAuto: id => modeName(id) + ' · ' + auto.short + ' 불가',
     },
     hud: {
       status: '기체 상태',
@@ -9435,6 +9463,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       stageKey: stage.upper,
       // 위 덩어리 막대 3개(R-029): HP · 보호막(방패 그림, 읽기 이름만) · XP
       shield: '보호막',
+      // 보호막 수치 앞 표시(R-232, v4.2.0 재생 방벽 표시와 같은 속 빈 육각형)
+      shieldMark: '⬡',
       xpKey: 'XP',
       xpMax: () => B().level.base,
       // 획득 스킬 줄(H-SKILLS, R-031): 가진 스킬만, 출처 합계
@@ -9442,10 +9472,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     },
     upgrade: {
       kicker: 'LEVEL UP',
-      title: '강화 하나를 고르세요',
-      coin: () => '대신 코인 +' + E().coinChoice + ' ' + G + ' 받기',
+      title: '스킬을 선택하세요',
+      coin: () => '스킬 대신 코인 +' + E().coinChoice + ' ' + G + ' 받기',
       // 코인 칸이 B 코인일 때(R-043, 모드 확률). 레벨업마다 화면이 바꿔 쓴다.
-      coinBlue: () => '대신 코인 +' + E().coinChoiceBlue + ' ' + BL + ' 받기',
+      coinBlue: () => '스킬 대신 코인 +' + E().coinChoiceBlue + ' ' + BL + ' 받기',
       // keys: 키보드 기기(터치가 주 입력이 아님)만 앞에 숫자키 안내(카드 수만큼 1~4). 정적 틀은 터치 문구
       sub: keys => (keys ? '숫자 키로 고를 수 있습니다. ' : '') + '고르는 동안 전투가 멈춥니다.',
       // 받기 대기(R-215, 초): 창이 열리거나 연속 창으로 바뀐 뒤 이 시간 동안 카드 · 코인을 받지 않고 흐린 데서 차오른다
@@ -9505,7 +9535,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       // 승진 칸(R-113): '정비사 미오 승진'(0 없음 · 1 중급 · 2 고급 · 3 전문)
       promo: name => name + ' 승진',
       unlocks: '해금',
-      hidden: '승무원 탭',
+      hidden: '승무원',
       // 격납고(R-109): 열기 칸 · 도색 고르기(그대로 · 모두 가짐 · 없음)
       hangar: '격납고',
       paint: '도색',
@@ -9553,16 +9583,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       help: '도움말',
     },
     result: {
-      kicker: 'RUN ENDED',
+      // 결과 꼬리(R-234): 정적 기본값 = 직접 종료 꼴(판마다 msg.resultKicker가 바꿔 씀)
+      kicker: 'MISSION END',
       super: launches.super,
       title: '결과',
       best: 'NEW BEST',
       replay: '다시 도전',
       menu: '메뉴로',
       skills: '스킬 내역',
+      // 보상 칩 줄의 읽기 이름(R-234: 화면 글자 없이 칩 + ▾)
       rewardDetail: '보상 내역',
       noteLabel: '이 판을 한 줄로 남기기',
-      noteEdit: '한 줄 남기기',
       normalReplay: '일반 재도전',
       notePlaceholder: () => '이 판을 한 줄로 · 글자당 ' + E().notePerChar + ' ' + G,
       noteColor: {
@@ -9602,11 +9633,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       view: '시야',
       viewWide: '넓게',
       viewStandard: '표준',
-      // HUD 크기(R-091): 위 덩어리 · 아래 행동 줄의 크기. 보통이 기본
+      // HUD 크기(R-091 · R-232): 위 덩어리 · 아래 행동 줄의 크기. 기본(1.1배) · 작게(1.0배) 두 칸
       hud: '전투 정보 크기',
       hudSmall: '작게',
-      hudMedium: '보통',
-      hudLarge: '크게',
+      hudMedium: '기본',
       effects: '그래픽 효과',
       effectsAuto: '자동',
       effectsHigh: '풍부하게 · 기체 빛',
@@ -9632,7 +9662,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       menuData: '메뉴에서 사용할 수 있습니다',
       dataSummary: '이 기기에 저장 · 백업 권장',
       helpTips: '도움말 · 팁',
-      defaults: '기본: 전투 정보 보통 · 시야 넓게 · 버튼과 알림 가운데 · 그래픽 자동',
+      defaults: '기본: 전투 정보 기본 크기 · 시야 넓게 · 버튼과 알림 가운데 · 그래픽 자동',
       fullscreenState: on => (on ? '켜짐' : '꺼짐'),
       fullscreenAction: on => (on ? '전체 화면 끄기' : '전체 화면 켜기'),
       volume: value => value + '%',
@@ -9646,7 +9676,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       // 접힌 묶음 오른쪽 요약(R-174): 보기 · 조작 = 전투 정보 크기 · 시야 · 버튼 위치 지금 값, 도움말 = 팁 켜짐/꺼짐
       screenSummary: (hud, view, pad) =>
         [
-          ui.settings[{ s: 'hudSmall', m: 'hudMedium', l: 'hudLarge' }[hud]],
+          ui.settings[hud === 's' ? 'hudSmall' : 'hudMedium'],
           ui.settings[{ wide: 'viewWide', standard: 'viewStandard' }[view]],
           ui.settings[{ center: 'padCenter', right: 'padRight', left: 'padLeft', row: 'padRow' }[pad]],
         ].join(' · '),
@@ -9742,16 +9772,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       return name + ' +' + num(total) + (list.length ? ' = ' + list.join(' · ') : '');
     },
     resultUnlock: ids => '새 모드 해금 · ' + ids.map(modeName).join(' · '),
-    resultHidden: '승무원 탭 열림 · 고양이 비행사',
-    resultKicker: (defeated, saved = false) =>
-      defeated
-        ? 'SIGNAL LOST · ' + (saved ? 'RUN RECORDED' : 'RUN ENDED')
-        : (saved ? 'RUN SAVED' : 'RUN ENDED') + ' · SIGNAL ON HOLD',
+    resultHidden: '성장 › 승무원 열림 · 고양이 비행사',
+    // 결과 꼬리(R-234): 패배만 FAILED, 직접 종료 · 중단 복구는 END. 저장 여부는 꼬리에 쓰지 않는다(실패만 저장 상태 줄)
+    resultKicker: defeated => (defeated ? 'MISSION FAILED' : 'MISSION END'),
     resultAnnounce: (score, lv) => '도전 기록. ' + num(score) + '점, 레벨 ' + lv,
     // 결과 NEW BEST는 그 판이 속한 순위 기준(R-032)
     newBest: kind => 'NEW BEST · ' + rankingName(kind) + ' 1위',
+    // 저장 상태 줄(R-234): 저장 중만 글자, 성공하면 빈 줄(자리 높이 그대로), 실패는 위험 색 + 로그 저장 안내
     recordSaving: '기록 저장 중…',
-    recordSaved: '이 기기에 기록을 저장했습니다.',
     recordSaveFail: '기록 저장에 실패했습니다. 분석 로그를 파일로 남겨주세요.',
     jsonReady: 'JSON 파일 받기',
     fileReady: name => '파일 받기: ' + name,
@@ -9765,7 +9793,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     autoStatus: owned =>
       owned
         ? ''
-        : '성장 탭 강화 장비에서 ' +
+        : '성장 탭 상점에서 ' +
           auto.name +
           '(' +
           E().autoPrice +
@@ -9777,7 +9805,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           autoFrom() +
           '부터 레벨업 스킬을 대신 골라 줍니다.',
     // 출격 줄 S 칸 작은 줄(R-171): 'STAGE 29 · 1S'. 좁으면 'STAGE' 뒤에서만 줄바꿈
-    superNote: () => stageLabel(B().superLaunch.stage) + '\u00a0·\u00a01' + SC,
     purchase: {
       insufficient: '재화가 부족합니다.',
       stale: '가격이나 단계가 바뀌어 화면을 새로 고쳤습니다. 다시 확인해 주세요.',
@@ -9795,7 +9822,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         auto.short +
         ' 버튼으로 켜고 끕니다.',
       income: tier => '시간 코인 ' + tier + '단계 · 분당 ' + G + ' +1',
-      ssLaunch: () => 'SS 출격을 열었습니다.',
       // n = 한 번에 만든 수(파랑 모음이면 2, R-107)
       craftSC: n => coins.s.ko + ' ' + n + '개를 만들었습니다 · ' + SC + ' +' + n,
       // opened: 이 구매로 열린 문(영구 11개 MAX → 격납고, R-106)
@@ -9810,7 +9836,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         (opened?.includes('hangar') ? ' · 격납고 · 도색이 열렸습니다' : ''),
       needs_auto: auto.name + '를 먼저 사야 합니다.',
       sc_reserved: SC + ' 출격 준비에 예약된 ' + SC + '는 쓸 수 없습니다.',
-      hidden_locked: '승무원 탭이 아직 열리지 않았습니다.',
+      hidden_locked: '승무원이 아직 열리지 않았습니다.',
       // 격납고 도색(R-106)
       hangar_locked: '격납고가 아직 열리지 않았습니다.',
       needs_first: () => '먼저 ' + paint.names[B().paint.first] + ' 도색을 사야 합니다.',
@@ -9846,11 +9872,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       insufficient: SC + ' 없음',
       held_elsewhere: '다른 창에서 준비 중',
       not_held: '준비 예약이 풀렸습니다. 준비 취소 후 다시 시작하세요.',
+      stale: '출격 단계가 바뀌었습니다. 준비 취소 후 다시 시작하세요.',
       storage: '저장하지 못했습니다. ' + SC + '는 그대로입니다.',
       failed: '준비 실패',
       launchFailed: '출격하지 못했습니다. ' + SC + '는 그대로입니다.',
-      start: (s, lv, kind = 'sc') =>
-        stage.upper + ' ' + s + ' · ' + (kind === 'ss' ? level.short + ' ' + lv : levelShort(lv)),
+      // 준비 박스 단계 버튼 두 줄(R-240): 'STAGE 59' / 'LV 59'
+      startStage: s => stage.upper + ' ' + s,
+      startLevel: lv => level.short + ' ' + lv,
       craft: (id, hp) => craftName(id) + ' · 시작 HP ' + num(hp),
     },
     // 초기화 · 되돌리기(R-039). 직전 상태는 이 기기에 하나만 보관한다
@@ -9869,7 +9897,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           SC +
           ' ' +
           num(w.sc) +
-          ', 성장 · 강화 장비 구매 · 해금 · 고양이 · 기록 ' +
+          ', 성장 · 상점 구매 · 해금 · 고양이 · 기록 ' +
           runs +
           '판이 처음 상태로 돌아갑니다. 기기 설정은 그대로입니다. ' +
           "지금 상태는 이 기기에 하나 보관되어 '초기화 되돌리기'로 돌아올 수 있습니다(전에 보관한 것은 바뀝니다). 플레이 로그는 남습니다.",
@@ -9919,7 +9947,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         perma: '영구 스택',
         auto: auto.name,
         cats: '고양이',
-        hidden: '승무원 탭',
+        hidden: '승무원',
         autoGold: '자동 ' + G + ' 습득',
         // 세 기체가 가진 도색 수 합(R-109)
         paint: paint.group,
@@ -10020,10 +10048,20 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     lastEmpty: '아직 기록 없음',
     lastLabel: (score, place) => '최근 기록 ' + score + ' · ' + place + ' · 상세 보기',
     // best: 이 모드 최고 Point 글자(없으면 빈 값)
-    modeOpen: (id, best) => '모드 변경 · 지금 ' + modeName(id) + (best ? ' · 이 모드 최고 ' + best : ''),
-    // 모드 창 카드의 최고 기록(R-053): 일반 출격 판만(S 출격은 시작 STAGE가 달라 따로, Q44).
-    // 플레이 탭 모드 칸에서는 뺐다(R-062 스위치 자리, 모드 칸 읽기 이름 modeOpen에만 남김)
+    // 출격 준비 시트 모드 칸의 최고 기록(R-053): 일반 출격 판만(S 출격은 시작 STAGE가 달라 따로, Q44)
     modeBest: { card: '최고', cardNone: '최고 기록 없음' },
+    // 출격 준비 시트 모드 칸 읽기 이름(R-237)
+    modeCard: (id, open, best, sc) =>
+      modeName(id) +
+      (open ? (best != null ? ' · 최고 ' + num(best) : ' · 최고 기록 없음') : ' · 잠김') +
+      (sc ? ' · ' + SC + ' 획득' : ''),
+    // 출격 준비 시트 고양이 칸(R-237): Lv5 아닌 고양이 1칸(라디오) + Lv5는 칸 밖
+    party: {
+      on: '동반 ✓',
+      off: '동반 아님',
+      label: (id, lv, on, can) =>
+        cats[id].name + (can ? ' Lv' + lv + (on ? ' · 동반 중' : ' · 동반 아님') : ' · 잠김'),
+    },
     // 출격 버프 표시(R-062): 결과 · 기록 상세 한 줄 '출격 버프 · HP 회복 · 1회 부활(씀)'
     buffLine: (ids, revived, buffLv) =>
       buffs.group +
@@ -10109,53 +10147,35 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     // 상점(R-033): 시간 코인 | S 제작 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
       income: '시간 코인',
-      more: '효과 자세히',
-      // 성장 열두째 칸(R-196): 다음 살 것
-      next: name => '다음 · ' + name,
-      // 강화 장비 한 행(R-172): 끝난 일은 '✓ …' 한 줄
-      incomeDone: rate => '✓ ' + rate + ' ' + G + '/분',
-      // 큰 숫자는 고른 모드 기준 분당 G(모드 보너스 goldBonus 포함, 보완 11)
-      perMinute: rate => '분당 <b>' + rate + '</b> ' + G,
-      incomeStep: (rate, next) => rate + ' → ' + next + ' ' + G + '/분',
-      sc: coins.s.ko + ' ' + SC,
-      scGet: (n = 1) => '→ ' + n + ' ' + SC,
-      scCost: () => E().scGold + ' ' + G + ' + ' + E().scBlue + ' ' + BL,
+      // 상점 묶음 · 카드(R-250)
+      groups: { coin: '코인', auto: '자동', launch: '출격 열기' },
+      incomeLine: (rate, next) => '판 밖 시간마다 ' + G + ' · ' + rate + ' → ' + next + ' ' + G + '/분',
+      incomeDoneLine: rate => '판 밖 시간마다 ' + G + ' · ' + rate + ' ' + G + '/분',
+      make: '제작',
+      ownedShort: '보유',
+      tierEffect: kind =>
+        stage.upper +
+        ' · ' +
+        level.short +
+        ' ' +
+        launchOf(kind).stage +
+        ' 시작 · 출격마다 ' +
+        launchOf(kind).cost +
+        ' ' +
+        SC,
+      once: '한 번 해금',
+      opened: '열림',
+      needSS: launches.tierMark('ss') + ' 먼저',
+      opensNow: kind => launches.tierMark(kind) + ' 출격을 열었습니다.',
+      backToPrep: launches.super + ' 준비 ›',
       scCraft: SC + ' 제작',
-      scBalance: (g, b, s) => '보유 ' + g + ' · ' + b + ' · ' + s,
       scFormula: (g, b, s) => g + ' + ' + b + ' → ' + s,
-      scOnce: '누를 때마다 한 번 제작',
-      ssOneTime: '일회 해금',
-      ssEach: '매회 출격',
-      ssOpen: '열기',
-      close: '닫기',
       scHave: n => '보유 ' + num(n),
-      ssTitle: launches.ss,
-      ssNote: () =>
-        stageLabel(B().ssLaunch.stage) + ' · ' + level.short + ' ' + B().ssLaunch.level + '에서 시작',
-      ssBuy: () => '열기 · ' + B().ssLaunch.open + SC,
-      ssOwned: '✓ 보유 중',
       autoTitle: auto.name,
       autoSub: '레벨업 스킬을 대신 고릅니다',
-      autoNote: () =>
-        '레벨업 때 스킬을 대신 골라 줍니다. ' +
-        autoFrom() +
-        '부터, 전투 중 ' +
-        auto.short +
-        ' 버튼으로 켜고 끕니다.',
-      owned: '✓ 보유',
-      // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님)
+      // 자동 G 습득(R-025). 켜기/끄기는 이 기기 설정(백업 대상 아님). 상점 카드 이름은 짧게(R-250)
       autoGold: '자동 ' + G + ' 습득',
-      autoGoldNote: () =>
-        auto.name +
-        josa(auto.name, '이/가') +
-        ' 고를 때 ' +
-        chanceText(E().autoGoldChance) +
-        ' 스킬 대신 ' +
-        E().coinChoice +
-        ' ' +
-        G +
-        '를 받습니다.' +
-        autoGoldCappedNote(),
+      autoGoldShort: '자동 ' + G,
       autoGoldSub: () => auto.name + josa(auto.name, '이/가') + ' 고를 때 가끔 스킬 대신 ' + G,
       needAuto: () => '🔒 ' + auto.name + ' 먼저',
       on: '켜짐',
@@ -10190,10 +10210,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       levelBtn: (sc, b) => sc + ' + ' + b,
       levelTo: lv => 'Lv' + lv + '로 육성',
       have: n => '보유 ' + SC + ' ' + n,
+      // 얼굴 줄 동반 표시 · 동반은 홈 출격 준비에서(R-237 · R-249): 동반 버튼이 있던 자리 두 줄
       pick: '동반',
-      picked: '동반 중',
-      pickLabel: (id, on) => cats[id].name + (on ? ' 동반 끄기' : ' 동반 켜기'),
-      note: () => '동반은 여러 마리 · Lv' + B().cats.maxLevel + '는 늘 기본 효과 · 승진 효과는 동반만',
+      partyAt: ['동반은', '홈 › 출격 준비'],
       // 승진(R-112, 계약 design/v5-stage12/promo.js L). 값은 balance cats.promo(인덱스 = 단계 − 1)
       promo: {
         // Lv5 효과 뒤 '동반 +승진 값'
@@ -10233,21 +10252,18 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         kills: '처치',
         clears: '탄',
         top: r => rankName(r),
+        // 승진 사다리에서 통과한 단계 둘 이상을 모은 한 줄(R-249): '2단계' | '중급 · 고급 통과'
+        passedN: n => n + '단계',
+        passed: names => names.join(' · ') + ' 통과',
       },
     },
     // 격납고 · 도색(R-106): 성장 탭 아래 칸 · 격납고 화면(page-hangar). 색 이름은 paint.names, 값 · 효과는 balance paint
     hangar: {
       title: '격납고',
-      applied: '적용 중',
-      appliedNone: '도색 없음',
       crafts: '기체',
-      list: id => craftName(id) + ' ' + paint.group,
       worn: '입힘',
-      wear: '입히기',
+      pick: '고르기',
       needFirst: () => paint.names[B().paint.first] + ' 먼저',
-      locked: '🔒 조건',
-      paintDetail: c => paint.names[c] + ' 능력 효과',
-      paintNeed: c => '해금 조건 · ' + paint.names[B().paint.first] + ' 도색을 이 기체에서 먼저 구매',
       base: '능력 없음 · 처음 색',
       // 입힌 색 능력 한 줄: '부스터·속사 +3 · HP +1/초 · 부활 +1'(기체 시작 스킬 이름은 craftStart 그대로)
       ability: (craft, c) => {
@@ -10269,9 +10285,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       },
       buyLabel: (craft, c) =>
         craftName(craft) + ' ' + paint.names[c] + ' · ' + view.hangar.price(c) + '로 사기',
-      sets: paint.sets,
-      setsShort: '모음',
-      setsNote: '세 기체 모두 가지면',
       // 모음 효과 한 줄(balance paint.sets) + 보라는 월드 문(R-161)
       setEffect: c => {
         const s = B().paint.sets[c] || {};
@@ -10288,21 +10301,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       },
       setCount: n => n + '/3',
       note: '산 색 중 하나를 입혀 출격합니다. 입힌 색만 능력을 주고, 모음은 입힌 색과 상관없이 켜집니다.',
-      // 격납고 탭(R-164): 출격 기체 · 출격 능력치 · 도색 칸 넷 · 꾸미기 칸 넷
+      // 격납고 탭(R-241 · R-242): 큰 그림 · 기체 셋 · 모음 3칸 + 도색 가로 카드 · 꾸미기 네 칸 · 능력치 접힘
       picked: '지금 출격 기체 ✓',
-      statsTitle: '출격 능력치(실제 값)',
       none: '없음',
-      detail: '내역',
-      less: '접기',
-      paintTitle: '전투 도색 · 능력 효과',
+      paintTitle: '전투 도색',
       baseName: '기본',
-      owned: '✓ 가짐',
       paintLocked: (full, n) => '🔒 성장 스킬 ' + n + '개 1차 MAX면 열림 · ' + full + ' / ' + n,
-      setsMore: (on, n) => paint.sets + ' ' + on + '/' + n,
+      setsMore: '모음 효과',
       cosLocked: (have, need) =>
-        '🔒 시간 코인 ' +
+        '🔒 상점의 시간 코인 ' +
         E().incomeMax +
-        '단계 · 자동 강화 · 자동 G를 모두 구매하면 열림 · ' +
+        '단계 · 자동 강화 · 자동 G를 모두 사면 열림 · ' +
         have +
         ' / ' +
         need,
@@ -11058,11 +11067,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       'superLaunch.stage': [SC + ' 출격 시작 ' + ST, ST, 'hard'],
       'superLaunch.level': [SC + ' 출격 시작 LV(' + BL + '는 이 LV 뒤부터)', 'LV', 'easy'],
       'superLaunch.picks': [SC + ' 출격 준비에서 배분하는 스킬 수', '개', 'easy'],
+      'superLaunch.cost': [SC + ' 출격 한 번의 비용', SC, 'less'],
       'ssLaunch.stage': [launches.ss + ' 시작 ' + ST, ST, 'hard'],
       'ssLaunch.level': [launches.ss + ' 시작 LV(' + BL + '는 이 LV 뒤부터)', 'LV', 'easy'],
       'ssLaunch.picks': [launches.ss + ' 준비에서 배분하는 스킬 수', '개', 'easy'],
       'ssLaunch.cost': [launches.ss + ' 한 번의 비용', SC, 'less'],
       'ssLaunch.open': [launches.ss + ' 해금 비용', SC, 'less'],
+      'sssLaunch.stage': [launches.sss + ' 시작 ' + ST, ST, 'hard'],
+      'sssLaunch.level': [launches.sss + ' 시작 LV(' + BL + '는 이 LV 뒤부터)', 'LV', 'easy'],
+      'sssLaunch.picks': [launches.sss + ' 준비에서 배분하는 스킬 수', '개', 'easy'],
+      'sssLaunch.cost': [launches.sss + ' 한 번의 비용', SC, 'less'],
+      'sssLaunch.open': [launches.sss + ' 해금 비용(SS를 연 뒤)', SC, 'less'],
       'economy.goldBase': ['분당 ' + G + ' 기본(+ 수입 단계, 상한까지)', G, 'more'],
       'economy.goldMax': ['분당 ' + G + ' 상한(모드 보너스는 따로 더함)', G, 'more'],
       'economy.noteColor.price': ['기본 아닌 글자색을 고를 때 한 줄 저장에 더하는 비용', G, 'cost'],
@@ -11977,7 +11992,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               sl.level +
               '에서 시작합니다.',
           ],
-          ['승무원 탭', modeName(b.cats.hiddenFrom) + ' 한 판을 끝내면 열립니다(그 전에는 탭에 자물쇠).'],
+          [
+            '승무원',
+            modeName(b.cats.hiddenFrom) + ' 한 판을 끝내면 성장 › 승무원이 열립니다(그 전에는 칸에 자물쇠).',
+          ],
           [
             '고양이 비행사',
             SC +
@@ -12057,7 +12075,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
                   '격납고에서 세 기체 모두 ' +
                     paint.names[b.world.door] +
                     josa(paint.names[b.world.door], '을/를') +
-                    ' 가지면 홈의 월드 쪽에서 매일 도전·월드 스킬이 열립니다. 성장 스킬 1차 MAX로 도색이 열리면 월드 연습을 먼저 할 수 있습니다.',
+                    ' 가지면 월드 탭에서 매일 도전·월드 스킬이 열립니다. 성장 스킬 1차 MAX로 도색이 열리면 월드 연습을 먼저 할 수 있습니다.',
                 ],
                 [
                   world.daily,
@@ -12316,7 +12334,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           {
             term: auto.short + '(' + auto.name + ')',
             desc:
-              '레벨업 때 스킬을 자동으로 고른다. 성장 탭 강화 장비에서 ' +
+              '레벨업 때 스킬을 자동으로 고른다. 성장 탭 상점에서 ' +
               e.autoPrice +
               ' ' +
               G +
@@ -12334,13 +12352,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               G +
               ' ' +
               e.coinChoice +
-              '개를 받는다. 강화 장비에서 ' +
+              '개를 받는다. 상점에서 ' +
               e.autoGoldPrice +
               ' ' +
               G +
               '로 한 번 사고(' +
               auto.name +
-              ' 먼저), 강화 장비 칸에서 켜고 끈다.',
+              ' 먼저), 상점 칸에서 켜고 끈다.',
           },
         ],
       },
@@ -12361,7 +12379,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           {
             term: '시간 코인 단계',
             desc:
-              '성장 탭 강화 장비에서 ' +
+              '성장 탭 상점에서 ' +
               e.incomePrice +
               ' ' +
               G +
@@ -12375,7 +12393,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           {
             term: buffs.group,
             desc:
-              '홈 탑재 줄의 출격 버프 칸을 누르면 나오는 스위치(' +
+              '홈 출격 준비 박스를 누르면 나오는 버프 열의 스위치(' +
               modeName(b.buffs.from) +
               ' 이상). 켜 두면 출격할 때마다 비용을 내고, 모자라면 꺼진 채 출격한다. ' +
               buffs.regen.name +
@@ -12410,10 +12428,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               '에서 시작한다.',
           },
           {
-            term: '승무원 탭',
+            term: '승무원',
             desc:
               modeName(b.cats.hiddenFrom) +
-              ' 한 판을 끝내면(패배 · 직접 종료) 열린다. 고양이 비행사를 해금 · 육성 · 동반 · 승진한다.',
+              ' 한 판을 끝내면(패배 · 직접 종료) 성장 탭 셋째 칸이 열린다. 고양이 비행사를 해금 · 육성 · 동반 · 승진한다.',
           },
           {
             term: '고양이 비행사',
@@ -12539,7 +12557,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           },
           {
             term: view.journal.title,
-            desc: '이정표마다 고양이(승무원 탭 전에는 무전)가 들려주는 한 장. 기록 탭 비행 일지 화면에서 다시 본다.',
+            desc: '이정표마다 고양이(승무원이 열리기 전에는 무전)가 들려주는 한 장. 기록 탭 비행 일지 화면에서 다시 본다.',
           },
           {
             term: view.journal.titleLabel,
@@ -12559,27 +12577,35 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const talk = (() => {
     const RADIO = '…치직… ';
     const lines = {
-      // ── 인트로(T-START 위 말풍선) ──
+      // ── 접속 한마디(첫 홈 환영 창 R-247 · 말하는 쪽마다 5줄) ──
       hello: {
         engineer: [
           '기체 점검 끝. 오늘도 깔끔하게 날아 보자.',
           '칼날 각도를 다시 맞춰 뒀어. 마음껏 돌려.',
           '엔진 소리가 좋아. 오늘은 멀리 갈 수 있겠어.',
+          '어젯밤에 칼날을 다시 갈아 뒀어. 오늘은 더 잘 들 거야.',
+          '쉴드 회로 이상 없음. 안심하고 날아.',
         ],
         supply: [
           '보급 준비 완료! 오늘은 얼마나 벌어 올 거야?',
           'G가 쌓이면 쓸 데도 생기지. 헤헤, 다녀와!',
           '보스 하나 잡을 때마다 장부가 두꺼워진다고!',
+          '코인 주머니 새로 꿰맸어! 가득 채워 와!',
+          '오늘 장사 잘될 것 같은 예감이야. 헤헤.',
         ],
         pilot: [
           '활주로 비었어! 지금 바로 출격하자!',
           '오늘은 대시로 끝까지 뚫어 볼래!',
           '별이 잘 보이는 밤이야. 높이 날자!',
+          '엔진 예열 끝! 바로 날아오르자!',
+          '어제보다 한 Stage만 더 가 보자!',
         ],
         radio: [
           '신호 잡혔다. 누군가 우릴 듣고 있어.',
           '아직은 이름을 말할 수 없어. Insane 끝에서 만나.',
           '오늘도 무사히 돌아와. 우린 기다릴게.',
+          '잡음 너머로 네 비행이 보여.',
+          '조금만 더. 문이 곧 열릴 거야.',
         ],
       },
       // 마지막으로 끝난 판에서 3일 넘게 지나서 앱을 열었을 때
@@ -12689,8 +12715,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         pilot: [note => '‘' + note + '’ — 그날 비행 생각난다!'],
         radio: [note => '‘' + note + '’ … 옛 신호가 다시 잡혔어.'],
       },
-      // 승무원 탭이 열린 판의 결과(처음 만남, Q171 '드디어 만났네'): 정비사 미오
-      meet: { by: 'engineer', text: '드디어 만났네! 우린 고양이 비행사야. 승무원 탭에서 기다릴게.' },
+      // 승무원이 열린 판의 결과(처음 만남, Q171 '드디어 만났네'): 정비사 미오 · 자리는 성장 탭 승무원 칸(R-249)
+      meet: { by: 'engineer', text: '드디어 만났네! 우린 고양이 비행사야. 성장 탭 승무원 칸에서 기다릴게.' },
       // 비행 일지 조각(R-114, '저 별까지' Q185 · 편집장 2026-10-17 초안 그대로): 키 = 이정표 id. by = 고양이 id · 'radio' ·
       // 'promo'(가장 높이 승진한 고양이). 히든 탭 전이면 누구든 무전(talk.js mileSpeaker). 말풍선 두 줄 안(약 40자)
       mile: {
@@ -12783,8 +12809,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       daily: '매일 도전',
       weekly: '주간 도전',
       practice: '연습',
-      kicker: wk => 'WORLD · ' + wk,
-      practiceKicker: 'WORLD · 연습',
       left: (d, h) => (d > 0 ? d + '일 ' : '') + h + '시간 남음',
       dayLeft: (h, m) => (h ? h + '시간 ' : '') + m + '분 남음',
       modeNow: '이번 주 모드',
@@ -12792,16 +12816,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       same: '이번 주는 모두 같은 판 · 횟수 무제한 · 최고 기록만',
       modeToday: '오늘 모드',
       nextDay: m => '내일 ' + modeName(m),
-      dailySame: '한국 시간 자정마다 모드 변경 · 오늘은 모두 같은 판 · 횟수 무제한',
-      rankThis: '이 기기',
-      rankAll: '전체',
       allRecords: '월드 기록 ›',
       lastWeek: (wk, m, s) => '지난주 최고 · ' + wk + ' ' + modeName(m) + ' · ' + s,
       empty: '이번 주 주간 도전 기록이 아직 없습니다',
       emptyDaily: '오늘 매일 도전 기록이 아직 없습니다',
-      todaySummary: (score, attempts) =>
-        (score ? '오늘 최고 ' + score + ' · ' : '') + '시도 ' + attempts + '회',
-      yesterdaySummary: (day, m, s) => '어제 최고 · ' + day + ' ' + modeName(m) + ' · ' + s,
+      // 월드 탭 순위 아래 한 줄(R-248): '오늘 시도 n회 · 어제 최고 Extreme 21,877,102'
+      attempts: n => '오늘 시도 ' + n + '회',
+      yesterdayBest: (m, s) => '어제 최고 ' + modeName(m) + ' ' + s,
       yesterdayNone: '어제 기록 없음',
       wskEntry: '월드 스킬',
       wskSub: '월드에서만 · ' + SC + '로 삽니다',
@@ -12814,7 +12835,6 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       dailyLockedShort: '🔒 보라 모음',
       // 월드 쪽 잠김 카드 진행 · 작은 무대 줄(R-164)
       lockedSets: (have, need) => '보라를 가진 기체 ' + have + ' / ' + need + ' · 연습은 지금 바로',
-      stageNote: '격납고에서 바꾸기',
       practiceLocked: '🔒 성장 스킬 1차 MAX(격납고 문)가 열리면 연습',
       practiceMode: '연습 모드',
       practiceGo: '이 모드로 연습 출격',
@@ -12840,17 +12860,19 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       chain: { name: '연쇄 번개', desc: '처치하면 번개가 가까운 적에게 튑니다(+1마다 한 번 더)' },
       boss: { lancer: 'LANCER', hive: 'HIVE' },
       res: {
-        daily: (day, m) => '매일 도전 · ' + day + ' · ' + modeName(m),
-        weekly: (wk, m) => '주간 도전 · ' + wk + ' · ' + modeName(m),
-        practice: m => '연습 · ' + modeName(m),
+        // 도전 결과 칸(R-235): 첫 줄 왼쪽 기간 · 오른쪽 순위, 아래 칩 2열
+        dailyHead: day => '매일 도전 · ' + day,
+        weeklyHead: wk => '주간 도전 · ' + wk,
+        practiceHead: '연습',
         place: n => '이 기기 ' + n + '위',
+        chipGot: '주운 스킬',
+        chipBoss: '월드 보스',
+        chipToday: '오늘 최고',
+        chipDay: '그날 최고',
+        chipTries: '시도',
+        tries: n => n + '회',
         best: '이번 주 최고',
         dailyBest: '오늘 최고 갱신',
-        todaySummary: (score, attempts) =>
-          (score ? '오늘 최고 ' + score + ' · ' : '') + '시도 ' + attempts + '회',
-        periodSummary: (score, attempts) =>
-          (score ? '그날 최고 ' + score + ' · ' : '') + '시도 ' + attempts + '회',
-        stats: (got, drop, wb) => '주운 스킬 ' + got + ' / ' + drop + ' · 월드 보스 ' + wb,
         none: '월드는 재화를 주지 않습니다',
         again: '다시 도전',
         back: '월드로',
@@ -12902,7 +12924,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       skill: '성장에서 첫 스킬 사기',
       craft: () => '다른 기체로 출격 — 격납고에서 고르기',
       hard: () => modeName('hard') + ' 한 판',
-      where: { time: '출격', skill: '성장 탭', craft: '격납고', hard: '모드 ▾' },
+      where: { time: '출격', skill: '성장 탭', craft: '격납고', hard: '출격 준비' },
     },
     goal: {
       label: '다음 목표',
@@ -12910,7 +12932,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         promo: '승진 시험',
         daily: '매일 도전',
         mode: '새 모드',
-        gear: '강화 장비',
+        gear: '상점',
         grow: '성장 1차 MAX',
         paint: '도색 모음',
         mile: '이정표',
@@ -12970,12 +12992,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           lines: [
             ['도색', '기체마다 색을 사서 입히면 시작 스킬 · 회복 · 부활'],
             ['모음', '세 기체가 같은 색을 가지면 모음 효과'],
-            ['월드 연습', '홈 맨 위 솔로 | 월드에서 흑백 연습 판'],
+            ['월드 연습', '아래 월드 탭에서 흑백 연습 판'],
           ],
         },
         cos: {
           title: '꾸미기',
-          lead: () => '강화 장비를 모두 갖췄어요.',
+          lead: () => '상점의 시간 코인 · 자동 기능을 모두 갖췄어요.',
           lines: [
             ['꾸미기', '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀'],
             ['보급 캡슐', B().cos.capsule.time / 60 + '분 넘게 날면 판 끝에 가끔 새 조각'],
@@ -12997,14 +13019,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           lines: [
             [launches.super, '스킬을 골라 들고 시작하는 출격'],
             ['쓰는 곳', '고양이 깨우기 · 월드 스킬에도'],
-            ['자리', '홈 아래 출격 줄 가운데 칸'],
+            ['자리', '홈 아래 출격 줄 오른쪽 칸'],
           ],
         },
         buff: {
           title: buffs.group,
           lead: () => modeName(B().buffs.from) + '부터 출격 버프를 켤 수 있어요.',
           lines: [
-            ['켜기', '홈 탑재 줄 가운데 칸 → 스위치 둘'],
+            ['켜기', '홈 출격 준비 → 버프 열 스위치 둘'],
             ['비용', '출격할 때 ' + G + '로 내요'],
             ['단계', '높은 모드 기록을 넘기면 버프가 세져요'],
           ],
@@ -13014,7 +13036,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           title: buffs.group + ' ' + n + '단계',
           lead: () => '출격 버프가 ' + n + '단계로 세졌어요.',
           lines: [
-            ['확인', '홈 탑재 줄 가운데 칸에 지금 단계 값'],
+            ['확인', '홈 출격 준비 박스에 지금 단계 값'],
             ['비용', '출격할 때 ' + G + '로 내요'],
             ['다음', '더 높은 기록에서 다음 단계'],
           ],
@@ -13024,9 +13046,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   };
   const power = {
     title: (type, kind) =>
-      (type === 'world' ? '월드' : type === 'super' ? (kind === 'ss' ? 'SS 출격' : 'S 출격') : '솔로 일반') +
+      (type === 'world' ? '월드' : type === 'super' ? launches.tierMark(kind) + ' 출격' : '솔로 일반') +
       ' 능력치',
-    details: '이번 출격 능력치',
     normal: '솔로 일반',
     world: '월드',
     change: '다른 출격 기준 보기',
@@ -13044,16 +13065,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     soloRecords: '솔로 기록 ›',
     worldRecordsNote: '솔로 기록은 기록 탭에서 확인할 수 있습니다.',
   };
+  // 열림 줄(MISSION 줄 이름 · 조건): NeonJourney.overview 줄
   journey.overview = {
-    entry: '열림 조건',
-    title: '열림 조건·진행',
-    note: '지금 진행과 열리는 기능을 모았습니다. 각 항목에서 해당 화면으로 갈 수 있습니다.',
-    close: '열림 조건 닫기',
-    next: '진행 중',
-    complete: n => '이미 열린 기능 ' + n + '개',
     opened: '열림',
-    locked: '진행 중',
-    go: '보러 가기 ›',
     titleOf: row => {
       const a = row.args || {};
       return {
@@ -13064,6 +13078,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         buff: () => buffs.group,
         sc: () => launches.super + ' · S 제작',
         ss: () => 'SS 출격',
+        sss: () => 'SSS 출격',
         paint: () => '월드 매일 도전 · 월드 스킬',
         mile: () => '비행 일지 · 칭호',
       }[row.kind]();
@@ -13084,34 +13099,97 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             .join(' · ')
         );
       if (row.kind === 'grow') return '성장 스킬 ' + a.skills + '종 모두 1차 MAX';
-      if (row.kind === 'gear') return '시간 코인 ' + a.tierMax + '단계 + 자동 강화 + 자동 G 구매';
+      if (row.kind === 'gear') return '상점에서 시간 코인 ' + a.tierMax + '단계 · 자동 강화 · 자동 G';
       if (row.kind === 'crew') return modeName(a.mode) + ' 한 판 종료 · 패배/기록 남기고 종료';
       if (row.kind === 'buff') return modeName(a.mode) + ' 이상 모드에서 사용';
       if (row.kind === 'sc') return modeName(a.mode) + '에서 S를 처음 얻으면 사용';
       if (row.kind === 'ss')
         return 'S를 안 뒤 ' + B().ssLaunch.open + ' S로 한 번 열기 · 매 출격 ' + B().ssLaunch.cost + ' S';
+      if (row.kind === 'sss')
+        return 'SS를 연 뒤 ' + B().sssLaunch.open + ' S로 한 번 열기 · 매 출격 ' + B().sssLaunch.cost + ' S';
       if (row.kind === 'paint') return '세 기체 모두 ' + paint.names[a.color] + ' 보유 · 입힌 색은 무관';
       return '이정표를 넘으면 일지와 칭호가 남습니다';
     },
+  };
+  // MISSION(R-238): 홈 출격 머리 'MISSION ›' → 창. 묶음 다섯(+ 입문 동안 첫걸음) · 진행 막대 · 연 줄은 제자리에서 접힘
+  journey.mission = {
+    entry: 'MISSION ›',
+    title: 'MISSION',
+    close: 'MISSION 닫기',
+    count: (n, all) => n + ' / ' + all + ' 열림',
+    group: { steps: '첫걸음', mode: '모드', launch: '출격', craft: '기체', crew: '승무원', world: '월드' },
+    groupCount: (n, all) => (n === all ? '✓ ' : '') + n + '/' + all,
+    fresh: 'NEW',
+    where: w => w + ' ›',
+    // 막대 아래 글: 모드는 가장 모자란 항목(분:초 · LV · Point), 나머지는 막대와 같은 수
     progress: row => {
-      if (row.kind === 'mode')
-        return row.checks
-          .map(c =>
-            c.key === 'time'
-              ? timeString(c.have) + ' / ' + timeString(c.need)
-              : c.key === 'level'
-                ? 'LV ' + num(c.have) + ' / ' + num(c.need)
-                : num(c.have) + ' / ' + num(c.need) + ' Point',
-          )
-          .join(' · ');
-      if (row.kind === 'grow') return row.args.full + ' / ' + row.args.skills + '종 1차 MAX';
-      if (row.kind === 'gear') return row.have + ' / ' + row.need + '단계 구매';
-      if (row.kind === 'paint') return row.have + ' / ' + row.need + '기체 보유';
-      if (row.kind === 'mile') return row.have + ' / ' + row.need + '개 달성';
-      return row.done ? '열림' : '아직 열리지 않음';
+      if (row.kind !== 'mode') return num(row.have) + '/' + num(row.need);
+      const key = row.args.key,
+        f = key === 'time' ? timeString : key === 'level' ? v => 'LV ' + num(v) : big;
+      return f(row.have) + ' / ' + f(row.need);
     },
   };
 
+  // 첫 홈 환영 창(R-247 O-WELCOME): 접속마다 첫 홈 한 번 · 접속 한마디(talk intro) + TIP 한 줄. 고르는 규칙은 talk.js welcomeTip.
+  // tips() = [{ id, on, text }] — on = null(늘) | 열림 id(NeonJourney.opens: crew · hangar · cos · world · sc · buff) | 'ss'.
+  // 도움말 Tip 문장을 그대로 함께 쓴다(id h0~, 주사위 · 맵 S 코인 문장은 on 'sc' — 처음 프로필에 잠긴 기능 팁 없음)
+  const welcome = {
+    label: '환영 인사',
+    setting: '첫 홈 환영 인사',
+    tip: 'TIP',
+    tips: () => {
+      const help = helpSections().find(sec => sec.tips)?.tips || [];
+      return [
+        ...help.map((text, i) => ({
+          id: 'h' + i,
+          on: text.startsWith(launches.superPrep) || text.includes(SC + ' 코인') ? 'sc' : null,
+          text,
+        })),
+        ...[
+          ['move', null, '빈 화면 어디든 누르면 그쪽으로 날아갑니다.'],
+          ['coin', null, '레벨업 때 스킬 대신 코인을 받을 수도 있습니다.'],
+          ['note', null, '결과 화면에서 이 판을 한 줄로 남길 수 있습니다.'],
+          [
+            'top3',
+            null,
+            '홈 순위의 ‘전체 기록 ›’에서 ' + ranking.normal + ' · ' + launches.super + ' TOP3를 따로 봅니다.',
+          ],
+          ['mission', null, journey.mission.title + '에서 다음에 열릴 기능과 조건을 봅니다.'],
+          ['craft', null, ui.tabs.hangar + '에서 고른 기체로 다음 판에 출격합니다.'],
+          [
+            'flare',
+            'hangar',
+            '전투 도색은 기체마다 ' + paint.names.yellow + '를 먼저 사야 다른 색이 열립니다.',
+          ],
+          ['set', 'hangar', '같은 색을 세 기체 모두 가지면 모음 효과가 켜집니다.'],
+          ['practice', 'hangar', '월드 ' + world.practice + '은 여섯 모드 중 골라 순위 없이 연습합니다.'],
+          ['apply', 'cos', '꾸미기는 여러 칸을 함께 입어 보고 ‘적용’으로 한 번에 삽니다.'],
+          [
+            'capsule',
+            'cos',
+            '5분 넘긴 판 끝에 가끔 보급 캡슐로 새 조각이 옵니다. 높은 모드일수록 자주 옵니다.',
+          ],
+          ['lv5', 'crew', 'Lv5 고양이는 동반 칸을 차지하지 않고 함께 출격합니다.'],
+          ['party', 'crew', '동반 고양이는 출격 준비에서 고릅니다.'],
+          ['wake', 'crew', '고양이는 ' + SC + '로 깨우고 키웁니다.'],
+          [
+            'scstart',
+            'sc',
+            launches.super + '은 ' + tierStart('sc') + '에서 시작하고 남은 강화를 직접 나눕니다.',
+          ],
+          ['craftsc', 'sc', SC + '가 모자라면 성장 탭 상점에서 만듭니다.'],
+          ['buff', 'buff', buffs.group + '를 켜면 출격할 때마다 코인을 씁니다.'],
+          ['ss', 'ss', launches.ss + '은 ' + stageLabel(launchOf('ss').stage) + '에서 시작합니다.'],
+          [
+            'daily',
+            'world',
+            world.daily + '은 한국 시각 자정마다 모드가 바뀌고, 같은 날은 모두 같은 판으로 시작합니다.',
+          ],
+          ['wsk', 'world', '월드 스킬은 월드 판에만 적용됩니다.'],
+        ].map(([id, on, text]) => ({ id, on, text })),
+      ];
+    },
+  };
   const api = {
     nameRules,
     textRules,
@@ -13175,6 +13253,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     world,
     journey,
     power,
+    welcome,
   };
   root.NeonTerms = api;
   if (typeof module !== 'undefined') module.exports = api;
@@ -15393,6 +15472,28 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     ...B.economy,
     bluePerMilestone: Object.freeze(Object.fromEntries(MODES.map(id => [id, B.modes[id].blue]))),
   });
+  // 출격 단계표(R-240): balance launchTiers(낮은 단계부터 종류 → 칸 이름). 값은 각 칸 한 곳, 모르는 종류는 'sc'
+  const TIER_NAMES = B.launchTiers || { sc: 'superLaunch', ss: 'ssLaunch' },
+    LAUNCH_KINDS = Object.freeze(Object.keys(TIER_NAMES));
+  function launchTier(kind) {
+    const k = LAUNCH_KINDS.includes(kind) ? kind : 'sc',
+      t = B[TIER_NAMES[k]] || {};
+    return { kind: k, stage: t.stage, level: t.level, picks: t.picks, cost: t.cost ?? 1, open: t.open ?? 0 };
+  }
+  // 기록 표시용 단계: 시작 STAGE가 단계 stage 이상인 가장 큰 단계(없으면 'sc')
+  function launchKindOf(startStage) {
+    const s = Number(startStage) || 0,
+      tiers = LAUNCH_KINDS.map(launchTier).sort((a, b) => b.stage - a.stage);
+    return tiers.find(t => s >= t.stage)?.kind || 'sc';
+  }
+  // 단계 열림: 해금 값(open)이 0이면 늘 열림, 아니면 opened에 그 종류가 있음
+  function tierOpen(p, kind) {
+    const t = launchTier(kind);
+    return !t.open || (Array.isArray(p?.opened) && p.opened.includes(t.kind));
+  }
+  // S 예약 허용 수량 = 단계 cost 목록. 읽기(migrate) · spendableSC · commitSC가 모두 holdN으로 읽는다(목록 밖은 1)
+  const HOLD_SIZES = Object.freeze([...new Set(LAUNCH_KINDS.map(k => launchTier(k).cost))]),
+    holdN = n => (HOLD_SIZES.includes(n) ? n : 1);
   const NOTE_COLOR = B.economy.noteColor;
   const SKILLS = Object.keys(ECONOMY.perma),
     CATS = Object.freeze([...B.cats.list]);
@@ -15759,7 +15860,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           ? {
               prepId: raw.scHold.prepId,
               at: Number(raw.scHold.at) || 0,
-              n: raw.scHold.n === 10 ? 10 : 1,
+              n: holdN(raw.scHold.n),
             }
           : null;
     }
@@ -15930,13 +16031,23 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   const dup = extra => ({ ok: true, duplicate: true, ...extra });
   // 고양이 레벨은 0~maxLevel 정수만 믿는다(이상한 값은 0).
   const catLevel = v => (Number.isSafeInteger(v) && v >= 0 && v <= B.cats.maxLevel ? v : 0);
-  // 동반 고양이 목록(12단계, 여러 마리): 예비 칸 x.party(balance cats.list 순서), 읽을 때 해금(Lv1 이상)한 고양이만 남긴다.
-  // x.party가 없으면 옛 칸 companion 한 마리로 읽는다(지금 계정 = 지금 동반 그대로). 동반을 읽는 곳은 모두 여기로
-  function partyOf(p) {
+  // 저장된 동반 원 목록: 예비 칸 x.party(balance cats.list 순서) 중 해금(Lv1 이상)한 고양이만.
+  // x.party가 없으면 옛 칸 companion 한 마리로 읽는다(지금 계정 = 지금 동반 그대로)
+  function partyRaw(p) {
     const on = id => catLevel(p?.cats?.[id]) >= 1,
       raw = p?.x?.party;
     if (Array.isArray(raw)) return CATS.filter(id => raw.includes(id) && on(id));
     return CATS.includes(p?.companion) && on(p.companion) ? [p.companion] : [];
+  }
+  const catTop = (p, id) => catLevel(p?.cats?.[id]) === B.cats.maxLevel;
+  // 동반 고양이 목록(R-237: Lv5 아닌 고양이 1칸 + Lv5 고양이는 칸 밖 모두). 원 목록에서 Lv5 아닌 고양이가 둘 이상이면
+  // companion(그 안에 있으면) 아니면 cats.list 순 첫 하나만 남긴다. 결과는 cats.list 순. 동반을 읽는 곳은 모두 여기로
+  function partyOf(p) {
+    const list = partyRaw(p),
+      low = list.filter(id => !catTop(p, id));
+    if (low.length < 2) return list;
+    const keep = low.includes(p?.companion) ? p.companion : low[0];
+    return list.filter(id => catTop(p, id) || id === keep);
   }
   // 동반 목록을 쓴다: x.party(다른 x 칸은 그대로) + companion = 첫 동반(옛 코드 · 옛 탭 호환)
   function writeParty(p, list) {
@@ -16054,11 +16165,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // S 출격 준비에 예약된 S(30분 안의 예약 수량)는 쓸 수 없다. 시각을 모르면 예약을 지킨다.
   function spendableSC(p, now) {
     const held =
-      p.scHold && (!Number.isFinite(now) || now - p.scHold.at < HOLD_STALE_MS)
-        ? p.scHold.n === 10
-          ? 10
-          : 1
-        : 0;
+      p.scHold && (!Number.isFinite(now) || now - p.scHold.at < HOLD_STALE_MS) ? holdN(p.scHold.n) : 0;
     return p.superCoins - held;
   }
   // S가 모자란 이유: 예약 때문이면 sc_reserved, 아니면 insufficient. 충분하면 null.
@@ -16280,6 +16387,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return id;
   }
 
+  // 출격 단계 해금 거래(buySS · buySSS 공용)
+  function buyTier(p, kind, { txId, now, needs }) {
+    if (!validId(txId)) return fail('invalid');
+    if (p.tx.includes(txId)) return dup();
+    if (p.opened.includes(kind)) return dup();
+    if (needs && !p.opened.includes(needs)) return fail('needs_' + needs);
+    const price = launchTier(kind).open,
+      short = scShort(p, now, price);
+    if (short) return fail(short);
+    p.superCoins -= price;
+    p.opened.push(kind);
+    remember(p, txId);
+    return { ok: true, price, opened: [] };
+  }
+
   // 순수 규칙: p(프로필 사본)를 바꾸고 결과를 돌려준다.
   const rules = {
     // 출격(R-062 · R-161): launch.buffs(요청 id 배열)를 BUFFS 순서로 본다. 비용 · buffLv는 계정 최고 Point 단계로 정한다.
@@ -16475,7 +16597,16 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       }
       // 이미 MAX인 계정은 첫 부팅에 격납고가 열린다(R-106)
       if (rules.openDoors(p).opened?.length) changed = true;
-      return changed ? { ok: true } : dup();
+      // 동반 정리(R-237): 정리 결과가 원 목록과 다르면 바로 저장(원본을 남기면 빠진 고양이가 Lv5 뒤 저절로 돌아온다)
+      const raw = partyRaw(p),
+        party = partyOf(p),
+        partyCut = raw.filter(id => !party.includes(id));
+      if (partyCut.length) {
+        writeParty(p, party);
+        changed = true;
+      }
+      if (!changed) return dup();
+      return partyCut.length ? { ok: true, partyCut } : { ok: true };
     },
     // 한 줄 남기기: 기록 r에 한 번만. 글자 · 색 비용은 이 거래에서 다시 계산한다.
     note(p, { record: r, value, noteColor }) {
@@ -16538,17 +16669,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       remember(p, txId);
       return { ok: true, price: ECONOMY.incomePrice, opened: rules.openDoors(p).opened };
     },
+    // 출격 단계 해금(R-161 · R-240): 값 = launchTier(kind).open S(예약된 S는 쓰지 않음) → opened에 kind
     buySS(p, { txId, now }) {
-      if (!validId(txId)) return fail('invalid');
-      if (p.tx.includes(txId)) return dup();
-      if (p.opened.includes('ss')) return dup();
-      const price = B.ssLaunch.open,
-        short = scShort(p, now, price);
-      if (short) return fail(short);
-      p.superCoins -= price;
-      p.opened.push('ss');
-      remember(p, txId);
-      return { ok: true, price, opened: [] };
+      return buyTier(p, 'ss', { txId, now });
+    },
+    // SSS는 SS를 연 뒤만(needs_ss)
+    buySSS(p, { txId, now }) {
+      return buyTier(p, 'sss', { txId, now, needs: 'ss' });
     },
     buyPerma(p, { txId, skill, expectedOwned, now }) {
       if (!validId(txId) || !SKILLS.includes(skill)) return fail('invalid');
@@ -16595,13 +16722,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       const s = B.cats.unlock[cat],
         short = scShort(p, now, s);
       if (short) return fail(short);
+      // 동반 목록은 Lv1로 올리기 전에 정리한 것(옛 x.party에 남은 이 고양이가 해금되며 저절로 1칸을 바꾸지 않게 늘 다시 쓴다).
+      // 새로 해금한 고양이는 1칸(Lv5 아닌 동반)이 비어 있을 때만 동반 켜짐(R-111 · R-237)
+      const party = partyOf(p);
       p.superCoins -= s;
       p.cats[cat] = 1;
-      // 새로 해금한 고양이는 동반 켜짐(R-111)
-      const party = partyOf(p);
       writeParty(
         p,
-        CATS.filter(id => id === cat || party.includes(id)),
+        party.every(id => catTop(p, id)) ? CATS.filter(id => id === cat || party.includes(id)) : party,
       );
       remember(p, txId);
       return { ok: true, price: { s }, level: 1 };
@@ -16624,8 +16752,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       remember(p, txId);
       return { ok: true, price: { s, b }, level: expectedLevel + 1 };
     },
-    // 동반(R-111, 여러 마리): 해금된(Lv1 이상) 고양이마다 켜고 끄기. x.party와 companion(첫 동반)을 함께 쓴다.
-    // 판 도중 바꿔도 다음 출격부터(출격 순간 고정)
+    // 동반(R-111 · R-237): Lv5 고양이는 켜고 끄기(칸 밖), Lv5 아닌 고양이는 1칸 라디오 — 켜면 기존 Lv5 아닌 동반을 빼고 넣는다.
+    // x.party와 companion(첫 동반)을 함께 쓴다. 판 도중 바꿔도 다음 출격부터(출격 순간 고정)
     setParty(p, { cat, on }) {
       if (!CATS.includes(cat)) return fail('invalid');
       const party = partyOf(p),
@@ -16633,7 +16761,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       if (party.includes(cat) === want) return dup({ party });
       if (want && !p.hidden) return fail('hidden_locked');
       if (want && !(p.cats[cat] >= 1)) return fail('locked');
-      const next = CATS.filter(id => (id === cat ? want : party.includes(id)));
+      const radio = want && !catTop(p, cat),
+        next = CATS.filter(id => (id === cat ? want : party.includes(id) && (!radio || catTop(p, id))));
       writeParty(p, next);
       return { ok: true, party: next };
     },
@@ -16734,6 +16863,40 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.cos = { own: cosOwn(p), wear };
       return { ok: true, slot, id };
     },
+    // 꾸미기 조합 적용(R-243): set = { 칸: id | null(기본) } 1~8칸을 한 거래로 — 바뀌는 칸(cosWorn과 다른 칸) 중 안 가진 조각을
+    // 모두 사고(G · S 합계, 예약된 S는 쓰지 않음) 입힌다. 잠긴 조각이 하나라도 있으면 locked(+ id) · 합계가 화면이 본 expect
+    // { g, s }와 다르면 stale(보인 값과 다른 금액을 빼지 않음). 실패면 아무것도 바꾸지 않는다. 칭호 칸은 건드리지 않음
+    applyCos(p, { txId, set, expect, now }) {
+      if (!validId(txId) || !isObj(set) || !isObj(expect)) return fail('invalid');
+      const slots = Object.keys(set);
+      if (slots.length < 1 || slots.length > COS_SLOTS.length) return fail('invalid');
+      for (const slot of slots) {
+        const id = set[slot];
+        if (!COS_SLOTS.includes(slot) || (id !== null && cosItem(id)?.slot !== slot)) return fail('invalid');
+      }
+      if (p.tx.includes(txId)) return dup();
+      if (!p.opened.includes('cos')) return fail('cos_locked');
+      const worn = cosWorn(p),
+        own = cosOwn(p),
+        change = slots.filter(slot => (worn[slot] ?? null) !== set[slot]);
+      if (!change.length) return dup();
+      const bought = change.map(slot => set[slot]).filter(id => id !== null && !own.includes(id));
+      for (const id of bought) if (cosNeed(p, id)) return { ok: false, reason: 'locked', id };
+      const g = bought.reduce((n, id) => n + count(cosItem(id).g), 0),
+        s = bought.reduce((n, id) => n + count(cosItem(id).s), 0);
+      if ((Number(expect.g) || 0) !== g || (Number(expect.s) || 0) !== s) return fail('stale');
+      const short = (s && scShort(p, now, s)) || (p.gold < g ? 'insufficient' : null);
+      if (short) return fail(short);
+      p.gold -= g;
+      p.superCoins -= s;
+      const wear = { ...(isObj(p.cos?.wear) ? p.cos.wear : {}) };
+      for (const slot of change)
+        if (set[slot] === null) delete wear[slot];
+        else wear[slot] = set[slot];
+      p.cos = { own: [...own, ...bought], wear };
+      remember(p, txId);
+      return { ok: true, price: { g, s }, bought, set: { ...set } };
+    },
     // 히든 탭 해금: hiddenFrom 모드 판이 패배 · 직접 종료로 끝났을 때만(중단 제외). 옛 기록으로 소급하지 않도록
     // evaluateRun(백업 가져오기에서도 불림)에는 넣지 않고, 화면이 실제 판이 끝날 때만 부른다.
     unlockHidden(p, { difficultyId, reason, world }) {
@@ -16755,10 +16918,17 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       remember(p, txId);
       return { ok: true, made };
     },
+    // S 예약(R-161 · R-240): n = 단계 cost 목록(HOLD_SIZES) 중 하나. 같은 준비(prepId)가 다른 n을 잡으면 그 자리에서
+    // n과 at을 바꾼다(한 거래 — release 후 hold 두 번이 아님, 잔액이 모자라면 옛 예약 그대로)
     holdSC(p, { prepId, now, n = 1 }) {
       if (!validId(prepId)) return fail('invalid');
-      if (![1, 10].includes(n)) return fail('invalid');
-      if (p.scHold?.prepId === prepId) return dup();
+      if (!HOLD_SIZES.includes(n)) return fail('invalid');
+      if (p.scHold?.prepId === prepId) {
+        if (holdN(p.scHold.n) === n) return dup();
+        if (p.superCoins < n) return fail('insufficient');
+        p.scHold = { prepId, at: Number(now) || 0, n };
+        return { ok: true };
+      }
       if (p.superCoins < n) return fail('insufficient');
       if (p.scHold && now - p.scHold.at < HOLD_STALE_MS) return fail('held_elsewhere');
       p.scHold = { prepId, at: Number(now) || 0, n };
@@ -16769,11 +16939,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.scHold = null;
       return { ok: true };
     },
-    commitSC(p, { prepId, launchId }) {
+    // 출격 확정: kind = 준비 화면의 출격 단계. 예약 수량이 그 단계 값과 다르거나 단계가 닫혔으면 stale(다른 탭이 단계를 바꿨거나
+    // 옛 화면 — 보인 단계와 다른 수량을 빼지 않음)
+    commitSC(p, { prepId, launchId, kind }) {
       if (!validId(launchId)) return fail('invalid');
       if (p.tx.includes(launchId)) return dup();
       if (!p.scHold || p.scHold.prepId !== prepId) return fail('not_held');
-      const cost = p.scHold.n === 10 ? 10 : 1;
+      const cost = holdN(p.scHold.n);
+      if (cost !== launchTier(kind).cost || !tierOpen(p, kind)) return fail('stale');
       if (p.superCoins < cost) return fail('insufficient');
       p.superCoins -= cost;
       p.scHold = null;
@@ -16900,8 +17073,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     ) {
       const src = isObj(raw) ? raw : isObj(fallback) ? fallback : null,
         p = migrate(src),
-        capped = permaExcess(src);
-      rules.cleanup(p, { now });
+        capped = permaExcess(src),
+        partyCut = rules.cleanup(p, { now }).partyCut || null;
       let s = { career: blankCareer(), ids: [], records: 0, log: 0 };
       if (seed)
         try {
@@ -16917,6 +17090,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         ok: true,
         profile: p,
         capped,
+        partyCut,
         extra: isObj(raw) ? [{ ...raw, id: mainBackupId(raw.schemaVersion) }] : [],
         records: s.ids
           .filter(id => byId.has(id))
@@ -16949,6 +17123,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       p.legacyBest = Math.max(p.legacyBest, src.legacyBest);
       p.scHold = null;
       for (const k of V5_FIELDS) if (k !== 'career' && k !== 'mile') p[k] = src[k];
+      // 동반 정리(R-237)는 가져오기 때 바로 저장(옛 백업의 여러 동반이 남지 않게)
+      writeParty(p, partyOf(p));
       return { ok: true };
     },
   };
@@ -17032,6 +17208,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       this.storageReason = '';
       // 열 때 MAX를 넘던 영구 스택을 줄이고 돌려준 내역(R-042, permaExcess 형식). 없으면 null
       this.capped = null;
+      // 부팅 정리에서 빠진 동반 고양이 id(R-237, cleanup partyCut). 화면이 첫 홈 안내 한 번에 쓴다. 없으면 null
+      this.partyCut = null;
       this.queue = Promise.resolve();
       this.ready = this.load();
     }
@@ -17087,7 +17265,10 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         if (!out?.ok) {
           this.storageLimited = true;
           this.storageReason = T().msg.storage.profileRead;
-        } else this.capped = out.capped || null;
+        } else {
+          this.capped = out.capped || null;
+          this.partyCut = out.partyCut || null;
+        }
         return this.snapshot();
       }
       this.storageLimited = true;
@@ -17098,8 +17279,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           saved = read(KEY);
         if (saved?.schemaVersion === SCHEMA) {
           this.profile = migrate(saved);
-          rules.cleanup(this.profile, { now });
-          if (!mileCheck(this.profile, { retro: true }).duplicate)
+          const cleaned = rules.cleanup(this.profile, { now });
+          this.partyCut = cleaned.partyCut || null;
+          // 정리(옛 판 · S 예약 · 문 · 동반)도 이정표 소급도 바뀐 게 있으면 저장 — 정리만 바뀐 부팅에서 지운 S 예약이
+          // 다음 거래에 되살아나지 않게(astra 교차 검토)
+          const miles = !mileCheck(this.profile, { retro: true }).duplicate;
+          if (miles || !cleaned.duplicate)
             try {
               localStorage.setItem(KEY, JSON.stringify(this.profile));
             } catch {}
@@ -17107,6 +17292,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           const m = rules.migrate5(null, { fallback, now, seed: false, version: root.NEON_VERSION || '' });
           this.profile = m.profile;
           this.capped = m.capped;
+          this.partyCut = m.partyCut || null;
           try {
             localStorage.setItem(KEY, JSON.stringify(m.profile));
           } catch {}
@@ -17137,7 +17323,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
               // 이정표(R-114): 13단계 전(또는 옛 탭)에서 이미 넘은 것은 '이전 기록'(값 1)
               retro = mileCheck(p, { retro: true });
             if (capped || !cleaned.duplicate || !retro.duplicate) os.profiles.put(p);
-            return { ok: true, profile: p, capped, records: [] };
+            return { ok: true, profile: p, capped, partyCut: cleaned.partyCut || null, records: [] };
           }
           const m = rules.migrate5(raw || null, {
             fallback,
@@ -17483,6 +17669,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       const now = this.now();
       return this.mutate(p => rules.buySS(p, { txId, now }));
     }
+    // SSS 출격 해금(R-240): SS를 연 뒤만
+    buySSS(txId) {
+      const now = this.now();
+      return this.mutate(p => rules.buySSS(p, { txId, now }));
+    }
     buyPerma(txId, skill, expectedOwned, now) {
       return this.mutate(p => rules.buyPerma(p, { txId, skill, expectedOwned, now }));
     }
@@ -17503,7 +17694,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     setCompanion(cat) {
       return this.mutate(p => rules.setCompanion(p, { cat }));
     }
-    // 동반 켜고 끄기(R-111, 여러 마리)
+    // 동반 켜고 끄기(R-111 · R-237: Lv5 아닌 고양이 1칸 라디오 + Lv5 켜기/끄기)
     setParty(cat, on) {
       return this.mutate(p => rules.setParty(p, { cat, on }));
     }
@@ -17528,6 +17719,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     wearCos(slot, id) {
       return this.mutate(p => rules.wearCos(p, { slot, id }));
     }
+    // 꾸미기 조합 적용(R-243): set = { 칸: id | null } · expect = 화면이 보인 합계 { g, s }. txId는 누를 때마다 새로
+    applyCos(txId, set, expect) {
+      const now = this.now();
+      return this.mutate(p => rules.applyCos(p, { txId, set, expect, now }));
+    }
     // 화면이 실제 판이 끝날 때만 부른다(evaluateRun과 따로).
     unlockHidden(run) {
       return this.mutate(p =>
@@ -17548,8 +17744,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     releaseSC(prepId) {
       return this.mutate(p => rules.releaseSC(p, { prepId }));
     }
-    commitSC(prepId, launchId) {
-      return this.mutate(p => rules.commitSC(p, { prepId, launchId }));
+    commitSC(prepId, launchId, kind) {
+      return this.mutate(p => rules.commitSC(p, { prepId, launchId, kind }));
     }
     evaluateRun(run) {
       return this.mutate(p => rules.unlock(p, run));
@@ -17646,8 +17842,15 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     spendableSC,
     permaExcess,
     catEffects,
-    // 동반 여러 마리 · 승진(R-111)
+    // 동반 1칸 + Lv5(R-237) · 승진(R-111)
     partyOf,
+    // 출격 단계표(R-240)
+    LAUNCH_KINDS,
+    launchTier,
+    launchKindOf,
+    tierOpen,
+    HOLD_SIZES,
+    holdN,
     promoCap,
     promoOf,
     promoRank,
