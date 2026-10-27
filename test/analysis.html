@@ -577,6 +577,49 @@ body[data-hud='s'] {
   }
 }
 
+/* 비행일지 STAR: 한 별빛 계열 안에서 20가지. 훈장 색도 화면 부품과 분리해 여기서만 정의. */
+:root {
+  --medal-nav: #9bb6d2;
+  --medal-nav-dark: #526c8e;
+  --medal-nav-light: #c9d5e2;
+  --medal-voyager: #cdb574;
+  --medal-voyager-dark: #8d733e;
+  --medal-ace: #b57c70;
+  --medal-ace-light: #e0b9a5;
+  --medal-ace-dark: #815c59;
+  --medal-titan: #ad8cb1;
+  --medal-titan-light: #e0b9ce;
+  --medal-wing: #5b8e81;
+  --medal-wing-light: #bad8c2;
+  --medal-path: #597f9f;
+  --medal-path-light: #acc9df;
+  --medal-star: #b99b60;
+  --medal-star-light: #f0d59b;
+}
+
+:root {
+  --star-0: hsl(32 78% 58%);
+  --star-1: hsl(33.3 78% 62%);
+  --star-2: hsl(34.6 78% 66%);
+  --star-3: hsl(35.9 78% 70%);
+  --star-4: hsl(37.2 78% 74%);
+  --star-5: hsl(38.5 78% 58%);
+  --star-6: hsl(39.8 78% 62%);
+  --star-7: hsl(41.1 78% 66%);
+  --star-8: hsl(42.4 78% 70%);
+  --star-9: hsl(43.7 78% 74%);
+  --star-10: hsl(45 78% 58%);
+  --star-11: hsl(46.3 78% 62%);
+  --star-12: hsl(47.6 78% 66%);
+  --star-13: hsl(48.9 78% 70%);
+  --star-14: hsl(50.2 78% 74%);
+  --star-15: hsl(51.5 78% 58%);
+  --star-16: hsl(52.8 78% 62%);
+  --star-17: hsl(54.1 78% 66%);
+  --star-18: hsl(55.4 78% 70%);
+  --star-19: hsl(56.7 78% 74%);
+}
+
     </style>
     <style>
       /* 색은 게임 토큰(tokens.css, R-054). 게임 바탕 규칙 중 화면 고정 · 글 여백 없앰은 이 페이지에서 되돌린다(세로 스크롤) */
@@ -4953,15 +4996,15 @@ return Plotly;
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 50, logs: 10 },
     // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
-    // 판정 종류 하나씩 — sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
+    // 판정 종류 하나씩 — play: 솔로 Insane 첫 시작 · sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
     // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름 — 마스터는 최종 보스 전 잠김).
     // title: 칭호를 주는 큰 이정표. door 'world'는 balance.world가 생기기 전(15단계 전)에는 넘지 않는다. 판 진행 영향 0
     mile: [
       { id: 'hour1', col: 'fly', sum: 'time', need: 3600 },
-      { id: 'insane1', col: 'fly', sum: 'mode.insane.runs', need: 1 },
-      { id: 'hour10', col: 'fly', sum: 'time', need: 36000 },
+      { id: 'insane1', col: 'fly', play: 'insane' },
+      { id: 'hour10', col: 'fly', sum: 'time', need: 36000, title: true },
       { id: 'hour50', col: 'fly', sum: 'time', need: 180000, title: true },
-      { id: 'world', col: 'fly', door: 'world', title: true },
+      { id: 'runs100', col: 'fly', sum: 'runs', need: 100 },
       { id: 'boss1', col: 'fight', sum: 'bosses', need: 1 },
       { id: 'boss100', col: 'fight', sum: 'bosses', need: 100 },
       { id: 'kill100k', col: 'fight', sum: 'kills', need: 100000, title: true },
@@ -4972,11 +5015,16 @@ return Plotly;
       { id: 'set1', col: 'grow', set: 1 },
       { id: 'promo1', col: 'grow', rank: 1 },
       { id: 'promo3', col: 'grow', rank: 3, title: true },
+      { id: 'world', col: 'world', door: 'world', title: true },
+      { id: 'practice1', col: 'world', sum: 'world.practice.runs', need: 1 },
+      { id: 'daily1', col: 'world', sum: 'world.daily.runs', need: 1 },
+      { id: 'world10', col: 'world', sum: 'world.runs', need: 10, title: true },
+      { id: 'worldboss10', col: 'world', sum: 'world.bosses', need: 10 },
     ],
     // 꾸미기(R-116, PLANNING-world Q209~Q211): items 순서 = 꾸미기 화면 순서. id = '<칸>.<끝>'(저장 키, 바꾸지 않음).
     // g: G 값 · s: S 값(특별 — 이정표 · 칭호 · 승진으로 열고 S로 산다). need: { mile: 이정표 id }(넘어야 열림, 'world'는 15단계 전 준비 중) ·
     // { rank: n }(그 칸 고양이 승진 단계 ≥ n). 소품 칸(prop.<고양이>)은 그 고양이를 깨운 뒤(Lv 1 이상)부터.
-    // 꾸미기 문 = 상점 네 칸(시간 코인 모두 · 자동 강화 · 자동 G)을 모두 산 순간 열림. 세 기체 공통 · 출격 순간 고정 · 판 진행 영향 0.
+    // 꾸미기 문 = 솔로 Insane 첫 시작에 다른 기능과 함께 열림. 세 기체 공통 · 출격 순간 고정 · 판 진행 영향 0.
     // 보급 캡슐: 정상 종료 · 솔로 · time초 이상 판 끝에 chance[모드] 확률로 열렸고 없는 G 조각 하나(입히지 않음 · 재화 0)
     cos: {
       items: [
@@ -5109,7 +5157,7 @@ return Plotly;
     },
     // 월드(R-120 · Q212~Q214 · Q216 · PLANNING-world 6-7): 주간 도전 · 연습 판만 읽는 값. 솔로 값(modes · skills · enemies)은 그대로다.
     // 실험실 솔로 지문 밖(lab-core HIDDEN) — '월드' 묶음 · 월드 지문이 따로 본다.
-    // door: 이 모음(세 기체 모두 그 도색)을 가지면 월드 문이 열린다(R-121, 보라 = NEBULA)
+    // door: 옛 월드 해금 모음 id(백업·옛 도구 호환). 현재 월드 문은 솔로 Insane 첫 시작에 열린다.
     // hp · damage: 모드 값 위에 곱하는 적 체력 · 피해(난이도 ×1.5, 실험실 시작값) · score: 처치 Point 배율(모드 score 대신)
     // view: 화면과 상관없는 고정 조준 상자 반폭 hw · 반높이 hh(기체 중심) · 출현 거리 spawn · 조준 거리 range
     //   (S25+ 세로 넓게 보기 줌 0.5 기준). 결정 조건: 월드 판은 앱의 g.view · spawnRadius · 마우스 조준을 읽지 않는다(재생 일치)
@@ -5562,10 +5610,10 @@ return Plotly;
   // 칭호는 영어 고유 이름(이름 규칙 1 · 5, 편집장 2026-10-17): 대문자 한두 단어 · 11글자 안
   const mile = {
     hour1: '총 1시간',
-    insane1: '첫 Insane',
+    insane1: '첫 INSANE',
     hour10: '총 10시간',
     hour50: '총 50시간',
-    world: '월드 열림',
+    runs100: '총 100판',
     boss1: '첫 보스',
     boss100: '보스 100',
     kill100k: '처치 10만',
@@ -5576,13 +5624,36 @@ return Plotly;
     set1: '첫 모음',
     promo1: '첫 승진',
     promo3: '전문',
+    world: '월드 열림',
+    practice1: '첫 월드 연습',
+    daily1: '첫 매일 도전',
+    world10: '월드 10판',
+    worldboss10: '월드 보스 10',
   };
   const titles = {
+    hour10: 'NAVIGATOR',
     hour50: 'VOYAGER',
-    world: 'PATHFINDER',
     kill100k: 'ACE',
-    boss1000: 'BOSS HUNTER',
+    boss1000: 'TITAN ACE',
     promo3: 'WING LEADER',
+    world: 'PATHFINDER',
+    world10: 'STAR SEEKER',
+  };
+  const titlePhrases = {
+    hour10: '오랜 항해 끝에',
+    hour50: '한계를 넘어',
+    kill100k: '전장을 가르고',
+    boss1000: '거인을 꺾으며',
+    promo3: '동료를 이끌어',
+    world: '새로운 세계를 연',
+    world10: '별빛의 선구자',
+  };
+  const titleSentence = ids => {
+    const chosen = new Set(ids || []);
+    const parts = Object.keys(titles)
+      .filter(id => chosen.has(id))
+      .map(id => titlePhrases[id]);
+    return parts.length ? parts.join(' ') + (chosen.has('world10') ? '' : ' 조종사') : '';
   };
   // ── 꾸미기 · 보급 캡슐(R-116 · R-117): 키 = balance.cos id(저장 키, 바꾸지 않음) · 칸. 값 · 열림은 balance.cos.
   // 조각 이름은 id 전체, 소품은 끝 이름(세 고양이 공통). 잠김 글의 이정표 · 칭호 이름은 위 mile · titles
@@ -5607,7 +5678,7 @@ return Plotly;
     applied: '적용했습니다',
     appliedN: n => n + '개를 사서 적용했습니다',
     // 입구 이름(격납고 · 승무원 · 기록 · 설정의 '… ›')
-    // 입구 글(cosEntry): 기록 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
+    // 입구 글(cosEntry): 비행 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
     hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '카드 꾸미기' },
     preview: '미리보기',
     browse: '옆으로 넘겨 보세요',
@@ -5615,8 +5686,8 @@ return Plotly;
     browseCount: n => n + '개 ↔',
     growth: '성장으로 ›',
     // 잠김 화면(R-173 C5): 조건 세 줄 위 한 줄
-    lockLead: '상점의 시간 코인 · 자동 강화 · 자동 G를 모두 사면 꾸미기가 열립니다',
-    entryLocked: '🔒 시간 코인·자동 기능을 모두 구매하면 열림',
+    lockLead: 'INSANE에 처음 출격하면 꾸미기가 열립니다',
+    entryLocked: '🔒 INSANE 첫 출격으로 열림',
     entryNote: '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀 ›',
     groups: { craft: '기체', cat: '고양이', music: '음악', card: '카드' },
     slot: {
@@ -6121,17 +6192,32 @@ return Plotly;
     },
     menu: { label: '메뉴', wallet: '보유 재화', settings: '설정', tabs: '메뉴 탭' },
     // 탭 5칸(R-248): 격납고 · 성장 · 홈(가운데, 출격 화면) · 월드(world.tab) · 기록. 승무원은 성장 안 칸(R-249)
-    tabs: { play: '홈', hangar: '격납고', grow: '성장', rec: '기록' },
+    tabs: { play: '홈', hangar: '격납고', grow: '성장', rec: '비행' },
     // 플레이 탭 영역(R-032): 테두리 위 라벨 순위 · 모드 · 기체 · 최근 기록 · 출격
     home: {
+      craftSelect: '기체 선택',
+      runway: '출격',
+      runwayHint: '홈을 위로 올려 출격',
+      runwayTip: '홈을 출격 원까지 끌어올리세요',
+      runwayReady: '출격 원을 누르면 출격합니다',
+      superOff: 'S 출격 OFF',
+      superOn: kind => launches.tierMark(kind) + ' 출격 ON',
+      superSwitch: 'S 출격',
+      superSetup: '배분 설정 ›',
+      superApply: '출격 준비 적용',
+      superReady: kind => launches.tierMark(kind) + ' 준비됨',
+      superNeed: '배분 설정 필요',
+      superDisabled: 'S 코인을 모으면 설정할 수 있어요',
+      launchTapHint: '홈 → 출격 순서로 눌러도 출격할 수 있어요',
+      stars: n => n + ' STAR',
       rank: ranking.name,
       allRecords: '전체 기록 ›',
-      // 전체 기록 창(R-236): 일반 출격 TOP3 · S 출격 TOP3 두 칸 + 기록 탭 링크(v3 보존 Q44)
+      // 전체 기록 창(R-236): 일반 출격 TOP3 · S 출격 TOP3 두 칸 + 비행 탭 링크(v3 보존 Q44)
       records: {
         title: '전체 기록',
         normal: launches.normal + ' TOP3',
         super: launches.super + ' TOP3',
-        more: '기록 탭에서 모두 보기 ›',
+        more: '비행 탭에서 모두 보기 ›',
       },
       // 출격 준비(R-237 P-LOAD): 박스 하나 → 3열 시트(모드 · 버프 · 고양이)
       load: '출격 준비',
@@ -6139,7 +6225,7 @@ return Plotly;
       // 출격 준비 칸이 비었을 때
       crewNone: '동반 없음',
       buffOff: '버프 끔',
-      // 최근 기록: 홈 칸은 없앴고(R-163) 용어(TERMS.md)와 기록 탭이 쓴다
+      // 최근 기록: 홈 칸은 없앴고(R-163) 용어(TERMS.md)와 비행 탭이 쓴다
       last: '최근 기록',
       stage: craft => craftName(craft) + ' · 격납고에서 바꾸기',
       // 홈 기체 박스(R-251): 이름 아래 도색 한 줄
@@ -6155,7 +6241,7 @@ return Plotly;
         ' 쉬어요',
       launch: '출격',
       // 꾸미기 버튼 잠김 표시(R-171 H6): 강화 장비 산 칸 / 전체
-      cosLock: (n, all) => '🔒 ' + n + '/' + all,
+      cosLock: (n, all) => '🔒 INSANE 첫 출격',
       // 기록 0일 때 순위 칸 한 줄(R-171 H7)
       rankFirst: '첫 판을 마치면 TOP3가 여기에',
     },
@@ -6168,9 +6254,9 @@ return Plotly;
       gear: '상점',
       crew: '승무원',
     },
-    // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 기록 탭 dataNote 한 곳)
+    // 상점 머리 안내 줄은 뺐다(R-066, 저장 안내는 비행 탭 dataNote 한 곳)
     rec: {
-      title: '기록',
+      title: '비행',
       // R-220: 줄마다 보이는 ☆ · ★ 그림과 같은 기호로 '별표 = 지우기 보호'를 잇는다
       note: () => '최신순 · ' + B().records.keep + '판 보관 · TOP3·★별표 보호',
       keepDetail: () =>
@@ -6179,7 +6265,7 @@ return Plotly;
         '판으로 정리합니다. 일반·S 출격 TOP3와 별표는 남고, 보호 기록만으로 한도를 넘을 수 있습니다. 경력 누적은 그대로입니다. 상세 로그는 최근 ' +
         B().records.logs +
         '판과 보호 기록에 남습니다. 지워진 판은 복구할 수 없으니 설정의 데이터 관리에서 먼저 백업해 두세요.',
-      // 기록 탭 점의 이유(UX-070): 백업 뒤 기록이 쌓이면 기록 탭에서 바로 백업으로
+      // 비행 탭 점의 이유(UX-070): 백업 뒤 기록이 쌓이면 비행 탭에서 바로 백업으로
       backupDue: n => '백업 뒤 새 기록 ' + n + '판',
       backupGo: '백업하기 ›',
       data: '데이터 관리',
@@ -6321,7 +6407,7 @@ return Plotly;
     buffs: { group: buffs.group },
     // 전투 알림 묶음(R-064): 보이는 수(최신 + 지난 것) · 자리 이동 시간(초). 임시값
     alertStack: { max: 3, move: 0.25 },
-    // GM 실험 칸(R-065, 시험 경로에만): 기록 탭 입구 · GM 화면 패널 · 설정 줄
+    // GM 실험 칸(R-065, 시험 경로에만): 비행 탭 입구 · GM 화면 패널 · 설정 줄
     gm: {
       enter: 'GM 실험 칸 ›',
       panel: 'GM 패널',
@@ -6511,7 +6597,7 @@ return Plotly;
     mile: ids =>
       '이정표 · ' +
       ids.map(id => mile[id] || id).join(' · ') +
-      ' — 기록 탭 비행 일지에 ' +
+      ' — 비행 탭 비행 일지에 ' +
       (ids.length > 1 ? ids.length + '장이' : '한 장이') +
       ' 더해졌습니다.',
     storageFull: '저장 공간 부족 · 기록을 파일로 남기세요',
@@ -6798,7 +6884,7 @@ return Plotly;
       storage_unavailable: '브라우저 저장소가 지원되지 않아 ' + G + '를 차감하지 않았습니다.',
       failed: '저장하지 못했습니다. ' + G + '는 차감하지 않았습니다.',
     },
-    // 기록 탭(R-018)
+    // 비행 탭(R-018)
     rec: {
       confirm: n => '선택한 기록 ' + n + '개를 지웁니다. 상세 로그도 함께 지워지고 되돌릴 수 없습니다.',
       removed: n => '기록 ' + n + '개를 지웠습니다.',
@@ -6883,7 +6969,7 @@ return Plotly;
         .filter(Boolean)
         .join(' · '),
     recordsEmpty: '아직 저장된 기록이 없습니다.',
-    // 기록 탭 별표 · 선택 삭제(R-018)
+    // 비행 탭 별표 · 선택 삭제(R-018)
     rec: {
       count: (n, stars) => '기록 ' + n + '판' + (stars ? ' · ★ ' + stars : ''),
       select: '선택',
@@ -6994,8 +7080,7 @@ return Plotly;
       props: '소품 꾸미기 ›',
       journal: '비행 일지 ›',
       lockTeaser: '더 먼 모드에서 깨어나는 승무원이 있어요',
-      lockCond: () =>
-        modeName(B().cats.hiddenFrom) + ' 한 판을 끝내면 잠든 고양이 비행사 셋을 깨울 수 있어요',
+      lockCond: () => 'INSANE에 처음 출격하면 잠든 고양이 비행사 셋을 깨울 수 있어요',
       always: '항상 적용',
       companion: '동반 중',
       locked: '미해금',
@@ -7085,7 +7170,7 @@ return Plotly;
       },
       buyLabel: (craft, c) =>
         craftName(craft) + ' ' + paint.names[c] + ' · ' + view.hangar.price(c) + '로 사기',
-      // 모음 효과 한 줄(balance paint.sets) + 보라는 월드 문(R-161)
+      // 모음 효과 한 줄(balance paint.sets)
       setEffect: c => {
         const s = B().paint.sets[c] || {};
         return [
@@ -7094,7 +7179,6 @@ return Plotly;
           s.shieldX && '보호막 재생 ×' + s.shieldX,
           s.scMake && SC + ' 제작 한 번에 ' + s.scMake + '개',
           s.revive && '부활 +' + s.revive,
-          c === 'violet' && '월드 열림',
         ]
           .filter(Boolean)
           .join(' · ');
@@ -7106,24 +7190,18 @@ return Plotly;
       none: '없음',
       paintTitle: '전투 도색',
       baseName: '기본',
-      paintLocked: (full, n) => '🔒 성장 스킬 ' + n + '개 1차 MAX면 열림 · ' + full + ' / ' + n,
+      paintLocked: (full, n) => '🔒 INSANE 첫 출격으로 열림',
       setsMore: '모음 효과',
-      cosLocked: (have, need) =>
-        '🔒 상점의 시간 코인 ' +
-        E().incomeMax +
-        '단계 · 자동 강화 · 자동 G를 모두 사면 열림 · ' +
-        have +
-        ' / ' +
-        need,
+      cosLocked: (have, need) => '🔒 INSANE 첫 출격으로 열림',
       cosAll: '전체 ›',
     },
-    // 비행 경력 카드 · 비행 일지(R-115, 기록 탭). 이정표 이름 · 칭호는 위 mile · titles, 일지 조각은 talk.lines.mile
+    // 비행 경력 카드 · 비행 일지(R-115, 비행 탭). 이정표 이름 · 칭호는 위 mile · titles, 일지 조각은 talk.lines.mile
     journal: {
       career: '비행 경력',
       since: d => d + '부터',
       stats: ['비행 시간', '판', '처치', '보스'],
       best: (pt, st, ch) => '최고 ' + pt + ' ' + point.name + ' · ' + stageLabel(st) + ' · CHAIN ' + ch,
-      // 경력 창(R-195): 기록 탭 '비행 경력' 칸을 누르면
+      // 경력 창(R-195): 비행 탭 '비행 경력' 칸을 누르면
       careerKicker: 'FLIGHT CAREER',
       careerDone: '닫기',
       title: '비행 일지',
@@ -7131,9 +7209,9 @@ return Plotly;
       back: '돌아가기',
       count: (n, all) => n + ' / ' + all,
       next: '다음',
-      cols: { fly: '비행', fight: '전투', grow: '성장' },
-      titleLabel: '칭호',
-      titleNone: '없음',
+      cols: { fly: '비행', fight: '전투', grow: '성장', world: '월드' },
+      titleLabel: '칭호 · 복수 선택',
+      titleNone: '모두 해제',
       retro: '이전 기록',
       titleTag: '칭호',
       mileTag: '이정표',
@@ -7169,10 +7247,9 @@ return Plotly;
           return m.need <= 3600
             ? Math.floor(x.have / 60) + '/' + m.need / 60 + '분'
             : Math.floor(x.have / 3600) + '/' + m.need / 3600 + '시간';
-        if (m.sum === 'mode.insane.runs') return modeName('insane') + ' 한 판';
+        if (m.play === 'insane' || m.sum === 'mode.insane.runs') return 'INSANE 첫 출격';
         if (m.sum) return big(x.have) + '/' + big(m.need);
-        if (m.door === 'hangar') return '성장 스킬 ' + Object.keys(E().perma).length + '개 1차 MAX';
-        if (m.door === 'world') return paint.names.violet + ' 모음';
+        if (m.door === 'hangar' || m.door === 'world') return 'INSANE 첫 출격';
         if (m.paint) return '격납고 도색';
         if (m.set) return '세 기체 같은 색';
         if (m.rank)
@@ -7909,7 +7986,7 @@ return Plotly;
       'economy.autoGoldCapped': ['카드가 모두 MAX일 때 코인을 받을 확률(1 = 항상)', '확률(0~1)', 'more'],
       'economy.permaOver.x': ['1차 MAX 이후 성장 스킬 B 가격 배율', '배', 'cost'],
       'economy.permaOver.s': ['1차 MAX 이후 성장 스킬을 살 때 더하는 비용', SC, 'cost'],
-      'economy.perma.*.door': ['격납고 문을 여는 스킬별 1차 MAX', '스택', ''],
+      'economy.perma.*.door': ['스킬별 1차 MAX', '스택', ''],
       'economy.perma.*.max': ['영구 스택으로 살 수 있는 최대 수', '스택', 'more'],
       'economy.perma.*.price': ['영구 스택 첫 가격', BL, 'cost'],
       'economy.perma.*.step': ['영구 스택 살 때마다 오르는 가격', BL, 'cost'],
@@ -8792,10 +8869,7 @@ return Plotly;
               sl.level +
               '에서 시작합니다.',
           ],
-          [
-            '승무원',
-            modeName(b.cats.hiddenFrom) + ' 한 판을 끝내면 성장 › 승무원이 열립니다(그 전에는 칸에 자물쇠).',
-          ],
+          ['승무원', 'INSANE에 처음 출격하면 성장 › 승무원이 열립니다(그 전에는 칸에 자물쇠).'],
           [
             '고양이 비행사',
             SC +
@@ -8827,7 +8901,7 @@ return Plotly;
           // 격납고 도색(R-106)
           [
             view.hangar.title,
-            '격납고 탭의 도색은 성장 스킬을 모두 1차 MAX로 하면 열립니다. 기체마다 ' +
+            '격납고 탭의 도색은 INSANE에 처음 출격하면 열립니다. 기체마다 ' +
               paint.names[b.paint.first] +
               '부터 사서 입히면 시작 스킬 · HP 회복 · 부활이 붙고, 세 기체가 같은 색을 모두 가지면 ' +
               paint.sets +
@@ -8836,16 +8910,14 @@ return Plotly;
           // 비행 일지(R-115)
           [
             view.journal.title,
-            '기록 탭 맨 위에서 이정표 ' +
+            '비행 탭 맨 위에서 이정표 ' +
               b.mile.length +
-              '개를 봅니다. 큰 이정표 다섯은 칭호가 되고, 고른 칭호는 다음 판부터 기록 카드에 붙습니다.',
+              '개를 봅니다. 일곱 이정표는 칭호가 되고, 여러 칭호를 골라 다음 판 기록 카드에 붙일 수 있습니다.',
           ],
           // 꾸미기 · 보급 캡슐(R-116)
           [
             cos.title,
-            '시간 코인을 ' +
-              E().incomeMax +
-              '단계까지 사고 자동 강화·자동 G를 모두 사면 열리고, 격납고(기체) · 승무원(소품) · 기록 카드(틀) · 설정(음악)에서 들어갑니다. 무늬 · 엔진 불꽃 · 꼬리 자국 · 고양이 소품 · 전투 음악 · 카드 틀 ' +
+            'INSANE에 처음 출격하면 열리고, 격납고(기체) · 승무원(소품) · 기록 카드(틀) · 설정(음악)에서 들어갑니다. 무늬 · 엔진 불꽃 · 꼬리 자국 · 고양이 소품 · 전투 음악 · 카드 틀 ' +
               b.cos.items.length +
               '조각을 ' +
               G +
@@ -8870,13 +8942,7 @@ return Plotly;
             {
               title: world.name,
               rows: [
-                [
-                  '열림',
-                  '격납고에서 세 기체 모두 ' +
-                    paint.names[b.world.door] +
-                    josa(paint.names[b.world.door], '을/를') +
-                    ' 가지면 월드 탭에서 매일 도전·월드 스킬이 열립니다. 성장 스킬 1차 MAX로 도색이 열리면 월드 연습을 먼저 할 수 있습니다.',
-                ],
+                ['열림', 'INSANE에 처음 출격하면 월드 연습 · 매일 도전 · 월드 스킬이 열립니다.'],
                 [
                   world.daily,
                   '매일 한국 0시에 모드가 바뀝니다. 오늘은 모두 같은 판(같은 적 · 같은 스킬 순서)이며, 횟수 제한 없이 도전하고 오늘 최고 기록이 순위에 남습니다. 적 체력 · 피해 ×' +
@@ -8919,7 +8985,7 @@ return Plotly;
           abilities.nova +
             josa(abilities.nova, '은/는') +
             ' 가까운 적 탄환도 지웁니다. 탄환에 둘러싸였을 때 쓰세요.',
-          '재화와 기록은 이 브라우저에만 저장됩니다. 기록 탭에서 가끔 백업해 두세요.',
+          '재화와 기록은 이 브라우저에만 저장됩니다. 비행 탭에서 가끔 백업해 두세요.',
           '성장 탭에서 ' + BL + '로 스킬을 사 두면 모든 기체가 더 강하게 출격합니다.',
           '초록 원(회복 구역) 안에 있으면 HP가 찹니다.',
           '포위는 ' +
@@ -9229,9 +9295,7 @@ return Plotly;
           },
           {
             term: '승무원',
-            desc:
-              modeName(b.cats.hiddenFrom) +
-              ' 한 판을 끝내면(패배 · 직접 종료) 성장 탭 셋째 칸이 열린다. 고양이 비행사를 해금 · 육성 · 동반 · 승진한다.',
+            desc: 'INSANE에 처음 출격하면 성장 탭 셋째 칸이 열린다. 고양이 비행사를 해금 · 육성 · 동반 · 승진한다.',
           },
           {
             term: '고양이 비행사',
@@ -9287,7 +9351,7 @@ return Plotly;
           {
             term: view.hangar.title,
             desc:
-              '격납고 탭의 도색은 성장 스킬을 모두 1차 MAX로 하면 열린다. 기체마다 ' +
+              '격납고 탭의 도색은 INSANE에 처음 출격하면 열린다. 기체마다 ' +
               b.paint.colors.map(c => paint.names[c]).join(' · ') +
               josa(paint.names[b.paint.colors[b.paint.colors.length - 1]], '을/를') +
               ' 사서 하나를 입혀 출격한다. 입힌 색은 시작 스킬 · HP 회복 · 부활을, ' +
@@ -9300,7 +9364,7 @@ return Plotly;
           },
           {
             term: cos.title,
-            desc: '시간 코인·자동 기능을 모두 구매하면 열리는 모양 바꾸기. 능력은 없고 세 기체 공통이며, 출격 순간 입은 것이 그 판 기록 카드에 남는다.',
+            desc: 'INSANE에 처음 출격하면 열리는 모양 바꾸기. 능력은 없고 세 기체 공통이며, 출격 순간 입은 것이 그 판 기록 카드에 남는다.',
           },
           { term: cos.slot.mark, desc: '기체 몸체 안의 가는 무늬. ' + cos.slot.mcol + '으로 색을 고른다.' },
           { term: cos.slot.flame, desc: '전투 중 기체 꼬리에 붙는 빛.' },
@@ -9344,12 +9408,12 @@ return Plotly;
           { term: '중단 기록', desc: '앱이 꺼졌을 때 마지막 저장 시점까지 남는 기록.' },
           {
             term: view.journal.career,
-            desc: '기록 탭 맨 위 카드. 비행 시간 · 판 · 처치 · 보스를 모든 판에 걸쳐 센다(기록을 지워도 그대로).',
+            desc: '비행 탭 맨 위 카드. 비행 시간 · 판 · 처치 · 보스를 모든 판에 걸쳐 센다(기록을 지워도 그대로).',
           },
           {
             term: '이정표',
             desc:
-              '경력이 어느 선을 넘으면 하나씩 생긴다(비행 · 전투 · 성장 ' +
+              '경력이 어느 선을 넘으면 하나씩 생긴다(비행 · 전투 · 성장 · 월드 ' +
               b.mile.length +
               '개). 이 기능이 생기기 전에 이미 넘은 것은 날짜 없이 ' +
               view.journal.retro +
@@ -9357,14 +9421,14 @@ return Plotly;
           },
           {
             term: view.journal.title,
-            desc: '이정표마다 고양이(승무원이 열리기 전에는 무전)가 들려주는 한 장. 기록 탭 비행 일지 화면에서 다시 본다.',
+            desc: '이정표마다 고양이(승무원이 열리기 전에는 무전)가 들려주는 한 장. 비행 탭 비행 일지 화면에서 다시 본다.',
           },
           {
             term: view.journal.titleLabel,
             desc:
-              '큰 이정표 다섯이 주는 이름(' +
+              '일곱 이정표가 주는 이름(' +
               Object.values(titles).join(' · ') +
-              '). 하나를 고르면 그 뒤 판의 기록 카드에 붙는다.',
+              '). 여러 개를 고르면 이어진 문장이 그 뒤 판의 기록 카드에 붙는다.',
           },
         ],
       },
@@ -9525,18 +9589,16 @@ return Plotly;
         hour10: { by: 'pilot', text: '열 시간을 날았어! 처음엔 점 같던 저 별이 조금 커졌어.' },
         hour50: { by: 'pilot', text: '쉰 시간을 날았어. 이제 저 별이 손에 닿을 것 같아.' },
         world: { by: 'pilot', text: '별길 너머가 열렸어! 저 별을 꿈꾸는 조종사가 우리만이 아니었네.' },
+        runs100: { by: 'pilot', text: '벌써 100판이야! 함께 날아온 길이 길구나.' },
+        practice1: { by: 'pilot', text: '월드 연습을 마쳤어! 새로운 하늘에 익숙해지자.' },
+        daily1: { by: 'supply', text: '첫 매일 도전 완료! 오늘의 기록을 남겼어.' },
+        world10: { by: 'pilot', text: '월드에서 열 판! 이제 별길이 낯설지 않아.' },
+        worldboss10: { by: 'engineer', text: '월드 보스 열을 넘었어! 기체도 잘 버텼어.' },
         boss1: { by: 'radio', text: '첫 보스를 넘었구나. 저 별까지 가는 길이 이제 막 시작됐어.' },
         boss100: { by: 'supply', text: '보스 100마리째! 장부 한 권이 꽉 찼어. 새 장부 꺼낼게!' },
         kill100k: { by: 'supply', text: '적 10만을 넘었어! 이 숫자면 별길 끝까지 소문났을걸?' },
         boss1000: { by: 'supply', text: '보스 1000마리! 장부가 책장 하나를 채웠어. 넌 진짜 사냥꾼이야.' },
-        master: {
-          by: 'promo',
-          text:
-            stage.upper +
-            ' ' +
-            B().cats.promo.legend.stage +
-            ' 보스를 넘었어. 이제 난 마스터야. 저 별까지 끝까지 같이 가자.',
-        },
+        master: { by: 'promo', text: '마스터가 됐어! 저 별까지 끝까지 같이 가자.' },
         hangar: { by: 'engineer', text: '격납고 문을 열었어. 이제 기체마다 네 색을 입힐 수 있어.' },
         paint1: { by: 'engineer', text: '첫 도색 끝! 저 별에서도 멀리서 너인 줄 알아보겠다.' },
         set1: { by: 'engineer', text: '세 기체가 같은 색이야. 나란히 서니까 빛이 달라 보여.' },
@@ -9544,7 +9606,7 @@ return Plotly;
         promo3: { by: 'promo', text: '전문이 됐어. 이제 삼각 편대 맨 앞은 나한테 맡겨.' },
       },
       // 비행 일지에 아직 한 장도 없을 때(무전)
-      mileFirst: '이정표를 넘을 때마다 일지가 한 장씩 쌓여. 첫 장은 첫 보스야.',
+      mileFirst: '이정표를 넘을 때마다 일지가 한 장씩 쌓여. 함께 첫 장을 만들어 가자.',
       // ── 히든 탭(맨 위 말풍선) ──
       // 동반 고양이
       buddy: {
@@ -9630,12 +9692,12 @@ return Plotly;
       launchDaily: '매일 도전',
       launchWeekly: '주간 도전',
       launchPractice: '연습',
-      // 문 두 단(R-162 · Q232): 연습 = 격납고 문, 매일 도전 · 순위 · 월드 스킬 · 월드 기록 = 보라 모음 문
-      dailyLocked: '🔒 보라 모음(세 기체 모두 보라)을 모으면 열려요',
-      dailyLockedShort: '🔒 보라 모음',
+      // INSANE 첫 출격으로 월드 기능이 열린다.
+      dailyLocked: '🔒 INSANE 첫 출격으로 열려요',
+      dailyLockedShort: '🔒 INSANE 첫 출격',
       // 월드 쪽 잠김 카드 진행 · 작은 무대 줄(R-164)
-      lockedSets: (have, need) => '보라를 가진 기체 ' + have + ' / ' + need + ' · 연습은 지금 바로',
-      practiceLocked: '🔒 성장 스킬 1차 MAX(격납고 문)가 열리면 연습',
+      lockedSets: (have, need) => 'INSANE에 처음 출격하면 월드가 열려요',
+      practiceLocked: '🔒 INSANE 첫 출격으로 연습 열림',
       practiceMode: '연습 모드',
       practiceGo: '이 모드로 연습 출격',
       launched: m => 'WORLD · ' + modeName(m) + ' 출격',
@@ -9779,7 +9841,7 @@ return Plotly;
       cards: {
         crew: {
           title: '승무원',
-          lead: () => modeName(B().cats.hiddenFrom) + ' 한 판 완주! 잠든 고양이 비행사 셋을 깨울 수 있어요.',
+          lead: () => 'INSANE 첫 출격! 잠든 고양이 비행사 셋을 깨울 수 있어요.',
           lines: [
             ['깨우기', SC + '로 깨우면 다음 판부터 함께 출격'],
             ['동반', '고양이마다 효과 하나(시작 스킬 · ' + G + ' · 대시)'],
@@ -9788,7 +9850,7 @@ return Plotly;
         },
         hangar: {
           title: '격납고 도색 · 월드 연습',
-          lead: () => '성장 스킬을 모두 1차 MAX로 올렸어요.',
+          lead: () => 'INSANE에 처음 출격했어요.',
           lines: [
             ['도색', '기체마다 색을 사서 입히면 시작 스킬 · 회복 · 부활'],
             ['모음', '세 기체가 같은 색을 가지면 모음 효과'],
@@ -9797,7 +9859,7 @@ return Plotly;
         },
         cos: {
           title: '꾸미기',
-          lead: () => '상점의 시간 코인 · 자동 기능을 모두 갖췄어요.',
+          lead: () => 'INSANE에 처음 출격했어요.',
           lines: [
             ['꾸미기', '무늬 · 불꽃 · 자국 · 소품 · 음악 · 카드 틀'],
             ['보급 캡슐', B().cos.capsule.time / 60 + '분 넘게 날면 판 끝에 가끔 새 조각'],
@@ -9806,7 +9868,7 @@ return Plotly;
         },
         world: {
           title: '월드',
-          lead: () => '세 기체 모두 ' + paint.names[B().world.door] + '! 월드 문이 열렸어요.',
+          lead: () => 'INSANE 첫 출격! 월드 문이 열렸어요.',
           lines: [
             ['매일 도전', '한국 시간 자정마다 모드가 바뀌는 그날의 판'],
             ['월드 스킬', SC + '로 올리는 월드 전용 능력'],
@@ -9863,7 +9925,7 @@ return Plotly;
     recWorldLocked: '🔒 월드 기록',
     recBack: '기록으로 돌아가기',
     soloRecords: '솔로 기록 ›',
-    worldRecordsNote: '솔로 기록은 기록 탭에서 확인할 수 있습니다.',
+    worldRecordsNote: '솔로 기록은 비행 탭에서 확인할 수 있습니다.',
   };
   // 열림 줄(MISSION 줄 이름 · 조건): NeonJourney.overview 줄
   journey.overview = {
@@ -9872,6 +9934,9 @@ return Plotly;
       const a = row.args || {};
       return {
         mode: () => modeName(a.mode),
+        insane: () =>
+          ({ hangar: '전투 도색 · 월드 연습', cos: cos.title, crew: '승무원', world: '월드' })[row.id] ||
+          'INSANE 첫 출격',
         grow: () => '전투 도색 · 월드 연습',
         gear: () => cos.title,
         crew: () => '승무원',
@@ -9898,16 +9963,14 @@ return Plotly;
             .filter(Boolean)
             .join(' · ')
         );
-      if (row.kind === 'grow') return '성장 스킬 ' + a.skills + '종 모두 1차 MAX';
-      if (row.kind === 'gear') return '상점에서 시간 코인 ' + a.tierMax + '단계 · 자동 강화 · 자동 G';
-      if (row.kind === 'crew') return modeName(a.mode) + ' 한 판 종료 · 패배/기록 남기고 종료';
+      if (row.kind === 'insane') return 'INSANE 첫 출격';
+      if (['grow', 'gear', 'crew', 'paint'].includes(row.kind)) return 'INSANE 첫 출격';
       if (row.kind === 'buff') return modeName(a.mode) + ' 이상 모드에서 사용';
       if (row.kind === 'sc') return modeName(a.mode) + '에서 S를 처음 얻으면 사용';
       if (row.kind === 'ss')
         return 'S를 안 뒤 ' + B().ssLaunch.open + ' S로 한 번 열기 · 매 출격 ' + B().ssLaunch.cost + ' S';
       if (row.kind === 'sss')
         return 'SS를 연 뒤 ' + B().sssLaunch.open + ' S로 한 번 열기 · 매 출격 ' + B().sssLaunch.cost + ' S';
-      if (row.kind === 'paint') return '세 기체 모두 ' + paint.names[a.color] + ' 보유 · 입힌 색은 무관';
       return '이정표를 넘으면 일지와 칭호가 남습니다';
     },
   };
@@ -10021,6 +10084,7 @@ return Plotly;
     catLabelText,
     mile,
     titles,
+    titleSentence,
     cos,
     cosName,
     cosFull,
@@ -10223,12 +10287,17 @@ return Plotly;
     if (l.paint === null || isId(l.paint)) out.paint = l.paint;
     if (Array.isArray(l.sets)) out.sets = [...new Set(l.sets.filter(isId))].slice(0, 20);
     if (intIn(l.rank, 0, 9) !== null) out.rank = l.rank;
-    if (l.cos && typeof l.cos === 'object' && !Array.isArray(l.cos))
+    if (l.cos && typeof l.cos === 'object' && !Array.isArray(l.cos)) {
       out.cos = Object.fromEntries(
         Object.entries(l.cos)
-          .filter(([k, v]) => isId(k) && isId(v))
+          .filter(([k, v]) => k !== 'titles' && isId(k) && isId(v))
           .slice(0, 50),
       );
+      if (Array.isArray(l.cos.titles)) {
+        const ids = (BAL.mile || []).filter(m => m.title).map(m => m.id);
+        out.cos.titles = ids.filter(id => l.cos.titles.includes(id));
+      }
+    }
     return keepUnknown(out, l, ['paint', 'sets', 'rank', 'cos']);
   }
   // 월드 판(R-100 틀, 15단계가 채움): { week ≤ 20자, seed, mode, kind, sk: { 스킬: 0~99 } } + 모르는 키. 없으면 null
