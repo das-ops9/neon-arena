@@ -6218,6 +6218,7 @@ return Plotly;
     // 플레이 탭 영역(R-032): 테두리 위 라벨 순위 · 모드 · 기체 · 최근 기록 · 출격
     home: {
       craftSelect: '기체 선택',
+      effectLabel: n => '1위 기록 배경 ' + n + '단계',
       runway: '출격',
       runwayHint: '홈을 위로 올려 출격',
       runwayTip: '홈을 출격 원까지 끌어올리세요',
@@ -6442,6 +6443,17 @@ return Plotly;
       note: '따로 된 저장소에서 값을 바꿔 판을 해 봅니다. /test/의 재화 · 기록은 그대로입니다.',
       coins: '재화',
       cats: '고양이 Lv · 승진',
+      homePreview: '홈 기체 배경 효과',
+      homePreviewNote:
+        '기록 점수와 해금을 바꾸지 않고 이번 접속에서만 확인합니다. 새로고침하면 실제 기록 기준으로 돌아갑니다.',
+      homeLevel: '포인트 배경 단계',
+      homeAuto: '실제 기록·해금 기준',
+      homeLevelName: n => (n ? n + '단계 · ' + n + '천만 Point 이상' : '0단계 · 기본 배경'),
+      homeShine: 'INSANE 반사광',
+      homeShineOn: '반사광 켜기',
+      homeShineOff: '반사광 끄기',
+      homeShow: '홈에서 확인',
+      homeReset: '실제 기록 기준으로',
       // 승진 칸(R-113): '정비사 미오 승진'(0 없음 · 1 중급 · 2 고급 · 3 전문)
       promo: name => name + ' 승진',
       unlocks: '해금',
