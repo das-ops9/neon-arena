@@ -5490,7 +5490,7 @@ return Plotly;
         crit:
           p.crit < S.crit.max
             ? '치명타 확률 +' + Math.round((Math.min(S.crit.max, p.crit + S.crit.step) - p.crit) * 100) + '%'
-            : '치명타 피해 배율 +' + S.crit.overflow,
+            : '치명타 피해 +' + S.crit.overflow + '배',
         shield: '보호막 +' + S.shield.amount + ' · 재생 속도 강화',
         chain:
           g.stack?.('chain') < B().world?.chain.max
@@ -5595,15 +5595,23 @@ return Plotly;
   const rankName = r => promoRanks[r - 1] || '';
   const catLabelText = (id, rank) => (rank ? rankName(rank) + ' ' : '') + (cats[id]?.name || id);
   // 승진하면 붙는 것 한 줄(고양이 말풍선): '충격파 +10% · 시작 스킬 +10' · '… · Super부터 B +1/분' · '… · 대시 −35%'
+  // 마스터부터 보급관은 S도 준다: '… · Super부터 B +5/분 · 1 S / 5분'
   const promoGain = (r, id) => {
     const P = B().cats.promo,
       i = r - 1,
+      every = P.effect.supplySuper?.[i] || 0,
       own =
         id === 'engineer'
           ? '시작 스킬 +' + P.effect.engineer[i]
           : id === 'pilot'
             ? abilities.dash + ' −' + pctOf(P.effect.pilot[i]) + '%'
-            : modeName(P.supplyFrom) + '부터 ' + BL + ' +' + P.effect.supplyBlue[i] + '/분';
+            : modeName(P.supplyFrom) +
+              '부터 ' +
+              BL +
+              ' +' +
+              P.effect.supplyBlue[i] +
+              '/분' +
+              (every > 0 ? ' · 1 ' + SC + ' / ' + every + '분' : '');
     return abilities.nova + ' +' + pctOf(P.nova[i]) + '% · ' + own;
   };
   // ── 이정표 · 칭호(R-114): 키 = balance.mile id(저장 키, 바꾸지 않음 — 표시만 여기서 바꾼다).
@@ -5870,7 +5878,13 @@ return Plotly;
       return g.length ? range(g) + ' G' : range(s) + ' S';
     },
     lock: {
-      tier: (tier, id) => '🔒 ' + tier + ' 문 · ' + mile[id] + ' 넘으면',
+      // 출격 이정표(play: 첫 INSANE)는 '넘으면' 대신 '출격하면'
+      tier: (tier, id) =>
+        '🔒 ' +
+        tier +
+        ' 문 · ' +
+        mile[id] +
+        ((B().mile || []).some(m => m.id === id && m.play) ? ' 출격하면' : ' 넘으면'),
       mile: id => '🔒 ' + mile[id] + (titles[id] ? ' · ' + titles[id] : ''),
       rank: n => '🔒 이 고양이가 ' + rankName(n) + josa(rankName(n), '으로/로') + ' 승진하면',
       cat: '🔒 성장 › 승무원에서 이 고양이를 깨우면',
@@ -5917,7 +5931,11 @@ return Plotly;
   const abilities = { dash: '대시', nova: '충격파' };
   const stage = { name: 'Stage', upper: 'STAGE' };
   const level = { short: 'LV' };
-  const point = { name: 'Point', upper: 'POINT' };
+  const point = {
+    name: 'Point',
+    upper: 'POINT',
+    bonusGap: n => Math.max(1, Math.ceil(n / 10000)) + '만',
+  };
   const stageLabel = n => stage.upper + ' ' + n;
   const levelShort = n => level.short + n;
   const launches = {
@@ -6163,6 +6181,10 @@ return Plotly;
     return p >= 1 ? '항상' : n > 1 && Math.abs(n * p - 1) < 1e-9 ? n + '번 중 1번은' : pctOf(p) + '% 확률로';
   };
   const ui = {
+    tools: {
+      readState: '현재 전투 상태와 기록 저장 상태를 읽습니다.',
+      pauseRun: '플레이 중인 전투를 일시정지합니다.',
+    },
     meta: {
       title: 'NEON ARENA · ENDLESS',
       description:
@@ -6604,6 +6626,7 @@ return Plotly;
     storageLimited: '이 브라우저의 저장 기능이 제한되어 있습니다.',
     renderNote: (v, fallback) => 'v' + v + (fallback ? ' · 기본 그래픽' : ''),
     bootFail: '화면을 준비하지 못했습니다. 새로고침해 주세요.',
+    replayWorkerError: '재생 Worker 오류',
     // 전체 화면을 지원하지 않거나 바꾸지 못했을 때(설정 창 아래 줄, 아이폰)
     fullscreenFail: '이 브라우저는 전체 화면을 지원하지 않습니다.',
     upgradeKicker: lv => 'LEVEL UP · ' + level.short + ' ' + lv,
@@ -7272,6 +7295,7 @@ return Plotly;
       more: name => name + ' 늘리기',
     },
     analysis: {
+      localFile: '네온아레나-분석.html',
       dash: n => abilities.dash + ' ' + n + '회',
       nova: n => abilities.nova + ' ' + n + '회',
       boss: n => '보스 ' + n + '회 격파',
@@ -10175,6 +10199,8 @@ return Plotly;
     DB_NAME = DB_BASE + NS,
     DB_VERSION = 4,
     RECORDS_KEY = 'neon-endless-records-v2' + NS,
+    // DB 없이 저장한 기록의 사본(R-264): 다음에 DB가 열리면 이것만 DB로 옮기고 지운다(캐시 전체는 옮기지 않는다)
+    PENDING_KEY = 'neon-endless-records-pending-v1' + NS,
     TELEMETRY = 4;
   const difficultyId = id =>
     MODE_IDS.includes(String(id || '').toLowerCase()) ? String(id).toLowerCase() : 'easy';
@@ -10669,6 +10695,36 @@ return Plotly;
       dropInputs: withInput.filter(r => !keepIn.has(r.id)).map(r => r.id),
     };
   }
+  // 같은 id로 다시 저장할 때 옛 기록에서 지키는 것(r을 고친다): 한 줄 메모 · 별표 · 지워진 상세 로그 표시 · 경력 시각
+  function keepOld(r, old) {
+    // 경력에 더한 시각(R-100)은 0으로 돌아가지 않는다(판 중간 저장 · 다시 저장)
+    if (old?.careerAt > 0 && !(r.careerAt > 0)) r.careerAt = old.careerAt;
+    if (old?.noteConfirmed || old?.note) {
+      r.note = old.note;
+      r.noteConfirmed = true;
+      r.noteCost = old.noteCost || 0;
+    }
+    if (old?.starred === true) r.starred = true;
+    if (old?.log === 'none') r.log = 'none';
+    return r;
+  }
+  // DB 없이 저장한 기록을 DB로 옮길 계획(R-264, 순수): → [DB에 넣을 기록]
+  // DB에 없는 id는 넣는다(상세 로그 조각은 메모리에만 있었으므로 log 'none').
+  // 같은 id는 DB 쪽이 '중단' 중간 저장이고 사본이 끝난 판일 때만 사본으로 바꾼다(옛 기록의 메모 · 별표는 지킨다).
+  // 나머지는 DB 그대로. DB에서 지운 기록은 사본 목록에 없으면 되살아나지 않는다.
+  function pendingPlan(dbList, pendingList) {
+    const byId = new Map((dbList || []).map(r => [r.id, r])),
+      put = [];
+    for (const raw of pendingList || []) {
+      const r = normalizeRecord(raw);
+      if (!r?.id) continue;
+      const old = byId.get(r.id);
+      if (!old) put.push({ ...r, log: 'none' });
+      else if (old.reason === 'interrupted' && r.reason !== 'interrupted')
+        put.push(keepOld({ ...r, log: old.log }, old));
+    }
+    return put;
+  }
   // 선택 삭제 계획: 보호 기록이 하나라도 있으면 아무것도 지우지 않는다.
   function removePlan(records, ids) {
     const want = [...new Set((Array.isArray(ids) ? ids : [ids]).filter(id => typeof id === 'string'))],
@@ -10706,7 +10762,66 @@ return Plotly;
       } catch {
         this.storageOK = false;
       }
-      this.ready = this.open();
+      // DB가 열리면 첫 목록 전에 DB 없이 저장한 기록 사본부터 옮긴다(R-264)
+      this.ready = this.open().then(db => (db ? this.importPending().then(() => db) : db));
+    }
+    // DB 없이 저장한 기록 사본(R-264) 읽기 · 고치기. 실패해도 기록 저장 자체는 막지 않는다
+    readPending() {
+      try {
+        const list = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+        return Array.isArray(list) ? list : [];
+      } catch {
+        return [];
+      }
+    }
+    editPending(put = [], remove = []) {
+      try {
+        const m = new Map(this.readPending().map(r => [r?.id, r]));
+        for (const r of put) m.set(r.id, r);
+        for (const id of remove) m.delete(id);
+        if (m.size) localStorage.setItem(PENDING_KEY, JSON.stringify([...m.values()]));
+        else localStorage.removeItem(PENDING_KEY);
+      } catch {
+        /* 사본을 못 남겨도 기록은 localStorage 캐시에 있다 */
+      }
+    }
+    // 사본을 한 트랜잭션에서 DB로 옮긴다(pendingPlan). 성공하면 옮긴 사본만 지우고, 실패하면 남겨 다음에 다시
+    async importPending() {
+      const list = this.readPending();
+      if (!list.length || !this.db) return;
+      const ok = await new Promise(resolve => {
+        try {
+          const tx = this.db.transaction('records', 'readwrite'),
+            s = tx.objectStore('records'),
+            req = s.getAll();
+          req.onsuccess = () => {
+            const db = (req.result || []).map(normalizeRecord).filter(Boolean);
+            for (const r of pendingPlan(db, list)) s.put(r);
+          };
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = tx.onabort = () => resolve(false);
+        } catch {
+          resolve(false);
+        }
+      });
+      // 읽은 뒤 다른 탭(DB 없음)이 같은 id 사본을 새로 썼으면(예: 중단 → 끝난 판) 그 사본은 남겨 다음에 옮긴다
+      if (ok) {
+        const moved = new Map(list.map(r => [r?.id, JSON.stringify(r)]));
+        this.editPending(
+          [],
+          this.readPending()
+            .filter(r => moved.get(r?.id) === JSON.stringify(r))
+            .map(r => r?.id),
+        );
+      }
+    }
+    // 초기화(progression resetAll)가 성공하면 사본도 비운다: 옛 기록이 다음 실행 때 되살아나지 않게
+    clearPending() {
+      try {
+        localStorage.removeItem(PENDING_KEY);
+      } catch {
+        /* 저장소 없음 */
+      }
     }
     open() {
       if (typeof indexedDB === 'undefined') return Promise.resolve(null);
@@ -10792,17 +10907,7 @@ return Plotly;
       if (!r) return false;
       await this.ready;
       // 같은 id로 다시 저장해도 한 줄 메모·별표·지워진 상세 로그 표시는 지킨다(별표 끄기는 setStar로만)
-      const preserve = old => {
-        // 경력에 더한 시각(R-100)은 0으로 돌아가지 않는다(판 중간 저장 · 다시 저장)
-        if (old?.careerAt > 0 && !(r.careerAt > 0)) r.careerAt = old.careerAt;
-        if (old?.noteConfirmed || old?.note) {
-          r.note = old.note;
-          r.noteConfirmed = true;
-          r.noteCost = old.noteCost || 0;
-        }
-        if (old?.starred === true) r.starred = true;
-        if (old?.log === 'none') r.log = 'none';
-      };
+      const preserve = old => keepOld(r, old);
       if (this.db) {
         const ok = await new Promise(resolve => {
           try {
@@ -10836,6 +10941,7 @@ return Plotly;
         localStorage.setItem(RECORDS_KEY, JSON.stringify(rank([...next.values()])));
         this.memory = next;
         this.storageOK = true;
+        this.editPending([r]);
         return true;
       } catch {
         this.storageOK = false;
@@ -10861,6 +10967,7 @@ return Plotly;
         try {
           localStorage.setItem(RECORDS_KEY, JSON.stringify(rank([...next.values()])));
           this.memory = next;
+          this.editPending(items.filter(r => next.get(r.id) === r));
           return added;
         } catch {
           this.storageOK = false;
@@ -10932,6 +11039,12 @@ return Plotly;
         }
         this.memory = next;
         this.storageOK = true;
+        // 사본(R-264): 지운 기록은 빼고, 고친 기록은 이미 사본에 있던 것만 새 값으로(DB에 있던 기록을 사본으로 만들지 않는다)
+        const had = new Set(this.readPending().map(r => r?.id));
+        this.editPending(
+          (out.put || []).filter(r => had.has(r.id)),
+          out.remove || [],
+        );
         for (const id of [...(out.remove || []), ...(out.dropLogs || [])]) this.memoryChunks.delete(id);
         for (const id of [...(out.remove || []), ...(out.dropInputs || [])])
           this.memoryChunks.delete(inputKey(id)[0]);
@@ -11630,6 +11743,7 @@ return Plotly;
     difficultyId,
     protectedIds,
     prunePlan,
+    pendingPlan,
     // 월드(R-121)
     worldPlan,
     worldRank,
