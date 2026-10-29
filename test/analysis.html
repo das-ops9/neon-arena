@@ -5686,7 +5686,7 @@ return Plotly;
     applied: '적용했습니다',
     appliedN: n => n + '개를 사서 적용했습니다',
     // 입구 이름(격납고 · 승무원 · 기록 · 설정의 '… ›')
-    // 입구 글(cosEntry): 비행 탭 안이라 '카드 꾸미기'(R-197: 가운데 제목 오른쪽 칸 폭, 글자 130%에서 제목을 밀었다)
+    // 입구 글(cosEntry): 비행·격납고에서 '카드 꾸미기'로 같은 묶음을 연다.
     hubNames: { craft: '기체 꾸미기', cat: '고양이 소품', music: '전투 음악', card: '카드 꾸미기' },
     preview: '미리보기',
     browse: '옆으로 넘겨 보세요',
@@ -7222,7 +7222,7 @@ return Plotly;
       setCount: n => n + '/3',
       note: '산 색 중 하나를 입혀 출격합니다. 입힌 색만 능력을 주고, 모음은 입힌 색과 상관없이 켜집니다.',
       // 격납고 탭(R-241 · R-242): 큰 그림 · 기체 셋 · 모음 3칸 + 도색 가로 카드 · 꾸미기 네 칸 · 능력치 접힘
-      picked: '지금 출격 기체 ✓',
+      baseAbility: craft => craftStart(craft) + ' · HP ' + num(B().crafts[craft].hp),
       none: '없음',
       paintTitle: '전투 도색',
       baseName: '기본',
