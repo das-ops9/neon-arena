@@ -6029,6 +6029,8 @@ return Plotly;
     name: '연계 회로',
     fx: { heal: '연계 회복', score: '충격파 득점', shield: '보호막 붕괴', combo: '콤보 포상' },
     roman: ['I', 'II', 'III', 'IV', 'V'],
+    // 효과 이름 + 단계(0 = 이름만): '연계 회복 II'
+    full: (id, lv) => linkT.fx[id] + (lv > 0 ? ' ' + linkT.roman[lv - 1] : ''),
   };
   const laserT = {
     name: '제어 레이저',
@@ -6201,6 +6203,20 @@ return Plotly;
     blue: { sec: 3, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
     boss: { major: true, tone: 'gold', sec: 4, text: () => '보스 접근' },
     bossWave: { sec: 3, text: () => '보스 웨이브 격파' },
+    // 제어 레이저 강화(R-301): '제어 레이저 4단계 · 45초마다'(무료 강화라 '구매'라 하지 않음)
+    laserUp: {
+      major: true,
+      tone: 'gold',
+      sec: 4,
+      text: (lv, every) => laserT.name + ' ' + lv + '단계 · ' + every + '초마다',
+    },
+    // 콤보 포상(R-300): '콤보 포상 · 500 콤보 +50만 Point'
+    linkCombo: {
+      tone: 'gold',
+      sec: 3,
+      text: (goal, prize) =>
+        linkT.fx.combo + ' · ' + num(goal) + ' 콤보 +' + point.bonusGap(prize) + ' ' + point.name,
+    },
     // 최종전(R-299): STAGE 100 진입 · HELIOS 접근 · 단계 전환 · 관문에서 STAGE를 눌렀을 때
     finalStart: {
       major: true,
@@ -6893,6 +6909,12 @@ return Plotly;
         (sc ? ' · ' + sc + ' ' + SC : '') +
         ' 사용' +
         (opened?.includes('hangar') ? ' · 격납고 · 도색이 열렸습니다' : ''),
+      // 연계 회로(R-300): '연계 회복 II · 구매 진행 5/20 · 다음 출격부터'
+      link: (id, lv, n) =>
+        linkT.full(id, lv) + ' · 구매 진행 ' + n + '/' + B().link.price.heal.length * 4 + ' · 다음 출격부터',
+      link_locked: '연계 회로 조건을 아직 넘지 않았습니다.',
+      // 제어 레이저(R-302): '봉쇄 레이저 +1 · 보유 3개'
+      laser: (k, n) => laserT.kinds[k] + ' +1 · 보유 ' + n + '개',
       needs_auto: auto.name + '를 먼저 사야 합니다.',
       sc_reserved: SC + ' 출격 준비에 예약된 ' + coinS + '은 쓸 수 없습니다.',
       hidden_locked: '승무원이 아직 열리지 않았습니다.',
@@ -7201,6 +7223,80 @@ return Plotly;
         [paintEffect && sources.paint + ' ' + paintEffect, catEffect && sources.cat + ' ' + catEffect]
           .filter(Boolean)
           .join(' · '),
+    },
+    // 연계 회로 카드(R-300, 명칭 문서 6.2 · 6.3): 성장 → 스킬 끝 넓은 카드. 효과 줄 = 이름(로마 숫자) · 값 · 설명 한 줄
+    linkCard: {
+      sub: n =>
+        '네 가지 효과를 순서대로 얻고 강화합니다 · 구매 진행 ' + n + '/' + B().link.price.heal.length * 4,
+      value: (id, lv) => {
+        const L = B().link,
+          i = lv - 1;
+        return id === 'heal'
+          ? 'HP +' + L.heal[i]
+          : id === 'score'
+            ? '+' + Math.round(L.score[i] * 100) + '%'
+            : id === 'shield'
+              ? '반경 ' + L.shieldR[i]
+              : num(L.goals[i]) + ' 콤보 ' + point.bonusGap(L.prize[i]);
+      },
+      desc: {
+        heal: () =>
+          abilities.dash +
+          ' 후 ' +
+          B().link.window +
+          '초 안에 ' +
+          abilities.nova +
+          ' · ' +
+          abilities.dash +
+          '당 1회',
+        score: () => abilities.nova + '로 처치한 적의 기본 ' + point.name + '에 더함',
+        shield: '보호막이 깨지면 주변 적 탄환 제거 · 완전 충전 후 다시',
+        combo: '한 콤보 동안 목표마다 1회 · 끊긴 뒤 다시',
+      },
+      next: '다음',
+      none: '미구매',
+      // 다음 구매의 순환 조건: 넘은 것 ✓ · 남은 것 🔒(이미 넘은 조건을 부족처럼 쓰지 않음)
+      need: (cycle, need, rec, perma) =>
+        linkT.roman[cycle] +
+        ' 순환 조건 · ' +
+        (rec ? '✓ ' : '🔒 ') +
+        modeName('insane') +
+        ' 한 판 ' +
+        num(need / 10000) +
+        '만' +
+        ' ' +
+        point.name +
+        ' · ' +
+        (perma ? '✓ ' : '🔒 ') +
+        skillName('speed') +
+        ' · ' +
+        skillName('nova') +
+        ' 성장 MAX',
+      max: linkT.name + ' MAX',
+      buyLabel: (id, lv, price) => linkT.full(id, lv) + ' 사기 · ' + price,
+      locked: '조건 미달',
+    },
+    // 제어 레이저(R-302, 명칭 문서 4 · 6.3): 상점 맨 위 묶음(모음이 하나라도 있을 때) · 보스 줄 둘째 줄.
+    // 단계는 상점 제목 · 강화 알림에만(HUD에는 'HELIOS · n단계'와 섞이지 않게 수량 · 재충전만)
+    laserShop: {
+      title: lv => laserT.name + ' · ' + lv + '단계',
+      note: every =>
+        '보스가 나타나면 자동으로 씁니다 · ' + every + '초마다 · 보스 수와 관계없이 1회에 종류별 1개',
+      effect: {
+        g: () => '보스 공격 봉쇄 ' + B().laser.lock + '초',
+        b: () => '보스 이동 정지 ' + B().laser.freeze + '초',
+        s: () => '보스 주변 적 탄환 제거',
+      },
+      auto: on => '자동 사용 ' + (on ? '켜짐' : '꺼짐'),
+      have: n => '보유 ' + num(n),
+      buyLabel: (k, price) => laserT.kinds[k] + ' 1개 사기 · ' + price,
+    },
+    laserHud: {
+      name: '레이저',
+      wait: sec => '재충전 ' + sec + '초',
+      // 보스 줄 끝 보이는 글(좁은 칸): '42초'
+      short: sec => sec + '초',
+      ready: '준비',
     },
     // 상점(R-033): 시간 코인 | S 만들기 반반 두 칸(큰 숫자 + 구매 버튼, 설명 한 줄), 아래로 자동 강화 · 자동 G 습득
     shop: {
