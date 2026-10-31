@@ -175,6 +175,12 @@
   --cv-boss-2: var(--orange);
   --cv-boss-3: var(--danger);
   --cv-boss-inner: #ffd68b;
+  /* HELIOS 다섯 단계(R-299): 황금 → 주황 → 진홍 → 백금 → 청백. 색만이 아니라 코로나 모양 · 보스 줄 'n단계'로도 구분 */
+  --cv-helios-1: #ffd166;
+  --cv-helios-2: #ff9a3c;
+  --cv-helios-3: #ff4d6d;
+  --cv-helios-4: #eef1ff;
+  --cv-helios-5: #8fd3ff;
   --cv-boss-tell: var(--gold);
   --cv-enemy-fill: #301a2b;
   --cv-shooter-fill: #251c38;
@@ -4701,6 +4707,31 @@ return Plotly;
     },
     // 보스: Stage를 every의 배수로 올릴 때 웨이브. 수 = base + floor(Stage ÷ per), 동시에 alive마리까지
     boss: { every: 3, base: 1, per: 10, alive: 8 },
+    // 최종전 HELIOS(R-298, PLANNING 4.1~4.3): 솔로 STAGE stage − 1의 보스 웨이브와 앞 대기 웨이브를 다 끝내야 stage로 오른다
+    // (자동 승격은 그 앞에서 기다림). stage에서 HELIOS 1마리 — 체력 hp · Point score · XP xp는 일반 보스처럼 모드 · STAGE 배율,
+    // 충돌 반경 r, 이동 move · 재배치 shift · 5단계 돌진 charge(거리/초). 체력 비율 phases 이하(정확히 경계 = 다음)로 1 → 5단계,
+    // 전환 swap초 동안 멈추고 HELIOS 탄 · 광선만 지움. 탄: 반경 r · 수명 life초 · 단계별 속도 speed × 모드 탄속(최대 max).
+    // 탄 피해 = damage[모드] × phaseX[단계] × 시간 압박(1 + late.damage × 넘은 분), 몸통 · 돌진 × bodyX · 광선 × rayX.
+    // HELIOS 탄 동시 cap개(전역 caps.hostiles 안). 시간 압박은 휴지 구간만 줄이고 원래의 minGap배 아래로는 줄이지 않는다
+    final: {
+      stage: 100,
+      hp: 20000,
+      score: 50000,
+      xp: 1000,
+      r: 70,
+      move: 300,
+      shift: 600,
+      charge: 900,
+      phases: [0.8, 0.6, 0.4, 0.2],
+      swap: 0.8,
+      shot: { r: 5, life: 6, speed: [100, 110, 120, 140, 160], max: 320 },
+      damage: { easy: 4, hard: 5, extream: 6, super: 7, ultra: 8, insane: 10 },
+      phaseX: [1, 1.25, 1.5, 1.75, 2],
+      bodyX: 2,
+      rayX: 1.5,
+      cap: 360,
+      minGap: 0.5,
+    },
     // 일반 출현: 첫 출현(초), 간격 = max(min, interval ÷ Stage 출현 배율) ÷ (모드 출현 배율 × rate), 기체에서 radius 거리.
     // radius는 엔진 기본값(기준 재생 검사)이다. 실제 게임은 화면 크기로 다시 정한다(app.js resize, 폰 세로 약 790~935).
     // rate: 출현량 배율(R-020 맵 넓이 환산 1.21 → v5-9 실험실 값 1.4). 동시 적 상한은 caps.enemies 그대로.
@@ -4906,12 +4937,14 @@ return Plotly;
       // 승진(R-111, R-161). 인덱스 0 = 중급 · 1 = 고급 · 2 = 전문 · 3 = 마스터 · 4 = 레전드.
       // Lv5 고양이를 동반하고 open[i] STAGE 보스 웨이브를 다 잡으면 그 단계 시험이 열리고(다음 판부터), 정상 종료 한 판에
       // test[i]의 처치 · 충격파로 지운 탄(충격파 버튼만, 부활 충격파 제외)을 넘기면 한 단계 오른다(고양이마다 한 판 한 단계).
-      // 마스터는 STAGE 100 보스 웨이브, 레전드는 세 모드에서 각각 STAGE 100 보스를 끝내면 열린다.
+      // 마스터(R-297): 솔로 master.mode 판에서 최종전(HELIOS)을 이긴 판의 동반 Lv5 고양이만 열린다(open의 null 자리).
+      // 레전드: 마스터가 된 뒤 계정 경력에 legend.modes 모드 각각 최종전 승리가 있으면 열린다(legend.final).
       // 효과는 동반 · 승진한 고양이만:
       // nova 충격파 배율에 더하는 몫(고양이마다 더함, 1 + Σ) · engineer/pilot Lv5 값 대신 · supply 분당 G 그대로 +
       // supplyBlue B/분 · supplySuper 이 분마다 1 S(0 = 없음), 둘 다 supplyFrom 모드부터
       promo: {
-        open: [30, 60, 90, 100, null],
+        open: [30, 60, 90, null, null],
+        master: { mode: 'insane' },
         test: [
           { kills: 1000, clears: 0 },
           { kills: 1500, clears: 8000 },
@@ -4919,7 +4952,7 @@ return Plotly;
           { kills: 3000, clears: 15000 },
           { kills: 4000, clears: 20000 },
         ],
-        legend: { modes: ['super', 'ultra', 'insane'], stage: 100 },
+        legend: { modes: ['super', 'ultra', 'insane'], final: true },
         nova: [0.1, 0.2, 0.3, 0.4, 0.5],
         effect: {
           engineer: [10, 11, 13, 15, 17],
@@ -4944,6 +4977,44 @@ return Plotly;
       revive: { violet: 1 },
       sets: { yellow: { noteCost: 5, goldX: 2 }, blue: { shieldX: 2, scMake: 2 }, violet: { revive: 1 } },
       reviveMax: 5,
+    },
+    // 연계 회로(R-300, PLANNING 2): 성장 → 스킬 끝 한 항목. 효과 순서 회복 · 득점 · 붕괴 · 포상으로 20회(순환 I~V) 산다.
+    // 순환 k 구매 조건 = 솔로 Insane 한 판 최고 Point ≥ need[k] + 영구 스킬 perma 모두 MAX + 앞 구매. 값은 price[효과][순환].
+    // 회복: 대시 시작부터 window초 미만에 수동 충격파 → HP heal · 득점: 수동 충격파 처치마다 기본 처치 Point × score ·
+    // 붕괴: 보호막이 가득 찬 뒤 깨지면 반경 shieldR 안 적 탄 지움 · 포상: 한 연속 콤보가 goals를 처음 넘을 때마다 prize Point
+    link: {
+      need: [10000000, 20000000, 30000000, 40000000, 60000000],
+      heal: [5, 10, 15, 20, 30],
+      window: 0.5,
+      score: [0.01, 0.02, 0.03, 0.05, 0.07],
+      shieldR: [100, 200, 300, 400, 500],
+      goals: [500, 1000, 2000, 3000, 5000],
+      prize: [500000, 1000000, 2000000, 3000000, 5000000],
+      price: {
+        heal: [{ g: 1000 }, { g: 2000 }, { g: 3000 }, { g: 4000 }, { g: 5000 }],
+        score: [{ b: 100 }, { b: 200 }, { b: 300 }, { b: 400 }, { b: 500 }],
+        shield: [
+          { g: 1000, b: 100 },
+          { g: 2000, b: 200 },
+          { g: 3000, b: 300 },
+          { g: 4000, b: 400 },
+          { g: 5000, b: 500 },
+        ],
+        combo: [{ s: 10 }, { s: 25 }, { s: 50 }, { s: 75 }, { s: 100 }],
+      },
+      perma: ['speed', 'nova'],
+    },
+    // 제어 레이저(R-301, PLANNING 3): 도색 모음 set[종류]가 있으면 상점에 열린다. 개당 price. 공통 단계 lv(1~5) 하나 —
+    // 발동 간격 every[lv − 1]초. 솔로 Insane 일반 보스 웨이브(원래 STAGE ≥ need[lv − 1])를 다 끝낼 때마다 +1(영구).
+    // 효과: 봉쇄 lock초 보스 공격 멈춤 · 빙결 freeze초 보스 이동 멈춤 · 소거 보스 중심 clearR 안 적 탄 지움(HP 피해 없음)
+    laser: {
+      every: [120, 90, 60, 45, 30],
+      need: [60, 75, 90, 99],
+      price: { g: { g: 100 }, b: { b: 10 }, s: { s: 1 } },
+      set: { g: 'yellow', b: 'blue', s: 'violet' },
+      lock: 3,
+      freeze: 5,
+      clearR: 300,
     },
     // Insane S 코인(R-023 · R-061): mode 판(일반 · S 출격)에서 세 출처로 1개씩 생긴다. 크기 r, 자석 없이 기체가
     // 닿아야 1 S, 줍지 않으면 판 끝까지 남는다. ① 전투 시계 every초마다 기체에서 near~far 거리의 무작위 방향
@@ -4997,7 +5068,7 @@ return Plotly;
     records: { keep: 50, logs: 10 },
     // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
     // 판정 종류 하나씩 — play: 솔로 Insane 첫 시작 · sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
-    // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름 — 마스터는 최종 보스 전 잠김).
+    // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름).
     // title: 칭호를 주는 큰 이정표. door 'world'는 balance.world가 생기기 전(15단계 전)에는 넘지 않는다. 판 진행 영향 0
     mile: [
       { id: 'hour1', col: 'fly', sum: 'time', need: 3600 },
@@ -5943,6 +6014,29 @@ return Plotly;
   };
   const stageLabel = n => stage.upper + ' ' + n;
   const levelShort = n => level.short + n;
+  // 최종전(R-297~299, 명칭 문서 PLANNING-link-laser-finalboss-naming): 보스 이름 HELIOS · 싸움 이름 '최종전'.
+  // HELIOS 단계는 'HELIOS · n단계'(레이저 단계는 HUD에 띄우지 않아 두 'n단계'가 섞이지 않는다)
+  const fin = {
+    boss: 'HELIOS',
+    name: '최종전',
+    win: '최종전 승리',
+    start: '최종전 시작',
+    phase: n => 'HELIOS · ' + n + '단계',
+    success: 'MISSION SUCCESS',
+  };
+  // 연계 회로(R-300) · 제어 레이저(R-301): 명칭 문서 채택안. 연계 효과는 로마 숫자 순환, 레이저는 공통 'n단계'
+  const linkT = {
+    name: '연계 회로',
+    fx: { heal: '연계 회복', score: '충격파 득점', shield: '보호막 붕괴', combo: '콤보 포상' },
+    roman: ['I', 'II', 'III', 'IV', 'V'],
+  };
+  const laserT = {
+    name: '제어 레이저',
+    kinds: { g: '봉쇄 레이저', b: '빙결 레이저', s: '소거 레이저' },
+    short: { g: '봉쇄', b: '빙결', s: '소거' },
+    // 기호 + 글자(색만으로 구분하지 않음): 봉쇄 = 공격 멈춤 · 빙결 = 이동 멈춤 · 소거 = 탄 지움
+    mark: { g: '⊘', b: '❄', s: '✦' },
+  };
   const launches = {
     normal: '일반 출격',
     super: SC + ' 출격',
@@ -6107,6 +6201,23 @@ return Plotly;
     blue: { sec: 3, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
     boss: { major: true, tone: 'gold', sec: 4, text: () => '보스 접근' },
     bossWave: { sec: 3, text: () => '보스 웨이브 격파' },
+    // 최종전(R-299): STAGE 100 진입 · HELIOS 접근 · 단계 전환 · 관문에서 STAGE를 눌렀을 때
+    finalStart: {
+      major: true,
+      tone: 'gold',
+      sec: 4,
+      text: () => stageLabel(B().final.stage) + ' · ' + fin.name,
+    },
+    finalBoss: { major: true, tone: 'gold', sec: 4, text: () => fin.boss + ' 접근' },
+    finalPhase: { major: true, tone: 'gold', sec: 3, text: n => fin.phase(n) },
+    finalLock: { sec: 3, text: () => '보스 웨이브를 다 잡으면 ' + fin.start },
+    finalReady: {
+      major: true,
+      tone: 'gold',
+      sec: 5,
+      text: () =>
+        stageLabel(B().final.stage - 1) + ' 보스 웨이브 격파 · ' + stage.upper + ' 버튼으로 ' + fin.start,
+    },
     bossGold: { sec: 3, text: (n, b = 0) => '보스 격파 +' + n + ' ' + G + (b ? ' · +' + b + ' ' + BL : '') },
     siegeWarn: { major: true, tone: 'danger', sec: 3, text: () => '⚠ 포위 접근' },
     siege: { major: true, tone: 'danger', sec: 3, text: wave => '⚠ 포위 ' + wave + '회차' },
@@ -6370,6 +6481,14 @@ return Plotly;
       stageTitle: 'U: ' + stage.name + ' 올리기',
       stageLabel: stage.name + ' 올리기',
       stageKey: stage.upper,
+      // 최종전 관문(R-299): 'ready' = 금색 작은 글자 '최종전 시작' · 'lock' = 보스 웨이브를 먼저 · 'on' = HELIOS 동안(오르지 않음)
+      stageFinal: fin.start,
+      stageFinalLabel: st =>
+        st === 'ready'
+          ? fin.start
+          : st === 'lock'
+            ? stage.upper + ' 보스 웨이브를 다 잡으면 ' + fin.start
+            : fin.name + ' 중 · ' + stage.name + ' 고정',
       // 위 덩어리 막대 3개(R-029): HP · 보호막(방패 그림, 읽기 이름만) · XP
       shield: '보호막',
       // 보호막 수치 앞 표시(R-232, v4.2.0 재생 방벽 표시와 같은 속 빈 육각형)
@@ -6424,6 +6543,20 @@ return Plotly;
       count: 3,
       vibrate: [120, 80, 240],
     },
+    // 최종전 성공 창(R-298 · R-299, O-FINAL): HELIOS를 이긴 순간 전투가 멈추고 뜬다(레벨업 창처럼 HUD가 흐리게 비침)
+    final: {
+      kicker: fin.success,
+      title: fin.win,
+      lines: {
+        down: t => fin.boss + ' 격파 · ' + timeString(t),
+        master: names => '마스터 시험 열림 · ' + names + ' · 다음 전투부터',
+        record: mode => modeName(mode) + ' ' + fin.win + ' 기록',
+        next: () => '이어서 하면 ' + stageLabel(B().final.stage + 1) + '부터 · 시간은 그대로',
+        fallen: '기체가 쓰러져 여기서 마칩니다',
+      },
+      cont: '이어서 하기',
+      end: '끝내기',
+    },
     // 전투 진동 패턴(R-055, ms · 설정 '진동'): 피격 · 보스 등장 경고 · 레벨업 창(AUTO가 아닐 때) · 1회 부활(R-062). 임시값
     vibe: { hurt: 30, boss: [90, 120, 90], level: 40, revive: [60, 40, 160] },
     // 출격 지원 스위치 묶음(R-062, shell.html P-BUFF 읽기 이름)
@@ -6473,6 +6606,11 @@ return Plotly;
       // 시간 압박 시작(R-101): 비우면 모드 값(20분). 창 · 회복 멈춤만 앞당김
       late: '시간 압박 시작(분)',
       lateNote: '비우면 20분',
+      // 연계 회로 · 제어 레이저(R-297): 구매 수 · 공통 단계 · 종류별 재고
+      linkLaser: '연계 회로 · 제어 레이저',
+      link: () => '연계 구매(0~' + B().link.price.heal.length * 4 + ')',
+      laserLv: () => '레이저 단계(0~' + B().laser.every.length + ')',
+      laserN: k => laserT.short[k] + ' 재고',
       fill: '가득 채우기',
       apply: '적용',
       close: '닫기',
@@ -7149,17 +7287,12 @@ return Plotly;
         diamonds: (r, cap) => '승진 ' + r + ' / ' + cap,
         next: r => '다음 ' + rankName(r),
         lockStage: s => '🔒 동반으로 ' + stage.upper + ' ' + s + ' 보스',
-        lockFinal: () => {
-          const legend = B().cats.promo.legend;
-          return (
-            '🔒 ' +
-            legend.modes.map(modeName).join(' · ') +
-            ' 모드 각각 ' +
-            stage.upper +
-            ' ' +
-            legend.stage +
-            ' 보스 웨이브'
-          );
+        // 숫자 STAGE가 없는 단계(R-297): r = 승진 단계 번호 — 마지막(레전드)은 세 모드 최종전, 그 앞(마스터)은 동반 Insane 최종전
+        lockFinal: r => {
+          const P = B().cats.promo;
+          return r === P.open.length
+            ? '🔒 ' + P.legend.modes.map(modeName).join(' · ') + ' 모드 각각 ' + fin.win
+            : '🔒 동반으로 ' + modeName(P.master.mode) + ' ' + fin.win;
         },
         trial: r => rankName(r) + ' 시험 · 전투 한 번에',
         progress: (kills, needKills, clears, needClears) =>
@@ -8048,11 +8181,57 @@ return Plotly;
         ST,
         'cost',
       ],
-      'cats.promo.legend.stage': [
-        '마스터 후 세 모드 각각 이 ' + ST + ' 보스를 끝내면 레전드 시험이 열림',
+      'cats.promo.legend.final': [
+        '켜짐 = 마스터 후 세 모드 각각 ' + fin.win + '가 있으면 레전드 시험이 열림',
+        '켜짐/꺼짐',
+        '',
+      ],
+      // 최종전 HELIOS(R-298)
+      'final.stage': [fin.name + ' ' + ST + '(바로 앞 ' + ST + ' 보스 웨이브를 다 끝내야 오름)', ST, 'cost'],
+      'final.hp': [fin.boss + ' 기본 체력(모드 · ' + ST + ' 배율을 곱함)', '체력', 'hard'],
+      'final.score': [fin.boss + ' 기본 처치 ' + PT + '(모드 · ' + ST + ' 배율을 곱함)', PT, 'more'],
+      'final.xp': [fin.boss + ' 기본 처치 XP', 'XP', 'more'],
+      'final.r': [fin.boss + ' 충돌 반경', '거리', 'hard'],
+      'final.move': [fin.boss + ' 이동 속도', '거리/초', 'hard'],
+      'final.shift': [fin.boss + ' 재배치 속도', '거리/초', 'hard'],
+      'final.charge': [fin.boss + ' 5단계 돌진 속도', '거리/초', 'hard'],
+      'final.phases.*': ['이 체력 비율 이하에서 다음 단계(정확히 경계 = 다음)', '비율', ''],
+      'final.swap': ['단계 전환 동안 멈추고 ' + fin.boss + ' 탄만 지우는 시간', '초', 'easy'],
+      'final.shot.r': [fin.boss + ' 탄 반경', '거리', 'hard'],
+      'final.shot.life': [fin.boss + ' 탄 수명', '초', 'hard'],
+      'final.shot.speed.*': ['그 단계 탄 기본 속도(모드 탄속을 곱함)', '거리/초', 'hard'],
+      'final.shot.max': [fin.boss + ' 탄 속도 상한', '거리/초', 'hard'],
+      'final.damage.*': ['그 모드 ' + fin.boss + ' 1단계 탄 피해', 'HP', 'hard'],
+      'final.phaseX.*': ['그 단계 피해 배율', '배', 'hard'],
+      'final.bodyX': ['몸통 · 돌진 피해 = 탄 피해 × 값', '배', 'hard'],
+      'final.rayX': ['지속 광선 피해 = 탄 피해 × 값', '배', 'hard'],
+      'final.cap': [fin.boss + ' 탄 동시 최대(전역 적 탄 상한 안)', '개', 'hard'],
+      'final.minGap': ['시간 압박이 줄이는 휴지 구간의 하한(원래의 배)', '배', 'hard'],
+      // 연계 회로(R-300) · 제어 레이저(R-301)
+      'link.need.*': ['그 순환 구매 조건: ' + modeName('insane') + ' 한 판 최고 ' + PT, PT, 'cost'],
+      'link.heal.*': [linkT.fx.heal + ': 대시 직후 충격파로 회복하는 HP', 'HP', 'easy'],
+      'link.window': [linkT.fx.heal + ': 대시 시작부터 이 시간 안에 충격파', '초', 'easy'],
+      'link.score.*': [linkT.fx.score + ': 수동 충격파 처치의 기본 ' + PT + '에 더하는 비율', '비율', 'more'],
+      'link.shieldR.*': [linkT.fx.shield + ': 가득 찬 보호막이 깨질 때 탄을 지우는 반경', '거리', 'easy'],
+      'link.goals.*': [linkT.fx.combo + ': 한 연속 콤보 목표', '콤보', 'easy'],
+      'link.prize.*': [linkT.fx.combo + ': 그 목표를 처음 넘을 때 ' + PT, PT, 'more'],
+      'link.price.heal.*.g': [linkT.fx.heal + ' 그 순환 값', G, 'cost'],
+      'link.price.score.*.b': [linkT.fx.score + ' 그 순환 값', BL, 'cost'],
+      'link.price.shield.*.g': [linkT.fx.shield + ' 그 순환 값 중 ' + G, G, 'cost'],
+      'link.price.shield.*.b': [linkT.fx.shield + ' 그 순환 값 중 ' + BL, BL, 'cost'],
+      'link.price.combo.*.s': [linkT.fx.combo + ' 그 순환 값', SC, 'cost'],
+      'laser.every.*': ['그 레이저 단계의 발동 간격', '초', 'less'],
+      'laser.need.*': [
+        '다음 단계 조건: ' + modeName('insane') + ' 보스 웨이브 원래 ' + ST + ' 이상',
         ST,
         'cost',
       ],
+      'laser.price.g.g': [laserT.kinds.g + ' 1개 값', G, 'cost'],
+      'laser.price.b.b': [laserT.kinds.b + ' 1개 값', BL, 'cost'],
+      'laser.price.s.s': [laserT.kinds.s + ' 1개 값', SC, 'cost'],
+      'laser.lock': [laserT.kinds.g + ': 보스 공격을 멈추는 시간', '초', 'easy'],
+      'laser.freeze': [laserT.kinds.b + ': 보스 이동을 멈추는 시간', '초', 'easy'],
+      'laser.clearR': [laserT.kinds.s + ': 보스 중심에서 적 탄을 지우는 반경', '거리', 'easy'],
       'cats.promo.test.*.kills': ['승진 시험: 한 판에 충격파로 처치할 적 수', '마리', 'cost'],
       'cats.promo.test.*.clears': ['승진 시험: 한 판에 충격파로 지울 적 탄 수', '개', 'cost'],
       'cats.promo.nova.*': [
@@ -9393,13 +9572,17 @@ return Plotly;
               abilities.nova +
               ' 처치 · 지운 탄을 넘기면 한 단계 오른다(' +
               promoRanks.join(' · ') +
-              '). 레전드는 마스터가 된 뒤 ' +
+              '). 마스터 시험은 동반하고 ' +
+              modeName(b.cats.promo.master.mode) +
+              ' ' +
+              fin.win +
+              '(' +
+              fin.boss +
+              ' 격파)를 하면, 레전드는 마스터가 된 뒤 ' +
               b.cats.promo.legend.modes.map(modeName).join(' · ') +
               ' 모드 각각에서 ' +
-              stage.upper +
-              ' ' +
-              b.cats.promo.legend.stage +
-              ' 보스 웨이브를 끝내면 다음 전투부터 시험이 열린다. 승진하면 이름 왼쪽에 단계 칩이 붙고, 동반한 고양이마다 ' +
+              fin.win +
+              '를 하면 다음 전투부터 시험이 열린다. 승진하면 이름 왼쪽에 단계 칩이 붙고, 동반한 고양이마다 ' +
               abilities.nova +
               ' 배율이 더해진다.',
           },
@@ -9869,7 +10052,7 @@ return Plotly;
         grow: a => '성장 스킬 ' + a.skills + '개 모두 1차 MAX',
         paint: a => '세 기체 모두 ' + paint.names[a.color],
         mile: a => mile[a.id],
-        legend: a => a.modes.map(modeName).join(' · ') + ' ' + stage.upper + ' ' + a.stage + ' 보스',
+        legend: a => a.modes.map(modeName).join(' · ') + ' ' + fin.win,
       },
       // 막대 옆 진행 글: 종류마다 단위(시간은 분:초, 점수는 Point, 레벨은 LV)
       have: (g, n) => {
@@ -10156,6 +10339,9 @@ return Plotly;
     stage,
     level,
     point,
+    final: fin,
+    link: linkT,
+    laser: laserT,
     stageLabel,
     levelShort,
     josa,
@@ -10447,6 +10633,9 @@ return Plotly;
     'bossTop',
     'party',
     'ranks',
+    'final',
+    'link',
+    'laser',
     'score',
     'time',
     'simulationTime',
@@ -10510,6 +10699,8 @@ return Plotly;
       bossTop: intIn(raw.bossTop, 0, 999) ?? 0,
       party: Array.isArray(raw.party) ? CATS.list.filter(id => raw.party.includes(id)).slice(0, 3) : [],
       ranks: safeRanks(raw.ranks),
+      // 최종전 · 연계 · 레이저(R-297): 꼴이 맞을 때만 남긴다(끝난 이유 규칙은 그대로)
+      ...safeFinal(raw),
     };
     for (const k of [
       'score',
@@ -10533,6 +10724,23 @@ return Plotly;
       if (kept !== undefined) r[k] = kept;
     }
     return r;
+  }
+  // final = { t: 격파 초(0 이상) · stage: 정수 } · link = 출격 때 연계 구매 수(0~20) ·
+  // laser = { lv0 · lv1: 시작 · 끝 단계(0~5), use: { 종류: 쓴 수 } }
+  function safeFinal(raw) {
+    const out = {},
+      f = raw.final,
+      l = raw.laser;
+    if (f && typeof f === 'object' && Number.isFinite(f.t) && f.t >= 0 && intIn(f.stage, 1, 999) !== null)
+      out.final = { t: f.t, stage: f.stage };
+    if (intIn(raw.link, 0, 20) !== null) out.link = raw.link;
+    if (l && typeof l === 'object' && intIn(l.lv0, 0, 5) !== null && intIn(l.lv1, 0, 5) !== null) {
+      const use = {};
+      for (const [k, v] of Object.entries(l.use && typeof l.use === 'object' ? l.use : {}))
+        if (/^[a-z]$/.test(k) && intIn(v, 0, Number.MAX_SAFE_INTEGER) !== null) use[k] = v;
+      out.laser = { lv0: l.lv0, lv1: l.lv1, use };
+    }
+    return out;
   }
   // 솔로 판(R-100): 일반 · S 출격. 순위 · 보호 · 자동 정리 · 최근 기록 · 기록 탭은 솔로 기록만 다룬다
   const isSolo = r => r?.launch?.type === 'normal' || r?.launch?.type === 'super' || !r?.launch?.type;
@@ -11884,6 +12092,25 @@ return Plotly;
             ['최고 ' + T.stage.upper, r.stage],
             ['처치', r.kills],
             ['강화 횟수', chosen],
+            // 최종전 · 연계 회로 · 제어 레이저(R-297): 그 값이 있는 기록만(로그 열은 더하지 않음)
+            ...(r.final ? [[T.final.win, timeText(r.final.t)]] : []),
+            ...(Number.isInteger(r.link)
+              ? [[T.link.name, r.link + ' / ' + NeonBalance.link.price.heal.length * 4]]
+              : []),
+            ...(r.laser
+              ? [
+                  [
+                    T.laser.name,
+                    r.laser.lv0 +
+                      '→' +
+                      r.laser.lv1 +
+                      '단계 · ' +
+                      Object.keys(NeonBalance.laser.price)
+                        .map(k => T.laser.mark[k] + (r.laser.use[k] || 0))
+                        .join(' '),
+                  ],
+                ]
+              : []),
           ];
         $('stats').replaceChildren(
           ...stats.map(([label, val]) => {
