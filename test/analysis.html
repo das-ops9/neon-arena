@@ -7714,6 +7714,13 @@ return Plotly;
       map: '맵',
       superLaunch: SC + ' 출격',
       ssLaunch: launches.ss,
+      sssLaunch: launches.sss,
+      final: '최종전 HELIOS',
+      link: '연계 회로',
+      laser: '제어 레이저',
+      paint: '도색 효과',
+      bCoin: 'B 코인',
+      pointBonus: 'Point 정산 보상',
       cats: '고양이',
       superCoin: coins.s.ko,
       healZone: '회복 구역',
@@ -7943,12 +7950,109 @@ return Plotly;
     const column = (group, id) =>
       group === 'modes' ? modeName(id) : group === 'crafts' ? craftName(id) : enemies[id]?.short || id;
     const rowName = (group, key) =>
-      key.startsWith('start.') ? '시작 ' + skillName(key.slice(6)) : rows[group]?.[key] || key;
+      key.startsWith('start.')
+        ? '시작 ' + skillName(key.slice(6))
+        : rows[group]?.[key] ||
+          {
+            tier: '난이도 단계',
+            'stage.hp': 'STAGE당 HP',
+            'stage.damage': 'STAGE당 피해',
+            'stage.density': 'STAGE당 출현',
+            'stage.speed': 'STAGE당 이동',
+            'late.from': '시간 압박 시작(분)',
+            'late.hp': '압박 HP/분',
+            'late.damage': '압박 피해/분',
+            'late.density': '압박 출현/분',
+          }[key] ||
+          key;
     function label(path) {
       const p = String(path).split('.'),
         group = p[0],
         rest = p.slice(1).join('.');
       if (group === 'world') return names.world?.[rest] || rest;
+      if (['superLaunch', 'ssLaunch', 'sssLaunch'].includes(group))
+        return (
+          (groups[group] || group) +
+          ' · ' +
+          ({
+            stage: '시작 STAGE',
+            level: '시작 LV',
+            picks: '준비 스택',
+            cost: '출격 비용 S',
+            open: '해금 보유 S',
+          }[rest] || rest)
+        );
+      if (group === 'final') {
+        const simple = {
+          stage: '등장 STAGE',
+          hp: '기본 HP',
+          score: '처치 Point',
+          xp: '처치 XP',
+          r: '충돌 반경',
+          move: '이동 속도',
+          shift: '재배치 속도',
+          charge: '돌진 속도',
+          swap: '단계 전환 시간',
+          'shot.r': '탄 반경',
+          'shot.life': '탄 수명',
+          'shot.max': '탄속 상한',
+          bodyX: '접촉 피해 배율',
+          rayX: '광선 피해 배율',
+          cap: '탄 동시 상한',
+          minGap: '휴지 구간 하한',
+        };
+        return (
+          'HELIOS · ' +
+          (simple[rest] ||
+            (p[1] === 'damage'
+              ? modeName(p[2]) + ' 탄 피해'
+              : p[1] === 'shot'
+                ? Number(p[3]) + 1 + '단계 탄속'
+                : Number(p[2]) +
+                  1 +
+                  (p[1] === 'phases' ? ' → ' + (Number(p[2]) + 2) + '단계 HP 경계' : '단계 피해 배율')))
+        );
+      }
+      if (group === 'link') {
+        const fx = {
+          heal: linkT.fx.heal,
+          score: linkT.fx.score,
+          shield: linkT.fx.shield,
+          shieldR: linkT.fx.shield,
+          goals: '콤보 목표',
+          prize: '콤보 포상 Point',
+          need: '구매 조건 Point',
+        };
+        if (p[1] === 'window') return '연계 회복 허용 시간';
+        if (p[1] === 'price') return fx[p[2]] + ' ' + (Number(p[3]) + 1) + '순환 가격 ' + p[4].toUpperCase();
+        return fx[p[1]] + ' ' + (Number(p[2]) + 1) + '단계';
+      }
+      if (group === 'laser') {
+        if (p[1] === 'price') return laserT.kinds[p[2]] + ' 1개 가격 ' + p[3].toUpperCase();
+        if (p[1] === 'every' || p[1] === 'need')
+          return Number(p[2]) + 1 + '단계 ' + (p[1] === 'every' ? '발동 간격' : '다음 단계 STAGE 조건');
+        return { lock: '봉쇄 지속 시간', freeze: '빙결 지속 시간', clearR: '소거 반경' }[rest] || rest;
+      }
+      if (group === 'paint') return describe(path)?.text || rest;
+      if (group === 'bCoin')
+        return (
+          {
+            every: '필드 등장 간격',
+            value: '필드 습득 B',
+            boss: '보스 보상 B',
+            r: '습득 반경',
+            margin: '맵 가장자리 여백',
+            max: '필드 동시 상한',
+          }[rest] || rest
+        );
+      if (group === 'pointBonus')
+        return (
+          { goldEvery: '1 G를 받는 Point', blueEvery: '1 B를 받는 Point', superEvery: '1 S를 받는 Point' }[
+            rest
+          ] || rest
+        );
+      if (path === 'superCoin.max') return '필드 S 동시 상한';
+      if (path === 'cats.promo.legend.final') return '레전드 시험 최종전 격파 조건';
       if (rows[group] && p.length >= 3)
         return column(group, p[1]) + ' · ' + rowName(group, p.slice(2).join('.'));
       if (group === 'skills' && p.length === 3) return skillName(p[1]) + ' · ' + (skillKeys[p[2]] || p[2]);
@@ -8316,7 +8420,7 @@ return Plotly;
       'link.price.shield.*.g': [linkT.fx.shield + ' 그 순환 값 중 ' + G, G, 'cost'],
       'link.price.shield.*.b': [linkT.fx.shield + ' 그 순환 값 중 ' + BL, BL, 'cost'],
       'link.price.combo.*.s': [linkT.fx.combo + ' 그 순환 값', SC, 'cost'],
-      'laser.every.*': ['그 레이저 단계의 발동 간격', '초', 'less'],
+      'laser.every.*': ['그 레이저 단계의 발동 간격', '초', 'hard'],
       'laser.need.*': [
         '다음 단계 조건: ' + modeName('insane') + ' 보스 웨이브 원래 ' + ST + ' 이상',
         ST,
@@ -8436,7 +8540,132 @@ return Plotly;
       title: '밸런스 실험실',
       sub: (version, balance) => 'NEON ARENA ' + version + ' · 지금 값 ' + balance,
       changed: n => '바꾼 값 ' + n,
-      tabs: { values: '값', difficulty: '난이도', economy: '경제', sim: '자동 판', save: '저장' },
+      tabs: {
+        values: '값 조정',
+        difficulty: '전투 진단',
+        economy: '경제',
+        sim: '자동 비교',
+        save: '패치 파일',
+      },
+      workbench: {
+        encounter: '시험 구간',
+        encounters: { run: '출격부터', final: 'HELIOS 단독' },
+        entryMinutes: '최종전 진입 시각(분)',
+        encounterNote:
+          '단독 시험은 선택한 출격 빌드로 HELIOS부터 시작합니다. 앞 구간 생존·성장·소모는 생략하며 도달률을 뜻하지 않습니다.',
+        intro: '구간을 진단하고, 값을 바꾼 뒤 같은 조건으로 비교하세요.',
+        local: '실험 값은 이 도구에만 적용됩니다. 게임에 반영하려면 패치 파일을 전달하세요.',
+        categories: {
+          all: '전체',
+          combat: '전투',
+          enemy: '적',
+          boss: '보스',
+          launch: '출격',
+          growth: '성장',
+          economy: '경제',
+        },
+        tasks: {
+          final: 'HELIOS가 너무 오래 버티나?',
+          combo: '콤보 포상이 적절한가?',
+          laser: '레이저 간격이 적절한가?',
+        },
+        condition: '진단 조건',
+        mode: '모드',
+        craft: '기체',
+        stage: 'STAGE',
+        at: '적 등장 시각(분)',
+        build: '내 공격 스택',
+        buildNote: '기체 시작 스택을 포함한 총 스택입니다. 영구 성장과 출격 준비를 더한 수를 넣으세요.',
+        referenceNote:
+          '공격 4종에만 배분한 STAGE 기준 가정 빌드입니다. 실전 비교는 총 스택을 직접 입력하세요.',
+        regularPaused: '최종전 중에는 일반 적 출현이 멈춥니다.',
+        finalClock: '격파 시각',
+        finalFight: '최종전 소요 시간',
+        watch: '첫 판 관전',
+        reference: 'STAGE 기준 빌드로 채우기',
+        attack: '이론 화력',
+        dps: '피해/초',
+        enemy: '구간별 적',
+        name: '대상',
+        hp: 'HP',
+        damage: '접촉 피해',
+        ttk: '처치(초)',
+        estimate:
+          '모든 탄이 명중하는 이론값입니다. 공전 칼·충격파·관통·회피 시간은 제외합니다. 적 HP는 등장 시각에 고정됩니다.',
+        final: 'HELIOS · 5단계',
+        phase: '단계',
+        shot: '탄 피해',
+        finalNote:
+          '선택한 모드·등장 시각을 적용합니다. 단계 전환 정지·이동·명중 손실은 처치 시간에 포함하지 않습니다.',
+        total: '전체',
+        edit: '관련 값 조정',
+        test: '자동 비교 열기',
+        cost: '바뀐 가격·보상',
+        costNote: '비용과 보상은 값 조정에서 직접 비교합니다. 가정한 수입으로 구매 시간을 예측하지 않습니다.',
+        noCost: '가격·보상 변경이 없습니다.',
+        current: '현재',
+        candidate: '실험',
+        pending: '아직 비교하지 않음',
+        fresh: '현재 조건의 결과',
+        stale: '값 또는 조건이 달라진 결과 · 다시 비교하세요',
+        partial: '일부 결과 · 중단하거나 실패한 판이 있습니다',
+        results: '비교 결과',
+        noResults: '조건을 정하고 실행하면 현재 값과 실험 값을 같은 시드로 비교합니다.',
+        run: '비교 실행',
+        stop: '중단',
+        conditions: '실험 조건',
+        advanced: '추가 조건',
+        profile: '봇 실력',
+        profileNote: '봇은 사람의 난이도를 대신 판정하지 않습니다. 같은 조건의 전후 차이를 확인하세요.',
+        link: '연계 회로 구매 수',
+        laser: '제어 레이저',
+        laserLevel: '레이저 단계',
+        laserN: '종류별 재고',
+        laserNote: '0개는 사용 안 함. 재고가 있는 종류를 자동 사용하며 실제 재화는 차감하지 않습니다.',
+        lasers: { g: '봉쇄', b: '빙결', s: '소거' },
+        minutes: '판 제한(분)',
+        seeds: '기체별 시드 수',
+        launch: '출격',
+        settings: '조건 변경',
+        duration: '평균 전투 시간',
+        survived: '시간 생존·격파 성공',
+        score: '평균 Point',
+        stageResult: '평균 도달 STAGE',
+        finalReach: 'HELIOS 도달',
+        finalWin: 'HELIOS 격파',
+        finalTime: '격파 시간(전투/HELIOS)',
+        laserFires: '레이저 발동',
+        comboPrizes: '콤보 포상 횟수',
+        comboPoints: '콤보 포상 Point',
+        details: '판별 결과',
+        hpHurt: '주 HP 피해 출처',
+        noHurt: '피해 없음',
+        hurts: { hurtContact: '접촉', hurtProjectile: '적 탄', hurtFloor: '붕괴 구역', hurtOther: '기타' },
+        prepNote: 'SS/SSS는 S 준비 배분 뒤 남은 준비 스택을 기본 순서로 채웁니다.',
+        worldSoloNote: '월드에는 특수 출격·연계 회로·제어 레이저를 적용하지 않습니다.',
+        initiated: 'HELIOS 시험 시작',
+        seed: '시드',
+        pairs: '쌍',
+        reasons: { time: '시간 제한', defeated: '격추', success: '격파 성공' },
+        sample: '쌍별 차이 범위',
+        sampleNote:
+          '같은 기체·시드의 실험−현재 차이입니다. 소수 봇 판의 변화이며 사람의 성공률로 해석하지 마세요.',
+        unmatched: '완료된 비교 쌍이 없습니다.',
+        uncollected: '미수집',
+        notReached: '미도달',
+        notWon: '미격파',
+        patch: '패치로 전달',
+        changeList: '변경 내용',
+        emptyChanges: '아직 바꾼 값이 없습니다.',
+        validation: '검증 상태',
+        warn: '실험 값 확인',
+        phaseOrder: 'HELIOS HP 경계는 1보다 작고 0보다 커야 하며 내림차순이어야 합니다.',
+        invalidRun: 'HP 경계를 고친 뒤 실행하세요.',
+        runCount: n => '총 ' + n + '판',
+        progress: (done, total) => done + ' / ' + total + '판 완료',
+        summary: (n, status) => '바꾼 값 ' + n + '개 · ' + status,
+        spawn: n => '일반 적 출현 ' + n + '마리/초',
+      },
       now: '지금',
       exp: '실험',
       // 요약 칸(R-068): 모든 탭 맨 위. 경고 줄 · 영향 표(4줄 × 모드) · 출처 한 줄
@@ -8495,8 +8724,8 @@ return Plotly;
           hard: '올리면 어려워짐',
           easy: '올리면 쉬워짐',
           more: '올리면 더 받음',
-          cost: '올리면 비싸짐',
-          less: '올리면 덜 받음',
+          cost: '올리면 비용·조건 증가',
+          less: '올리면 획득 빈도 감소',
         },
         resetAll: '모두 되돌리기',
         reset: '되돌리기',
