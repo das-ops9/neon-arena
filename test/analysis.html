@@ -8555,8 +8555,6 @@ return Plotly;
           tier: '난이도',
           goldBonus: '분당 G',
         },
-        ignoredCrafts:
-          '기체는 고정 기준이므로 이전 파일의 기체 기본값 변경을 이번 실험에서 제외했습니다. 원래 파일은 그대로입니다.',
         worldNote:
           '월드는 영구 성장·출격 준비·출격 지원을 적용하지 않으며 고양이와 월드 스킬을 적용합니다. 매일·주간 도전은 모드와 시드 하나가 고정됩니다.',
         oldAlgorithm:
@@ -8574,6 +8572,7 @@ return Plotly;
         stageNote:
           '선택한 출격 빌드와 시각으로 지정 STAGE부터 시험합니다. 앞 구간의 성장·생존·재고 소모는 생략합니다.',
         tableNames: {
+          'crafts.base': '기체별 기본 스펙',
           'modes.base': '모드별 기본 배율·보상',
           'modes.stage': '모드별 STAGE 증가',
           'modes.late': '모드별 시간 압박',
@@ -8619,9 +8618,23 @@ return Plotly;
           'laser.need.*': '다음 단계 STAGE 조건',
         },
         excluded: '꾸미기·도색의 전투 보정은 적용하지 않는 공통 조건입니다.',
-        craft: '기준 기체',
+        craft: '기체',
+        allCrafts: '3기체 모두',
+        totalStacks: '총 스킬 스택',
+        combatSkills: '전투 중 획득한 스킬',
+        combatSkillsNote:
+          '영구·기체·출격 준비에 더할 획득 스택입니다. 지정 구간의 빌드를 재현하며, 과거 획득 때의 회복·XP·보상은 재생하지 않습니다. 시작 HP·보호막은 최대입니다.',
+        startLevel: '시작 LV · 0은 출격 기본',
+        liveTitle: '즉시 전후 비교',
+        liveImmediate: '입력 즉시 계산',
+        liveNote:
+          '값을 입력하면 바로 다시 계산합니다. 현재는 청록, 실험은 보라입니다. 시작 능력치는 자동 비교 조건을 사용하며 봇 관측 결과는 실행 후 갱신됩니다.',
+        liveMetric: '시작 능력치',
+        craftResults: '기체별 결과',
+        detailCraft: '상세 분석 기체',
+        liveCurve: 'STAGE별 전후 곡선',
         craftNote:
-          '기체는 고정된 기본 능력치와 조작 특성을 정하는 조건입니다. 비교 축은 모드·STAGE·경과 시간입니다.',
+          '선택한 기체를 같은 모드·빌드·시드로 모두 실행합니다. 기체별 결과를 분리하며 관전은 첫 번째 선택 기체입니다.',
         matrix: '같은 항목을 모드·단계별로 비교하며 조정합니다. 큰 숫자는 누르면 전체 값으로 편집합니다.',
         item: '항목',
         modes: '모드별 값',
