@@ -148,6 +148,16 @@
   --mode-insane-tone: #4d1728;
   --mode-insane-tone2: #2a0b16;
   --mode-insane-text: #ffe3ea;
+  /* BOSS MODE(R-156): HELIOS 금주황 */
+  --mode-boss: #ffa94d;
+  --mode-boss-tone: #4d2a10;
+  --mode-boss-tone2: #2a1606;
+  --mode-boss-text: #fff0de;
+  /* SHADOW MODE(R-157): 잔상 은보라 */
+  --mode-shadow: #cfc6ff;
+  --mode-shadow-tone: #2a2548;
+  --mode-shadow-tone2: #15122b;
+  --mode-shadow-text: #f3f0ff;
 
   /* 전장(renderer.js가 처음 한 번 읽는다. 캔버스용이라 #rrggbb나 그 값을 가리키는 var()만, 빠지면 자홍) */
   --cv-base-bg: #070c16;
@@ -5071,6 +5081,12 @@ return Plotly;
     // 기록 보관(R-018): 판이 정상으로 끝나 저장될 때 keep판을 넘으면 오래된 일반 기록부터 지우고,
     // 상세 로그는 최근 logs판만 남긴다(TOP3·별표는 둘 다 보호)
     records: { keep: 50, logs: 10 },
+    // 알림함(R-313): 최근 keep줄(받을 보상이 남은 줄은 지우지 않음). 받을 보상 줄이 auto를 넘으면 가장 오래된 것부터 자동으로 받는다
+    inbox: { keep: 100, auto: 60 },
+    // SHADOW MODE(R-157, 임시값 · 편집장 플레이로 패치): from 모드가 열리고 솔로 기록이 하나 이상이면 출격 준비 1열 7번째 칸.
+    // 상대 = 홈 순위 1위와 같은 조건 하루 1회. 이기고 차이(끝 Point − 상대) ≥ min이면 알림함 받기:
+    // B = ⌊차이 ÷ bPer⌋ × b · S = ⌊차이 ÷ sPer⌋ × s(상한 없음). 판 진행 영향 0(솔로 지문 밖)
+    shadow: { from: 'insane', min: 1000000, b: 10, bPer: 1000000, s: 10, sPer: 10000000 },
     // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
     // 판정 종류 하나씩 — play: 솔로 Insane 첫 시작 · sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
     // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름).
@@ -5218,6 +5234,8 @@ return Plotly;
         { id: 'frame.prism', slot: 'frame', tier: 'special', s: 50, need: { mile: 'world' } },
         { id: 'frame.aurora', slot: 'frame', tier: 'special', s: 50, need: { mile: 'world' } },
         { id: 'frame.eclipse', slot: 'frame', tier: 'special', s: 40, need: { mile: 'boss1000' } },
+        // 출석 누적 7일(R-158): 값 없음 · 사지 않고 출석으로 받음(world.att)
+        { id: 'frame.att7', slot: 'frame', tier: 'special', need: { att: 7 } },
         { id: 'frame.redline', slot: 'frame', tier: 'insane', s: 60 },
         { id: 'frame.redhex', slot: 'frame', tier: 'insane', s: 70, need: { mile: 'boss100' } },
         { id: 'frame.redwing', slot: 'frame', tier: 'insane', s: 80, need: { mile: 'kill100k' } },
@@ -5257,6 +5275,26 @@ return Plotly;
       score: 1,
       view: { hw: 376, hh: 754, spawn: 904, range: 900 },
       rot: ['hard', 'extream', 'super', 'ultra', 'insane'],
+      // 매일 도전 요일 고정(R-156): dayFrom 날부터 요일(월 → 일) 모드, 그 앞 날은 rot[날 번호 mod 5]. 'boss' = BOSS MODE
+      days: ['hard', 'extream', 'super', 'ultra', 'insane', 'boss', 'boss'],
+      dayFrom: '2026-11-02',
+      // BOSS MODE(R-156, 토 · 일 매일 도전): 일반 적 · 포위 · LV 월드 보스 · 자동 승격 없음. STAGE s의 보스를 다 잡으면 next초 뒤 s + 1.
+      // 장 c = ⌊(s − 1) ÷ ch⌋, 장 안 순번 r = (s − 1) mod ch + 1. r < ch: 일반 보스 min(cap, c + ⌈r ÷ 2⌉)마리 ·
+      // r = ch: HELIOS min(hMax, c + 1) + 호위 보스 escort[min(c, 끝)]. 한 STAGE 안에서 gap초 간격으로 차례로(동시 boss.alive까지).
+      // 장마다 모드 값 = modes[min(c, 끝)](그 위 STAGE 배율 · 월드 hp · damage 그대로). 성장: gem.every초마다 XP 보석 1개
+      // (기체에서 gem.near~far, 값 = 그 STAGE 추적 적 1마리 XP × gem.x, 웨이브 끝에 끌려오지 않음)
+      bossMode: {
+        next: 2,
+        gap: 1.2,
+        ch: 10,
+        cap: 8,
+        hMax: 4,
+        escort: [0, 0, 0, 0, 2, 4],
+        modes: ['hard', 'extream', 'super', 'ultra', 'insane'],
+        gem: { every: 1, x: 1, near: 300, far: 1200, margin: 80 },
+      },
+      // 출석(R-158): 매일 도전 정상 종료 판이 sec초 이상이면 그날 출석 · 누적 frame일이면 카드 틀 id를 받음(표시만, 재화 없음)
+      att: { sec: 180, frame: 7, id: 'frame.att7' },
       input: { q: 100, max: 300000 },
       drop: { near: 300, far: 1200, margin: 80, r: 24, merge: 999 },
       boss: { every: 10, alive: 2, order: ['lancer', 'hive'] },
@@ -5402,6 +5440,10 @@ return Plotly;
     super: { name: 'Super' },
     ultra: { name: 'Ultra' },
     insane: { name: 'Insane' },
+    // 특별 모드(16단계 보강): BOSS MODE = 월드 매일 도전 토 · 일(R-156). 배지 · 이름만(balance.modes 밖)
+    boss: { name: 'BOSS' },
+    // SHADOW MODE(R-157) = 출격 준비 1열 7번째 칸. 배지 · 이름만(balance.modes 밖)
+    shadow: { name: 'SHADOW' },
   };
   const modeName = id => (modes[id] || modes.easy).name;
   // 배지 읽기 이름(예: 'Easy 모드')
@@ -5901,6 +5943,7 @@ return Plotly;
       'frame.prism': '프리즘',
       'frame.aurora': '오로라',
       'frame.eclipse': '일식',
+      'frame.att7': '출석 7일',
       // INSANE RED 카드 틀(R-244)
       'frame.redline': '진홍 이중선',
       'frame.redhex': '적철 육각',
@@ -5931,6 +5974,7 @@ return Plotly;
       'frame.prism': '보라와 시안으로 갈라지는 결정',
       'frame.aurora': '곡선을 따라 겹치는 오로라 빛',
       'frame.eclipse': '금빛 일식 고리와 방사형 빛살',
+      'frame.att7': '은빛 두 겹 · 위아래 하루 한 칸 일곱 눈금',
       'frame.redline': '무광 진홍 면 · 은백 두 겹 선',
       'frame.redhex': '진홍 육각 연결과 은백 경계',
       'frame.redwing': '진홍 날개와 은백 비행 표식',
@@ -5970,6 +6014,8 @@ return Plotly;
       rank: n => '🔒 이 고양이가 ' + rankName(n) + josa(rankName(n), '으로/로') + ' 승진하면',
       cat: '🔒 성장 › 승무원에서 이 고양이를 깨우면',
       soon: '🔒 ' + mile.world + '(준비 중)',
+      // 출석 누적(R-158): 사지 않고 받음
+      att: n => '🔒 매일 도전 출석 누적 ' + n + '일',
     },
     // 한 줄(R-198): 꾸미기 · 격납고 맨 아래 두 줄이 꾸미기 한 화면을 8px 넘겼다
     capsuleNote: () =>
@@ -6028,6 +6074,8 @@ return Plotly;
     start: '최종전 시작',
     phase: n => 'HELIOS · ' + n + '단계',
     success: 'MISSION SUCCESS',
+    // BOSS MODE 보스 줄(R-156): 'HELIOS 2 · 보스 2'
+    many: (h, m) => 'HELIOS ' + h + (m ? ' · 보스 ' + m : ''),
   };
   // 연계 회로(R-300) · 제어 레이저(R-301): 명칭 문서 채택안. 연계 효과는 로마 숫자 순환, 레이저는 공통 'n단계'
   const linkT = {
@@ -6088,11 +6136,103 @@ return Plotly;
     },
     // from 모드 아래: '🔒 Super부터'(R-171 H5: 언제 열리는지)
     locked: () => '🔒 ' + modeName(B().buffs.from) + '부터',
+    // 지원 단계 칸 · ▾ 목록(R-159): 칸 = 이름 작게 · 값 크게('+5/초' · '2회') · 비용 · ▾ / 잠긴 줄 = 열리는 계정 최고 Point
+    short: { regen: 'HP 회복', revive: '부활' },
+    val: (id, spec) =>
+      id === 'regen'
+        ? '+' + (spec?.hp ?? B().buffs.regen.hp) + '/초'
+        : (spec?.n ?? B().buffs.revive.n ?? 1) + '회',
+    off: '끔',
+    menu: '지원 단계',
+    fromMode: () => modeName(B().buffs.from) + '부터',
+    tierOpen: score => big(score) + ' Point',
+    tierLocked: score => '계정 최고 ' + big(score) + ' Point를 넘으면 열립니다',
+    tileLabel: (id, open, lv, spec) =>
+      buffs.short[id] +
+      ' · ' +
+      (!open
+        ? modeName(B().buffs.from) + '부터'
+        : (lv ? buffs.val(id, spec) + ' · ' + buffs.cost(id, spec) : buffs.off) + ' · 단계 고르기'),
+    rowLabel: (id, r) =>
+      (r.lv ? buffs.val(id, r) : buffs.off) +
+      (!r.open
+        ? ' · 잠김 · ' + big(r.score) + ' Point'
+        : r.lv
+          ? ' · ' + buffs.cost(id, r) + (r.short ? ' · 부족' : '')
+          : '') +
+      (r.current ? ' · 고름' : ''),
     // 스위치 읽기 이름: 'HP 회복 · 10 B · 켜면 출격할 때마다 씀'(잠기면 'HP 회복 · Super부터')
     label: (id, open, spec) =>
       buffs.nameAt(id, spec) +
       ' · ' +
       (open ? buffs.cost(id, spec) + ' · 켜면 출격할 때마다 씀' : modeName(B().buffs.from) + '부터'),
+  };
+  // SHADOW MODE(R-157): 홈 순위 1위(솔로)와 같은 조건 하루 1회. 차이 글자 = big(만 · 억)
+  const launchName = kind =>
+    kind === 'normal' ? launches.normal : launches[kind === 'sc' ? 'super' : kind] || launches.super;
+  const shadowT = {
+    name: 'SHADOW',
+    cell: (goal, used) => (used ? '오늘 끝' : 'vs ' + big(goal)),
+    cellLabel: (goal, used) =>
+      'SHADOW · 1위 ' + num(goal) + ' Point와 같은 조건 · ' + (used ? '오늘은 끝' : '하루 1회'),
+    fixed: '기록대로',
+    note1: (goal, mode, kind) =>
+      'SHADOW · 1위 ' + num(goal) + ' · ' + modeName(mode) + ' · ' + launchName(kind),
+    note2: '모드 · 지원 · 고양이는 기록대로, 기체는 자유',
+    fixedWhy: 'SHADOW는 지원 · 고양이 · 출격 종류가 1위 기록대로입니다',
+    used: 'SHADOW는 하루 한 번입니다 · 내일 다시',
+    cost: 'SHADOW: 기록대로 낼 지원 비용이 모자랍니다',
+    kind: launchName,
+    hud: 'SHADOW',
+    hudLabel: d => 'SHADOW 목표까지 ' + (d >= 0 ? '넘음 +' : '') + big(Math.abs(d)),
+    gap: d => (d >= 0 ? '+' : '−') + big(Math.abs(d)),
+    result: (win, gap) => (win ? 'SHADOW 승리 · +' : 'SHADOW 패배 · −') + big(Math.abs(gap)),
+    chip: 'SHADOW',
+  };
+  // 알림함(R-313): 홈 머리 종 → 정보 창. 줄 = 종류 칩 · 한 줄 글 · 시각(받을 보상 줄은 보상 칩 + 받기). 종류 id = 저장 줄 k
+  const inbox = {
+    title: '알림함',
+    open: '알림함',
+    dot: '새 알림',
+    open1: n => '받을 보상 ' + n,
+    none: '받을 보상 없음',
+    all: '모두 받기',
+    claim: '받기',
+    got: '받음',
+    auto: '자동으로 받음',
+    empty: '아직 알림이 없습니다',
+    emptyHint: '해금 · 이정표 · 승진 · 보상이 여기에 모입니다',
+    keep: () => '최근 ' + B().inbox.keep + '개까지 남습니다 · 받을 보상은 지우지 않습니다',
+    today: '오늘',
+    yesterday: '어제',
+    older: '이전',
+    fresh: 'NEW',
+    day: d => d.getMonth() + 1 + '월 ' + d.getDate() + '일',
+    // 보상 칩 글자: '+10 B' · '+20 S' · '+5 M'
+    pay: (k, n) => '+' + num(n) + ' ' + ({ g: G, b: BL, s: SC, m: 'M' }[k] || k),
+    gotMsg: list => list.join(' · ') + ' 받음',
+    tag: {
+      unlock: '해금',
+      mile: '이정표',
+      promo: '승진',
+      capsule: '캡슐',
+      frame: '출석',
+      buff: '출격 지원',
+      shadow: 'SHADOW',
+      note: '알림',
+    },
+    // 한 줄 글(d = 저장 표시 값, 모르는 종류 · 값은 짧은 기본 글)
+    text: (k, d = {}) => {
+      if (k === 'unlock') return modeName(d.mode) + ' 모드 해금';
+      if (k === 'mile') return (mile[d.id] || d.id) + (titles[d.id] ? ' · 칭호 ' + titles[d.id] : '');
+      if (k === 'promo') return (cats[d.cat]?.name || d.cat) + ' ' + rankName(d.rank) + ' 승진';
+      if (k === 'capsule') return '보급 캡슐 · ' + cosName(d.id);
+      if (k === 'frame') return '출석 누적 ' + num(d.n || 0) + '일 · ' + cosName(d.id);
+      if (k === 'buff') return '새 단계 · ' + buffs.nameAt(d.id, d.id === 'regen' ? { hp: d.v } : { n: d.v });
+      // SHADOW(R-157): 이긴 판(받기) · 진 판 · 작은 차이 모두 결과 한 줄
+      if (k === 'shadow') return shadowT.result(d.win === 1, d.gap);
+      return '새 소식';
+    },
   };
   // 순위(R-032): 일반 출격 전투와 S 출격 전투를 따로 매기는 Point 순위. kind = 'normal' | 'super'
   const ranking = { name: '순위', normal: '일반', super: launches.super };
@@ -6203,6 +6343,9 @@ return Plotly;
       text: (s, lv) => launches.super + ' · ' + stageLabel(s) + ' · ' + levelShort(lv),
     },
     startNormal: { sec: 3, text: mode => modeName(mode) + ' 출격' },
+    // SHADOW(R-157): 'SHADOW · Insane 출격' · 목표를 넘는 순간 한 번
+    startShadow: { sec: 3, text: mode => 'SHADOW · ' + modeName(mode) + ' 출격' },
+    shadowPass: { major: true, tone: 'gold', sec: 3, text: () => 'SHADOW 추월!' },
     // 월드 전투 출격(R-122): 'WORLD · Super 출격'
     startWorld: { sec: 3, text: mode => world.launched(mode) },
     blue: { sec: 3, text: (n, lv) => '+' + n + ' ' + BL + ' · ' + levelShort(lv) + ' 달성' },
@@ -6230,6 +6373,15 @@ return Plotly;
       text: () => stageLabel(B().final.stage) + ' · ' + fin.name,
     },
     finalBoss: { major: true, tone: 'gold', sec: 4, text: () => fin.boss + ' 접근' },
+    // BOSS MODE(R-156): 다음 STAGE('STAGE 12 · 보스 2' · 'STAGE 20 · HELIOS 2') · 장 바뀜('3장 · Super') · HELIOS 격파 수
+    bossStage: {
+      major: true,
+      tone: 'gold',
+      sec: 3,
+      text: (s, n, h) => stageLabel(s) + ' · ' + (h ? fin.many(h, n - h) : '보스 ' + n),
+    },
+    chapter: { major: true, tone: 'gold', sec: 4, text: (ch, mode) => ch + '장 · ' + modeName(mode) },
+    finalDown: { major: true, tone: 'gold', sec: 3, text: n => fin.boss + ' 격파 · ' + n },
     finalPhase: { major: true, tone: 'gold', sec: 3, text: n => fin.phase(n) },
     finalLock: { sec: 3, text: () => '보스 웨이브를 다 잡으면 ' + fin.start },
     finalReady: {
@@ -7042,6 +7194,9 @@ return Plotly;
         cos: cos.title,
         // 월드 스킬 단계 합(R-121)
         wsk: '월드 스킬',
+        // 16단계 보강: M코인 잔액 · 알림함 받을 보상 줄 수(R-313)
+        mc: 'M 코인',
+        inbox: '받을 보상',
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -7635,6 +7790,31 @@ return Plotly;
       'drop.merge': ['안전 합침 개수', '이 개수부터 같은 종류 필드 스킬을 합침', '개', ''],
       'boss.every': ['월드 보스 간격', '월드 보스가 나오는 레벨 간격', 'LV', 'easy'],
       'boss.alive': ['월드 보스 동시 수', '한 번에 전투할 수 있는 월드 보스 수', '마리', 'hard'],
+      // 출석(R-158): 판 결과 영향 없음 · 표시와 카드 틀만
+      'att.sec': ['출석 판 길이', '매일 도전 정상 종료 판이 이 시간 이상이면 그날 출석', '초', 'easy'],
+      'att.frame': ['출석 카드 틀 누적', '출석 누적이 이 날 수에 닿으면 카드 틀을 받음', '일', 'easy'],
+      // BOSS MODE(R-156, 토 · 일 매일 도전)
+      'bossMode.next': ['BOSS 다음 STAGE 대기', '그 STAGE 보스를 다 잡은 뒤 다음 STAGE까지', '초', 'easy'],
+      'bossMode.gap': ['BOSS 등장 간격', '한 STAGE 안에서 보스가 차례로 나오는 간격', '초', 'easy'],
+      'bossMode.ch': ['BOSS 장 길이', '한 장의 STAGE 수(마지막 STAGE = HELIOS)', 'STAGE', ''],
+      'bossMode.cap': ['BOSS 일반 보스 상한', '한 STAGE 일반 보스 수 상한(동시 수도 이 안)', '마리', 'hard'],
+      'bossMode.hMax': ['BOSS HELIOS 상한', '장 끝 STAGE의 HELIOS 수 상한', '마리', 'hard'],
+      ...Object.fromEntries(
+        [0, 1, 2, 3, 4, 5].map(c => [
+          'bossMode.escort.' + c,
+          [
+            'BOSS ' + (c + 1) + '장 HELIOS 호위',
+            c + 1 + '장 끝 STAGE에 HELIOS와 함께 나오는 일반 보스',
+            '마리',
+            'hard',
+          ],
+        ]),
+      ),
+      'bossMode.gem.every': ['BOSS 들판 보석 간격', 'XP 보석 하나가 들판에 생기는 간격', '초', 'easy'],
+      'bossMode.gem.x': ['BOSS 들판 보석 값', '보석 XP = 그 STAGE 추적 적 1마리 XP × 값', '배', 'easy'],
+      'bossMode.gem.near': ['BOSS 보석 최소 거리', '보석이 기체에서 생기는 최소 거리', '거리', ''],
+      'bossMode.gem.far': ['BOSS 보석 최대 거리', '보석이 기체에서 생기는 최대 거리', '거리', ''],
+      'bossMode.gem.margin': ['BOSS 보석 가장자리 여백', '보석이 맵 가장자리에서 떨어지는 거리', '거리', ''],
       'chain.max': ['번개 튀는 수 상한', '연쇄 번개가 한 번에 튀는 최대 수', '회', 'easy'],
       'chain.overflow': [
         '번개 넘침 피해',
@@ -10479,6 +10659,15 @@ return Plotly;
       same: '이번 주는 같은 조건으로 도전 · 횟수 무제한 · 최고 기록만',
       modeToday: '오늘 모드',
       nextDay: m => '내일 ' + modeName(m),
+      // 요일 고정(R-156): 오늘 요일 · BOSS MODE 한 줄 규칙
+      weekday: i => '월화수목금토일'[i] + '요일',
+      // '10 STAGE'는 붙여 둠(좁은 글 열에서 '10 / STAGE마다'로 꺾이지 않게)
+      bossRule: '보스만 나옴 · 10 STAGE마다 HELIOS',
+      // 출석(R-158): 매일 도전 덩어리 아래 한 줄 · 아직 없으면 규칙 한 줄(분 = balance world.att.sec)
+      att: (run, total) => '출석 연속 ' + num(run) + '일 · 누적 ' + num(total) + '일',
+      attNone: () => '매일 도전 ' + Math.round((B().world?.att?.sec || 180) / 60) + '분 이상 = 출석',
+      // 회차(R-158): 그날 몇 번째 출격 · 첫 판 = '단판'
+      tryText: n => (n === 1 ? '단판' : num(n) + '회차'),
       lastWeek: (wk, m, s) => '지난주 최고 · ' + wk + ' ' + modeName(m) + ' · ' + s,
       empty: '이번 주 주간 도전 기록이 아직 없습니다',
       emptyDaily: '오늘 매일 도전 기록이 아직 없습니다',
@@ -10529,6 +10718,8 @@ return Plotly;
         place: n => '이 기기 ' + n + '위',
         chipGot: '주운 스킬',
         chipBoss: '월드 보스',
+        // BOSS MODE(R-156): 월드 보스 대신 HELIOS 격파 수
+        chipHelios: 'HELIOS',
         chipToday: '오늘 최고',
         chipDay: '그날 최고',
         chipTries: '시도',
@@ -10904,6 +11095,8 @@ return Plotly;
     launches,
     auto,
     buffs,
+    shadow: shadowT,
+    inbox,
     unlockGate,
     goldExtra,
     bossGoldText,
@@ -10972,11 +11165,12 @@ return Plotly;
   // DB 버전 3(R-014): 구조는 버전 2와 같다. 버전을 올려 다른 탭에 남은 v4.0.0 화면이 연결을 끊고 쓰지 못하게 한다.
   // DB 버전 4(R-100): 구조는 그대로. 프로필 schemaVersion 5와 함께 올려 v4.10 이하 화면(옛 탭)을 끊는다
   // (옛 migrate는 schemaVersion 5 문서를 잔액 0으로 읽고 다시 저장한다).
+  // DB 버전 5(16a, 편집장 2026-11-03 1.a): 구조는 그대로. 프로필 새 칸(inbox · mc)을 모르는 옛 탭이 쓰면 버리므로 끊는다.
   // DB_BASE: 실제 주소의 DB 이름. 밸런스 실험실(lab.html)이 시험 · 실제 기록을 읽기만 할 때도 쓴다.
   const NS = typeof root.NEON_NS === 'string' ? root.NEON_NS : '',
     DB_BASE = 'neon-arena-endless-v2',
     DB_NAME = DB_BASE + NS,
-    DB_VERSION = 4,
+    DB_VERSION = 5,
     RECORDS_KEY = 'neon-endless-records-v2' + NS,
     // DB 없이 저장한 기록의 사본(R-264): 다음에 DB가 열리면 이것만 DB로 옮기고 지운다(캐시 전체는 옮기지 않는다)
     PENDING_KEY = 'neon-endless-records-pending-v1' + NS,
@@ -11127,7 +11321,8 @@ return Plotly;
           .filter(([k, v]) => isId(k) && isNum(v))
           .slice(0, 20),
       );
-    for (const k of ['n', 'got', 'drop', 'wb'])
+    // 16단계 보강: 그날 몇 번째 출격(try, R-158) · HELIOS 격파 수(hk) · 다다른 장(ch, BOSS MODE R-156)
+    for (const k of ['n', 'got', 'drop', 'wb', 'try', 'hk', 'ch'])
       if (intIn(w[k], 0, Number.MAX_SAFE_INTEGER) !== null) out[k] = w[k];
     if (typeof w.sig === 'string' && /^[0-9a-f]{8}$/.test(w.sig)) out.sig = w.sig;
     if (w.input === 'in' || w.input === 'none' || w.input === 'big') out.input = w.input;
@@ -11144,6 +11339,20 @@ return Plotly;
       'drop',
       'wb',
       'input',
+      'try',
+      'hk',
+      'ch',
+    ]);
+  }
+  // SHADOW 판(R-157): { vs: 상대 기록 id, goal: 상대 Point, gap: 끝 Point − goal(음수 = 못 넘음), win: 0 | 1 }. 꼴이 틀리면 null
+  function safeShadow(v) {
+    if (!v || typeof v !== 'object' || Array.isArray(v) || typeof v.vs !== 'string') return null;
+    if (!isNum(v.goal) || v.goal < 0 || !isNum(v.gap)) return null;
+    return keepUnknown({ vs: v.vs.slice(0, 100), goal: v.goal, gap: v.gap, win: v.win === 1 ? 1 : 0 }, v, [
+      'vs',
+      'goal',
+      'gap',
+      'win',
     ]);
   }
   // normalizeRecord가 아는 최상위 칸. 그 밖의 칸은 JSON 값이면 그대로 둔다(앞으로 호환, R-100)
@@ -11192,6 +11401,7 @@ return Plotly;
     'final',
     'link',
     'laser',
+    'shadow',
     'score',
     'time',
     'simulationTime',
@@ -11258,6 +11468,8 @@ return Plotly;
       // 최종전 · 연계 · 레이저(R-297): 꼴이 맞을 때만 남긴다(끝난 이유 규칙은 그대로)
       ...safeFinal(raw),
     };
+    const shadow = safeShadow(raw.shadow);
+    if (shadow) r.shadow = shadow;
     for (const k of [
       'score',
       'time',
@@ -11298,6 +11510,8 @@ return Plotly;
     }
     return out;
   }
+  // 배지 · 이름에 쓰는 모드(R-156): BOSS MODE 판은 'boss'(기록 difficultyId는 보상 수준 insane), 그 밖은 difficultyId
+  const badgeMode = r => (r?.world?.mode === 'boss' ? 'boss' : r?.difficultyId);
   // 솔로 판(R-100): 일반 · S 출격. 순위 · 보호 · 자동 정리 · 최근 기록 · 기록 탭은 솔로 기록만 다룬다
   const isSolo = r => r?.launch?.type === 'normal' || r?.launch?.type === 'super' || !r?.launch?.type;
   // 출격 순간 동반 고양이들(12단계, 여러 마리): 기록 party가 있으면 그것. 옛 기록(party 없음)은 companion 한 마리,
@@ -12536,6 +12750,7 @@ return Plotly;
     byRecent,
     normalizeRecord,
     isSolo,
+    badgeMode,
     companionOf,
     partyOf,
     isId,
