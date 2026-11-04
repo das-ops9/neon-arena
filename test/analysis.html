@@ -6795,7 +6795,36 @@ return Plotly;
       worldClose: '닫기',
       worldSk: '월드 스킬',
       worldWeek: '날(GM 시계)',
-      weekShift: n => (n < 0 ? '어제' : n > 0 ? '내일' : '오늘'),
+      // 날 옮기기(R-320, −7~+7): '+3일 · 11/7 토 · BOSS' · '오늘 · 11/4 수 · Super'
+      weekShift: (n, id, wd, mode) =>
+        (n ? (n > 0 ? '+' : '−') + Math.abs(n) + '일' : '오늘') +
+        ' · ' +
+        Number(id.slice(5, 7)) +
+        '/' +
+        Number(id.slice(8, 10)) +
+        ' ' +
+        '월화수목금토일'[wd] +
+        ' · ' +
+        modeName(mode),
+      // 16a 시험(R-320): 회차 · 출석 · SHADOW 하루 1회 · 지원 단계 열림 · M · 판 버티기 · 월드 시작 STAGE · 알림함
+      test: '16a 시험',
+      wdN: '오늘 회차(0~99)',
+      attRun: '출석 연속',
+      attTotal: '출석 누적',
+      attLast: '출석 날',
+      attYday: '어제 출석함',
+      attToday: '오늘 출석함',
+      attNone: '끊김',
+      shadowUsed: 'SHADOW 오늘 씀',
+      shadowNote: 'SHADOW는 실제 시계 날 기준(날 옮기기와 무관)',
+      maxScore: '계정 최고 Point',
+      mc: 'M',
+      hold: 'HP 줄지 않음',
+      revive: '부활(0 = 평소)',
+      worldStage: '월드 시작 ' + stage.upper,
+      holdNote: '판 버티기는 모든 출격 · 비용 없음 · 월드 입력 기록을 남기지 않음',
+      inboxAll: '알림함 모든 종류 보내기',
+      inboxSent: n => '알림 ' + n + '줄 보냄',
       replay: '재생 확인',
       replayWait: '월드 입력 기록을 재생합니다…',
       replayNone: '재생 가능한 월드 입력 기록이 없습니다.',
