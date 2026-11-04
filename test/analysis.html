@@ -5083,10 +5083,53 @@ return Plotly;
     records: { keep: 50, logs: 10 },
     // 알림함(R-313): 최근 keep줄(받을 보상이 남은 줄은 지우지 않음). 받을 보상 줄이 auto를 넘으면 가장 오래된 것부터 자동으로 받는다
     inbox: { keep: 100, auto: 60 },
+    // M코인 쓰임 중 서버 장부(ledger)로 막는 순위 줄 꾸미기(16c R-316 ②, 임시값): 닉네임 색 · 엠블럼(기존 아이콘) — 한 번 사면 계정 것,
+    // 바꿔 입기는 무료. 보급 투하 = ops.drop.price · 정비 패스 = ops.pass.price. 그림 꾸미기(① ③ ⑨)는 그림이 생긴 뒤
+    mshop: {
+      color: { price: 40, ids: ['cyan', 'gold', 'blue', 'violet', 'pink', 'orange'] },
+      emblem: { price: 60, ids: ['nova', 'shield', 'orbit', 'crit', 'speed', 'magnet'] },
+    },
     // SHADOW MODE(R-157, 임시값 · 편집장 플레이로 패치): from 모드가 열리고 솔로 기록이 하나 이상이면 출격 준비 1열 7번째 칸.
     // 상대 = 홈 순위 1위와 같은 조건 하루 1회. 이기고 차이(끝 Point − 상대) ≥ min이면 알림함 받기:
     // B = ⌊차이 ÷ bPer⌋ × b · S = ⌊차이 ÷ sPer⌋ × s(상한 없음). 판 진행 영향 0(솔로 지문 밖)
     shadow: { from: 'insane', min: 1000000, b: 10, bPer: 1000000, s: 10, sPer: 10000000 },
+    // 공동 작전 · 출석 S(16c R-314 · R-315, 임시값 · 편집장 플레이로 패치). 판정 · 계산은 src/ops.js(기기 · 서버 같은 파일).
+    // days: 요일(월 → 일) 미션 — craft = 그 기체로만, need = [{ k, n }](기록 값 ≥ n) 또는 [{ k, max }](≤ max).
+    //   k: time(초) · level · stage · revives · got(필드 스킬 줍기) · wb(월드 보스 처치) · hk(HELIOS 처치)
+    // 비율 = 달성 계정 ÷ 참가 계정(최소 달성 1명). 단 tiers[i]% 이상 = 단 i + 1(METEOR · PULSAR · SUPERNOVA · QUASAR).
+    // 보상 M(02:05 확정 뒤 알림함): 참가 = ⌈base[단] × mul[모드]⌉ + 내가 달성 = add[모드]
+    // drop: 보급 투하 — 계정마다 하루 1회 price M → 그날 단 기준 −per%p, 하루 전체 −max%p까지
+    // att: 서버 날 출석 연속 k일째 = s × ((k − 1) mod cycle + 1) S · pass: 연속 every일마다 1장(최대 max) · price M으로 사기
+    ops: {
+      days: [
+        {
+          craft: 'specter',
+          need: [
+            { k: 'revives', max: 0 },
+            { k: 'time', n: 360 },
+          ],
+        },
+        { craft: 'bulwark', need: [{ k: 'got', n: 30 }] },
+        { craft: 'striker', need: [{ k: 'level', n: 40 }] },
+        { need: [{ k: 'wb', n: 3 }] },
+        { need: [{ k: 'time', n: 360 }] },
+        { need: [{ k: 'stage', n: 15 }] },
+        {
+          need: [
+            { k: 'revives', max: 0 },
+            { k: 'hk', n: 1 },
+          ],
+        },
+      ],
+      tiers: [20, 50, 80, 90],
+      base: [0, 1, 2, 3, 5],
+      mul: { hard: 1, extream: 1, super: 1.5, ultra: 1.5, insane: 2, boss: 2 },
+      add: { hard: 2, extream: 2, super: 3, ultra: 3, insane: 4, boss: 4 },
+      drop: { price: 10, per: 2, max: 10 },
+      att: { s: 10, cycle: 7, sec: 180 },
+      pass: { every: 7, max: 2, price: 30 },
+      news: 8,
+    },
     // 이정표(R-114, PLANNING-world Q205~Q208 · Q186 재화 0): 배열 순서 = 비행 일지 사다리 순서(col 열 · 위 → 아래).
     // 판정 종류 하나씩 — play: 솔로 Insane 첫 시작 · sum: 경력 sum 키 ≥ need · door: opened에 그 id · paint: 도색 가진 기체 수 ≥ need ·
     // set: 도색 모음 수 ≥ need · rank: 어느 고양이든 승진 단계 ≥ need(promoCap으로 자름).
@@ -6221,8 +6264,18 @@ return Plotly;
       buff: '출격 지원',
       shadow: 'SHADOW',
       replay: '전체 순위',
+      att: '출석',
+      op: '작전',
+      wk: '주간 휘장',
+      medal: '월간 휘장',
       note: '알림',
     },
+    // 서버 받을 보상(16c C2): 받기는 로그인한 기기에서 · 다른 기기에서 받은 줄 · 휘장 칩
+    login: '로그인하면 받기',
+    other: '다른 기기에서 받음',
+    medalChip: '휘장',
+    claimFail: '받지 못했어요 · 잠시 뒤 다시',
+    wkCount: n => '주간 작전 휘장 ' + n + '개',
     // 한 줄 글(d = 저장 표시 값, 모르는 종류 · 값은 짧은 기본 글)
     text: (k, d = {}) => {
       if (k === 'unlock') return modeName(d.mode) + ' 모드 해금';
@@ -6242,6 +6295,26 @@ return Plotly;
           num(d.s || 0) +
           ' Point 판 순위 제외'
         );
+      }
+      // 서버 보상(16c): 출석 S(연속 k일째 · 정비 패스 씀 · 받음) · 작전 M(그날 단 · 내 판 달성) · 주간 · 월간 휘장
+      const md = s => {
+        const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(s || '');
+        return m ? Number(m[1]) + '월 ' + Number(m[2]) + '일 ' : '';
+      };
+      if (k === 'att')
+        return (
+          '출석 연속 ' +
+          num(d.k || 1) +
+          '일째' +
+          (d.used ? ' · 정비 패스 ' + d.used + '장으로 이어짐' : '') +
+          (d.pass ? ' · 정비 패스 +1장' : '')
+        );
+      if (k === 'op')
+        return md(d.day) + '작전 ' + (online.ops.tiers[d.t] || '') + (d.met ? ' · 내 판 달성' : ' · 참가');
+      if (k === 'wk') return md(d.day) + '주간 작전 휘장 · 월~금 모두 달성';
+      if (k === 'medal') {
+        const m = /^medal\.(\d{4})(\d{2})\./.exec(d.cos || '');
+        return (m ? Number(m[2]) + '월 ' : '') + '작전 휘장 · ' + (online.ops.tiers[d.t] || '');
       }
       return '새 소식';
     },
@@ -11164,6 +11237,68 @@ return Plotly;
     remove: '계정 지우기',
     removeNote: '서버의 계정 · 백업 · 순위 기록을 바로 지워요. 이 기기 기록 · 재화는 그대로예요.',
     removeGo: '지우기',
+    // 공동 작전 전광판(16c R-314): 월드 탭 매일 도전 칸 안 띠(미션 · 막대 · 참가 · 흐르는 소식) · 결과 한 줄
+    ops: {
+      label: 'OPERATION',
+      tiers: ['', 'METEOR', 'PULSAR', 'SUPERNOVA', 'QUASAR'],
+      only: craft => craftName(craft) + '만',
+      need: {
+        time: n => (n % 60 ? Math.round(n) + '초' : n / 60 + '분') + ' 생존',
+        level: n => 'LV ' + n,
+        stage: n => 'STAGE ' + n,
+        revives: () => '부활 없이',
+        got: n => '필드 스킬 ' + n + '개',
+        wb: n => '월드 보스 ' + n + '마리',
+        hk: n => 'HELIOS ' + n + '마리',
+      },
+      count: (m, n, p) => m + ' / ' + n + '명 · ' + p + '%',
+      none: '아직 단 없음',
+      news: {
+        tier: (name, c) => name + ' 돌파 · 달성 ' + c + '명',
+        met: c => '작전 달성 ' + c + '명',
+        top: (nick, r) => (nick || '누군가') + ' · 오늘 ' + r + '위',
+        drop: nick => (nick || '누군가') + ' · 보급 투하',
+      },
+      res: (name, met) => '작전 ' + (name || '진행 중') + (met ? ' · 내 판 달성' : ''),
+    },
+    // M 상점(16c R-316 · C3): 계정 창 → 정보 창. 서버 장부로 막는 쓰임(보급 투하 · 정비 패스 · 닉네임 색 · 엠블럼)
+    mshop: {
+      title: 'M 상점',
+      open: m => 'M 상점 · ' + num(m) + ' M',
+      bal: m => num(m) + ' M',
+      earn: '공동 작전 보상으로 모아요',
+      ops: '작전',
+      drop: '보급 투하',
+      dropNote: (per, max) => '오늘 작전 목표 −' + per + '%p · 하루 1번 · 모두 합쳐 −' + max + '%p까지',
+      dropDone: '오늘 투하함',
+      dropNone: '오늘 작전 없음',
+      dropFull: '오늘 보급 투하가 가득 찼어요',
+      pass: '정비 패스',
+      passNote: (n, max) => '보유 ' + n + ' / ' + max + ' · 빠진 날 연속을 이어요',
+      passFull: '가득 참',
+      color: '닉네임 색',
+      emblem: '엠블럼',
+      colors: {
+        cyan: '시안',
+        gold: '골드',
+        blue: '블루',
+        violet: '바이올렛',
+        pink: '핑크',
+        orange: '오렌지',
+      },
+      emblems: { nova: '노바', shield: '방패', orbit: '궤도', crit: '조준', speed: '날개', magnet: '자석' },
+      lookNote: '전체 순위 내 줄에 보여요 · 한 번 사면 바꿔 입기 무료',
+      price: n => num(n) + ' M',
+      own: '보유',
+      on: '입음',
+      buy: (name, n) => name + ' · ' + num(n) + ' M',
+      bought: name => name + ' 완료',
+      worn: name => name + ' 입음',
+      off: name => name + ' 벗음',
+      short: 'M이 모자라요',
+      fail: '지금은 안 돼요 · 잠시 뒤 다시',
+      loading: '불러오는 중…',
+    },
     // 월드 전체 순위(16b R-152 · R-155): 결과 한 줄 · 월드 탭 입구 줄 · 전체 순위 창
     rank: {
       sending: '전체 순위에 올리는 중…',
