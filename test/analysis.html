@@ -5284,9 +5284,31 @@ return Plotly;
         { id: 'frame.redwing', slot: 'frame', tier: 'insane', s: 80, need: { mile: 'kill100k' } },
         { id: 'frame.redcrown', slot: 'frame', tier: 'insane', s: 90, need: { mile: 'hour50' } },
         { id: 'frame.redeclipse', slot: 'frame', tier: 'insane', s: 100, need: { mile: 'boss1000' } },
+        // 월드 한정(16c C3 · R-316 ① ③ ⑨, 임시값): M 상점에서만 산다(m = M 값, 서버 장부 — 꾸미기 화면에서는 잠김 '🔒 M 상점').
+        // 산 것은 계정 것(/v1/me 'cos' 목록 → 기기 cos.own, 다른 기기 · 복구에도). 카드 배경(back) · 도장(stamp)은 이 묶음에서 새 칸.
+        // 도장 칸에는 받은 월간 휘장(medal.<YYYYMM>.<단>)과 주간 휘장('wk', att.wk ≥ 1)도 입을 수 있다(사지 않음)
+        { id: 'mark.rendezvous', slot: 'mark', tier: 'world', m: 60 },
+        { id: 'mark.quorum', slot: 'mark', tier: 'world', m: 100 },
+        { id: 'flame.relay', slot: 'flame', tier: 'world', m: 80 },
+        { id: 'flame.compression', slot: 'flame', tier: 'world', m: 120 },
+        { id: 'trail.rally', slot: 'trail', tier: 'world', m: 80 },
+        { id: 'trail.opswake', slot: 'trail', tier: 'world', m: 120 },
+        { id: 'frame.junction', slot: 'frame', tier: 'world', m: 60 },
+        { id: 'frame.gate', slot: 'frame', tier: 'world', m: 70 },
+        { id: 'frame.bastion', slot: 'frame', tier: 'world', m: 80 },
+        { id: 'back.assembly', slot: 'back', tier: 'world', m: 30 },
+        { id: 'back.sector', slot: 'back', tier: 'world', m: 40 },
+        { id: 'back.response', slot: 'back', tier: 'world', m: 50 },
+        { id: 'stamp.joint', slot: 'stamp', tier: 'world', m: 30 },
+        { id: 'stamp.knot', slot: 'stamp', tier: 'world', m: 50 },
+        { id: 'stamp.cache', slot: 'stamp', tier: 'world', m: 70 },
+        { id: 'prop.engineer.worldrepair', slot: 'prop.engineer', tier: 'world', m: 100 },
+        { id: 'prop.supply.worldsupply', slot: 'prop.supply', tier: 'world', m: 100 },
+        { id: 'prop.pilot.worldflight', slot: 'prop.pilot', tier: 'world', m: 100 },
       ],
       // 등급(R-160 · R-244): 기체 칸 · 고양이 소품 · 카드 틀 항목의 tier · 등급 문(음악은 등급 없음). insane = 첫 Insane(insane1) 넘어야 열림(항목 조건과 따로 확인)
-      tiers: { basic: {}, advanced: {}, special: {}, insane: { need: { mile: 'insane1' } } },
+      // world = 월드 한정(M 상점, 16c C3) — 등급 문 없음
+      tiers: { basic: {}, advanced: {}, special: {}, insane: { need: { mile: 'insane1' } }, world: {} },
       capsule: {
         time: 300,
         chance: { easy: 0.05, hard: 0.1, extream: 0.15, super: 0.2, ultra: 0.25, insane: 0.3 },
@@ -5872,6 +5894,9 @@ return Plotly;
       prop: '소품',
       music: '전투 음악',
       frame: '카드 틀',
+      // 월드 한정(16c C3): 카드 배경 · 도장(도장 칸에는 받은 작전 휘장도)
+      back: '카드 배경',
+      stamp: '도장',
     },
     base: {
       mark: '없음',
@@ -5881,6 +5906,8 @@ return Plotly;
       prop: '없음',
       music: '아웃런 질주',
       frame: '기본 틀',
+      back: '기본 배경',
+      stamp: '없음',
     },
     names: {
       'mark.stripe': '줄무늬',
@@ -5993,6 +6020,26 @@ return Plotly;
       'frame.redwing': '진홍 날개',
       'frame.redcrown': '심홍 왕관',
       'frame.redeclipse': '붉은 일식',
+      // 월드 한정(16c C3 · M 상점)
+      'mark.rendezvous': '합류 표식',
+      'mark.quorum': '4단 작전판',
+      'flame.relay': '합류 분사',
+      'flame.compression': '4단 압축',
+      'trail.rally': '합류 궤적',
+      'trail.opswake': '4단 봉합',
+      'frame.junction': '합류 접속',
+      'frame.gate': '사단 관문',
+      'frame.bastion': '연합 방벽',
+      'back.assembly': '집결 지도',
+      'back.sector': '사분 구획',
+      'back.response': '공동 응답',
+      'stamp.joint': '합류 도장',
+      'stamp.knot': '작전 매듭',
+      'stamp.cache': '연합 보급',
+      worldrepair: '공동 정비복',
+      worldsupply: '공동 보급복',
+      worldflight: '공동 비행복',
+      wk: '주간 작전 휘장',
     },
     // 곡 줄 설명 · 카드 틀 설명(base = 기본)
     music: {
@@ -6023,6 +6070,9 @@ return Plotly;
       'frame.redwing': '진홍 날개와 은백 비행 표식',
       'frame.redcrown': '위 가운데 심홍 왕관과 은백 테',
       'frame.redeclipse': '진홍 코로나가 번지는 일식 고리',
+      'frame.junction': '은빛 접속 고리 · 위아래 네 색 모듈',
+      'frame.gate': '네 색으로 접힌 단계 판 네 쌍',
+      'frame.bastion': '양옆 쌍 걸쇠 · 위아래 맞물림 선',
     },
     crafts: '미리보기 기체',
     special: '특별',
@@ -6036,14 +6086,15 @@ return Plotly;
     noMark: '무늬를 입히면 이 색으로 보입니다',
     open: id => mile[id] + (titles[id] ? ' · ' + titles[id] : '') + ' 열림',
     // 등급(R-160): 기체 칸 등급 줄 · 등급 문 잠김(tier) · 가격 범위(tierPrice · 보유 수는 count)
-    tier: { basic: '기본', advanced: '고급', special: '특별', insane: 'INSANE RED' },
-    tierShort: { basic: '기본', advanced: '고급', special: '특별', insane: 'RED' },
+    tier: { basic: '기본', advanced: '고급', special: '특별', insane: 'INSANE RED', world: '월드 한정' },
+    tierShort: { basic: '기본', advanced: '고급', special: '특별', insane: 'RED', world: '월드' },
     tierPrice: tier => {
       const items = (B().cos?.items || []).filter(x => x.tier === tier),
         g = items.filter(x => x.g).map(x => x.g),
         s = items.filter(x => x.s).map(x => x.s),
+        m = items.filter(x => x.m).map(x => x.m),
         range = a => (a.length ? num(Math.min(...a)) + '~' + num(Math.max(...a)) : '');
-      return g.length ? range(g) + ' G' : range(s) + ' S';
+      return g.length ? range(g) + ' G' : s.length ? range(s) + ' S' : range(m) + ' M';
     },
     lock: {
       // 출격 이정표(play: 첫 INSANE)는 '넘으면' 대신 '출격하면'
@@ -6059,6 +6110,8 @@ return Plotly;
       soon: '🔒 ' + mile.world + '(준비 중)',
       // 출석 누적(R-158): 사지 않고 받음
       att: n => '🔒 매일 도전 출석 누적 ' + n + '일',
+      // 월드 한정(16c C3): 계정 창 › M 상점에서만
+      mshop: m => '🔒 M 상점 · ' + num(m) + ' M',
     },
     // 한 줄(R-198): 꾸미기 · 격납고 맨 아래 두 줄이 꾸미기 한 화면을 8px 넘겼다
     capsuleNote: () =>
@@ -6081,7 +6134,12 @@ return Plotly;
   // 조각 칸: id에서 끝 이름을 뺀 앞(예: 'prop.supply.star' → 'prop.supply')
   const cosSlotOf = id => String(id).split('.').slice(0, -1).join('.');
   const cosSlotName = slot => cos.slot[String(slot).startsWith('prop.') ? 'prop' : slot] || slot;
-  const cosName = id => cos.names[id] || cos.names[cosLeaf(id)] || id;
+  // 받은 월간 작전 휘장(16c C3, 도장 칸): 'medal.202611.pulsar' → '11월 휘장 · PULSAR'
+  const cosName = id => {
+    const md = /^medal\.\d{4}(\d{2})\.([a-z]+)$/.exec(String(id));
+    if (md) return Number(md[1]) + '월 휘장 · ' + md[2].toUpperCase();
+    return cos.names[id] || cos.names[cosLeaf(id)] || id;
+  };
   // '꼬리 자국 · 혜성' · 소품은 '미오 · 무전 헤드셋'이 아니라 '소품 · 무전 헤드셋'
   const cosFull = id => cosSlotName(cosSlotOf(id)) + ' · ' + cosName(id);
   // 큰 수 한 곳(R-115): 10만 미만 1,240 · 100만 미만 18.2만 · 1억 미만 4,721만 · 그 위 21.3억(모두 내림)
@@ -6269,6 +6327,7 @@ return Plotly;
       wk: '주간 휘장',
       medal: '월간 휘장',
       note: '알림',
+      ob: '오픈 베타',
     },
     // 서버 받을 보상(16c C2): 받기는 로그인한 기기에서 · 다른 기기에서 받은 줄 · 휘장 칩
     login: '로그인하면 받기',
@@ -6286,6 +6345,8 @@ return Plotly;
       if (k === 'buff') return '새 단계 · ' + buffs.nameAt(d.id, d.id === 'regen' ? { hp: d.v } : { n: d.v });
       // SHADOW(R-157): 이긴 판(받기) · 진 판 · 작은 차이 모두 결과 한 줄
       if (k === 'shadow') return shadowT.result(d.win === 1, d.gap);
+      // 오픈 베타(R-323): 옛 v4.2 기록이 있는 기기에 한 번
+      if (k === 'ob') return '오픈 베타 시작 · 기록은 새로 시작해요';
       // 재생 확인 실패(16b R-153): 그 판만 전체 순위에서 빠짐(계정 · 기기 기록은 그대로)
       if (k === 'replay') {
         const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(d.day || '');
@@ -7298,6 +7359,7 @@ return Plotly;
         unsupported_schema: '이 버전에서 읽을 수 없는 백업 형식입니다.',
         broken_record: '기록 정보가 손상된 로그입니다.',
         gm_backup: 'GM 백업은 GM 실험 칸에서만 가져올 수 있습니다.',
+        old_backup: '오픈 베타 전 백업은 가져올 수 없어요 · 기록은 새로 시작해요.',
       },
       // 가져오기 비교표 줄 이름
       rows: {
@@ -11288,6 +11350,12 @@ return Plotly;
       },
       emblems: { nova: '노바', shield: '방패', orbit: '궤도', crit: '조준', speed: '날개', magnet: '자석' },
       lookNote: '전체 순위 내 줄에 보여요 · 한 번 사면 바꿔 입기 무료',
+      // 월드 한정 꾸미기(16c C3 · R-316 ① ③ ⑨): 산 것은 계정 것 · 입기는 꾸미기 화면에서
+      world: '월드 한정 꾸미기',
+      worldNote: '산 조각은 꾸미기에서 입어요 · 다른 기기에서도 내 것',
+      cosGroups: { craft: '기체', card: '카드', cat: '고양이' },
+      cosBought: name => name + ' 완료 · 꾸미기에서 입어요',
+      cosOwn: '이미 가진 조각 · 꾸미기에서 입어요',
       price: n => num(n) + ' M',
       own: '보유',
       on: '입음',
@@ -11529,8 +11597,16 @@ return Plotly;
   // DB 버전 4(R-100): 구조는 그대로. 프로필 schemaVersion 5와 함께 올려 v4.10 이하 화면(옛 탭)을 끊는다
   // (옛 migrate는 schemaVersion 5 문서를 잔액 0으로 읽고 다시 저장한다).
   // DB 버전 5(16a, 편집장 2026-11-03 1.a): 구조는 그대로. 프로필 새 칸(inbox · mc)을 모르는 옛 탭이 쓰면 버리므로 끊는다.
-  // DB_BASE: 실제 주소의 DB 이름. 밸런스 실험실(lab.html)이 시험 · 실제 기록을 읽기만 할 때도 쓴다.
+  // DB_BASE: 접미사 없는 DB 이름(v4.2.x 실제 주소 · 로컬 · 검사 빌드). 내보내기 · 검사 도구가 이름을 만들 때 쓴다.
+  // REAL_NS(R-323 오픈 베타): 실제 주소 빌드의 접미사 — 기록 새로 시작. 옛 DB · 옛 키(OLD_KEYS)는 지우지도 옮기지도 않는다.
+  // 배포 도구(tools/deploy.cjs)가 같은 값을 읽어 실제 경로 빌드 · 접미사 검사에 쓴다(단일 원본).
   const NS = typeof root.NEON_NS === 'string' ? root.NEON_NS : '',
+    REAL_NS = '-ob',
+    OLD_KEYS = Object.freeze([
+      'neon-endless-prefs-v2',
+      'neon-endless-records-v2',
+      'neon-arena-last-signal-v1',
+    ]),
     DB_BASE = 'neon-arena-endless-v2',
     DB_NAME = DB_BASE + NS,
     DB_VERSION = 5,
@@ -13138,6 +13214,8 @@ return Plotly;
     TELEMETRY_VERSION: TELEMETRY,
     DB_VERSION,
     DB_BASE,
+    REAL_NS,
+    OLD_KEYS,
   };
   if (typeof module !== 'undefined') module.exports = root.NeonData;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -814,7 +814,7 @@ body[data-hud='s'] {
       <nav class="links"><a href="./index.html">/test/ 열기</a><a href="./gm.html">GM 실험 칸</a></nav>
     </main>
     <script>
-      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "eecfd4d";
+      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "4d14eb4";
     </script>
     <script>
       (function (root) {
@@ -1105,12 +1105,17 @@ body[data-hud='s'] {
         signal: ctl ? ctl.signal : undefined,
         cache: 'no-store',
       });
-      let data = {};
+      let data = {},
+        read = true;
       try {
         data = await res.json();
       } catch {
         data = {};
+        read = false;
       }
+      // 200인데 본문을 못 읽음(끊긴 응답 · 프록시 글) = 결과 모름 → 끊김과 같게(R-330). ok로 보면 패스 키를 지워
+      // 같은 사기를 새 키로 다시 보냄(2장 · 60 M). 끊김이면 기기가 같은 키로 다시 보내 서버가 같은 값을 돌려준다
+      if (res.ok && !read) return { ok: false, status: 0, error: 'offline' };
       if (res.ok) return { ok: true, status: res.status, body: data };
       return { ok: false, status: res.status, body: data, error: str(data.error, 32) || 'busy' };
     } catch {
@@ -1403,6 +1408,8 @@ body[data-hud='s'] {
   const looks = (acct, slot, id, opts) => authed(acct, 'POST', '/v1/looks', { slot, id }, opts);
   // key = 기기 요청 키(R-327): 응답을 잃고 다시 누르면 같은 키 → 서버가 같은 값(두 장 없음)
   const buyPass = (acct, key, opts) => authed(acct, 'POST', '/v1/ops/pass', { key }, opts);
+  // 월드 한정 꾸미기(16c C3): 조각 id 하나 — 이미 산 것은 서버가 값 없이 같은 목록(같은 요청 두 번도 한 번 값)
+  const buyCos = (acct, id, opts) => authed(acct, 'POST', '/v1/mshop/cos', { id }, opts);
   const myRank = (acct, day, opts) =>
     authed(acct, 'GET', '/v1/rank' + (day ? '?day=' + day : ''), undefined, opts);
   const runCard = (acct, id, opts) =>
@@ -1470,6 +1477,7 @@ body[data-hud='s'] {
     drop,
     looks,
     buyPass,
+    buyCos,
     opsBits,
     myRank,
     runCard,
