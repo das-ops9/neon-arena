@@ -6892,6 +6892,24 @@ return Plotly;
       kicker: 'GAME MASTER',
       title: 'GM 실험 칸',
       note: '따로 된 저장소에서 값을 바꿔 전투를 해 봅니다. /test/의 재화 · 기록은 그대로입니다.',
+      // 시험 서버 줄(R-332): GM 기기도 시험 서버에 로그인해 받기 · 작전 · 순위 · M 상점(실제 서버는 거절)
+      srv: '시험 서버',
+      srvOff: '서버 주소 없음(로컬 빌드) · /test/gm.html에서만 시험 서버에 붙어요',
+      srvOut:
+        '로그인 안 함 · 계정 창에서 로그인하면 판 올리기 · 받기 · 작전 · 순위가 시험 서버로(순위 줄에 GM)',
+      srvLine: (nick, m, ops) =>
+        nick +
+        ' · ' +
+        m.toLocaleString('ko-KR') +
+        ' M · 오늘 작전 ' +
+        (ops
+          ? ops.done +
+            ' / ' +
+            ops.players +
+            '명' +
+            (ops.tier ? ' · ' + ['', 'METEOR', 'PULSAR', 'SUPERNOVA', 'QUASAR'][ops.tier] : '')
+          : '모름'),
+      srvPage: '서버 값 페이지 ›',
       coins: '재화',
       cats: '고양이 Lv · 승진',
       homePreview: '홈 기체 배경 효과',
@@ -11252,7 +11270,7 @@ return Plotly;
     age: '만 14세 이상입니다',
     agree: '처리방침을 확인했어요',
     privacy: '개인정보 처리방침',
-    // 개인정보 처리방침(16b, 법률 조사 review/research-privacy-16b.md — 법률 자문 아님): 처리 항목 · 목적(계약 이행) · 보유 ·
+    // 개인정보 처리방침(16b, 법률 조사는 개발 저장소 기록 — 법률 자문 아님): 처리 항목 · 목적(계약 이행) · 보유 ·
     // 국외 보관(Cloudflare) · 14세 미만 · 권리 · 안전 · 연락처. 동의가 아니라 확인(제15조 1항 4호)
     privacyLines: [
       '받는 것: 닉네임 · 비밀번호와 복구 코드의 변환 값(원문은 받지 않아요) · 로그인 토큰 해시 · 클라우드 백업 사본 · 매일 도전 판 기록.',
@@ -11388,6 +11406,7 @@ return Plotly;
       login: '로그인',
       outside: (n, total) => n + '위 / ' + total + '명',
       checked: '재생 확인됨',
+      gmRow: '시험 GM 판',
       mark: ['어제 1위', '어제 2위', '어제 3위'],
       sk: (n, max) => 'SK ' + n + '/' + max,
       loading: '불러오는 중…',
@@ -11409,6 +11428,7 @@ return Plotly;
       paused: '멈춤 · 이 기기와 클라우드 중 고르기 전',
       fail: '실패 · 다음 판 끝에 다시',
       working: '백업 중…',
+      gm: 'GM 실험 칸은 백업 안 함 · 파일 백업은 GM끼리',
       out: '로그인하면 클라우드에 자동으로 백업해요',
       now: '지금 백업',
       pick: '고르기',

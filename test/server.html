@@ -811,10 +811,12 @@ body[data-hud='s'] {
       <p class="note" id="sv-note"></p>
       <section class="card" id="sv-who"></section>
       <section class="card" id="sv-body" hidden></section>
-      <nav class="links"><a href="./index.html">/test/ 열기</a><a href="./gm.html">GM 실험 칸</a></nav>
+      <nav class="links" id="sv-links">
+        <a href="./index.html">/test/ 열기</a><a href="./gm.html">GM 실험 칸</a>
+      </nav>
     </main>
     <script>
-      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "4d14eb4";
+      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "dabaf0d";
     </script>
     <script>
       (function (root) {
@@ -1088,9 +1090,12 @@ body[data-hud='s'] {
   const signedOut = acct => clean({ hash: clean(acct).hash });
 
   // ---- 요청 ----
+  // seq = 보낸 순서(R-330): 늦게 온 옛 응답이 더 새 값을 덮지 않게 받는 쪽이 비교한다
+  let reqSeq = 0;
   async function request(method, path, body, opts = {}) {
+    const seq = ++reqSeq;
     const url = base();
-    if (!url) return { ok: false, status: 0, error: 'off' };
+    if (!url) return { ok: false, status: 0, error: 'off', seq };
     const ctl = typeof AbortController === 'function' ? new AbortController() : null;
     const timer = ctl ? setTimeout(() => ctl.abort(), opts.timeout || TIMEOUT) : 0;
     try {
@@ -1099,6 +1104,8 @@ body[data-hud='s'] {
         headers: {
           ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
           ...(opts.token ? { Authorization: 'Bearer ' + opts.token } : {}),
+          // 빌드가 넣는 머리(R-332 — 시험 GM 페이지만 GM 표시, 실제 빌드에는 없음)
+          ...(root.NEON_HEADERS && typeof root.NEON_HEADERS === 'object' ? root.NEON_HEADERS : {}),
           ...(opts.headers || {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
@@ -1115,11 +1122,11 @@ body[data-hud='s'] {
       }
       // 200인데 본문을 못 읽음(끊긴 응답 · 프록시 글) = 결과 모름 → 끊김과 같게(R-330). ok로 보면 패스 키를 지워
       // 같은 사기를 새 키로 다시 보냄(2장 · 60 M). 끊김이면 기기가 같은 키로 다시 보내 서버가 같은 값을 돌려준다
-      if (res.ok && !read) return { ok: false, status: 0, error: 'offline' };
-      if (res.ok) return { ok: true, status: res.status, body: data };
-      return { ok: false, status: res.status, body: data, error: str(data.error, 32) || 'busy' };
+      if (res.ok && !read) return { ok: false, status: 0, error: 'offline', seq };
+      if (res.ok) return { ok: true, status: res.status, body: data, seq };
+      return { ok: false, status: res.status, body: data, error: str(data.error, 32) || 'busy', seq };
     } catch {
-      return { ok: false, status: 0, error: 'offline' };
+      return { ok: false, status: 0, error: 'offline', seq };
     } finally {
       if (timer) clearTimeout(timer);
     }
@@ -1192,9 +1199,14 @@ body[data-hud='s'] {
   // 로그인한 요청: 401이면 토큰을 지운 계정 키를 함께 돌려준다
   async function authed(acct, method, path, body, opts = {}) {
     const a = clean(acct);
-    const r = await request(method, path, body, { ...opts, token: a.token });
-    if (!r.ok && r.status === 401 && r.error === 'login')
+    // who = 보낸 계정(R-330): 응답이 오기 전에 계정이 바뀌었으면 받는 쪽이 버린다
+    const r = { ...(await request(method, path, body, { ...opts, token: a.token })), who: a.id };
+    if (!r.ok && r.status === 401 && r.error === 'login') {
+      // 기다리는 사이 다른 계정 · 새 토큰으로 로그인했으면 그 저장을 지우지 않는다(Codex P4 D1)
+      const cur = load(opts.store).token;
+      if (cur && cur !== a.token) return r;
       return { ...r, acct: save(signedOut(a), opts.store) };
+    }
     return r;
   }
   async function logout(acct, opts) {
@@ -1495,6 +1507,9 @@ body[data-hud='s'] {
   // 기기 값(G · B · S · 해금 …)은 GM 실험 칸, 서버 값(M 장부 · 패스 · 출석 · 받을 보상 · 투하 · 꾸미기)은 여기.
   // 계정 키는 /test/와 같은 저장소 접미사(-test)라 /test/에서 로그인했으면 그대로 이어진다. 서버는 시험(ENV = test)에서만 받는다.
   // 개발 도구라 문구는 이 파일 안(본게임 문구 목록 밖 — CATALOG '제외'). 실제 주소 조립에는 넣지 않는다(tools/deploy.cjs).
+  // ?gm(R-332 GM 패널 바로가기): GM 실험 칸(-test-gm)의 로그인으로 연다 — GM 기기 계정의 서버 값
+  const GM_MODE = /[?&]gm(&|$)/.test(location.search);
+  if (GM_MODE) root.NEON_NS = (root.NEON_NS || '') + '-gm';
   const O = root.NeonOnline;
   const $ = id => document.getElementById(id);
   const esc = v =>
@@ -1502,10 +1517,29 @@ body[data-hud='s'] {
       /[&<>"']/g,
       ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch],
     );
+  const API_ERR = { final: '이미 확정된 날입니다(확정 풀기 먼저).', bad: '값이 맞지 않습니다.' };
   const LAST = { none: '없음', yday: '어제', today: '오늘', old: '이틀 넘게 전' };
   const KIND = { op: '작전 M', att: '출석 S', wk: '주간 휘장', medal: '월간 휘장' };
   const TIER = ['', 'METEOR', 'PULSAR', 'SUPERNOVA', 'QUASAR'];
+  const NEED = {
+    time: n => (n % 60 ? Math.round(n) + '초' : n / 60 + '분') + ' 생존',
+    level: n => 'LV ' + n,
+    stage: n => 'STAGE ' + n,
+    revives: () => '부활 없이',
+    got: n => '필드 스킬 ' + n + '개',
+    wb: n => '월드 보스 ' + n + '마리',
+    hk: n => 'HELIOS ' + n + '마리',
+  };
+  const MINE = { none: '안 함', join: '참가(미달성)', met: '달성' };
+  const missionText = m =>
+    !m || !m.mode
+      ? '미션 없음'
+      : String(m.mode).toUpperCase() +
+        (m.craft ? ' · ' + m.craft + '만' : '') +
+        ' · ' +
+        (m.need || []).map(x => (NEED[x.k] ? NEED[x.k](x.n) : x.k + ' ' + x.n)).join(' · ');
   let acct = O.load(),
+    opsDay = 'today',
     state = null,
     busy = false,
     msg = { text: '', err: false };
@@ -1533,7 +1567,7 @@ body[data-hud='s'] {
         ? '로그인이 끝났습니다. 다시 로그인하세요.'
         : r.status === 404
           ? '시험 서버가 아니거나 서버가 아직 이 기능을 모릅니다.'
-          : '실패(' + r.status + ' ' + (r.error || '') + ')';
+          : API_ERR[r.error] || '실패(' + r.status + ' ' + (r.error || '') + ')';
 
   function renderWho() {
     const note = $('sv-note');
@@ -1564,6 +1598,7 @@ body[data-hud='s'] {
       '<div class="who"><span>계정 <b>' +
       esc(acct.nick) +
       '</b>' +
+      (GM_MODE ? ' (GM 기기)' : '') +
       (state ? ' · 서버 날 ' + esc(state.day) : '') +
       '</span><button type="button" id="sv-out">다른 계정</button></div>' +
       // 값을 못 읽었을 때(연결 · 옛 서버 · 실제 서버) 이유를 여기에 — 표가 없어 아래 메시지 줄이 없음
@@ -1638,6 +1673,7 @@ body[data-hud='s'] {
       ) +
       '</div>' +
       (s.drop || own.length ? '<p class="note">체크 = 지우기(오늘 투하 · 산 색 · 엠블럼)</p>' : '') +
+      opsSection(s.ops) +
       '<h2 style="margin-top:14px">받을 보상 줄 ' +
       s.open.length +
       '</h2>' +
@@ -1675,7 +1711,84 @@ body[data-hud='s'] {
       '</p></div>';
     for (const b of body.querySelectorAll('button')) b.disabled = busy;
   }
+  // 오늘 작전 칸(R-332): 오늘 · 어제를 골라 미션 · 참가 · 달성 · 단을 보고 가짜 참가 · 내 줄을 정하거나 지금 확정한다
+  function opsSection(all) {
+    if (!all)
+      return '<h2 style="margin-top:14px">오늘 작전</h2><p class="note">서버가 아직 이 칸을 모릅니다.</p>';
+    const o = all[opsDay];
+    const lock = o.final ? ' disabled' : '';
+    const box = (id, v) =>
+      '<input id="' +
+      id +
+      '" type="number" inputmode="numeric" min="0" max="300" value="' +
+      v +
+      '"' +
+      lock +
+      ' />';
+    return (
+      '<h2 style="margin-top:14px">오늘 작전</h2><div class="rows">' +
+      row(
+        '날',
+        esc(o.day) + (o.fri ? ' · 금' : '') + (o.monthEnd ? ' · 달 끝' : ''),
+        pick(
+          'sv-opday',
+          [
+            ['today', '오늘'],
+            ['yday', '어제'],
+          ],
+          opsDay,
+        ),
+      ) +
+      row('미션', esc(missionText(o.mission)), '<span></span>') +
+      row(
+        '참가 · 달성',
+        o.done + ' / ' + o.players + '명 · ' + o.rate + '%' + (o.drops ? ' · 투하 ' + o.drops : ''),
+        '<span></span>',
+      ) +
+      row('단', (TIER[o.tier] || '없음') + (o.final ? ' · 확정' : ' · 지금 비율'), '<span></span>') +
+      row('가짜 참가', o.fake + '명', box('sv-fake', o.fake)) +
+      row('가짜 달성', o.fakeMet + '명', box('sv-fakemet', o.fakeMet)) +
+      row(
+        '내 줄',
+        MINE[o.mine] || o.mine,
+        o.final ? '<span></span>' : pick('sv-mine', Object.entries(MINE), o.mine),
+      ) +
+      (o.final
+        ? ''
+        : row('금요일처럼', '주간 휘장(그날 달성만)', check('sv-fri')) +
+          row('달 끝처럼', '월간 휘장(그 달 확정 단 최고)', check('sv-mend'))) +
+      '</div>' +
+      '<div class="actions" style="margin-top:8px">' +
+      (o.final
+        ? '<button class="danger" type="button" id="sv-unfinal">확정 풀기</button>'
+        : '<button type="button" id="sv-opsapply">작전 반영</button>' +
+          '<button class="primary" type="button" id="sv-final">지금 확정</button>') +
+      '</div><p class="note">가짜 참가 = 계정 없는 셈 줄(02시 정리가 지움). 지금 확정 = 그날 단 · 참가자 M 받을 줄' +
+      '(이 계정은 내 줄이 있어야 받음). 오늘을 확정하면 오늘 남은 판은 셈에 안 들고 밤 확정도 건너뜀 → 다 보면 확정 풀기.</p>'
+    );
+  }
+  function opsChanges() {
+    const o = state.ops[opsDay],
+      b = { day: opsDay };
+    if (n('sv-fake') !== o.fake || n('sv-fakemet') !== o.fakeMet) {
+      b.fake = n('sv-fake');
+      b.fakeMet = Math.min(n('sv-fakemet'), b.fake);
+    }
+    if (val('sv-mine') && val('sv-mine') !== o.mine) b.mine = val('sv-mine');
+    return b;
+  }
+  // 바로가기(R-332 ③): GM 실험 칸 · /test/ 게임 · 계정 바꾸기
+  function renderLinks() {
+    const el = $('sv-links');
+    if (el)
+      el.innerHTML =
+        '<a href="./index.html">/test/ 열기</a><a href="./gm.html">GM 실험 칸</a>' +
+        (GM_MODE
+          ? '<a href="./server.html">/test/ 계정 값</a>'
+          : '<a href="./server.html?gm">GM 기기 계정 값</a>');
+  }
   function render() {
+    renderLinks();
     renderWho();
     renderBody();
   }
@@ -1731,7 +1844,24 @@ body[data-hud='s'] {
     if (!b || b.disabled || busy) return;
     if (b.id === 'sv-apply') apply(changes(), '반영했습니다 — /test/에서 M 상점 · 알림함을 열면 보입니다.');
     else if (b.id === 'sv-reload') reload('다시 읽었습니다.');
-    else if (b.id === 'sv-reset') {
+    else if (b.id === 'sv-opsapply') {
+      const ops = opsChanges();
+      if (Object.keys(ops).length < 2) say('바꾼 칸이 없습니다.');
+      else apply({ ops }, '작전 셈을 바꿨습니다.');
+    } else if (b.id === 'sv-final') {
+      const ops = { ...opsChanges(), final: true };
+      if ($('sv-fri') && $('sv-fri').checked) ops.fri = true;
+      if ($('sv-mend') && $('sv-mend').checked) ops.monthEnd = true;
+      if (
+        root.confirm(
+          state.ops[opsDay].day + ' 작전을 지금 확정합니다(단 · 받을 보상 줄). 확정 풀기로 되돌립니다.',
+        )
+      )
+        apply({ ops }, '확정했습니다 — /test/(또는 GM) 알림함에서 받을 보상 줄을 보세요.');
+    } else if (b.id === 'sv-unfinal') {
+      if (root.confirm('확정을 풀고 그날 확정이 만든 안 받은 줄(작전 M · 휘장)을 지웁니다(시험 서버 전체).'))
+        apply({ ops: { day: opsDay, unfinal: true } }, '확정을 풀었습니다.');
+    } else if (b.id === 'sv-reset') {
       if (
         root.confirm(
           'M · 패스 · 출석 · 받을 보상 줄 · 오늘 투하 · 산 꾸미기를 처음으로 돌립니다(받은 줄 기록은 남음).',
@@ -1744,6 +1874,11 @@ body[data-hud='s'] {
       msg = { text: '', err: false };
       render();
     }
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id !== 'sv-opday') return;
+    opsDay = e.target.value === 'yday' ? 'yday' : 'today';
+    renderBody();
   });
   document.addEventListener('submit', async e => {
     if (e.target.id !== 'sv-login') return;
