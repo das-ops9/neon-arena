@@ -2825,6 +2825,7 @@ thead th {
         { id: 'music.dnb', slot: 'music', g: 1500 },
         // 카드 틀(R-244): 등급순(기본 → 고급 → 특별 → INSANE RED). orbit · hex · scan · wings · pulse · laurel · prism ·
         // aurora · eclipse는 편집장 추가 요청(R-205) — 기존 카드 가격군 · 조건 재사용. id · 값 · 조건은 순서를 바꿔도 그대로
+        { id: 'frame.story-return', slot: 'frame', source: 'story', mission: 's3.6' },
         { id: 'frame.stars', slot: 'frame', tier: 'basic', g: 1000, need: { mile: 'hour1' } },
         { id: 'frame.circuit', slot: 'frame', tier: 'basic', g: 1200 },
         { id: 'frame.orbit', slot: 'frame', tier: 'basic', g: 1000 },
@@ -2974,7 +2975,8 @@ thead th {
     story: {
       content: 3,
       keep: 30,
-      lights: { first: 3, linked: 2 },
+      lights: { first: 3, linked: 2, fleet: 5 },
+      returnSeconds: 2.4,
       capture: { radius: 96, offset: 190 },
       path: { margin: 100, hazardGap: 24 },
       route: {
@@ -3128,6 +3130,93 @@ thead th {
           alt: { type: 'clear', packs: [8, 10] },
           own: 'mark.story-link',
           ownKind: 'cos',
+        },
+        's3.1': {
+          kind: 'mission',
+          needs: 's2.6',
+          mode: 'extream',
+          pay: { g: 10, b: 4, s: 0 },
+          field: { g: 6, b: 2, s: 0 },
+          goal: { type: 'clear', packs: [8, 10, 12] },
+        },
+        's3.2': {
+          kind: 'mission',
+          needs: 's3.1',
+          mode: 'extream',
+          pay: { g: 12, b: 4, s: 0 },
+          field: { g: 5, b: 1, s: 0 },
+          goal: {
+            type: 'escort',
+            radius: 120,
+            speed: 40,
+            path: [
+              [0, -80],
+              [0, -560],
+              [480, -560],
+            ],
+          },
+        },
+        's3.3': {
+          kind: 'mission',
+          needs: 's3.2',
+          mode: 'super',
+          pay: { g: 15, b: 5, s: 0 },
+          field: { g: 8, b: 2, s: 0 },
+          goal: { type: 'bosswave', waves: 1 },
+        },
+        's3.4': {
+          kind: 'mission',
+          needs: 's3.3',
+          mode: 'super',
+          pay: { g: 10, b: 4, s: 0 },
+          field: { g: 4, b: 1, s: 0 },
+          goal: {
+            type: 'move',
+            points: 3,
+            radius: 44,
+            path: [
+              [0, 170],
+              [-170, 340],
+              [100, 510],
+            ],
+          },
+        },
+        's3.5': {
+          kind: 'mission',
+          needs: 's3.4',
+          mode: 'super',
+          pay: { g: 12, b: 4, s: 0 },
+          field: { g: 5, b: 1, s: 0 },
+          goal: {
+            type: 'escort',
+            radius: 120,
+            speed: 40,
+            path: [
+              [0, 80],
+              [0, 440],
+              [-360, 440],
+            ],
+          },
+        },
+        's3.6': {
+          kind: 'mission',
+          needs: 's3.5',
+          mode: 'super',
+          pay: { g: 16, b: 5, s: 0 },
+          field: { g: 6, b: 2, s: 0 },
+          goal: { type: 'hold', time: 20 },
+          own: 'frame.story-return',
+          ownKind: 'cos',
+        },
+        's3.7': {
+          kind: 'cert',
+          needs: 's3.6',
+          mode: 'super',
+          target: 'ultra',
+          pay: { g: 25, b: 6, s: 0 },
+          field: { g: 12, b: 3, s: 0 },
+          goal: { type: 'operation', points: 2, packs: [8, 10, 12], waves: 1 },
+          alt: { type: 'clear', packs: [8, 10] },
         },
       },
     },
@@ -3782,6 +3871,7 @@ thead th {
     },
     names: {
       'mark.story-link': '이어진 접점',
+      'frame.story-return': '돌아온 날개등',
       'mark.stripe': '줄무늬',
       'mark.star': '별',
       'mark.wing': '날개 띠',
@@ -3921,6 +4011,7 @@ thead th {
       'music.dnb': '빠른 브레이크 · 서브 베이스 · 전자 피아노',
     },
     frame: {
+      'frame.story-return': '아래쪽 짝불빛과 얇은 귀환 테두리',
       base: '모드 색 테두리',
       'frame.stars': '네 귀퉁이 별자리',
       'frame.circuit': '양옆 회로 선',
@@ -9499,13 +9590,25 @@ thead th {
     chapterLabel: '이야기 구간',
     chapterProgress: (name, n, total) => name + ' ' + n + ' / ' + total,
     chapterLocked: '앞 구간 완료 후',
+    fleetLightsLabel: '배들과 루나 귀환 · 기지 아래 큰 선단 불빛',
+    escortGo: '엄호 시작',
+    returnGo: '루나에게 돌아가기',
+    escortRule: '배는 공격받지 않아요. 원 안에서 함께 이동하면 전진하고, 밖에서는 기다려요.',
+    escortDiagram: '원 안 전진 → 원 밖 대기 · 다시 원 안으로',
+    reverseDiagram: '↑ 열린 관문 길 · ↓ 뒤에 남은 루나',
+    fleet: '선단',
+    luna: '루나',
+    toto: '토토 · 기지 보급',
+    lunaSpeaker: '루나 · 항로 정찰',
+    returnTitle: '배들과 루나가 기지로 돌아왔어요.',
+    returnNext: '배들이 전한 관문 정보로 다음 이야기를 준비 중이에요.',
     nextStory: '다음 이야기 준비 중이에요. 솔로 출격과 기록 다시 보기는 계속할 수 있어요.',
     accessLinked: '관문 쪽 접근선 연결 · 관문은 아직 닫혀 있어요',
     routeProgress: (n, total) => '첫 항로 ' + n + ' / ' + total,
     returned: '첫 회수선 귀환',
     lightsLabel: '첫 회수선 귀환 · 기지 아래 따뜻한 흰 불빛 한 무리',
     linkedLightsLabel: '첫 회수선 귀환 · 접근선 연결 · 기지 아래 작은 불빛 두 무리',
-    cosReward: name => '무늬 · ' + name,
+    cosReward: (name, slot = 'mark') => api.cos.slot[slot] + ' · ' + name,
     cosWear: '입기',
     cosRemove: '벗기',
     cosFailed: '외형 선택을 저장하지 못했어요. 다시 시도해 주세요.',
@@ -9532,8 +9635,22 @@ thead th {
       's2.4': ['익숙한 날개', 'Extreme · 첫 보스 웨이브'],
       's2.5': ['관문 쪽 신호', 'Extreme · 접점 2곳 연결'],
       's2.6': ['길이 이어질 때', 'Extreme · 연결 시험'],
+      's3.1': ['겹쳐 오는 응답', 'Extreme · 접근로 봉쇄 3묶음'],
+      's3.2': ['첫 엄호 구간', 'Extreme · 선단 엄호'],
+      's3.3': ['먼저 열린 틈', 'Super · 첫 보스 웨이브'],
+      's3.4': ['돌아서는 항로', 'Super · 루나에게 돌아가기'],
+      's3.5': ['함께 빠져나오기', 'Super · 루나와 동행'],
+      's3.6': ['마지막 통과선', 'Super · 통과선 확보'],
+      's3.7': ['돌아오는 배들', 'Super · 다음 항로 인증'],
     },
     purpose: {
+      's3.1': '연결한 길에서 여러 고립선이 응답해요. 선단이 올 접근로를 비우세요.',
+      's3.2': '선단이 혼자 빈 길을 건널 수 없어요. 안전 대기점까지 함께 이동하세요.',
+      's3.3': '선단은 임시 대기점에 있어요. 관문 쪽 앞길을 막은 위협을 제거하세요.',
+      's3.4': '관문 쪽 길은 열렸다. 루나는 뒤에 남았다. 루나에게 돌아가세요.',
+      's3.5': '루나와 만났어요. 다시 떨어지지 않도록 함께 선단 대기점으로 나가세요.',
+      's3.6': '배들과 루나가 모였어요. 마지막 배가 지날 때까지 통과선을 지키세요.',
+      's3.7': '배들은 돌아왔어요. 다음 출격을 준비합니다. 이번 인증과 귀환은 별개예요.',
       p0: '선배의 기체로 마지막 귀환선이 지날 시간을 벌어 주세요.',
       s0: '귀환 신호를 따라가는 짧은 이동 연습입니다.',
       's1.1': '기지까지 살아 돌아가 선배의 신호를 확인하세요.',
@@ -9549,6 +9666,13 @@ thead th {
       's2.6': '전투 중에도 길이 이어지는지 시험하세요. 관문 통과 전, 접근선을 잇는 작전입니다.',
     },
     firstAction: {
+      's3.1': '신호가 겹친 곳의 표식 무리 쪽으로 이동 · 사격은 자동',
+      's3.2': '선단 원 안으로 이동 · 원 안 전진 / 밖 대기',
+      's3.3': 'STAGE를 눌러 보스 호출 · 1 → 2 → 3',
+      's3.4': '아래쪽 구조 마름모로 이동 · 루나에게 돌아가기',
+      's3.5': '루나의 짝날개등 원 안에서 함께 이동',
+      's3.6': '통과선 원 안으로 이동 · 밖으로 피하면 배는 기다립니다',
+      's3.7': '첫 경유점으로 이동',
       's2.1': '빛나는 중계점 원 안으로 이동',
       's2.2': '표시된 적 쪽으로 이동 · 가까운 적을 자동 공격',
       's2.3': '번호 1 마름모로 이동 · 순서대로 실제 도달',
@@ -9557,6 +9681,13 @@ thead th {
       's2.6': '첫 경유점으로 이동',
     },
     nextAction: {
+      's2.6': '고립선 응답 확인',
+      's3.1': '선단 첫 엄호',
+      's3.2': '앞길 위협 제거',
+      's3.3': '루나에게 돌아가기',
+      's3.4': '함께 대기점으로',
+      's3.5': '마지막 통과선 지키기',
+      's3.6': '다음 항로 준비',
       's2.1': '봉쇄 제거로',
       's2.2': '빛을 따라 이동',
       's2.3': '중심 보스 호출',
@@ -9564,6 +9695,7 @@ thead th {
       's2.5': '연결 시험으로',
     },
     journalLines: {
+      's3.6': '관문을 등지고 돌아와 루나와 배들이 지날 때까지 남았다.',
       's1.5': '첫 항로가 열렸다. 기지 가까운 첫 회수선이 돌아온다.',
       's2.6': '끊어진 중계점들을 이었다. 연결점의 지원선이 돌아왔다.',
     },
@@ -9580,11 +9712,12 @@ thead th {
         : {
             prologue: '마지막 귀환선 엄호',
             route: '빛나는 지점을 따라 이동',
-            move: '경유점 ' + goal.points + '개 연결',
+            escort: s.mission === 's3.5' ? '루나와 함께 대기점으로' : '선단을 대기점까지 엄호',
+            move: s.mission === 's3.4' ? '루나에게 돌아가기' : '경유점 ' + goal.points + '개 연결',
             relay: '중계점 ' + goal.points + '곳 연결',
             pass: '틈을 지나 마지막 배 보내기',
             survive: '살아서 ' + storySeconds(goal.time) + ' 버티기',
-            hold: '중계점 확보',
+            hold: s.mission === 's3.6' ? '마지막 배 통과선 확보' : '중계점 확보',
             clear: '봉쇄 무리 제거',
             bosswave: '첫 보스 웨이브 완료',
             cert: 'Hard 인증',
@@ -9592,6 +9725,8 @@ thead th {
     progress: (goal, s) => {
       const clock = (t, end) => timeString(Math.min(t || 0, end)) + ' / ' + timeString(end);
       if (goal.type === 'prologue') return clock(s.time, goal.time);
+      if (goal.type === 'escort')
+        return Math.floor(s.escortDistance || 0) + ' / ' + Math.round(s.escortLength || 0);
       if (goal.type === 'move') return (s.points || 0) + ' / ' + goal.points;
       if (goal.type === 'route')
         return (
@@ -9636,6 +9771,8 @@ thead th {
           '개를 따라 이동하세요. 모두 통과하거나 ' +
           storySeconds(goal.time) +
           '가 지나면 연습을 마칩니다.',
+        escort:
+          '날개등 원 안에서 함께 이동하세요. 밖·대시 중에는 기다리며, 위험이 지나면 다시 이동해요. 배의 체력은 없어요.',
         move:
           '번호가 붙은 경유점 ' +
           goal.points +
@@ -9686,6 +9823,13 @@ thead th {
     introSaved: '이동 연습을 마쳤어요. 이제 첫 귀환에 도전하세요.',
     introKept: '연습과 체험은 보급 없이 무료로 다시 시작할 수 있어요.',
     scenes: {
+      's3.1': '돌아올 배가 더 있어. 자리를 비워 둘게.',
+      's3.2': '선단이 임시 대기점에 도착했다. 기지로 돌아가기 전, 앞길부터 확인하자.',
+      's3.3': '앞서 나왔는데… 돌아갈 길이 닫혔어.',
+      's3.4': '갈 수 있었잖아. 그런데 돌아왔네.',
+      's3.5': '이번엔 네 뒤에서 갈게. 지나갈 때는 내가 알려 줄게.',
+      's3.6': '다 왔어. 이번엔 네 자리까지 남겨 뒀지.',
+      's3.7': '돌아온 배들이 관문 상황을 전했다. 다음 항로로 나갈 준비를 마쳤다.',
       s0: '귀환 신호를 찾았다. 이제 이 기체로 기지까지 돌아갈 차례다.',
       's1.1': '무전 너머 같은 날개등이 두 번 응답했다. 선배는 살아 있다.',
       's1.2': '중계점이 자리를 잡았다. 정박지의 목소리가 끊기지 않고 들린다.',
@@ -9752,6 +9896,7 @@ thead th {
         survive: '사격은 자동이야. 적과 거리를 두고, 길이 막히면 대시로 빠져나와.',
         relay: '밝은 원 안으로 돌아가면 연결이 이어져. 위험할 땐 밖으로 피했다 돌아와도 돼.',
         hold: '밝은 원 안으로 돌아가면 확보가 이어져. 피한 뒤 다시 돌아와도 돼.',
+        escort: '배는 기다려. 날개등 방향을 따라 원 안으로 돌아오면 다시 함께 갈 수 있어.',
         move: '현재 번호의 마름모로 이동해 봐. 지나쳤다면 방향 표식을 따라 돌아오면 돼.',
         clear: '표식이 붙은 봉쇄 적부터 찾아가 봐. 마지막 적이 멀면 방향 표식을 따라가.',
         bosswave: 'STAGE를 눌러 보스를 부르고, 공격 예고가 보이면 대시로 틈을 찾아봐.',
@@ -9796,6 +9941,16 @@ thead th {
               ? '충격파로 적과 탄환 제거'
               : 'HELIOS 출력 상승';
       if (goal.type === 'route') return '번호가 붙은 밝은 원으로 이동';
+      if (goal.type === 'escort')
+        return (
+          {
+            'out-of-range': '엄호 범위로 돌아가기',
+            dash: '대시 뒤 엄호 재개',
+            hazard: '위험이 지나면 다시 이동',
+          }[s.escortWait] || '원 안에서 함께 이동'
+        );
+      if (s.mission === 's3.4') return '아래쪽 구조 마름모로 이동 · 루나에게 돌아가기';
+      if (s.mission === 's3.6') return '원 안에서 통과 · 밖으로 피하면 배는 대기';
       if (goal.type === 'move') return '현재 번호 마름모로 이동 · 사격은 자동';
       if (goal.type === 'hold') return '원 안에서 확보 · 밖에서는 대기';
       if (goal.type === 'relay') return '원 안에서 연결 · 밖에서는 대기';
