@@ -5163,6 +5163,7 @@ return Plotly;
     // 보급 캡슐: 정상 종료 · 솔로 · time초 이상 판 끝에 chance[모드] 확률로 열렸고 없는 G 조각 하나(입히지 않음 · 재화 0)
     cos: {
       items: [
+        { id: 'mark.story-link', slot: 'mark', source: 'story', mission: 's2.6' },
         { id: 'mark.stripe', slot: 'mark', tier: 'basic', g: 300 },
         { id: 'mark.star', slot: 'mark', tier: 'basic', g: 400 },
         { id: 'mark.wing', slot: 'mark', tier: 'basic', g: 500 },
@@ -5410,9 +5411,11 @@ return Plotly;
     // 그 모드가 이미 열린 계정은 alt(대기 없는 이야기형)로 같은 보급을 한 번 받는다. own = 첫 성공에 생기는 독점 보상 id.
     // content = 콘텐츠 판(보급 · 목표를 바꿔도 같은 id에 다시 주지 않는다) · keep = 남기는 스토리 기록 수
     story: {
-      content: 2,
+      content: 3,
       keep: 30,
+      lights: { first: 3, linked: 2 },
       capture: { radius: 96, offset: 190 },
+      path: { margin: 100, hazardGap: 24 },
       route: {
         radius: 44,
         offset: 170,
@@ -5503,6 +5506,67 @@ return Plotly;
           goal: { type: 'operation', points: 2, packs: [8, 10], waves: 1 },
           alt: { type: 'clear', packs: [8, 10] },
           own: 'story.first-route',
+        },
+        's2.1': {
+          kind: 'mission',
+          needs: 's1.5',
+          mode: 'hard',
+          pay: { g: 10, b: 3, s: 0 },
+          field: { g: 4, b: 1, s: 0 },
+          goal: { type: 'hold', time: 12 },
+        },
+        's2.2': {
+          kind: 'mission',
+          needs: 's2.1',
+          mode: 'extream',
+          pay: { g: 10, b: 3, s: 0 },
+          field: { g: 5, b: 1, s: 0 },
+          goal: { type: 'clear', packs: [8, 10, 12] },
+        },
+        's2.3': {
+          kind: 'mission',
+          needs: 's2.2',
+          mode: 'extream',
+          pay: { g: 10, b: 3, s: 0 },
+          field: { g: 3, b: 1, s: 0 },
+          goal: {
+            type: 'move',
+            points: 3,
+            radius: 44,
+            path: [
+              [0, -170],
+              [170, -340],
+              [-100, -510],
+            ],
+          },
+        },
+        's2.4': {
+          kind: 'mission',
+          needs: 's2.3',
+          mode: 'extream',
+          pay: { g: 15, b: 4, s: 0 },
+          field: { g: 6, b: 2, s: 0 },
+          goal: { type: 'bosswave', waves: 1 },
+        },
+        's2.5': {
+          kind: 'mission',
+          needs: 's2.4',
+          mode: 'extream',
+          pay: { g: 10, b: 3, s: 0 },
+          field: { g: 4, b: 1, s: 0 },
+          goal: { type: 'relay', points: 2, time: 5 },
+        },
+        's2.6': {
+          kind: 'cert',
+          needs: 's2.5',
+          mode: 'extream',
+          target: 'super',
+          pay: { g: 20, b: 7, s: 0 },
+          field: { g: 10, b: 2, s: 0 },
+          goal: { type: 'operation', points: 2, packs: [8, 10], waves: 1 },
+          alt: { type: 'clear', packs: [8, 10] },
+          own: 'mark.story-link',
+          ownKind: 'cos',
         },
       },
     },
@@ -6018,6 +6082,7 @@ return Plotly;
       stamp: '없음',
     },
     names: {
+      'mark.story-link': '이어진 접점',
       'mark.stripe': '줄무늬',
       'mark.star': '별',
       'mark.wing': '날개 띠',
@@ -11730,10 +11795,22 @@ return Plotly;
     ],
     toBase: '기지로',
     route: '첫 항로',
-    routeStops: ['기지', '중계점', '관문', '정박지'],
+    routeStops: ['기지', '중계점', '접근선', '관문', '정박지'],
+    chapters: ['첫 항로', '끊어진 길', '돌아오는 배들'],
+    chapterLabel: '이야기 구간',
+    chapterProgress: (name, n, total) => name + ' ' + n + ' / ' + total,
+    chapterLocked: '앞 구간 완료 후',
+    nextStory: '다음 이야기 준비 중이에요. 솔로 출격과 기록 다시 보기는 계속할 수 있어요.',
+    accessLinked: '관문 쪽 접근선 연결 · 관문은 아직 닫혀 있어요',
     routeProgress: (n, total) => '첫 항로 ' + n + ' / ' + total,
     returned: '첫 회수선 귀환',
     lightsLabel: '첫 회수선 귀환 · 기지 아래 따뜻한 흰 불빛 한 무리',
+    linkedLightsLabel: '첫 회수선 귀환 · 접근선 연결 · 기지 아래 작은 불빛 두 무리',
+    cosReward: name => '무늬 · ' + name,
+    cosWear: '입기',
+    cosRemove: '벗기',
+    cosFailed: '외형 선택을 저장하지 못했어요. 다시 시도해 주세요.',
+    firstActionLabel: '첫 행동',
     titleReward: name => '칭호 · ' + name,
     titleOwned: '보유',
     titleWear: '달기',
@@ -11750,6 +11827,12 @@ return Plotly;
       's1.3': ['가까운 길부터', 'Hard · 무리 3묶음'],
       's1.4': ['손본 기체로', 'Hard · 첫 보스 웨이브'],
       's1.5': ['첫 항로 개방', 'Hard · 항로 연결 작전'],
+      's2.1': ['닿지 않는 다음 점', 'Hard · 다음 중계점 확보'],
+      's2.2': ['끊긴 구간부터', 'Extreme · 봉쇄 3묶음'],
+      's2.3': ['빛을 따라', 'Extreme · 경유점 3개 연결'],
+      's2.4': ['익숙한 날개', 'Extreme · 첫 보스 웨이브'],
+      's2.5': ['관문 쪽 신호', 'Extreme · 접점 2곳 연결'],
+      's2.6': ['길이 이어질 때', 'Extreme · 연결 시험'],
     },
     purpose: {
       p0: '선배의 기체로 마지막 귀환선이 지날 시간을 벌어 주세요.',
@@ -11759,6 +11842,31 @@ return Plotly;
       's1.3': '봉쇄를 풀어 첫 회수선이 들어올 길을 만드세요.',
       's1.4': 'STAGE를 올려 보스를 부르고 항로의 중심 위협을 제거하세요.',
       's1.5': '중계점과 항로를 잇고 첫 회수선을 기지로 돌려보내세요.',
+      's2.1': '통신은 닿았지만 길은 끊겼어요. 다음 중계점의 약한 응답을 확보하세요.',
+      's2.2': '봉쇄 위치를 찾았어요. 배가 지날 폭을 비우세요.',
+      's2.3': '열린 길의 접점들이 떨어져 있어요. 기체가 지나는 선을 따라 신호를 이으세요.',
+      's2.4': '연결선 중심의 위협이 길을 막고 있어요. 첫 보스 웨이브를 끝내세요.',
+      's2.5': '미오가 마지막 접점을 짚었어요. 두 접점만 잇고 연결을 시험하세요.',
+      's2.6': '전투 중에도 길이 이어지는지 시험하세요. 관문 통과 전, 접근선을 잇는 작전입니다.',
+    },
+    firstAction: {
+      's2.1': '빛나는 중계점 원 안으로 이동',
+      's2.2': '표시된 적 쪽으로 이동 · 가까운 적을 자동 공격',
+      's2.3': '번호 1 마름모로 이동 · 순서대로 실제 도달',
+      's2.4': 'STAGE를 눌러 보스 호출 · 1 → 2 → 3',
+      's2.5': '번호 1 원 안으로 이동 · 채우면 다음 접점으로',
+      's2.6': '첫 경유점으로 이동',
+    },
+    nextAction: {
+      's2.1': '봉쇄 제거로',
+      's2.2': '빛을 따라 이동',
+      's2.3': '중심 보스 호출',
+      's2.4': '마지막 연결점으로',
+      's2.5': '연결 시험으로',
+    },
+    journalLines: {
+      's1.5': '첫 항로가 열렸다. 기지 가까운 첫 회수선이 돌아온다.',
+      's2.6': '끊어진 중계점들을 이었다. 연결점의 지원선이 돌아왔다.',
     },
     number: id =>
       id === 'p0' ? '선배의 전투' : id === 's0' ? '도입' : id.replace(/^s/, '').replace('.', '-'),
@@ -11773,6 +11881,7 @@ return Plotly;
         : {
             prologue: '마지막 귀환선 엄호',
             route: '빛나는 지점을 따라 이동',
+            move: '경유점 ' + goal.points + '개 연결',
             relay: '중계점 ' + goal.points + '곳 연결',
             pass: '틈을 지나 마지막 배 보내기',
             survive: '살아서 ' + storySeconds(goal.time) + ' 버티기',
@@ -11784,6 +11893,7 @@ return Plotly;
     progress: (goal, s) => {
       const clock = (t, end) => timeString(Math.min(t || 0, end)) + ' / ' + timeString(end);
       if (goal.type === 'prologue') return clock(s.time, goal.time);
+      if (goal.type === 'move') return (s.points || 0) + ' / ' + goal.points;
       if (goal.type === 'route')
         return (
           (s.points || 0) +
@@ -11817,7 +11927,7 @@ return Plotly;
       if (goal.type === 'pass') return clock(s.time, goal.time) + ' · 통과 ' + (s.passed ? '✓' : '대기');
       return clock(s.time, goal.time);
     },
-    goalDetail: goal =>
+    goalDetail: (goal, mode = 'hard', target = 'extream') =>
       ({
         prologue:
           '선배 기체로 HELIOS와 맞서 마지막 배를 엄호합니다. 체험용 장비와 아이템을 사용할 수 있어요.',
@@ -11827,6 +11937,10 @@ return Plotly;
           '개를 따라 이동하세요. 모두 통과하거나 ' +
           storySeconds(goal.time) +
           '가 지나면 연습을 마칩니다.',
+        move:
+          '번호가 붙은 경유점 ' +
+          goal.points +
+          '개에 순서대로 도달하세요. 대시로 통과할 수 있어요. 실전 피해를 받으며, 시간만 지나서는 완료되지 않습니다.',
         relay:
           '빛나는 중계점 ' +
           goal.points +
@@ -11838,7 +11952,9 @@ return Plotly;
           goal.points +
           '개 연결 → 봉쇄 ' +
           goal.packs?.length +
-          '묶음 제거 → 항로 보스 격파. 마지막 목표를 달성하면 Extreme이 열립니다.',
+          '묶음 제거 → 항로 보스 격파. 마지막 목표를 달성하면 ' +
+          api.modeName(target) +
+          '이 열립니다.',
         pass: '밝은 마름모까지 틈을 통과하고 ' + storySeconds(goal.time) + ' 동안 마지막 배를 보냅니다.',
         survive: '살아서 ' + storySeconds(goal.time) + ' 버티기',
         hold:
@@ -11846,9 +11962,12 @@ return Plotly;
         clear: '표시된 봉쇄 무리 ' + (goal.packs?.length || 0) + '묶음 제거. 시간 대기 없음.',
         bosswave: 'STAGE를 올려 첫 일반 보스 웨이브를 끝내세요.',
         cert:
-          'Hard ' +
+          api.modeName(mode) +
+          ' ' +
           storySeconds(goal.time) +
-          ' 생존 + STAGE 3 첫 보스 웨이브 완료. 성공하면 Extreme이 열립니다.',
+          ' 생존 + STAGE 3 첫 보스 웨이브 완료. 성공하면 ' +
+          api.modeName(target) +
+          '이 열립니다.',
       })[goal.type],
     captureHint: '빛나는 원 안에서 연결',
     introGo: '이동 연습 시작',
@@ -11862,9 +11981,9 @@ return Plotly;
       go: '전투 시작',
     },
     locked: '앞 임무 완료 후',
-    storyOnly: 'Hard · 무리 2묶음 · 자격 보유',
+    storyOnly: (mode = 'hard') => api.modeName(mode) + ' · 무리 2묶음 · 자격 보유',
     next: '다음 임무',
-    unlocked: 'Extreme 열림',
+    unlocked: (mode = 'extream') => api.modeName(mode) + ' 열림',
     introSaved: '이동 연습을 마쳤어요. 이제 첫 귀환에 도전하세요.',
     introKept: '연습과 체험은 보급 없이 무료로 다시 시작할 수 있어요.',
     scenes: {
@@ -11874,6 +11993,12 @@ return Plotly;
       's1.3': '가까운 봉쇄가 풀렸다. 첫 회수선이 접근로로 들어선다.',
       's1.4': '중심 위협을 넘었다. 손본 기체로 첫 항로를 지킬 수 있다.',
       's1.5': '첫 항로가 열렸다. 기지 가까운 첫 회수선이 돌아온다.',
+      's2.1': '응답이 잡혔다. 이제 배가 지날 폭을 비우자.',
+      's2.2': '짧은 통과 구간이 열렸다. 떨어진 접점을 잇는 연결선이 드러난다.',
+      's2.3': '기체가 지난 선을 따라 신호가 이어진다. 중심 위협만 남았다.',
+      's2.4': '그 접합부… 선배와 같이 손봤던 자리야.',
+      's2.5': '이번 연결은 네 준비에 맞췄어. 이제 전투 중에도 이어지는지 시험하자.',
+      's2.6': '네가 먼저 간 길이 관문 쪽까지 이어졌어. 접근선 너머로 배들의 응답이 겹쳐 온다.',
     },
     goalLabel: '목표',
     goalProgress: (t, end) => timeString(Math.min(t, end)) + ' / ' + timeString(end),
@@ -11927,6 +12052,8 @@ return Plotly;
       ({
         survive: '사격은 자동이야. 적과 거리를 두고, 길이 막히면 대시로 빠져나와.',
         relay: '밝은 원 안으로 돌아가면 연결이 이어져. 위험할 땐 밖으로 피했다 돌아와도 돼.',
+        hold: '밝은 원 안으로 돌아가면 확보가 이어져. 피한 뒤 다시 돌아와도 돼.',
+        move: '현재 번호의 마름모로 이동해 봐. 지나쳤다면 방향 표식을 따라 돌아오면 돼.',
         clear: '표식이 붙은 봉쇄 적부터 찾아가 봐. 마지막 적이 멀면 방향 표식을 따라가.',
         bosswave: 'STAGE를 눌러 보스를 부르고, 공격 예고가 보이면 대시로 틈을 찾아봐.',
         operation: '지금 표시된 목표부터 하나씩 해결하자. 연결한 뒤 봉쇄와 보스를 넘으면 길이 열려.',
@@ -11970,6 +12097,8 @@ return Plotly;
               ? '충격파로 적과 탄환 제거'
               : 'HELIOS 출력 상승';
       if (goal.type === 'route') return '번호가 붙은 밝은 원으로 이동';
+      if (goal.type === 'move') return '현재 번호 마름모로 이동 · 사격은 자동';
+      if (goal.type === 'hold') return '원 안에서 확보 · 밖에서는 대기';
       if (goal.type === 'relay') return '원 안에서 연결 · 밖에서는 대기';
       if (goal.type === 'bosswave')
         return stage < 3 ? 'STAGE ↑ 눌러 보스 호출 · ' + stage + '/3' : '공격 예고를 피하며 보스 격파';
@@ -12178,6 +12307,7 @@ return Plotly;
         // 칭호 목록 = 이정표 칭호 + 스토리 독점 칭호(R-342) — progression.TITLE_IDS와 같은 순서
         const mile = (BAL.mile || []).filter(m => m.title).map(m => m.id),
           story = Object.values(BAL.story?.missions || {})
+            .filter(d => !d.ownKind || d.ownKind === 'title')
             .map(d => d?.own)
             .filter(id => typeof id === 'string' && id && !mile.includes(id)),
           ids = [...new Set([...mile, ...story])];
