@@ -4722,6 +4722,50 @@ body[data-fx='low'] .is-point::before {
   text-shadow: 0 0 18px color-mix(in srgb, var(--shine) 60%, transparent);
   animation: intro-in 0.45s var(--ease) 1;
 }
+.intro.is-story-ready {
+  pointer-events: auto;
+  align-items: safe end;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: linear-gradient(transparent, color-mix(in srgb, var(--bg) 80%, transparent));
+}
+.story-ready {
+  width: min(100%, 400px);
+  max-height: 100%;
+  min-height: 0;
+  padding: 20px;
+  border: 1px solid var(--cyan);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+.story-ready-body {
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+  overscroll-behavior: contain;
+}
+@media (orientation: landscape) {
+  .story-ready {
+    width: min(100%, 680px);
+  }
+}
+.story-ready h2,
+.story-ready p {
+  margin: 0;
+}
+.story-ready h2 {
+  font-size: 1.35rem;
+}
+.story-ready p {
+  line-height: 1.55;
+}
+.story-ready-controls {
+  color: var(--cyan);
+}
 .intro-title::after {
   content: '';
   position: absolute;
@@ -12863,6 +12907,7 @@ body[data-fx='low'] .st-prestige * {
   }
   #page-play #home-stage {
     min-height: 174px;
+    transform: none;
   }
   #launch-zone {
     grid-template-columns: minmax(0, 1fr);
@@ -13428,7 +13473,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "e1a3337";
+      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "603b062";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -14003,6 +14048,16 @@ body[data-fx='low'] .home-orb.is-teaching {
 
     <!-- S 출격 시작 연출(R-048): 전투 화면 위 겹, 'S 출격' 2초 → 3 · 2 · 1 -->
     <div id="intro" class="intro" data-area="O-INTRO" hidden aria-live="assertive">
+      <section class="story-ready" id="story-ready" hidden aria-labelledby="story-ready-title">
+        <div class="story-ready-body">
+          <div class="eyebrow">출격 준비</div>
+          <h2 id="story-ready-title">마지막 귀환선 엄호</h2>
+          <p>지금은 선배의 기체입니다. HELIOS를 막아 귀환선이 떠날 시간을 버세요.</p>
+          <p class="story-ready-controls">빈 화면을 누른 채 끌면 이동합니다. 공격은 자동입니다.</p>
+          <p class="overlay-note">아직 전투는 멈춰 있습니다. 준비되면 3·2·1 뒤 시작합니다.</p>
+        </div>
+        <button class="btn btn--primary" id="story-ready-go">전투 시작</button>
+      </section>
       <strong class="intro-title" id="intro-title">S 출격</strong>
       <b class="intro-count" id="intro-count" hidden></b>
     </div>
@@ -28757,6 +28812,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     captureHint: '빛나는 원 안에서 연결',
     introGo: '이동 연습 시작',
     prologueGo: '선배로 출격',
+    readyScene: {
+      kicker: '출격 준비',
+      title: '마지막 귀환선 엄호',
+      situation: '지금은 선배의 기체입니다. HELIOS를 막아 귀환선이 떠날 시간을 버세요.',
+      controls: '빈 화면을 누른 채 끌면 이동합니다. 공격은 자동입니다.',
+      wait: '아직 전투는 멈춰 있습니다. 준비되면 3·2·1 뒤 시작합니다.',
+      go: '전투 시작',
+    },
     locked: '앞 임무 완료 후',
     storyOnly: 'Hard · 무리 2묶음 · 자격 보유',
     next: '다음 임무',
@@ -58125,7 +58188,11 @@ async function begin(launch = {}) {
     $('hud-s-wrap').hidden = g.difficultyId !== BAL.superCoin.mode;
     clearInput();
     // S 출격은 연출(약 5초) 뒤에 전투가 흐른다. 일시정지와 같은 길이라 연출이 시간 · 기록에 들어가지 않는다.
-    intro = sc ? { t: 0, step: -1 } : null;
+    intro = sc
+      ? { t: 0, step: -1 }
+      : runStory?.mission === 'p0'
+        ? { story: true, waiting: true, t: 0, step: -1 }
+        : null;
     late = null;
     lateDue = false;
     if (intro) {
@@ -58138,11 +58205,12 @@ async function begin(launch = {}) {
     refreshProfileUI();
     updateHUD();
     canvas.focus({ preventScroll: true });
+    if (intro?.waiting) $('story-ready-go').focus({ preventScroll: true });
     clearAlerts();
     if (!started.ok) notify('startLimited');
     else if (wl) notify('startWorld', runBadge());
     else if (runShadow) notify('startShadow', g.difficultyId);
-    else if (!sc) notify('startNormal', g.difficultyId);
+    else if (!sc && !sd) notify('startNormal', g.difficultyId);
     if (buffs.length) notify('buffOn', buffs);
     const skipped = (started.skipped || []).filter(s => s.reason !== 'mode').map(s => s.id);
     if (skipped.length) notify('buffSkip', skipped);
@@ -58160,22 +58228,35 @@ async function begin(launch = {}) {
 }
 // 연출 단계: 0 = 'S 출격' 제목, 3 · 2 · 1 = 카운트다운. 단계가 바뀔 때만 DOM을 쓴다.
 function tickIntro(dt) {
+  const story = !!intro.story;
+  if (story && intro.waiting) {
+    if (intro.step === 'ready') return;
+    intro.step = 'ready';
+    $('intro').classList.add('is-story-ready');
+    $('story-ready').hidden = false;
+    $('intro-title').hidden = true;
+    $('intro-count').hidden = true;
+    return;
+  }
   intro.t += dt;
   const I = T.ui.intro,
-    left = I.titleSec + I.count - intro.t;
+    titleSec = story ? 0 : I.titleSec,
+    left = titleSec + I.count - intro.t;
   if (left <= 0) {
     intro = null;
     g.resume();
     // 카운트 동안 내려 둔 이동 손가락은 그대로 잇는다(R-216). 대시 · 충격파 요청만 비운다
     controls?.consumeActions();
     syncMode();
-    notify('startSuper', g.stage, g.p.level);
+    if (!story) notify('startSuper', g.stage, g.p.level);
     canvas.focus({ preventScroll: true });
     return;
   }
-  const step = intro.t < I.titleSec ? 0 : Math.ceil(left);
+  const step = intro.t < titleSec ? 0 : Math.ceil(left);
   if (step === intro.step) return;
   intro.step = step;
+  $('intro').classList.remove('is-story-ready');
+  $('story-ready').hidden = true;
   $('intro-title').hidden = step !== 0;
   const count = $('intro-count');
   count.hidden = step === 0;
@@ -58186,6 +58267,15 @@ function tickIntro(dt) {
     void count.offsetWidth;
     count.classList.add('is-pop');
   }
+}
+function startStoryCountdown() {
+  if (!intro?.story || !intro.waiting) return;
+  clearInput();
+  intro.waiting = false;
+  intro.t = 0;
+  intro.step = -1;
+  tickIntro(0);
+  canvas.focus({ preventScroll: true });
 }
 // 시간 압박 창(R-101): 단계 0 = 바뀌는 것 줄(titleSec초), 3 · 2 · 1 = 카운트다운. 엔진은 일시정지(시간 · 기록 · G에 안 셈)
 function startLate() {
@@ -59015,6 +59105,7 @@ function worldResultView(r, place = resultPlace) {
 }
 function goMenu(to = 'play') {
   if (storyResult && storyResult.status !== 'saved') return;
+  intro = null;
   runStory = null;
   storyResult = null;
   $('hud-story').hidden = true;
@@ -61392,6 +61483,7 @@ function bind() {
   $('start').onclick = () =>
     NeonStory.onboarding(profile.snapshot()) ? openStory() : runwayArmed ? launchHome() : runwayTip();
   $('late').onclick = skipLate;
+  $('story-ready-go').onclick = startStoryCountdown;
   // 결과 '다시 출격': 같은 출격 종류(월드 판은 같은 종류 · 모드, R-122)
   $('replay').onclick = () => begin(runLaunch);
   $('sc-start').onclick = () => openPrep();
@@ -61758,7 +61850,7 @@ function bind() {
   controls = new NeonInput.Controls(canvas, {
     enabled: () => g.mode === 'playing' || (g.mode === 'upgrade' && autoEnabled()),
     // 출격 연출 · 시간 압박 카운트 동안 이동 손가락만 미리 받는다(R-216)
-    holdable: () => !!intro || (!!late && late.step > 0),
+    holdable: () => (!!intro && !intro.waiting) || (!!late && late.step > 0),
     worldPoint: (x, y) => ({
       x: (x - width / 2) / zoom + renderer.cam.x,
       y: (y - height / 2) / zoom + renderer.cam.y,
@@ -61798,6 +61890,13 @@ function bind() {
       return false;
     },
     onSuspend: () => {
+      if (intro?.story) {
+        intro.waiting = true;
+        intro.t = 0;
+        intro.step = -1;
+        tickIntro(0);
+        return;
+      }
       if (g.mode === 'playing') {
         g.pause();
         syncMode();
