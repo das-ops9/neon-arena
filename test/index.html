@@ -13556,7 +13556,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "433544c";
+      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "0275b08";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -29161,6 +29161,21 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       go: '전투 시작',
     },
     locked: '앞 임무 완료 후',
+    // 다음 임무 동선(R-354): 결과의 다음 행동과 잠긴 준비. 완료한 임무로 조용히 바꾸지 않고 실제 다음 임무를 읽힌다.
+    nextGo: n => '다음 임무 · ' + n,
+    continueGo: n => '이야기 계속 · ' + n,
+    nextSub: (name, action) => name + (action ? ' · ' + action : ''),
+    replayThis: '이 임무 다시 보기',
+    replayThisSub: '보상 없음',
+    chapterList: '구간 목록',
+    lockLabel: '잠김',
+    lockedMode: mode => modeName(mode) + ' 필요',
+    lockReason: (reason, mode) =>
+      reason === 'mode_locked'
+        ? modeName(mode) + ' 열림 필요 · 솔로 해금 조건 ' + unlockGate(mode)
+        : '앞 임무를 마치면 열려요.',
+    lockSolo: '솔로',
+    lockSoloSub: '모드 열기',
     storyOnly: (mode = 'hard') => api.modeName(mode) + ' · 무리 2묶음 · 자격 보유',
     next: '다음 임무',
     unlocked: (mode = 'extream') => api.modeName(mode) + ' 열림',
@@ -33400,12 +33415,25 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     if (story.returnTo && can(story.returnTo)) return story.returnTo;
     if (story.intro === 'new') return prologueDone(story) ? 's0' : 'p0';
     return (
-      Object.keys(table()).find(id => !['p0', 's0'].includes(id) && !story.done[id] && can(id)) ||
+      upcoming(story, modes) ||
       Object.keys(table())
         .filter(id => !['p0', 's0'].includes(id) && can(id))
         .at(-1) ||
       's0'
     );
+  }
+  // 이야기의 다음 임무(R-354): 저장된 복귀 → 실행 가능한 첫 미완료 → 잠긴 첫 미완료. 완료한 임무로 대체하지 않는다.
+  // 잠겨 있으면 그 임무를 돌려주고 시작 거래가 거절한다(화면은 lock으로 이유를 읽힌다). 전체 완료면 null
+  function upcoming(story, modes) {
+    const r = story.returnTo;
+    if (r && r !== 'p0' && def(r) && !story.done[r] && runPolicy(story, modes, r).ok) return r;
+    const ids = Object.keys(table()).filter(id => !['p0', 's0'].includes(id) && !story.done[id]);
+    return ids.find(id => runPolicy(story, modes, id).ok) || ids[0] || null;
+  }
+  // 잠긴 이유만: null(출격 가능) · 'story_locked'(앞 임무) · 'mode_locked'(난도) · 그 밖의 거절 사유
+  function lock(story, modes, mission) {
+    const q = runPolicy(story, modes, mission);
+    return q.ok ? null : q.reason;
   }
   // 이 임무로 지금 출격하면 어떤 판인가 — 시작 거래가 이 값을 저장한다(화면이 보낸 종류 · 변형은 믿지 않는다).
   // 모르는 임무는 거절(솔로로 바꾸지 않음). 완료한 임무는 다시 보기(보상 없음), 인증은 target 모드가 이미 열렸으면 이야기형
@@ -33543,6 +33571,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     onboarding,
     needsMet,
     selection,
+    upcoming,
+    lock,
     runPolicy,
     room,
     grant,
@@ -50854,10 +50884,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       chapter = /^s(\d+)\./.exec(selected)?.[1] || '1';
     return ST.chapters
       .map((name, i) => {
+        // 실행 가능한 첫 미완료 → 잠긴 첫 미완료(난도 잠김은 이유를 읽도록 연다) → 전체 완료면 첫 임무 다시 보기
         const c = trace.chapters.find(c => c.id === String(i + 1)),
-          id =
-            c?.ids.find(id => !p.story.done[id] && S.runPolicy(p.story, p.unlockedModes, id).ok) || c?.ids[0],
-          can = id && S.runPolicy(p.story, p.unlockedModes, id).ok;
+          open = c?.ids.filter(id => !p.story.done[id]) || [],
+          id = open.find(id => !S.lock(p.story, p.unlockedModes, id)) || open[0] || c?.ids[0],
+          why = id ? S.lock(p.story, p.unlockedModes, id) : 'story_locked',
+          can = !why || why === 'mode_locked';
         return (
           '<span><button class="btn btn--ghost" data-story-chapter="' +
           (id || '') +
@@ -50910,7 +50942,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       trace = root.NeonJourney.storyState(p),
       selected = S.selection(s, p.unlockedModes, preferred),
       pol = S.runPolicy(s, p.unlockedModes, selected),
-      room = S.room(s, selected, pol.kind),
+      // 잠긴 임무는 실패한 정책의 goal/kind를 쓰지 않고 알려진 정의로 설명한다(R-354)
+      room = S.room(s, selected, pol.ok ? pol.kind : S.def(selected).kind),
+      goal = pol.ok ? pol.goal : S.def(selected).goal,
       chapter = /^s(\d+)\./.exec(selected)?.[1] || '1',
       currentChapter = trace.chapters.find(c => c.id === chapter),
       row = (id, i) => {
@@ -50933,14 +50967,30 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           esc(q.variant === 'story-only' ? ST.storyOnly(S.def(id).mode) : ST.mission[id][1]) +
           '</small></span><small>' +
           esc(
-            !q.ok ? ST.locked : q.kind === 'replay' ? ST.replayShort : s.returnTo === id ? ST.continue : '',
+            !q.ok
+              ? q.reason === 'mode_locked'
+                ? ST.lockedMode(S.def(id).mode)
+                : ST.locked
+              : q.kind === 'replay'
+                ? ST.replayShort
+                : s.returnTo === id
+                  ? ST.continue
+                  : '',
           ) +
           '</small></button>' +
           (current
-            ? '<dl class="story-lines"><div><dt>' +
+            ? '<dl class="story-lines">' +
+              (q.ok
+                ? ''
+                : '<div class="story-lock"><dt>' +
+                  ST.lockLabel +
+                  '</dt><dd>' +
+                  esc(ST.lockReason(q.reason, S.def(id).mode)) +
+                  '</dd></div>') +
+              '<div><dt>' +
               ST.goalLabel +
               '</dt><dd>' +
-              esc(ST.goalDetail(pol.goal, S.def(id).mode, S.def(id).target)) +
+              esc(ST.goalDetail(goal, S.def(id).mode, S.def(id).target)) +
               '</dd></div>' +
               (ST.firstAction[id]
                 ? '<div><dt>' +
@@ -51048,6 +51098,14 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       row = (a, b) => '<div><dt>' + esc(a) + '</dt><dd>' + b + '</dd></div>',
       earned = last?.earned || state.ctx.receipt?.earned || state.ctx.earned || { g: 0, b: 0, s: 0 },
       room = S.room(p.story, state.ctx.mission, state.ctx.kind),
+      // 다음 행동(R-354): 저장을 마친 최신 정본에서 다시 계산한다. 첫 성공은 '다음 임무', 다시 보기는 '이야기 계속'.
+      // 전체 완료면 가짜 다음 임무 없이 솔로/구간 목록, 미완료 실패·철수는 같은 임무 복귀(prepare)만
+      ids = Object.keys(S.B.story.missions),
+      next = pending ? null : S.upcoming(p.story, p.unlockedModes),
+      nextLink =
+        next && next !== state.ctx.mission && ((success && !replay && !routeEnd) || replay) ? next : null,
+      finished = !pending && replay && !next,
+      again = !pending && !borrowed && !!p.story.done[state.ctx.mission],
       talk =
         !pending && (!replay || success)
           ? '<p class="story-talk">' +
@@ -51154,7 +51212,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '>' +
           (state.error === 'story_stale' ? ST.read : ST.retry) +
           '</button>'
-        : (!S.onboarding(p) && !routeEnd
+        : (!S.onboarding(p) && !routeEnd && !finished
             ? '<button class="btn btn--ghost" data-story-act="solo">' + ST.solo + '</button>'
             : '') +
           (S.onboarding(p)
@@ -51163,19 +51221,28 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '<button class="btn" data-story-act="grow">' +
           ST.grow +
           '</button><button class="btn' +
-          (success && !replay ? '' : ' btn--primary') +
+          ((success && !replay) || nextLink || finished ? '' : ' btn--primary') +
           '" data-story-act="prepare">' +
-          ST.prepare +
+          (again ? ST.replayThis : ST.prepare) +
           '<small>' +
-          ST.prepareSub +
+          (again ? ST.replayThisSub : ST.prepareSub) +
           '</small></button>' +
-          (success && !replay
-            ? '<button class="btn btn--primary" data-story-act="' +
-              (routeEnd ? 'solo' : 'next') +
-              '">' +
-              (routeEnd ? ST.soloGo : ST.nextAction[state.ctx.mission] || ST.next) +
-              '</button>'
-            : '') +
+          (finished ? '<button class="btn" data-story-act="next">' + ST.chapterList + '</button>' : '') +
+          (routeEnd || finished
+            ? '<button class="btn btn--primary" data-story-act="solo">' + ST.soloGo + '</button>'
+            : nextLink
+              ? '<button class="btn btn--primary" data-story-act="next" data-story-next="' +
+                nextLink +
+                '">' +
+                esc((replay ? ST.continueGo : ST.nextGo)(ST.number(nextLink))) +
+                '<small>' +
+                esc(
+                  ST.nextSub(ST.mission[nextLink][0], ST.nextAction[ids[ids.indexOf(nextLink) - 1]] || ''),
+                ) +
+                '</small></button>'
+              : success && !replay
+                ? '<button class="btn btn--primary" data-story-act="next">' + ST.next + '</button>'
+                : '') +
           (borrowed && !success && !S.onboarding(p) && state.ctx.mission !== 'p0'
             ? '<button class="btn" data-story-act="skipResult">' + ST.skip + '</button>'
             : '')) +
@@ -56084,7 +56151,9 @@ let canvas = $('arena'),
   storyTitleBusy = false,
   storyTitleMessage = '',
   storyMessage = '',
+  // 직접 고른 임무(목록 · 같은 임무 다시 하기)만 기억한다. 자동 선택은 storyPick에만 두고 저장하지 않는다(R-354)
   storySelected = null,
+  storyPick = null,
   storySelectionEpoch = null,
   replayRec = null,
   runLaunch = {},
@@ -57942,13 +58011,13 @@ function renderStory() {
     storySelected = null;
     storySelectionEpoch = p.story.epoch;
   }
-  storySelected = NeonStory.selection(p.story, p.unlockedModes, storySelected);
-  const pol = NeonStory.runPolicy(p.story, p.unlockedModes, storySelected);
+  const pick = (storyPick = NeonStory.selection(p.story, p.unlockedModes, storySelected)),
+    pol = NeonStory.runPolicy(p.story, p.unlockedModes, pick);
   $('story-route').innerHTML = V.storyRoute(p);
   const unavailable = !!profile.blocked || (profile.storageLimited && !profile.backend);
   $('story-route').hidden = unavailable;
   $('story-chapters').hidden = unavailable;
-  $('story-chapters').innerHTML = V.storyChapters(p, storySelected);
+  $('story-chapters').innerHTML = V.storyChapters(p, pick);
   $('story-dialog').dataset.state = unavailable ? 'storage' : a?.state || 'prepare';
   if (unavailable) {
     $('story-body').innerHTML = V.storyStorage(
@@ -57972,7 +58041,7 @@ function renderStory() {
           : profile.unsafe
             ? T.story.unsafe
             : ''),
-    storySelected,
+    pick,
     storyTitleBusy,
     storyTitleMessage,
     selected,
@@ -57988,26 +58057,37 @@ function renderStory() {
           true,
           storyBusy,
         )
-      : storyButton('grow', T.story.grow, false, false, T.story.growSub) +
-        storyButton(
-          'start',
-          storySelected === 's3.2'
-            ? T.story.escortGo
-            : storySelected === 's3.4'
-              ? T.story.returnGo
-              : storySelected === 'p0'
-                ? T.story.prologueGo
-                : storySelected === 's0'
-                  ? T.story.introGo
-                  : pol.kind === 'replay'
-                    ? T.story.replayShort
-                    : p.story.returnTo === storySelected
-                      ? T.story.again
-                      : T.story.go,
-          true,
-          storyBusy || !pol.ok || (profile.unsafe && pol.paid),
-          T.story.number(storySelected) + ' · ' + T.story.free,
-        );
+      : !pol.ok && pol.reason === 'mode_locked'
+        ? // 난도 잠김: 실제 다음 임무를 보이고 출격은 막은 채 기존 솔로 모드 동선으로 안내한다(R-354)
+          storyButton('grow', T.story.grow, false, false, T.story.growSub) +
+          storyButton('solo', T.story.lockSolo, true, storyBusy, T.story.lockSoloSub) +
+          storyButton(
+            'start',
+            T.story.lockLabel,
+            false,
+            true,
+            T.story.number(pick) + ' · ' + T.story.lockedMode(NeonStory.def(pick).mode),
+          )
+        : storyButton('grow', T.story.grow, false, false, T.story.growSub) +
+          storyButton(
+            'start',
+            pick === 's3.2'
+              ? T.story.escortGo
+              : pick === 's3.4'
+                ? T.story.returnGo
+                : pick === 'p0'
+                  ? T.story.prologueGo
+                  : pick === 's0'
+                    ? T.story.introGo
+                    : pol.kind === 'replay'
+                      ? T.story.replayShort
+                      : p.story.returnTo === pick
+                        ? T.story.again
+                        : T.story.go,
+            true,
+            storyBusy || !pol.ok || (profile.unsafe && pol.paid),
+            T.story.number(pick) + ' · ' + (pol.kind === 'replay' ? T.story.replayThisSub : T.story.free),
+          );
 }
 function openStory() {
   if (g.mode !== 'menu' && g.mode !== 'ended' && !(intro?.escort && intro.waiting)) return;
@@ -58020,7 +58100,7 @@ async function beginStory() {
   storyBusy = true;
   renderStory();
   try {
-    await begin({ type: 'story', mission: storySelected });
+    await begin({ type: 'story', mission: storyPick });
   } finally {
     storyBusy = false;
     if ($('story-dialog').open) renderStory();
@@ -61575,7 +61655,9 @@ function registerTools() {
 
 function bind() {
   $('story-open').onclick = () => {
+    // 일반 STORY 진입은 저장된 복귀/다음 미완료부터. 이전에 고른 완료 임무를 다시 고르지 않는다(R-354)
     storyMessage = '';
+    storySelected = null;
     openStory();
   };
   for (const host of [$('story-dialog'), $('story-result'), $('paused')])
@@ -64212,13 +64294,13 @@ async function boot() {
         resume: resumeStoryScreen,
         state: () => storyResult,
         // 배치 검사만: 저장하지 않고 결과의 표시 상태를 주입한다.
-        demo(status, outcome = 'success', mission = 's1.1') {
+        demo(status, outcome = 'success', mission = 's1.1', kind = BAL.story.missions[mission].kind) {
           runStory = runStory || {
             runId: 'layout-story',
             token: 'layout',
             epoch: profile.snapshot().story.epoch,
             mission,
-            kind: BAL.story.missions[mission].kind,
+            kind,
             content: 1,
             variant: 'standard',
             events: [],

@@ -12118,6 +12118,21 @@ return Plotly;
       go: '전투 시작',
     },
     locked: '앞 임무 완료 후',
+    // 다음 임무 동선(R-354): 결과의 다음 행동과 잠긴 준비. 완료한 임무로 조용히 바꾸지 않고 실제 다음 임무를 읽힌다.
+    nextGo: n => '다음 임무 · ' + n,
+    continueGo: n => '이야기 계속 · ' + n,
+    nextSub: (name, action) => name + (action ? ' · ' + action : ''),
+    replayThis: '이 임무 다시 보기',
+    replayThisSub: '보상 없음',
+    chapterList: '구간 목록',
+    lockLabel: '잠김',
+    lockedMode: mode => modeName(mode) + ' 필요',
+    lockReason: (reason, mode) =>
+      reason === 'mode_locked'
+        ? modeName(mode) + ' 열림 필요 · 솔로 해금 조건 ' + unlockGate(mode)
+        : '앞 임무를 마치면 열려요.',
+    lockSolo: '솔로',
+    lockSoloSub: '모드 열기',
     storyOnly: (mode = 'hard') => api.modeName(mode) + ' · 무리 2묶음 · 자격 보유',
     next: '다음 임무',
     unlocked: (mode = 'extream') => api.modeName(mode) + ' 열림',
