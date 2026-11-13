@@ -13556,7 +13556,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "0275b08";
+      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "a0a6c2c";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -29134,7 +29134,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           goal.packs?.length +
           '묶음 제거 → 항로 보스 격파. 마지막 목표를 달성하면 ' +
           api.modeName(target) +
-          '이 열립니다.',
+          ' 모드가 열립니다.',
         pass: '밝은 마름모까지 틈을 통과하고 ' + storySeconds(goal.time) + ' 동안 마지막 배를 보냅니다.',
         survive: '살아서 ' + storySeconds(goal.time) + ' 버티기',
         hold:
@@ -29147,7 +29147,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           storySeconds(goal.time) +
           ' 생존 + STAGE 3 첫 보스 웨이브 완료. 성공하면 ' +
           api.modeName(target) +
-          '이 열립니다.',
+          ' 모드가 열립니다.',
       })[goal.type],
     captureHint: '빛나는 원 안에서 연결',
     introGo: '이동 연습 시작',
@@ -57327,7 +57327,12 @@ let homeKey = '',
   homeCraftKey = '',
   homeTalk = null;
 function renderHome(w = wallet()) {
-  const returnMission = profile.snapshot().story?.returnTo;
+  // STORY 입구 번호(R-355): 복귀 임무 → 지금 출격할 수 있는 다음 미완료. 1-5 · 3-7 뒤 솔로로 갔어도 이어 갈 임무를 홈에서 읽힌다
+  const snapStory = profile.snapshot(),
+    upNext = snapStory.story && NeonStory.upcoming(snapStory.story, snapStory.unlockedModes),
+    returnMission =
+      (upNext && !NeonStory.lock(snapStory.story, snapStory.unlockedModes, upNext) ? upNext : null) ||
+      snapStory.story?.returnTo;
   text('story-open', T.story.entry(returnMission ? T.story.number(returnMission) : ''));
   const storyFirst = NeonStory.onboarding(profile.snapshot());
   text('start', storyFirst ? T.story.continueStory : T.ui.home.runway);
