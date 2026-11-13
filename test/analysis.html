@@ -5402,6 +5402,78 @@ return Plotly;
       },
       keep: { top: 10, weeks: 52, days: 365, practice: 20, inputs: 3 },
     },
+    // 스토리 1단계(R-340~R-342, 편집장 2026-11-13 승인 초기값 — 실전 균형은 알파 뒤 조정). 임무 id는 영구 고정.
+    // kind: intro(대여 도입) · mission(일반) · cert(난도 인증). needs = 먼저 끝낼 것('intro' = 도입을 하거나 건너뜀 · 임무 id).
+    // pay = 첫 성공 보급(G · B · S, 한 번) · field = 미완료 기간 전체의 현장 수급 한도(실패 · 재도전 누계).
+    // goal = 성공 조건(time 초 · packs 유한 무리 크기 · waves 일반 보스 웨이브 수). cert는 target 모드를 솔로 조건과 OR로 열고,
+    // 그 모드가 이미 열린 계정은 alt(대기 없는 이야기형)로 같은 보급을 한 번 받는다. own = 첫 성공에 생기는 독점 보상 id.
+    // content = 콘텐츠 판(보급 · 목표를 바꿔도 같은 id에 다시 주지 않는다) · keep = 남기는 스토리 기록 수
+    story: {
+      content: 1,
+      keep: 30,
+      capture: { radius: 96, offset: 190 },
+      packs: [
+        { chaser: 6, runner: 2 },
+        { chaser: 6, runner: 2, shooter: 2 },
+        { chaser: 6, runner: 4, shooter: 2 },
+      ],
+      intro: {
+        craft: 'striker',
+        level: 29,
+        stacks: { power: 6, rapid: 5, multi: 3, pierce: 3, speed: 2, magnet: 3, vital: 3, shield: 3 },
+        emitterOffset: 240,
+        passOffset: 120,
+        passRadius: 32,
+        ringEvery: 2,
+        tell: 0.6,
+      },
+      missions: {
+        s0: { kind: 'intro', mode: 'easy', goal: { type: 'pass', time: 75 } },
+        's1.1': {
+          kind: 'mission',
+          needs: 'intro',
+          mode: 'easy',
+          pay: { g: 8, b: 2, s: 0 },
+          field: { g: 3, b: 1, s: 0 },
+          goal: { type: 'survive', time: 180 },
+        },
+        's1.2': {
+          kind: 'mission',
+          needs: 's1.1',
+          mode: 'easy',
+          pay: { g: 10, b: 2, s: 0 },
+          field: { g: 4, b: 1, s: 0 },
+          goal: { type: 'hold', time: 90 },
+        },
+        's1.3': {
+          kind: 'mission',
+          needs: 's1.2',
+          mode: 'hard',
+          pay: { g: 10, b: 2, s: 0 },
+          field: { g: 5, b: 1, s: 0 },
+          goal: { type: 'clear', packs: [8, 10, 12] },
+        },
+        's1.4': {
+          kind: 'mission',
+          needs: 's1.3',
+          mode: 'hard',
+          pay: { g: 10, b: 2, s: 0 },
+          field: { g: 5, b: 1, s: 0 },
+          goal: { type: 'bosswave', waves: 1 },
+        },
+        's1.5': {
+          kind: 'cert',
+          needs: 's1.4',
+          mode: 'hard',
+          target: 'extream',
+          pay: { g: 12, b: 4, s: 0 },
+          field: { g: 10, b: 2, s: 0 },
+          goal: { type: 'cert', time: 480, waves: 1 },
+          alt: { type: 'clear', packs: [8, 10] },
+          own: 'story.first-route',
+        },
+      },
+    },
     // 판 중 로그(R-019 경량 로그): 간격(초). 로그가 largeBytes를 넘으면 입력·상태를 inputLarge·stateLarge 간격으로.
     // 처치는 killBatch초마다 종류별 개수로 묶는다. 마지막 tailWindow초는 tail 간격으로 따로 남김. checkpoint초마다 '중단' 기록 저장
     log: {
@@ -5834,6 +5906,7 @@ return Plotly;
     promo3: 'WING LEADER',
     world: 'PATHFINDER',
     world10: 'STAR SEEKER',
+    'story.first-route': '첫 항로',
   };
   const titlePhrases = {
     hour10: '오랜 항해 끝에',
@@ -5843,13 +5916,16 @@ return Plotly;
     promo3: '동료를 이끌어',
     world: '새로운 세계를 연',
     world10: '별빛의 선구자',
+    'story.first-route': '첫 항로를 지킨',
   };
   const titleSentence = ids => {
     const chosen = new Set(ids || []);
     const parts = Object.keys(titles)
       .filter(id => chosen.has(id))
       .map(id => titlePhrases[id]);
-    return parts.length ? parts.join(' ') + (chosen.has('world10') ? '' : ' 조종사') : '';
+    return parts.length
+      ? parts.join(' ') + (chosen.has('world10') && !chosen.has('story.first-route') ? '' : ' 조종사')
+      : '';
   };
   // ── 꾸미기 · 보급 캡슐(R-116 · R-117): 키 = balance.cos id(저장 키, 바꾸지 않음) · 칸. 값 · 열림은 balance.cos.
   // 조각 이름은 id 전체, 소품은 끝 이름(세 고양이 공통). 잠김 글의 이정표 · 칭호 이름은 위 mile · titles
@@ -7378,7 +7454,11 @@ return Plotly;
         broken_record: '기록 정보가 손상된 로그입니다.',
         gm_backup: 'GM 백업은 GM 실험 칸에서만 가져올 수 있습니다.',
         old_backup: '오픈 베타 전 백업은 가져올 수 없어요 · 기록은 새로 시작해요.',
+        // 스토리 장부가 깨진 파일(R-340): 아무것도 가져오지 않는다
+        broken_story: '스토리 진행 정보가 손상된 백업입니다.',
       },
+      // 정산하지 못한 스토리 임무가 남아 백업을 만들지 않을 때(R-340)
+      unsettled: '스토리 임무 저장을 마친 뒤 백업할 수 있습니다.',
       // 가져오기 비교표 줄 이름
       rows: {
         gold: G,
@@ -7402,6 +7482,10 @@ return Plotly;
         // 16단계 보강: M코인 잔액 · 알림함 받을 보상 줄 수(R-313)
         mc: 'M 코인',
         inbox: '받을 보상',
+        // 스토리(R-340): 완료 임무 수 · 임무에서 받은 현장 수급 합 · 독점 보상 수
+        story: '스토리 임무',
+        storyField: '현장 수급 이력',
+        storyOwn: '스토리 보상',
       },
       compareHead: { item: '항목', file: '파일', now: '지금', owned: '보유', none: '없음', down: '줄어듦' },
     },
@@ -7481,6 +7565,11 @@ return Plotly;
       // 저장 형식 이관(R-100)이 아직 끝나지 않아 프로필을 쓰지 않았을 때
       migrate:
         '저장 형식을 새로 맞추지 못해 저장을 멈췄습니다. 앱을 다시 열어 주세요. 기록 · 재화는 그대로입니다.',
+      // 프로필이 어느 저장소에 있는지 정하지 못했거나 그 저장소를 읽지 못할 때(R-340): 다른 저장소로 넘어가지 않고 멈춘다
+      unknown: '저장 위치를 확인하지 못해 저장을 멈췄습니다. 새로고침해 주세요. 기록 · 재화는 그대로입니다.',
+      // 스토리 장부를 읽지 못할 때(R-340): 자르거나 비우지 않고 멈춘다
+      story:
+        '스토리 진행 정보를 읽지 못해 저장을 멈췄습니다. 앱을 다시 열어 주세요. 기록 · 재화는 그대로입니다.',
     },
   };
 
@@ -10609,9 +10698,28 @@ return Plotly;
           {
             term: view.journal.titleLabel,
             desc:
-              '일곱 이정표가 주는 이름(' +
+              '일곱 이정표와 스토리가 주는 이름(' +
               Object.values(titles).join(' · ') +
               '). 여러 개를 고르면 이어진 문장이 그 뒤 전투의 기록 카드에 붙는다.',
+          },
+        ],
+      },
+      {
+        title: '스토리',
+        items: [
+          {
+            term: 'STORY · 스토리',
+            desc: '홈 입구는 STORY, 창은 스토리. 임무를 준비하고 결과에서 솔로·성장으로 왕복한다.',
+          },
+          { term: '첫 항로 · 첫 귀환', desc: '첫 구간과 대표 임무. 첫 귀환은 Easy에서 살아서 3분 버티기다.' },
+          { term: '첫 달성 보급', desc: '임무의 첫 성공과 함께 한 번 자동 저장되는 보급. 받기 버튼은 없다.' },
+          {
+            term: '이 임무의 남은 수급',
+            desc: '미완료 기간 전체 현장 한도에서 이미 저장된 수급을 뺀 값. 지갑 잔액·첫 보급과 다르다.',
+          },
+          {
+            term: '기록 다시 보기',
+            desc: '완료한 임무에 무료로 재출격한다. 현장 수급·첫 보급·해금은 반복하지 않는다.',
           },
         ],
       },
@@ -11566,6 +11674,152 @@ return Plotly;
     power,
     welcome,
   };
+  api.story = {
+    title: '스토리',
+    entry: n => 'STORY' + (n ? ' ' + n : '') + ' ›',
+    route: '첫 항로',
+    routeStops: ['기지', '중계점', '관문', '정박지'],
+    routeProgress: (n, total) => '첫 항로 ' + n + ' / ' + total,
+    returned: '첫 회수선 귀환',
+    lightsLabel: '첫 회수선 귀환 · 기지 아래 따뜻한 흰 불빛 한 무리',
+    titleReward: name => '칭호 · ' + name,
+    titleOwned: '보유',
+    titleWear: '달기',
+    titleWorn: '입은 것 ✓',
+    titleWearing: '저장 중…',
+    titleFailed: '칭호 선택을 저장하지 못했어요. 다시 달아 주세요.',
+    titleLocked: '꾸미기 상점과 캡슐은 그대로 잠겨 있어요.',
+    journal: '스토리 · 첫 항로',
+    mission: {
+      s0: ['마지막 배가 지날 때까지', '선배 기체로 틈 통과'],
+      's1.1': ['첫 귀환', 'Easy · 생존 3분'],
+      's1.2': ['신호가 머무는 곳', 'Easy · 원 안에서 90초 확보'],
+      's1.3': ['가까운 길부터', 'Hard · 무리 3묶음'],
+      's1.4': ['손본 기체로', 'Hard · 첫 보스 웨이브'],
+      's1.5': ['첫 항로 개방', 'Hard · 인증'],
+    },
+    number: id => (id === 's0' ? '도입' : id.replace(/^s/, '').replace('.', '-')),
+    goal: '살아서 3분 버티기',
+    goalFor: goal =>
+      ({
+        pass: '틈을 지나 마지막 배 보내기',
+        survive: '살아서 3분 버티기',
+        hold: '중계점 확보',
+        clear: '봉쇄 무리 제거',
+        bosswave: '첫 보스 웨이브 완료',
+        cert: 'Hard 인증',
+      })[goal.type],
+    progress: (goal, s) => {
+      const clock = (t, end) => timeString(Math.min(t || 0, end)) + ' / ' + timeString(end);
+      if (goal.type === 'hold') return clock(s.hold, goal.time);
+      if (goal.type === 'clear') return s.cleared + ' / ' + goal.packs.reduce((a, b) => a + b, 0);
+      if (goal.type === 'bosswave') return s.waves ? '완료' : 'STAGE 3';
+      if (goal.type === 'cert') return clock(s.time, goal.time) + ' · 보스 ' + (s.waves ? '✓' : '0/1');
+      if (goal.type === 'pass') return clock(s.time, goal.time) + ' · 통과 ' + (s.passed ? '✓' : '대기');
+      return clock(s.time, goal.time);
+    },
+    goalDetail: goal =>
+      ({
+        pass: '밝은 마름모까지 틈을 통과하고 75초 동안 마지막 배를 보냅니다. 대여 기체 · 보급 없음.',
+        survive: '살아서 3분 버티기',
+        hold: '원 안에서 누적 90초. 원 밖·대시 무적 중에는 멈추며, 재도전은 0초부터.',
+        clear: '표시된 봉쇄 무리 ' + (goal.packs?.length || 0) + '묶음 제거. 시간 대기 없음.',
+        bosswave: 'STAGE를 올려 첫 일반 보스 웨이브를 끝내세요.',
+        cert: 'Hard 8분 생존 + STAGE 3 첫 보스 웨이브 완료. 성공하면 Extreme이 열립니다.',
+      })[goal.type],
+    captureHint: '마름모 원 안에 머물기',
+    introGo: '선배로 출격',
+    locked: '앞 임무 완료 후',
+    storyOnly: 'Hard · 무리 2묶음 · 자격 보유',
+    next: '다음 임무 선택',
+    unlocked: 'Extreme 열림',
+    introSaved: '도입을 저장했습니다. 이제 신입의 첫 귀환을 준비할 수 있어요.',
+    introKept: '대여 기체의 성장은 계정에 옮겨지지 않습니다. 다시 출격하거나 건너뛸 수 있어요.',
+    scenes: {
+      s0: '수호자는 언제나 틈을 남긴다. 마지막 배를 보낸 선배는 반대편에 남았다.',
+      's1.1': '무전 너머 같은 날개등이 두 번 응답했다. 선배는 살아 있다.',
+      's1.2': '중계점이 자리를 잡았다. 정박지의 목소리가 끊기지 않고 들린다.',
+      's1.3': '가까운 봉쇄가 풀렸다. 첫 회수선이 접근로로 들어선다.',
+      's1.4': '중심 위협을 넘었다. 손본 기체로 첫 항로를 지킬 수 있다.',
+      's1.5': '첫 항로가 열렸다. 기지 가까운 첫 회수선이 돌아온다.',
+    },
+    goalLabel: '목표',
+    goalProgress: (t, end) => timeString(Math.min(t, end)) + ' / ' + timeString(end),
+    firstPay: '첫 달성 보급',
+    field: '이 임무의 남은 수급',
+    earned: '현장 수급',
+    once: '성공하면 한 번',
+    received: '받음',
+    saved: '저장됨',
+    none: '없음',
+    replay: '기록 다시 보기 · 보상 없음',
+    replayShort: '다시 보기',
+    free: '무료',
+    go: '출격',
+    again: '다시 출격',
+    prepare: '같은 임무 준비',
+    grow: '성장',
+    growSub: '강화하고 오기',
+    solo: '솔로',
+    soloSub: '준비하고 출격',
+    home: '홈',
+    pending: '준비 중',
+    done: '완료',
+    continue: '계속',
+    intro: '도입',
+    skip: '건너뛰기',
+    introPending: '선배 기체로 마지막 배를 보내세요. 건너뛰고 신입의 첫 임무부터 시작할 수도 있어요.',
+    later: '첫 항로를 완료했습니다. 완료한 임무는 보상 없이 다시 볼 수 있어요.',
+    continuity: '열어 둔 기능과 성장은 그대로 이어집니다.',
+    spent: '남은 수급이 없어도 무료로 재도전할 수 있어요.',
+    busy: '이전 출격이 남아 있어요. 철수 처리 후 같은 임무를 처음부터 준비할 수 있습니다. 이미 저장된 수급은 남아요.',
+    abandon: '이전 출격 철수 후 준비',
+    ready: '저장을 마치지 못한 결과가 있어요. 정산을 먼저 다시 시도해 주세요.',
+    unsafe: '이 브라우저에서는 여러 탭의 지급을 안전하게 잠글 수 없어 보상 임무를 시작할 수 없어요.',
+    stale: '다른 탭에서 출격이나 진행이 바뀌었어요. 전투를 멈췄습니다. 현재 진행을 다시 읽어 주세요.',
+    saving: '저장 중입니다. 저장을 마친 뒤 다음 행동으로 이어집니다.',
+    failed: '아직 저장하지 못했어요. 같은 진행을 다시 저장할 수 있습니다.',
+    waiting: '목표 달성 · 저장 대기',
+    closing: '철수 · 저장 대기',
+    success: '임무 완료',
+    withdrawn: '철수',
+    defeated: '귀환 실패',
+    settled: '첫 보급을 저장했습니다. 별도로 받을 필요가 없습니다.',
+    kept: '이미 저장된 수급은 남아 있습니다. 준비를 바꿔 같은 임무로 돌아올 수 있어요.',
+    noReward: '다시 보기에서는 사건과 보급이 반복되지 않습니다.',
+    signal: '무전 너머 같은 날개등이 두 번 응답했다. 선배는 살아 있다.',
+    mio: '미오 · 기지 정비',
+    withdrawTalk: '손본 기체로 다시 가도 돼. 같은 항로에서 기다릴게.',
+    retry: '저장 다시 시도',
+    help: '저장 도움',
+    read: '다시 읽기',
+    helpText:
+      '먼저 저장을 다시 시도해 주세요. 이미 저장된 수급은 남아 있습니다. 정산 전에는 새 백업을 만들 수 없어요. 가지고 있는 백업은 보관해 주세요.',
+    unavailable:
+      '저장소를 읽지 못했어요. 진행과 보급을 지키기 위해 출격을 멈췄습니다. 다시 읽은 뒤 현재 진행을 확인해 주세요.',
+    choose:
+      '서로 다른 진행이 있어요. 계속 쓸 진행 하나를 골라 주세요. 잔액과 완료 임무를 합치지 않으며 다른 원본은 보존합니다.',
+    backend: { idb: '기본 저장소', ls: '보조 저장소' },
+    chooseBackend: name => name + '로 계속',
+    backendSummary: (n, intro) =>
+      '완료 임무 ' + n + '개 · 도입 ' + ({ new: '전', done: '완료', skipped: '건너뜀' }[intro] || '전'),
+    unreadable: '읽지 못함',
+    empty: '저장된 진행 없음',
+    warning: '전투 경고',
+    warningTag: type =>
+      ({
+        siegeWarn: '포위 예고',
+        siege: '포위',
+        boss: '보스 접근',
+        late: '시간 압박',
+        hazard: '붕괴 위험',
+        revive: '부활',
+      })[type] || '전투 경고',
+    storageTag: '저장 확인 필요',
+    pauseDetail: '목표 · 전투 상세',
+    moveTip: '빈 화면을 끌어 이동',
+    dashTip: '위험할 때 대시',
+  };
   root.NeonTerms = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
@@ -11617,6 +11871,8 @@ return Plotly;
   // DB 버전 4(R-100): 구조는 그대로. 프로필 schemaVersion 5와 함께 올려 v4.10 이하 화면(옛 탭)을 끊는다
   // (옛 migrate는 schemaVersion 5 문서를 잔액 0으로 읽고 다시 저장한다).
   // DB 버전 5(16a, 편집장 2026-11-03 1.a): 구조는 그대로. 프로필 새 칸(inbox · mc)을 모르는 옛 탭이 쓰면 버리므로 끊는다.
+  // DB 버전 6(R-340): 구조는 그대로. 프로필 schemaVersion 6(스토리 장부)과 함께 올려 v5 화면(옛 탭)을 끊는다
+  // (옛 화면은 story 칸을 모르고 다시 저장해 지급 증명을 지운다).
   // DB_BASE: 접미사 없는 DB 이름(v4.2.x 실제 주소 · 로컬 · 검사 빌드). 내보내기 · 검사 도구가 이름을 만들 때 쓴다.
   // REAL_NS(R-323 오픈 베타): 실제 주소 빌드의 접미사 — 기록 새로 시작. 옛 DB · 옛 키(OLD_KEYS)는 지우지도 옮기지도 않는다.
   // 배포 도구(tools/deploy.cjs)가 같은 값을 읽어 실제 경로 빌드 · 접미사 검사에 쓴다(단일 원본).
@@ -11629,7 +11885,7 @@ return Plotly;
     ]),
     DB_BASE = 'neon-arena-endless-v2',
     DB_NAME = DB_BASE + NS,
-    DB_VERSION = 5,
+    DB_VERSION = 6,
     RECORDS_KEY = 'neon-endless-records-v2' + NS,
     // DB 없이 저장한 기록의 사본(R-264): 다음에 DB가 열리면 이것만 DB로 옮기고 지운다(캐시 전체는 옮기지 않는다)
     PENDING_KEY = 'neon-endless-records-pending-v1' + NS,
@@ -11752,7 +12008,12 @@ return Plotly;
           .slice(0, 50),
       );
       if (Array.isArray(l.cos.titles)) {
-        const ids = (BAL.mile || []).filter(m => m.title).map(m => m.id);
+        // 칭호 목록 = 이정표 칭호 + 스토리 독점 칭호(R-342) — progression.TITLE_IDS와 같은 순서
+        const mile = (BAL.mile || []).filter(m => m.title).map(m => m.id),
+          story = Object.values(BAL.story?.missions || {})
+            .map(d => d?.own)
+            .filter(id => typeof id === 'string' && id && !mile.includes(id)),
+          ids = [...new Set([...mile, ...story])];
         out.cos.titles = ids.filter(id => l.cos.titles.includes(id));
       }
     }
@@ -11815,7 +12076,34 @@ return Plotly;
     ]);
   }
   // normalizeRecord가 아는 최상위 칸. 그 밖의 칸은 JSON 값이면 그대로 둔다(앞으로 호환, R-100)
+  // 스토리 판 표식(R-340): { v, mission, content, kind, variant, outcome } — 정산 거래가 저장된 판 정보에서만 만든다.
+  // launch 안의 임의 키는 정규화에서 사라지므로 최상위 칸으로 왕복한다. 꼴이 틀리면 표식 없음.
+  // 이 칸에서 완료 · 보급 · 자격을 되살리지 않는다(지급 증명은 프로필 story.done뿐)
+  const STORY_KINDS = ['intro', 'mission', 'cert', 'replay'],
+    STORY_VARIANTS = ['standard', 'story-only'],
+    STORY_OUTCOMES = ['success', 'withdrawn', 'failed', 'interrupted'];
+  function safeStory(s) {
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+    if (
+      s.v !== 1 ||
+      !isId(s.mission) ||
+      intIn(s.content, 0, 9999) === null ||
+      !STORY_KINDS.includes(s.kind) ||
+      !STORY_VARIANTS.includes(s.variant) ||
+      !STORY_OUTCOMES.includes(s.outcome)
+    )
+      return null;
+    return {
+      v: 1,
+      mission: s.mission,
+      content: s.content,
+      kind: s.kind,
+      variant: s.variant,
+      outcome: s.outcome,
+    };
+  }
   const RECORD_KEYS = [
+    'story',
     'id',
     'version',
     'balance',
@@ -11929,6 +12217,12 @@ return Plotly;
     };
     const shadow = safeShadow(raw.shadow);
     if (shadow) r.shadow = shadow;
+    // 스토리 판(R-340): 출격 종류 'story'와 표식은 늘 함께 — 한쪽만 있으면 스토리 판으로 고정해 솔로 순위 · 해금 · 경력에 섞이지 않게 한다
+    const story = safeStory(raw.story);
+    if (story || r.launch.type === 'story') {
+      r.launch.type = 'story';
+      if (story) r.story = story;
+    }
     for (const k of [
       'score',
       'time',
@@ -12082,6 +12376,16 @@ return Plotly;
       recent = new Set(kept.slice(0, logs).map(r => r.id)),
       dropLogs = kept.filter(r => !recent.has(r.id) && !safe.has(r.id) && r.log === 'full').map(r => r.id);
     return { remove, dropLogs };
+  }
+  // ── 스토리 기록(R-340): 솔로 순위 · 보호 · 자동 정리 · 경력 밖. 최근 story.keep판만 남긴다(지급 증명은 프로필이라 지워도 됨) ──
+  const isStory = r => r?.launch?.type === 'story';
+  function storyPlan(records) {
+    const keep = finiteCount(BAL.story?.keep ?? 30),
+      list = (records || [])
+        .map(normalizeRecord)
+        .filter(r => r && isStory(r))
+        .sort((a, b) => oldestFirst(b, a));
+    return { remove: list.slice(keep).map(r => r.id) };
   }
   // ── 월드 기록(R-121) ──
   const Week = () => root.NeonWeek || (typeof require === 'function' ? require('./week.js') : null);
@@ -12586,7 +12890,8 @@ return Plotly;
         const plan = prunePlan(list, opts),
           wp = BAL.world ? worldPlan(list, opts.now ?? Date.now()) : { remove: [], dropInputs: [] },
           byId = new Map(list.map(r => [r.id, r])),
-          remove = [...plan.remove, ...wp.remove];
+          // 스토리 기록(R-340)도 같은 트랜잭션에서 최근 판만 남긴다
+          remove = [...plan.remove, ...wp.remove, ...storyPlan(list).remove];
         return {
           ok: true,
           remove,
@@ -13209,6 +13514,9 @@ return Plotly;
     byRecent,
     normalizeRecord,
     isSolo,
+    isStory,
+    storyPlan,
+    safeStory,
     badgeMode,
     companionOf,
     partyOf,

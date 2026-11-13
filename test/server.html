@@ -816,7 +816,7 @@ body[data-hud='s'] {
       </nav>
     </main>
     <script>
-      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "dabaf0d";
+      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "9da5b1a";
     </script>
     <script>
       (function (root) {
@@ -1048,12 +1048,17 @@ body[data-hud='s'] {
       });
     return out;
   }
-  function load(store = root.localStorage) {
+  // 키 없음·읽기 불가(null)와 저장된 로그아웃 상태(빈 계정)를 구분한다.
+  function readAccount(store = root.localStorage) {
     try {
-      return clean(JSON.parse((store && store.getItem(key())) || 'null'));
+      const raw = store && store.getItem(key());
+      return raw ? clean(JSON.parse(raw)) : null;
     } catch {
-      return clean(null);
+      return null;
     }
+  }
+  function load(store = root.localStorage) {
+    return readAccount(store) || clean(null);
   }
   function save(acct, store = root.localStorage) {
     const a = clean(acct);
@@ -1209,20 +1214,35 @@ body[data-hud='s'] {
     }
     return r;
   }
+  // 계정 변경을 기다리는 사이 새 로그인·로그아웃이 저장됐으면 그 상태를 그대로 돌려준다.
+  // 같은 로그인에서 갱신된 백업 기억은 최신 저장을 쓰고, 저장이 막힌 기기는 메모리 계정으로 동작한다.
+  function accountResult(a, before, update, opts) {
+    const current = readAccount(opts?.store);
+    if (
+      (current && (current.id !== a.id || current.token !== a.token)) ||
+      (before && (!current || current.id !== before.id || current.token !== before.token))
+    )
+      return { ok: true, stale: true, acct: current || clean(null) };
+    return { ok: true, acct: save(update(current || a), opts?.store) };
+  }
   async function logout(acct, opts) {
-    await authed(acct, 'POST', '/v1/logout', {}, opts); // 실패해도 이 기기는 로그아웃
-    return { ok: true, acct: save(signedOut(acct), opts && opts.store) };
+    const a = clean(acct),
+      before = readAccount(opts?.store);
+    const r = await authed(a, 'POST', '/v1/logout', {}, opts); // 실패해도 이 기기는 로그아웃
+    if (r.acct) return { ok: true, acct: r.acct }; // 이 요청의 401 정리는 정상 로그아웃
+    return accountResult(a, before, signedOut, opts);
   }
   async function changeNick(acct, nick, opts) {
-    const r = await authed(acct, 'POST', '/v1/nick', { nick }, opts);
+    const a = clean(acct),
+      before = readAccount(opts?.store);
+    const r = await authed(a, 'POST', '/v1/nick', { nick }, opts);
     if (!r.ok) return r;
-    return {
-      ok: true,
-      acct: save(
-        { ...clean(acct), nick: r.body.account.nick, nickAt: r.body.account.nickAt },
-        opts && opts.store,
-      ),
-    };
+    return accountResult(
+      a,
+      before,
+      current => ({ ...current, nick: r.body.account.nick, nickAt: r.body.account.nickAt }),
+      opts,
+    );
   }
   async function changePassword(acct, { pw, next }, opts) {
     const a = clean(acct);
@@ -1238,14 +1258,22 @@ body[data-hud='s'] {
     );
   }
   async function remove(acct, pw, opts) {
-    const a = clean(acct);
+    const a = clean(acct),
+      before = readAccount(opts?.store);
     const s = await request('POST', '/v1/salt', { nick: a.nick }, opts);
     if (!s.ok) return s;
     const r = await authed(a, 'DELETE', '/v1/me', { key: await derive(pw, s.body.salt) }, opts);
     if (!r.ok) return r;
-    const out = signedOut(a);
-    delete out.hash[a.id];
-    return { ok: true, acct: save(out, opts && opts.store) };
+    return accountResult(
+      a,
+      before,
+      current => {
+        const out = signedOut(current);
+        delete out.hash[a.id];
+        return out;
+      },
+      opts,
+    );
   }
   // 복구 코드 새로 만들기(비밀번호 확인 → 새 코드, 옛 코드 무효)
   async function newCode(acct, pw, opts) {
@@ -1267,7 +1295,7 @@ body[data-hud='s'] {
   const claim = (acct, ids, opts) => authed(acct, 'POST', '/v1/claim', { ids }, opts);
 
   // ---- 클라우드 백업(16b R-151) ----
-  // 사본 = NeonBackup.makeBackup(schema 3) 그대로. 기기에서 gzip(CompressionStream, 없으면 JSON 글자) → base64, 상한 1.5MB.
+  // 사본 = NeonBackup.makeBackup(schema 4, R-340 스토리 장부 포함) 그대로. 기기에서 gzip(CompressionStream, 없으면 JSON 글자) → base64, 상한 1.5MB.
   // 내용 hash = 정렬 키 JSON(기록 id 순, 내보낸 시각 · 앱 버전 · gm 뺌)의 SHA-256 — 기기 · 탭이 달라도 같은 내용이면 같은 값.
   const CLOUD_MAX = 1500000;
   const DROP = new Set(['exportedAt', 'app', 'gm']);
