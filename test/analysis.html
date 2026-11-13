@@ -285,6 +285,9 @@
   --cos-darkred: #5a1224;
   --cos-redvein: #c8334f;
   --cos-rubyglass: #e2506b;
+  /* 스토리 완주 표식 색(R-359 mcol.story-dawn, cosmetic-visuals STORY_COLORS와 같은 값) */
+  --cos-story-dawn: #ffc27a;
+  --cv-cos-story-dawn: var(--cos-story-dawn);
   --cv-cos-aqua: var(--cos-aqua);
   --cv-cos-ice: var(--cos-ice);
   --cv-cos-cobalt: var(--cos-cobalt);
@@ -5297,6 +5300,9 @@ return Plotly;
         { id: 'trail.opswake', slot: 'trail', tier: 'world', m: 120 },
         // 스토리 4구간 끝(R-357 · s4.8 owns): 상점 · 캡슐에 없음, 첫 성공으로만
         { id: 'trail.story-gate', slot: 'trail', source: 'story', mission: 's4.8' },
+        // 스토리 완주(R-359 · s5.4 owns): 표식 색(새벽 금빛) · 전투 곡. 상점 · 캡슐 · 일괄 구매 · M에 없음
+        { id: 'mcol.story-dawn', slot: 'mcol', source: 'story', mission: 's5.4' },
+        { id: 'music.story-return', slot: 'music', source: 'story', mission: 's5.4' },
         { id: 'frame.junction', slot: 'frame', tier: 'world', m: 60 },
         { id: 'frame.gate', slot: 'frame', tier: 'world', m: 70 },
         { id: 'frame.bastion', slot: 'frame', tier: 'world', m: 80 },
@@ -5416,13 +5422,18 @@ return Plotly;
     story: {
       content: 3,
       keep: 30,
-      lights: { first: 3, linked: 2, fleet: 5, gate: 3 },
+      lights: { first: 3, linked: 2, fleet: 5, gate: 3, senior: 1 },
       returnSeconds: 2.4,
+      // 결말 연출(R-359 s5.4 첫 성공): 전장 위 길이(초), 탭으로 넘김
+      endingSeconds: 4,
       capture: { radius: 96, offset: 190 },
       path: { margin: 100, hazardGap: 24 },
       // 틈 읽기(R-356 gap): 관측 HELIOS가 기체에서 dist 자리에 머물며 patterns(HELIOS 단계 번호)의 틈 고리만 쏜다.
       // 4 · 5의 틈은 기체 쪽에서 turn°씩 번갈아(1은 기존 식). 고리 피해는 1단계 배율
       gap: { dist: 420, turn: 60, patterns: [1, 4, 5] },
+      // 집중전(R-358 final, 스토리 데이터 한정): hpX = HELIOS 체력 배율(솔로 final.hp 불변), dmgX = 받는 피해 배율(모든 피해,
+      // 숨기지 않음 — 준비 · HUD 한 줄). lead 판단 · 007 lab-sim 참조 계정 2/5 격파 · 약 5.5분(임시값, 폰 피드백 패치에서 다시)
+      final: { hpX: 0.2, dmgX: 0.04 },
       route: {
         radius: 44,
         offset: 170,
@@ -5750,6 +5761,47 @@ return Plotly;
             ],
           },
           owns: [{ id: 'trail.story-gate', kind: 'cos' }],
+        },
+        // 5구간 '마지막 귀환'(R-358, MISSIONS 3절). 모두 Insane. 보급(임시값 · HELIOS 필요량 미측정이라 하한):
+        // 첫 보급 400 G · 125 B · 5 S, 현장 한도 170 G · 45 B · 0 S. prep = 스토리 배분(시작 LV · 배분 수, S 비용 없음,
+        // 시작 거래가 검사해 고정). final = 실제 HELIOS 집중전(STAGE stage). s5.4 완주 보상 3종 = owns
+        's5.1': {
+          kind: 'mission',
+          needs: 's4.8',
+          mode: 'insane',
+          pay: { g: 70, b: 22, s: 1 },
+          field: { g: 35, b: 9, s: 0 },
+          goal: { type: 'clear', packs: [8, 10, 12], prep: { level: 29, picks: 28 } },
+        },
+        's5.2': {
+          kind: 'mission',
+          needs: 's5.1',
+          mode: 'insane',
+          pay: { g: 70, b: 22, s: 2 },
+          field: { g: 35, b: 9, s: 0 },
+          goal: { type: 'hold', time: 25 },
+        },
+        's5.3': {
+          kind: 'mission',
+          needs: 's5.2',
+          mode: 'insane',
+          pay: { g: 70, b: 22, s: 1 },
+          field: { g: 35, b: 9, s: 0 },
+          goal: { type: 'gap', pattern: 5, gaps: 3 },
+        },
+        's5.4': {
+          kind: 'mission',
+          needs: 's5.3',
+          mode: 'insane',
+          pay: { g: 190, b: 59, s: 1 },
+          field: { g: 65, b: 18, s: 0 },
+          goal: { type: 'final', stage: 100, prep: { level: 59, picks: 58 } },
+          // 완주 보상 3종(R-359): 칭호 · 표식 색 · 전투 곡(이름 terms · 색 cosmetic-visuals · 곡 music.js)
+          owns: [
+            { id: 'story.last-return', kind: 'title' },
+            { id: 'mcol.story-dawn', kind: 'cos' },
+            { id: 'music.story-return', kind: 'cos' },
+          ],
         },
       },
     },
@@ -6186,6 +6238,7 @@ return Plotly;
     world: 'PATHFINDER',
     world10: 'STAR SEEKER',
     'story.first-route': '첫 항로',
+    'story.last-return': '마지막 귀환',
   };
   const titlePhrases = {
     hour10: '오랜 항해 끝에',
@@ -6196,6 +6249,7 @@ return Plotly;
     world: '새로운 세계를 연',
     world10: '별빛의 선구자',
     'story.first-route': '첫 항로를 지킨',
+    'story.last-return': '선배를 데려온',
   };
   const titleSentence = ids => {
     const chosen = new Set(ids || []);
@@ -6268,6 +6322,7 @@ return Plotly;
       'mark.story-link': '이어진 접점',
       'frame.story-return': '돌아온 날개등',
       'trail.story-gate': '관문 대기선',
+      'mcol.story-dawn': '새벽 귀환',
       'mark.stripe': '줄무늬',
       'mark.star': '별',
       'mark.wing': '날개 띠',
@@ -6357,6 +6412,7 @@ return Plotly;
       'music.first': '첫 질주',
       'music.dark': '다크 사이버',
       'music.dnb': '드럼앤베이스',
+      'music.story-return': '귀환의 아침',
       'frame.stars': '별자리',
       'frame.circuit': '회로',
       'frame.neon': '네온 이중선',
@@ -6405,6 +6461,7 @@ return Plotly;
       'music.first': '16분 베이스 · 사각파 훅 · 처음 전투 곡',
       'music.dark': '반박자 북 · 미끄러지는 베이스 · 어두운 단조',
       'music.dnb': '빠른 브레이크 · 서브 베이스 · 전자 피아노',
+      'music.story-return': '첫 질주 주제를 밝은 장조로 · 스토리 완주 곡',
     },
     frame: {
       'frame.story-return': '아래쪽 짝불빛과 얇은 귀환 테두리',
@@ -11963,6 +12020,8 @@ return Plotly;
     power,
     welcome,
   };
+  // 집중전 받는 피해 배율(balance story.final.dmgX) → 줄어드는 비율(%)
+  const guardPct = () => Math.round((1 - (B().story.final?.dmgX ?? 1)) * 100);
   function storySeconds(t) {
     return t >= 60 && t % 60 === 0 ? t / 60 + '분' : t + '초';
   }
@@ -11982,13 +12041,60 @@ return Plotly;
     toBase: '기지로',
     route: '첫 항로',
     routeStops: ['기지', '중계점', '접근선', '관문', '정박지'],
-    chapters: ['첫 항로', '끊어진 길', '돌아오는 배들', '관문 앞에서'],
+    chapters: ['첫 항로', '끊어진 길', '돌아오는 배들', '관문 앞에서', '마지막 귀환'],
     chapterLabel: '이야기 구간',
     chapterProgress: (name, n, total) => name + ' ' + n + ' / ' + total,
     chapterLocked: '앞 구간 완료 후',
     fleetLightsLabel: '배들과 루나 귀환 · 기지 아래 큰 선단 불빛',
     gateLightsLabel: '관문 대기선 준비 · 기지 아래 선단 불빛과 관문 쪽 불빛',
     gateLinked: '관문 대기선 준비 · 선배 쪽 신호를 기다려요',
+    // 5구간 끝(R-359): 정박지 노드 · 홈 선배의 불빛(다른 색 한 개)
+    seniorHome: '정박지 도착 · 선배와 모두 돌아왔어요',
+    seniorLightsLabel: '모두 귀환 · 선단 불빛과 관문 불빛 위에 선배의 금빛 불빛 하나',
+    seniorSpeaker: '선배 · 귀환',
+    // 스토리 배분(R-359 · 5.1 · 5.4): 기존 출격 준비 화면을 스토리 모드로(S 비용 · 단계 고르기 없음)
+    prepGo: '배분 준비',
+    prepLabel: '시작 배분',
+    prepTitle: n => '배분 · ' + n,
+    prepLine: goal =>
+      (goal.type === 'final' ? stage.upper + ' ' + goal.stage + ' · ' : '') +
+      level.short +
+      ' ' +
+      goal.prep.level +
+      ' · 배분 ' +
+      goal.prep.picks +
+      '회 · ' +
+      SC +
+      ' 비용 없음',
+    prepNote: (goal, first, done) =>
+      first
+        ? '배분 ' + goal.prep.picks + '회 → 시작 ' + level.short + ' ' + goal.prep.level + ' · 출격 뒤 3·2·1'
+        : done
+          ? '배분 완료 · ' + SC + ' 비용 없음 · 출격하면 이 배분으로 시작해요'
+          : '스토리 배분 · ' + SC + ' 비용 없음 · 배분은 판마다 새로',
+    // 집중전 받는 피해 배율(lead 판단, balance story.final.dmgX): 숨기지 않고 준비 · HUD에 한 줄
+    finalGuard: '동료 엄호 방벽 · 받는 피해 −' + guardPct() + '%',
+    finalGuardHud: '엄호 방벽 · 받는 피해 −' + guardPct() + '%',
+    finalSuccess: '관문 통과',
+    // 결말 연출(R-359): 전장 위 4초, 탭으로 넘김
+    endingLabel: '결말 · 누르면 넘어가요',
+    endingLines: [
+      '세 겹의 틈이 열린 채 멈췄다.',
+      '배들이 틈을 지나 기지로 향한다.',
+      '건너편 날개등이 두 번 — 선배가 돌아온다.',
+    ],
+    endingSkip: '누르면 넘어가요',
+    // 후일담 '다음 항로'(R-359): 스토리 창 구간 칸의 마지막, 전투 · 보상 없음
+    epilogue: '다음 항로',
+    epilogueSub: '후일담',
+    epilogueGo: '후일담 보기',
+    epilogueLines: [
+      ['토토 · 기지 보급', '배들 정박 끝. 이제 보급은 평소처럼 돌아가.'],
+      ['미오 · 기지 정비', '네 배분, 기록해 뒀어. 다음 출격에도 손볼 수 있어.'],
+      ['루나 · 항로 정찰', '틈 박자는 이제 우리 몸이 기억해.'],
+      ['선배 · 귀환', '다음 항로는 네가 정해. 나는 뒤에서 날게.'],
+    ],
+    epilogueNote: '솔로 출격과 월드에서 계속 날 수 있어요. 완주 보상은 꾸미기에서도 바꿔 입어요.',
     // 틈 읽기(R-357 · s4.2 첫 준비): 정지 도식 + 직접 시작 → 3·2·1. 4.7은 반복 없음
     gapGo: '틈 읽기 시작',
     gapDiagram: '◯ 고리 · ⌒ 빈 틈 → 그 방향으로 들어가기',
@@ -12062,6 +12168,10 @@ return Plotly;
       's4.6': ['동승 인가', 'Insane · 봉쇄 2묶음'],
       's4.7': ['박자 맞추기', 'Insane · 틈 읽기 4번'],
       's4.8': ['양쪽 준비 완료', 'Insane · 선단 엄호'],
+      's5.1': ['시작 배분', 'Insane · 배분 출격 · 봉쇄 3묶음'],
+      's5.2': ['함께 탄다', 'Insane · 관문 신호 ' + storySeconds(B().story.missions['s5.2'].goal.time)],
+      's5.3': ['세 겹의 틈', 'Insane · 세 겹 틈 ' + B().story.missions['s5.3'].goal.gaps + '번'],
+      's5.4': ['마지막 귀환', 'Insane · HELIOS 집중전'],
     },
     purpose: {
       's3.1': '연결한 길에서 여러 고립선이 응답해요. 선단이 올 접근로를 비우세요.',
@@ -12079,6 +12189,10 @@ return Plotly;
       's4.6': '처음으로 수호자의 난도에서 나섭니다. 표시된 봉쇄 무리를 걷어 내세요.',
       's4.7': '팀과 선배 쪽 박자를 맞춥니다. 루나의 신호에 맞춰 틈으로 들어가세요.',
       's4.8': '여러 척이 지날 대기선으로 배들을 옮깁니다. 선단을 관문 대기선까지 엄호하세요.',
+      's5.1': '마지막 작전의 시작 빌드를 미오와 다듬어요. 배분한 빌드로 봉쇄를 걷어 내세요.',
+      's5.2': '건너편 신호를 기다리며 관문 신호를 지키세요. 동반 승무원이 없어도 출격할 수 있어요.',
+      's5.3': '마지막 고리의 모양을 미리 봅니다. 세 겹이 한 줄로 맞는 순간 틈으로 들어가세요.',
+      's5.4': '준비는 끝났어요. HELIOS를 격파하고 마지막 배가 지날 때까지 살아남으세요.',
       p0: '선배의 기체로 마지막 귀환선이 지날 시간을 벌어 주세요.',
       s0: '귀환 신호를 따라가는 짧은 이동 연습입니다.',
       's1.1': '기지까지 살아 돌아가 선배의 신호를 확인하세요.',
@@ -12109,6 +12223,10 @@ return Plotly;
       's4.6': '표식이 붙은 봉쇄 무리 쪽으로 이동',
       's4.7': '루나의 신호에 맞춰 틈으로',
       's4.8': '선단 원 안으로 이동 · 원 안 전진 / 밖 대기',
+      's5.1': '배분을 마치고 출격 · 표식 무리 쪽으로 이동',
+      's5.2': '빛나는 원 안으로 이동 · 피했다 돌아와도 이어짐',
+      's5.3': '세 겹이 한 줄로 맞는 틈으로 들어가기',
+      's5.4': '배분을 마치고 출격 · 단계가 바뀔 때 자리 잡기',
       's2.1': '빛나는 중계점 원 안으로 이동',
       's2.2': '표시된 적 쪽으로 이동 · 가까운 적을 자동 공격',
       's2.3': '번호 1 마름모로 이동 · 순서대로 실제 도달',
@@ -12132,6 +12250,10 @@ return Plotly;
       's4.5': '첫 Insane 작전',
       's4.6': '박자 맞추기',
       's4.7': '양쪽 준비',
+      's4.8': '배분 출격',
+      's5.1': '관문 신호 지키기',
+      's5.2': '세 겹 틈 읽기',
+      's5.3': 'HELIOS 집중전',
       's2.1': '봉쇄 제거로',
       's2.2': '빛을 따라 이동',
       's2.3': '중심 보스 호출',
@@ -12143,6 +12265,7 @@ return Plotly;
       's1.5': '첫 항로가 열렸다. 기지 가까운 첫 회수선이 돌아온다.',
       's2.6': '끊어진 중계점들을 이었다. 연결점의 지원선이 돌아왔다.',
       's4.8': '관문 대기선에 배들이 모였다. 이제 선배 쪽 신호만 남았다.',
+      's5.4': '선배의 날개등이 기지 위에 다시 켜졌다. 모두 돌아왔다.',
     },
     number: id =>
       id === 'p0' ? '선배의 전투' : id === 's0' ? '도입' : id.replace(/^s/, '').replace('.', '-'),
@@ -12162,11 +12285,20 @@ return Plotly;
             relay: '중계점 ' + goal.points + '곳 연결',
             pass: '틈을 지나 마지막 배 보내기',
             survive: '살아서 ' + storySeconds(goal.time) + ' 버티기',
-            hold: s.mission === 's3.6' ? '마지막 배 통과선 확보' : '중계점 확보',
+            hold:
+              s.mission === 's3.6'
+                ? '마지막 배 통과선 확보'
+                : s.mission === 's5.2'
+                  ? '관문 신호 유지'
+                  : '중계점 확보',
             clear: '봉쇄 무리 제거',
             bosswave: goal.waves > 1 ? '보스 웨이브 ' + goal.waves + '번 완료' : '첫 보스 웨이브 완료',
             cert: 'Hard 인증',
-            gap: '틈으로 고리 ' + goal.gaps + '번 통과',
+            gap:
+              goal.pattern === 5
+                ? '세 겹 틈 ' + goal.gaps + '번 통과'
+                : '틈으로 고리 ' + goal.gaps + '번 통과',
+            final: 'HELIOS 격파 · 끝까지 생존',
           }[goal.type],
     progress: (goal, s) => {
       const clock = (t, end) => timeString(Math.min(t || 0, end)) + ' / ' + timeString(end);
@@ -12203,6 +12335,8 @@ return Plotly;
       if (goal.type === 'hold') return clock(s.hold, goal.time);
       if (goal.type === 'clear') return s.cleared + ' / ' + goal.packs.reduce((a, b) => a + b, 0);
       if (goal.type === 'gap') return '틈 통과 ' + (s.gaps || 0) + ' / ' + goal.gaps;
+      if (goal.type === 'final')
+        return fin.boss + ' 단계 ' + (s.phase || 1) + ' / ' + (B().final.phases.length + 1);
       if (goal.type === 'bosswave' && goal.waves > 1) return '보스 ' + (s.waves || 0) + ' / ' + goal.waves;
       if (goal.type === 'bosswave') return s.waves ? '완료' : 'STAGE 3';
       if (goal.type === 'cert') return clock(s.time, goal.time) + ' · 보스 ' + (s.waves ? '✓' : '0/1');
@@ -12253,7 +12387,13 @@ return Plotly;
         gap:
           '관측 중인 HELIOS가 쏘는 고리의 빈 틈으로 ' +
           goal.gaps +
-          '번 들어가세요. 맞거나 대시로 넘은 고리는 세지 않아요. HELIOS는 다가오지 않고 공격받지 않아요.',
+          '번 들어가세요. 맞거나 대시로 넘은 고리는 세지 않아요. HELIOS는 다가오지 않고 공격받지 않아요.' +
+          (goal.pattern === 5 ? ' 세 겹 고리는 세 겹 모두 지나야 한 번이에요.' : ''),
+        final:
+          stage.upper +
+          ' ' +
+          goal.stage +
+          ' Insane HELIOS를 격파하고 살아남으세요. 다섯 단계 모두, 격파와 같은 순간 쓰러지면 철수예요. 철수하면 배분 · 성장을 바꿔 무료로 다시 도전할 수 있어요.',
         cert:
           api.modeName(mode) +
           ' ' +
@@ -12310,6 +12450,10 @@ return Plotly;
       's4.6': '이제 같이 타도 돼. S는 제작으로 만들 수 있어.',
       's4.7': '봐, 박자 맞으면 둘도 지나.',
       's4.8': '배들 다 준비됐어. 이제 선배 쪽 신호만.',
+      's5.1': '이 배분, 마지막에도 쓸 수 있어.',
+      's5.2': '건너편 날개등이 두 번 깜빡였다. 신호가 돌아왔다.',
+      's5.3': '저 틈이 배들의 길이야. 끝까지 열어 두자.',
+      's5.4': '늦었지. 길을 이어 줘서 고마워.',
       s0: '귀환 신호를 찾았다. 이제 이 기체로 기지까지 돌아갈 차례다.',
       's1.1': '무전 너머 같은 날개등이 두 번 응답했다. 선배는 살아 있다.',
       's1.2': '중계점이 자리를 잡았다. 정박지의 목소리가 끊기지 않고 들린다.',
@@ -12382,6 +12526,7 @@ return Plotly;
         bosswave: 'STAGE를 눌러 보스를 부르고, 공격 예고가 보이면 대시로 틈을 찾아봐.',
         operation: '지금 표시된 목표부터 하나씩 해결하자. 연결한 뒤 봉쇄와 보스를 넘으면 길이 열려.',
         gap: '고리가 퍼지기 전에 빈 쪽을 보고 그 방향으로 들어가. 대시로 넘으면 세지 않아.',
+        final: '단계가 바뀔 때 탄이 사라져. 그 틈에 자리를 잡고, 예고가 보이면 대시로 빠져.',
       })[goal.type] || '손본 기체로 다시 가도 돼. 같은 항로에서 기다릴게.',
     retry: '저장 다시 시도',
     help: '저장 도움',
@@ -12433,6 +12578,8 @@ return Plotly;
       // 틈 읽기(R-357): 관측 태그 + 빈 쪽 안내. 4.7은 고리 예고 순간 루나 신호 '지금'
       if (goal.type === 'gap')
         return s.signal ? '지금 · 루나 신호 · 틈으로' : '관측 · 고리의 빈 쪽으로 들어가기';
+      // 집중전(R-359): 받는 피해 배율을 숨기지 않는다(경고 태그 자리, 경고가 오면 경고가 먼저)
+      if (goal.type === 'final') return '엄호 방벽 · 받는 피해 −' + guardPct() + '%';
       if (s.mission === 's3.4') return '아래쪽 구조 마름모로 이동 · 루나에게 돌아가기';
       if (s.mission === 's3.6') return '원 안에서 통과 · 밖으로 피하면 배는 대기';
       if (goal.type === 'move') return '현재 번호 마름모로 이동 · 사격은 자동';
