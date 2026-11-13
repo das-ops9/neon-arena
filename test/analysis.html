@@ -5295,6 +5295,8 @@ return Plotly;
         { id: 'flame.compression', slot: 'flame', tier: 'world', m: 120 },
         { id: 'trail.rally', slot: 'trail', tier: 'world', m: 80 },
         { id: 'trail.opswake', slot: 'trail', tier: 'world', m: 120 },
+        // 스토리 4구간 끝(R-357 · s4.8 owns): 상점 · 캡슐에 없음, 첫 성공으로만
+        { id: 'trail.story-gate', slot: 'trail', source: 'story', mission: 's4.8' },
         { id: 'frame.junction', slot: 'frame', tier: 'world', m: 60 },
         { id: 'frame.gate', slot: 'frame', tier: 'world', m: 70 },
         { id: 'frame.bastion', slot: 'frame', tier: 'world', m: 80 },
@@ -5414,10 +5416,13 @@ return Plotly;
     story: {
       content: 3,
       keep: 30,
-      lights: { first: 3, linked: 2, fleet: 5 },
+      lights: { first: 3, linked: 2, fleet: 5, gate: 3 },
       returnSeconds: 2.4,
       capture: { radius: 96, offset: 190 },
       path: { margin: 100, hazardGap: 24 },
+      // 틈 읽기(R-356 gap): 관측 HELIOS가 기체에서 dist 자리에 머물며 patterns(HELIOS 단계 번호)의 틈 고리만 쏜다.
+      // 4 · 5의 틈은 기체 쪽에서 turn°씩 번갈아(1은 기존 식). 고리 피해는 1단계 배율
+      gap: { dist: 420, turn: 60, patterns: [1, 4, 5] },
       route: {
         radius: 44,
         offset: 170,
@@ -5656,6 +5661,95 @@ return Plotly;
           field: { g: 12, b: 3, s: 0 },
           goal: { type: 'operation', points: 2, packs: [8, 10, 12], waves: 1 },
           alt: { type: 'clear', packs: [8, 10] },
+        },
+        // 4구간 '관문 앞에서'(R-356, design/story-stage4-5-plan-2026-11-13 MISSIONS 2절). 보급은 003 B 측정 후보(임시값):
+        // 첫 보급 280 G · 90 B · 0 S, 현장 한도 120 G · 32 B · 0 S. 접근 묶음 s4.1~4.5(Super → Ultra, 4.5 = Insane 인증),
+        // 작전 맞추기 s4.6~4.8(Insane — 스토리 첫 Insane 출격 인정은 실행 판 시작 거래). gap = 틈 읽기(pattern = HELIOS 단계 번호),
+        // calm = 일반 보스 웨이브 동안 정규 출현 배율(R-361, 스토리 데이터 한정). owns = 첫 성공 독점 보상 [{ id, kind }]
+        's4.1': {
+          kind: 'mission',
+          needs: 's3.7',
+          mode: 'super',
+          pay: { g: 25, b: 8, s: 0 },
+          field: { g: 10, b: 3, s: 0 },
+          goal: {
+            type: 'move',
+            points: 3,
+            radius: 44,
+            path: [
+              [0, -170],
+              [-170, -340],
+              [100, -510],
+            ],
+          },
+        },
+        's4.2': {
+          kind: 'mission',
+          needs: 's4.1',
+          mode: 'ultra',
+          pay: { g: 30, b: 10, s: 0 },
+          field: { g: 12, b: 3, s: 0 },
+          goal: { type: 'gap', pattern: 1, gaps: 4 },
+        },
+        's4.3': {
+          kind: 'mission',
+          needs: 's4.2',
+          mode: 'ultra',
+          pay: { g: 30, b: 10, s: 0 },
+          field: { g: 12, b: 3, s: 0 },
+          goal: { type: 'relay', points: 3, time: 5 },
+        },
+        's4.4': {
+          kind: 'mission',
+          needs: 's4.3',
+          mode: 'ultra',
+          pay: { g: 40, b: 13, s: 0 },
+          field: { g: 18, b: 5, s: 0 },
+          goal: { type: 'bosswave', waves: 2, calm: 0.25 },
+        },
+        's4.5': {
+          kind: 'cert',
+          needs: 's4.4',
+          mode: 'ultra',
+          target: 'insane',
+          pay: { g: 70, b: 22, s: 0 },
+          field: { g: 28, b: 8, s: 0 },
+          goal: { type: 'operation', points: 2, packs: [8, 10, 12], waves: 1 },
+          alt: { type: 'clear', packs: [8, 10] },
+        },
+        's4.6': {
+          kind: 'mission',
+          needs: 's4.5',
+          mode: 'insane',
+          pay: { g: 30, b: 9, s: 0 },
+          field: { g: 14, b: 3, s: 0 },
+          goal: { type: 'clear', packs: [8, 10] },
+        },
+        's4.7': {
+          kind: 'mission',
+          needs: 's4.6',
+          mode: 'insane',
+          pay: { g: 25, b: 8, s: 0 },
+          field: { g: 12, b: 3, s: 0 },
+          goal: { type: 'gap', pattern: 4, gaps: 4 },
+        },
+        's4.8': {
+          kind: 'mission',
+          needs: 's4.7',
+          mode: 'insane',
+          pay: { g: 30, b: 10, s: 0 },
+          field: { g: 14, b: 4, s: 0 },
+          goal: {
+            type: 'escort',
+            radius: 120,
+            speed: 40,
+            path: [
+              [0, -80],
+              [0, -480],
+              [-400, -480],
+            ],
+          },
+          owns: [{ id: 'trail.story-gate', kind: 'cos' }],
         },
       },
     },
@@ -6173,6 +6267,7 @@ return Plotly;
     names: {
       'mark.story-link': '이어진 접점',
       'frame.story-return': '돌아온 날개등',
+      'trail.story-gate': '관문 대기선',
       'mark.stripe': '줄무늬',
       'mark.star': '별',
       'mark.wing': '날개 띠',
@@ -11887,11 +11982,27 @@ return Plotly;
     toBase: '기지로',
     route: '첫 항로',
     routeStops: ['기지', '중계점', '접근선', '관문', '정박지'],
-    chapters: ['첫 항로', '끊어진 길', '돌아오는 배들'],
+    chapters: ['첫 항로', '끊어진 길', '돌아오는 배들', '관문 앞에서'],
     chapterLabel: '이야기 구간',
     chapterProgress: (name, n, total) => name + ' ' + n + ' / ' + total,
     chapterLocked: '앞 구간 완료 후',
     fleetLightsLabel: '배들과 루나 귀환 · 기지 아래 큰 선단 불빛',
+    gateLightsLabel: '관문 대기선 준비 · 기지 아래 선단 불빛과 관문 쪽 불빛',
+    gateLinked: '관문 대기선 준비 · 선배 쪽 신호를 기다려요',
+    // 틈 읽기(R-357 · s4.2 첫 준비): 정지 도식 + 직접 시작 → 3·2·1. 4.7은 반복 없음
+    gapGo: '틈 읽기 시작',
+    gapDiagram: '◯ 고리 · ⌒ 빈 틈 → 그 방향으로 들어가기',
+    gapRule: '고리의 빈 쪽으로 들어가세요. 대시로 넘은 고리는 세지 않아요.',
+    insaneFirst: '첫 Insane 출격이면 새 기능이 함께 열립니다.',
+    // 4구간 기능 소개(R-357): 결과의 보조 행동 하나 + 한 줄. 주 행동은 '다음 임무'
+    feature: {
+      's4.6': '동승 · 승무원을 태워 함께 출격해요. S는 성장의 S 제작으로 만들 수 있어요.',
+      's4.7': '도색 · 격납고에서 기체 색을 바꿀 수 있어요. 사지 않아도 이야기는 이어져요.',
+      's4.8': '월드 연습 · 6모드를 보상 걱정 없이 연습할 수 있어요.',
+    },
+    featureGo: { 's4.6': '승무원 보기', 's4.7': '격납고 도색 보기', 's4.8': '월드 연습' },
+    featureOpen: '이미 열려 있는 기능',
+    selfSpeaker: '나 · 관측 메모',
     escortGo: '엄호 시작',
     returnGo: '루나에게 돌아가기',
     escortRule: '배는 공격받지 않아요. 원 안에서 함께 이동하면 전진하고, 밖에서는 기다려요.',
@@ -11943,6 +12054,14 @@ return Plotly;
       's3.5': ['함께 빠져나오기', 'Super · 루나와 동행'],
       's3.6': ['마지막 통과선', 'Super · 통과선 확보'],
       's3.7': ['돌아오는 배들', 'Super · 다음 항로 인증'],
+      's4.1': ['관문 쪽 소식', 'Super · 경유점 3개 연결'],
+      's4.2': ['박자를 세다', 'Ultra · 틈 읽기 4번'],
+      's4.3': ['무너지는 접근로', 'Ultra · 접점 3곳 연결'],
+      's4.4': ['두 겹의 수호', 'Ultra · 보스 웨이브 2번'],
+      's4.5': ['관문 앞 인증', 'Ultra · Insane 인증'],
+      's4.6': ['동승 인가', 'Insane · 봉쇄 2묶음'],
+      's4.7': ['박자 맞추기', 'Insane · 틈 읽기 4번'],
+      's4.8': ['양쪽 준비 완료', 'Insane · 선단 엄호'],
     },
     purpose: {
       's3.1': '연결한 길에서 여러 고립선이 응답해요. 선단이 올 접근로를 비우세요.',
@@ -11952,6 +12071,14 @@ return Plotly;
       's3.5': '루나와 만났어요. 다시 떨어지지 않도록 함께 선단 대기점으로 나가세요.',
       's3.6': '배들과 루나가 모였어요. 마지막 배가 지날 때까지 통과선을 지키세요.',
       's3.7': '배들은 돌아왔어요. 다음 출격을 준비합니다. 이번 인증과 귀환은 별개예요.',
+      's4.1': '돌아온 배들이 본 관문은 닫혀 있지 않았어요. 관문이 보이는 곳까지 나가 보세요.',
+      's4.2': '관문 수호자가 고리를 내뿜어요. 고리의 빈 틈이 열리는 박자를 세세요.',
+      's4.3': '관문 앞 길이 자꾸 무너져요. 무너지는 곳을 피해 접점을 이으세요.',
+      's4.4': '접근로 끝을 강한 수호가 두 겹으로 지켜요. 보스 웨이브 두 번을 끝내세요.',
+      's4.5': '수호자 앞에 설 자격을 증명하세요. 이번 인증과 관문 통과는 별개예요.',
+      's4.6': '처음으로 수호자의 난도에서 나섭니다. 표시된 봉쇄 무리를 걷어 내세요.',
+      's4.7': '팀과 선배 쪽 박자를 맞춥니다. 루나의 신호에 맞춰 틈으로 들어가세요.',
+      's4.8': '여러 척이 지날 대기선으로 배들을 옮깁니다. 선단을 관문 대기선까지 엄호하세요.',
       p0: '선배의 기체로 마지막 귀환선이 지날 시간을 벌어 주세요.',
       s0: '귀환 신호를 따라가는 짧은 이동 연습입니다.',
       's1.1': '기지까지 살아 돌아가 선배의 신호를 확인하세요.',
@@ -11974,6 +12101,14 @@ return Plotly;
       's3.5': '루나의 짝날개등 원 안에서 함께 이동',
       's3.6': '통과선 원 안으로 이동 · 밖으로 피하면 배는 기다립니다',
       's3.7': '첫 경유점으로 이동',
+      's4.1': '번호 1 마름모로 이동 · 사격은 자동',
+      's4.2': '고리의 빈 쪽으로 들어가기 · 대시로 넘으면 세지 않음',
+      's4.3': '번호 1 원 안으로 이동 · 무너지는 곳은 피하기',
+      's4.4': 'STAGE를 눌러 1 → 2 → 3, 끝나면 4 → 5 → 6',
+      's4.5': '첫 경유점으로 이동',
+      's4.6': '표식이 붙은 봉쇄 무리 쪽으로 이동',
+      's4.7': '루나의 신호에 맞춰 틈으로',
+      's4.8': '선단 원 안으로 이동 · 원 안 전진 / 밖 대기',
       's2.1': '빛나는 중계점 원 안으로 이동',
       's2.2': '표시된 적 쪽으로 이동 · 가까운 적을 자동 공격',
       's2.3': '번호 1 마름모로 이동 · 순서대로 실제 도달',
@@ -11989,6 +12124,14 @@ return Plotly;
       's3.4': '함께 대기점으로',
       's3.5': '마지막 통과선 지키기',
       's3.6': '다음 항로 준비',
+      's3.7': '관문 앞으로',
+      's4.1': '틈 관측',
+      's4.2': '붕괴 지대',
+      's4.3': '강한 수호 돌파',
+      's4.4': '관문 앞 인증',
+      's4.5': '첫 Insane 작전',
+      's4.6': '박자 맞추기',
+      's4.7': '양쪽 준비',
       's2.1': '봉쇄 제거로',
       's2.2': '빛을 따라 이동',
       's2.3': '중심 보스 호출',
@@ -11999,6 +12142,7 @@ return Plotly;
       's3.6': '관문을 등지고 돌아와 루나와 배들이 지날 때까지 남았다.',
       's1.5': '첫 항로가 열렸다. 기지 가까운 첫 회수선이 돌아온다.',
       's2.6': '끊어진 중계점들을 이었다. 연결점의 지원선이 돌아왔다.',
+      's4.8': '관문 대기선에 배들이 모였다. 이제 선배 쪽 신호만 남았다.',
     },
     number: id =>
       id === 'p0' ? '선배의 전투' : id === 's0' ? '도입' : id.replace(/^s/, '').replace('.', '-'),
@@ -12020,8 +12164,9 @@ return Plotly;
             survive: '살아서 ' + storySeconds(goal.time) + ' 버티기',
             hold: s.mission === 's3.6' ? '마지막 배 통과선 확보' : '중계점 확보',
             clear: '봉쇄 무리 제거',
-            bosswave: '첫 보스 웨이브 완료',
+            bosswave: goal.waves > 1 ? '보스 웨이브 ' + goal.waves + '번 완료' : '첫 보스 웨이브 완료',
             cert: 'Hard 인증',
+            gap: '틈으로 고리 ' + goal.gaps + '번 통과',
           }[goal.type],
     progress: (goal, s) => {
       const clock = (t, end) => timeString(Math.min(t || 0, end)) + ' / ' + timeString(end);
@@ -12057,6 +12202,8 @@ return Plotly;
       }
       if (goal.type === 'hold') return clock(s.hold, goal.time);
       if (goal.type === 'clear') return s.cleared + ' / ' + goal.packs.reduce((a, b) => a + b, 0);
+      if (goal.type === 'gap') return '틈 통과 ' + (s.gaps || 0) + ' / ' + goal.gaps;
+      if (goal.type === 'bosswave' && goal.waves > 1) return '보스 ' + (s.waves || 0) + ' / ' + goal.waves;
       if (goal.type === 'bosswave') return s.waves ? '완료' : 'STAGE 3';
       if (goal.type === 'cert') return clock(s.time, goal.time) + ' · 보스 ' + (s.waves ? '✓' : '0/1');
       if (goal.type === 'pass') return clock(s.time, goal.time) + ' · 통과 ' + (s.passed ? '✓' : '대기');
@@ -12097,7 +12244,16 @@ return Plotly;
         hold:
           '원 안에서 누적 ' + storySeconds(goal.time) + '. 원 밖·대시 무적 중에는 멈추며, 재도전은 0초부터.',
         clear: '표시된 봉쇄 무리 ' + (goal.packs?.length || 0) + '묶음 제거. 시간 대기 없음.',
-        bosswave: 'STAGE를 올려 첫 일반 보스 웨이브를 끝내세요.',
+        bosswave:
+          goal.waves > 1
+            ? 'STAGE를 올려 보스 웨이브 ' +
+              goal.waves +
+              '번을 끝내세요. 보스가 있는 동안에는 일반 적이 줄어요.'
+            : 'STAGE를 올려 첫 일반 보스 웨이브를 끝내세요.',
+        gap:
+          '관측 중인 HELIOS가 쏘는 고리의 빈 틈으로 ' +
+          goal.gaps +
+          '번 들어가세요. 맞거나 대시로 넘은 고리는 세지 않아요. HELIOS는 다가오지 않고 공격받지 않아요.',
         cert:
           api.modeName(mode) +
           ' ' +
@@ -12146,6 +12302,14 @@ return Plotly;
       's3.5': '이번엔 네 뒤에서 갈게. 지나갈 때는 내가 알려 줄게.',
       's3.6': '다 왔어. 이번엔 네 자리까지 남겨 뒀지.',
       's3.7': '돌아온 배들이 관문 상황을 전했다. 다음 항로로 나갈 준비를 마쳤다.',
+      's4.1': '돌아온 배들이 그러는데, 관문에 틈이 있대.',
+      's4.2': '틈이 같은 박자로 열려. 혼자는 지나도, 여러 척엔 짧아.',
+      's4.3': '길이 버티게 내가 맞춰 둘게.',
+      's4.4': '나도 박자를 봤어. 지날 땐 내가 신호할게.',
+      's4.5': '수호자 앞에 설 자격은 갖췄어. 이제 작전을 맞출 차례야.',
+      's4.6': '이제 같이 타도 돼. S는 제작으로 만들 수 있어.',
+      's4.7': '봐, 박자 맞으면 둘도 지나.',
+      's4.8': '배들 다 준비됐어. 이제 선배 쪽 신호만.',
       s0: '귀환 신호를 찾았다. 이제 이 기체로 기지까지 돌아갈 차례다.',
       's1.1': '무전 너머 같은 날개등이 두 번 응답했다. 선배는 살아 있다.',
       's1.2': '중계점이 자리를 잡았다. 정박지의 목소리가 끊기지 않고 들린다.',
@@ -12217,6 +12381,7 @@ return Plotly;
         clear: '표식이 붙은 봉쇄 적부터 찾아가 봐. 마지막 적이 멀면 방향 표식을 따라가.',
         bosswave: 'STAGE를 눌러 보스를 부르고, 공격 예고가 보이면 대시로 틈을 찾아봐.',
         operation: '지금 표시된 목표부터 하나씩 해결하자. 연결한 뒤 봉쇄와 보스를 넘으면 길이 열려.',
+        gap: '고리가 퍼지기 전에 빈 쪽을 보고 그 방향으로 들어가. 대시로 넘으면 세지 않아.',
       })[goal.type] || '손본 기체로 다시 가도 돼. 같은 항로에서 기다릴게.',
     retry: '저장 다시 시도',
     help: '저장 도움',
@@ -12265,13 +12430,21 @@ return Plotly;
             hazard: '위험이 지나면 다시 이동',
           }[s.escortWait] || '원 안에서 함께 이동'
         );
+      // 틈 읽기(R-357): 관측 태그 + 빈 쪽 안내. 4.7은 고리 예고 순간 루나 신호 '지금'
+      if (goal.type === 'gap')
+        return s.signal ? '지금 · 루나 신호 · 틈으로' : '관측 · 고리의 빈 쪽으로 들어가기';
       if (s.mission === 's3.4') return '아래쪽 구조 마름모로 이동 · 루나에게 돌아가기';
       if (s.mission === 's3.6') return '원 안에서 통과 · 밖으로 피하면 배는 대기';
       if (goal.type === 'move') return '현재 번호 마름모로 이동 · 사격은 자동';
       if (goal.type === 'hold') return '원 안에서 확보 · 밖에서는 대기';
       if (goal.type === 'relay') return '원 안에서 연결 · 밖에서는 대기';
-      if (goal.type === 'bosswave')
-        return stage < 3 ? 'STAGE ↑ 눌러 보스 호출 · ' + stage + '/3' : '공격 예고를 피하며 보스 격파';
+      if (goal.type === 'bosswave') {
+        // 두 겹(s4.4): 첫 웨이브 뒤 다음 목표 STAGE는 6
+        const need = 3 * Math.min((s.waves || 0) + 1, goal.waves || 1);
+        return stage < need
+          ? 'STAGE ↑ 눌러 보스 호출 · ' + stage + '/' + need
+          : '공격 예고를 피하며 보스 격파';
+      }
       if (goal.type === 'operation')
         return s.points < goal.points
           ? '빛나는 원을 순서대로 통과'
@@ -12476,9 +12649,14 @@ return Plotly;
       if (Array.isArray(l.cos.titles)) {
         // 칭호 목록 = 이정표 칭호 + 스토리 독점 칭호(R-342) — progression.TITLE_IDS와 같은 순서
         const mile = (BAL.mile || []).filter(m => m.title).map(m => m.id),
+          // 옛 own/ownKind + 새 owns 배열(R-356) — story.js owns와 같은 읽기(분석 묶음에는 story.js가 없어 여기서 직접)
           story = Object.values(BAL.story?.missions || {})
-            .filter(d => !d.ownKind || d.ownKind === 'title')
-            .map(d => d?.own)
+            .flatMap(d => [
+              ...(d?.own && (!d.ownKind || d.ownKind === 'title') ? [d.own] : []),
+              ...(Array.isArray(d?.owns)
+                ? d.owns.filter(x => x && (x.kind || 'title') === 'title').map(x => x.id)
+                : []),
+            ])
             .filter(id => typeof id === 'string' && id && !mile.includes(id)),
           ids = [...new Set([...mile, ...story])];
         out.cos.titles = ids.filter(id => l.cos.titles.includes(id));
