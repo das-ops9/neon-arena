@@ -13800,7 +13800,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "2581e9c";
+      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "b9dfee2";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -29252,6 +29252,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       code: '새 복구 코드를 만들었어요',
     },
     err: {
+      'cloud-busy': '백업 중 — 끝나면 계정을 바꿀 수 있어요',
       'nick-length': '닉네임은 2~10자예요',
       'nick-chars': '닉네임은 한글 · 영문 · 숫자만 쓸 수 있어요',
       'nick-banned': '쓸 수 없는 닉네임이에요',
@@ -61625,7 +61626,10 @@ async function accountAct(act) {
   const pwPair = () =>
     NeonOnline.pwCheck(v('pw')) ? OT.err['pw-length'] : v('pw') !== v('pw2') ? OT.err['pw-mismatch'] : '';
   let pre = '';
-  if (act === 'signup') pre = pwPair() || (!on('age') || !on('agree') ? OT.err.consent : '');
+  // 클라우드 백업이 도는 동안은 계정을 바꾸지 않는다(늦은 응답이 다른 계정에 붙지 않게, 002 3차 astra ②)
+  if (cloudBusy && ['logout', 'remove', 'login', 'signup', 'recover'].includes(act))
+    pre = OT.err['cloud-busy'];
+  else if (act === 'signup') pre = pwPair() || (!on('age') || !on('agree') ? OT.err.consent : '');
   else if (act === 'recover') pre = pwPair();
   else if (act === 'password') pre = pwPair();
   if (pre) return accountMsg(pre, true);
