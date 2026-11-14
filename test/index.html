@@ -13653,6 +13653,48 @@ body[data-fx='low'] .home-orb.is-teaching {
   justify-self: end;
 }
 
+/* R-326 ⑧: 360px · 글자 150%에서만 좁아지는 칸. rem 컨테이너 조건은 360px · 100%에는 걸리지 않는다. */
+@media (max-width: 370px) {
+  #result .overlay-panel,
+  #inbox-dialog,
+  #mshop-dialog,
+  #records-dialog {
+    container: compact-ui / inline-size;
+  }
+
+  @container prep (max-width: 15.5rem) {
+    .prep-head {
+      grid-template-columns: var(--tap) minmax(0, 1fr) auto;
+    }
+    .prep-head h2 {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  @container compact-ui (max-width: 14rem) {
+    #result .overlay-actions--row3 {
+      grid-template-columns: minmax(var(--tap), 1.4fr) minmax(var(--tap), 1fr) minmax(max-content, 1.1fr);
+    }
+    /* 글 칸은 전문 펼침 버튼이다. 보상 · 받기를 다음 줄로 넘겨도 누르는 폭은 지킨다. */
+    #inbox-dialog .ib-row {
+      grid-template-columns: 28px minmax(var(--tap), 1fr) minmax(0, auto);
+    }
+    #inbox-dialog .ib-right {
+      min-width: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    #mshop-dialog .msh-grid {
+      grid-template-columns: repeat(6, minmax(var(--tap), 1fr));
+      gap: calc(var(--sp-1) / 2);
+    }
+    #records-dialog .rank-row--tight .rank-score {
+      font-size: min(var(--fs-md), 15.5cqi);
+    }
+  }
+}
+
 /* 격납고 미리보기 = 홈 무대와 같은 축(편집장 2026-11-02 '홈은 가운데, 격납고는 다름'):
    상자 위끝 · 이름 자리 · 그림 상자(가로 20%~끝, 위 12px · 높이 124px) · 그림 폭 210px가 홈과 같아 탭을 오가도 기체가 제자리.
    빈 상태 줄 간격(10px) · 위 여백(4px)을 걷고 -4px로 홈 상자 위끝(전체 18px 위)에 맞춘다. 높이 +18px라 아래 배치는 그대로 */
@@ -13758,7 +13800,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "bf1af52";
+      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "2581e9c";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -59479,6 +59521,8 @@ async function saveStoryResult() {
     if (profile.backend === 'idb') store.prune({ now: worldNow() }).catch(() => {});
     await refreshRecords();
     refreshProfileUI();
+    // 클라우드 자동 백업: 솔로 판 끝과 같이 정산 뒤 2초 한 번(DATA.md 판 끝 자동 백업, 002 3차 astra 지적)
+    setTimeout(() => cloudSync(), 2000);
   } catch {
     if (state.status !== 'saved') state.status = 'failed';
   } finally {
@@ -65280,6 +65324,11 @@ async function confirmImport() {
   $('import-confirm').disabled = true;
   try {
     const added = plan.add.length ? await store.addMissing(plan.add) : 0;
+    // 기록 저장이 실패하면(-1) 해금 평가 · 경력 합침 · 프로필 교체를 하지 않는다(002 3차 astra 지적)
+    if (added < 0) {
+      text('data-status', T.msg.backup.done(added, null));
+      return;
+    }
     // 모드 해금 평가는 솔로 기록만(R-100)
     for (const r of plan.add) if (NeonData.isSolo(r)) await profile.evaluateRun(r);
     // schema 3 파일의 경력 · 이정표는 '프로필 교체' 체크와 상관없이 합친다(R-100). 가져온 새 판은 줍기가 경력에 더한다
