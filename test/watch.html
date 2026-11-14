@@ -14565,6 +14565,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       shortage: 'S 부족',
       skillLevel: (n, max) => n + ' / ' + max,
       now: '지금',
+      nowNone: '지금 없음',
       nextLv: '다음',
       field: '필드 스킬',
       chain: { name: '연쇄 번개', desc: '처치하면 번개가 가까운 적에게 튑니다(+1마다 한 번 더)' },
@@ -14833,6 +14834,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     group: { steps: '첫걸음', mode: '모드', launch: '출격', craft: '기체', crew: '승무원', world: '월드' },
     groupCount: (n, all) => (n === all ? '✓ ' : '') + n + '/' + all,
     fresh: 'NEW',
+    storyCert: n => '또는 STORY ' + n + ' 인증',
     where: w => w + ' ›',
     // 막대 아래 글: 모드는 가장 모자란 항목(분:초 · LV · Point), 나머지는 막대와 같은 수
     progress: row => {
@@ -14850,6 +14852,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     label: '환영 인사',
     setting: '첫 홈 환영 인사',
     tip: 'TIP',
+    next: '이어 갈 일',
+    story: id => 'STORY ' + api.story.number(id) + ' · ' + api.story.mission[id][0],
+    daily: '오늘 매일 도전',
     tips: () => {
       const help = helpSections().find(sec => sec.tips)?.tips || [];
       return [
@@ -15229,7 +15234,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     title: '스토리',
     entry: n => 'STORY' + (n ? ' ' + n : '') + ' ›',
     continueStory: '스토리 계속',
-    firstRouteHint: '첫 항로를 열면 솔로 출격을 선택할 수 있어요.',
+    runway: '스토리',
+    firstRouteHint: '첫 항로(1-5)를 마치면 솔로 출격 준비를 쓸 수 있어요.',
     prepareSub: '준비 후 출격',
     radio: '무전',
     radioTitle: '관문 너머에 남은 선배',
@@ -15244,6 +15250,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     chapters: ['첫 항로', '끊어진 길', '돌아오는 배들', '관문 앞에서', '마지막 귀환'],
     chapterLabel: '이야기 구간',
     chapterProgress: (name, n, total) => name + ' ' + n + ' / ' + total,
+    chapterSelected: (n, name, done, total) => n + ' · ' + name + ' · ' + done + ' / ' + total,
+    chapterCount: (n, total) => n + '/' + total,
+    chapterLockMark: '🔒',
     chapterLocked: '앞 구간 완료 후',
     fleetLightsLabel: '배들과 루나 귀환 · 기지 아래 큰 선단 불빛',
     gateLightsLabel: '관문 대기선 준비 · 기지 아래 선단 불빛과 관문 쪽 불빛',
@@ -15618,7 +15627,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     nextGo: n => '다음 임무 · ' + n,
     continueGo: n => '이야기 계속 · ' + n,
     nextSub: (name, action) => name + (action ? ' · ' + action : ''),
-    replayThis: '이 임무 다시 보기',
+    replayButton: '다시 보기',
     replayThisSub: '보상 없음',
     chapterList: '구간 목록',
     lockLabel: '잠김',

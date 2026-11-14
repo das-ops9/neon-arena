@@ -8129,18 +8129,18 @@ body[data-fx='low'] .boss-warn.is-on {
   fill: currentColor;
   stroke: none;
 }
-/* 음악: 줄 넷(누르는 칸 48) */
+/* 음악: 곡마다 44px 이상, 설명이 길어지면 줄 높이는 늘어난다. */
 .cos-music {
   display: grid;
-  gap: 6px;
+  gap: var(--sp-1);
 }
 .cos-song {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sp-3);
-  min-height: 56px;
-  padding: 6px var(--sp-3);
+  min-height: var(--tap);
+  padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-lg);
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 60%, transparent);
@@ -8286,10 +8286,13 @@ body[data-fx='low'] .boss-warn.is-on {
   font-weight: var(--fw-1);
   color: var(--muted);
 }
-/* 미리보기 높이: 기체 · 고양이 · 음악 150px, 카드 280px — 묶음 안에서 무엇을 골라도 그대로 */
-.cos .cos-stage,
-.cos .cos-stage--music {
+/* 미리보기 높이: 기체 · 고양이 150px — 묶음 안에서 무엇을 골라도 그대로 */
+.cos .cos-stage {
   height: 150px;
+}
+/* 음악만 줄여 곡 목록과 거래 줄이 기준 폰 한 화면에 들게 한다. */
+.cos .cos-stage--music {
+  height: 112px;
 }
 /* 카드 묶음(16c C3): 틀 줄(머리 위 · 넓은 칸) + 배경 · 도장 줄(기체 줄 꼴) — 기준 폰 한 화면에 들게 미리보기를 줄임 */
 .cos .cos-stage--card {
@@ -9342,10 +9345,6 @@ body[data-fx='low'] .w-ops-news.is-roll span + span {
   height: auto;
   max-height: 100%;
   overflow: visible;
-}
-/* 음악 미리보기: 막대 52px + 글 세 줄이라 120px이면 충분 */
-.cos-stage--music {
-  height: 120px;
 }
 /* 무대(P-STAGE): 기체 그림 + 칭호 + 한마디 + 동반 고양이. 누르면 격납고 */
 .stage-card {
@@ -11045,7 +11044,7 @@ button,
 }
 .story-route {
   flex: none;
-  padding: 4px 14px;
+  padding: 2px 14px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   border-bottom: 1px solid var(--line);
@@ -11077,10 +11076,13 @@ button,
 .story-chapters {
   flex: none;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  padding: 2px 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px var(--sp-2);
   border-bottom: 1px solid var(--line);
+}
+.story-chapters:has([data-story-chapter='epilogue']) {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 .story-chapters > span {
   display: grid;
@@ -11090,6 +11092,7 @@ button,
 }
 .story-chapters .btn {
   min-width: 0;
+  min-height: var(--tap);
   width: 100%;
   flex-direction: column;
   gap: 2px;
@@ -11105,6 +11108,16 @@ button,
   display: block;
   font-size: var(--fs-xs);
   color: var(--muted);
+}
+.story-chapter-selected {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-block: 0 2px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.25;
+  text-align: center;
+  word-break: keep-all;
 }
 .story-chapters[hidden] {
   display: none;
@@ -11206,7 +11219,7 @@ button,
 }
 .story-note,
 .story-intro {
-  margin: 8px 0;
+  margin: 4px 0;
   color: var(--ink-2);
   font-size: var(--fs-sm);
   line-height: 1.6;
@@ -11242,6 +11255,22 @@ button,
 /* 후일담 '다음 항로'(R-359): 동료 한마디 4줄 */
 .story-epilogue .story-talk {
   margin: 6px 0;
+}
+/* 후일담 완주 보상 3칸: 글자 크기는 두고 칸 안 여백과 글 간격만 줄인다. */
+.story-epilogue .story-title {
+  gap: var(--sp-1) var(--sp-2);
+  padding-block: 6px;
+  line-height: 1.4;
+}
+.story-epilogue .story-title > div {
+  gap: 2px;
+}
+.story-epilogue .story-title > p {
+  line-height: 1.4;
+}
+.story-epilogue .story-title .btn {
+  min-height: var(--tap);
+  padding-inline: var(--sp-3);
 }
 /* 선배의 불빛(R-359 s5.4): 선단 불빛 줄 끝의 다른 색 한 개(조금 크게) */
 .story-home-lights i.is-senior::before,
@@ -11409,6 +11438,14 @@ body[data-fx='low'] .story-return.is-arriving > span {
   text-align: right;
   overflow-wrap: anywhere;
 }
+.story-lines > .story-instruction {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+.story-instruction dd {
+  text-align: left;
+  word-break: keep-all;
+}
 .story-foot {
   flex: none;
   display: flex;
@@ -11551,10 +11588,31 @@ body[data-fx='low'] .story-return.is-arriving > span {
   color: var(--ink-2);
   background: var(--bg-raise);
 }
-.is-story-first .runway-target {
-  font-size: var(--fs-sm);
-  line-height: 1.3;
-  white-space: normal;
+.is-story-first .area--load {
+  opacity: 0.5;
+  color: var(--muted);
+}
+.is-story-first .area--load .tab-dot {
+  display: none;
+}
+.is-story-first .runway {
+  grid-row: 1;
+}
+.is-story-first .runway-hint {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.runway-hint.is-emphasized {
+  color: var(--cyan);
+  animation: runway-hint-emphasis 650ms ease-out;
+}
+@keyframes runway-hint-emphasis {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .is-story .hud-alerts {
   display: none;
@@ -13700,7 +13758,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "7952455";
+      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "bf1af52";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -13911,7 +13969,10 @@ body[data-fx='low'] .home-orb.is-teaching {
                 <span>MISSION</span><i aria-hidden="true">›</i>
                 <i class="tab-dot" id="mission-dot" hidden aria-hidden="true"></i>
               </button>
-              <button class="home-section-link" id="story-open" data-area="P-STORY">STORY ›</button>
+              <button class="home-section-link" id="story-open" data-area="P-STORY">
+                <span id="story-open-label">STORY ›</span>
+                <i class="tab-dot" id="story-dot" hidden aria-hidden="true"></i>
+              </button>
             </h2>
           </div>
           <!-- 출격 줄 칸 수(data-cells): S를 모르면 일반 하나 · S를 알면 S 출격(SS · SSS는 S 준비 ▾에서, R-240).
@@ -28581,6 +28642,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       shortage: 'S 부족',
       skillLevel: (n, max) => n + ' / ' + max,
       now: '지금',
+      nowNone: '지금 없음',
       nextLv: '다음',
       field: '필드 스킬',
       chain: { name: '연쇄 번개', desc: '처치하면 번개가 가까운 적에게 튑니다(+1마다 한 번 더)' },
@@ -28849,6 +28911,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     group: { steps: '첫걸음', mode: '모드', launch: '출격', craft: '기체', crew: '승무원', world: '월드' },
     groupCount: (n, all) => (n === all ? '✓ ' : '') + n + '/' + all,
     fresh: 'NEW',
+    storyCert: n => '또는 STORY ' + n + ' 인증',
     where: w => w + ' ›',
     // 막대 아래 글: 모드는 가장 모자란 항목(분:초 · LV · Point), 나머지는 막대와 같은 수
     progress: row => {
@@ -28866,6 +28929,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     label: '환영 인사',
     setting: '첫 홈 환영 인사',
     tip: 'TIP',
+    next: '이어 갈 일',
+    story: id => 'STORY ' + api.story.number(id) + ' · ' + api.story.mission[id][0],
+    daily: '오늘 매일 도전',
     tips: () => {
       const help = helpSections().find(sec => sec.tips)?.tips || [];
       return [
@@ -29245,7 +29311,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     title: '스토리',
     entry: n => 'STORY' + (n ? ' ' + n : '') + ' ›',
     continueStory: '스토리 계속',
-    firstRouteHint: '첫 항로를 열면 솔로 출격을 선택할 수 있어요.',
+    runway: '스토리',
+    firstRouteHint: '첫 항로(1-5)를 마치면 솔로 출격 준비를 쓸 수 있어요.',
     prepareSub: '준비 후 출격',
     radio: '무전',
     radioTitle: '관문 너머에 남은 선배',
@@ -29260,6 +29327,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     chapters: ['첫 항로', '끊어진 길', '돌아오는 배들', '관문 앞에서', '마지막 귀환'],
     chapterLabel: '이야기 구간',
     chapterProgress: (name, n, total) => name + ' ' + n + ' / ' + total,
+    chapterSelected: (n, name, done, total) => n + ' · ' + name + ' · ' + done + ' / ' + total,
+    chapterCount: (n, total) => n + '/' + total,
+    chapterLockMark: '🔒',
     chapterLocked: '앞 구간 완료 후',
     fleetLightsLabel: '배들과 루나 귀환 · 기지 아래 큰 선단 불빛',
     gateLightsLabel: '관문 대기선 준비 · 기지 아래 선단 불빛과 관문 쪽 불빛',
@@ -29634,7 +29704,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     nextGo: n => '다음 임무 · ' + n,
     continueGo: n => '이야기 계속 · ' + n,
     nextSub: (name, action) => name + (action ? ' · ' + action : ''),
-    replayThis: '이 임무 다시 보기',
+    replayButton: '다시 보기',
     replayThisSub: '보상 없음',
     chapterList: '구간 목록',
     lockLabel: '잠김',
@@ -40406,7 +40476,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   // 저장된 값(profile · career · prefs · 기록)을 읽기만 하고 보상 · 재화 · 저장 쓰기는 없다(노력형 원칙).
   // 기준 숫자는 balance.js(journey · unlock · cats.promo · paint · world · buffs), 문구는 terms.js journey.*.
   const B = root.NeonBalance || (typeof require === 'function' ? require('./balance.js') : null),
-    P = root.NeonProgress || (typeof require === 'function' ? require('./progression.js') : null);
+    P = root.NeonProgress || (typeof require === 'function' ? require('./progression.js') : null),
+    S = root.NeonStory || (typeof require === 'function' ? require('./story.js') : null);
   const J = B.journey,
     MODES = Object.keys(B.modes),
     CRAFTS = Object.keys(B.crafts),
@@ -40609,6 +40680,22 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     return best;
   }
 
+  // 아직 안 연 모드의 미완료 인증 임무. 표시만 더하고 열림/목표 계산은 바꾸지 않는다.
+  function storyCert(p, mode) {
+    if (unlockedIn(p)(mode)) return null;
+    return (
+      Object.keys(B.story.missions).find(id => {
+        const d = B.story.missions[id];
+        return d.kind === 'cert' && d.target === mode && !p?.story?.done?.[id];
+      }) || null
+    );
+  }
+  const storyNext = p => (p?.story ? S.upcoming(p.story, p.unlockedModes) || '' : '');
+  function storyFresh(p, seen) {
+    const next = storyNext(p);
+    return !!next && !S.onboarding(p) && !S.lock(p.story, p.unlockedModes, next) && next !== seen;
+  }
+
   // 열림 조건 보기: 실제 문·진행을 읽기만 한다. 다음 목표 추천 순서는 바꾸지 않는다.
   function overview(p, ctx = {}) {
     const on = typeof ctx.unlocked === 'function' ? ctx.unlocked : unlockedIn(p),
@@ -40625,6 +40712,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           need: num(u[best.key]),
           ratio: best.ratio,
           checks: best.checks,
+          cert: on(mode) ? null : storyCert(p, mode),
           to: 'mode',
         };
       }),
@@ -40798,12 +40886,12 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
 
   // prefs.journey 정리. raw가 없으면 옛 사람 소급(hasRuns면 첫걸음 끝 · 지금 열린 카드 모두 본 것).
-  // mission(본 MISSION 열린 줄)이 없으면 지금 열린 줄 모두 본 것(점 홍수 없음)
+  // mission/story가 없으면 지금 열린 줄/다음 임무를 본 것(옛 prefs의 점 홍수 없음)
   function cleanPrefs(raw, p, hasRuns) {
     if (!raw)
       return hasRuns
-        ? { v: 1, steps: 'done', seen: opens(p), visit: [], mission: missionOpen(p) }
-        : { v: 1, steps: 'on', seen: [], visit: [], mission: missionOpen(p) };
+        ? { v: 1, steps: 'done', seen: opens(p), visit: [], mission: missionOpen(p), story: storyNext(p) }
+        : { v: 1, steps: 'on', seen: [], visit: [], mission: missionOpen(p), story: storyNext(p) };
     const list = (v, ok, cap) =>
       Array.isArray(v)
         ? [...new Set(v.filter(x => typeof x === 'string' && ok.includes(x)))].slice(0, cap)
@@ -40814,6 +40902,11 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       seen: list(raw.seen, CARDS, J.seenMax),
       visit: list(raw.visit, VISIT, J.visitMax),
       mission: Array.isArray(raw.mission) ? list(raw.mission, MISSION_IDS, J.seenMax) : missionOpen(p),
+      story: !Object.hasOwn(raw, 'story')
+        ? storyNext(p)
+        : typeof raw.story === 'string' && Object.hasOwn(B.story.missions, raw.story)
+          ? raw.story
+          : '',
     };
   }
 
@@ -40845,6 +40938,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
     MISSION_IDS,
     mission,
     missionOpen,
+    storyCert,
+    storyNext,
+    storyFresh,
     opens,
     card,
     wallet,
@@ -47055,7 +47151,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
         (mode ? '' : '<strong>' + esc(O.titleOf(r)) + '</strong>') +
         '<small>' +
         esc(O.condition(r)) +
-        '</small></span>' +
+        '</small>' +
+        (r.cert ? '<small>' + esc(M.storyCert(T.story.number(r.cert))) + '</small>' : '') +
+        '</span>' +
         right +
         '</button></li>'
       );
@@ -48190,7 +48288,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   // 첫 홈 환영 창(R-247 O-WELCOME) 본문: 얼굴 56px + 말풍선(이름 · 접속 한마디 · 구분선 · TIP 한 줄).
   // 무전(승무원 전)은 얼굴 칸에 인트로 그림 얼굴 원형 — 그림은 app.js가 인트로 img에서 옮긴다(같은 그림 재사용) · 이름 '???'
-  function welcome(line, tip) {
+  function welcome(line, tip, next = '') {
     if (!line) return '';
     const L = T.talk,
       radio = line.by === 'radio';
@@ -48206,6 +48304,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       '</p><p class="welcome-text">' +
       esc(line.text) +
       '</p>' +
+      (next ? '<p class="welcome-tip"><b>' + esc(T.welcome.next) + '</b>' + esc(next) + '</p>' : '') +
       (tip ? '<p class="welcome-tip"><b>' + esc(T.welcome.tip) + '</b>' + esc(tip.text) + '</p>' : '') +
       '</div></div>'
     );
@@ -51047,7 +51146,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             '</span><span class="wsk-main"><strong>' +
             name +
             '</strong><small>' +
-            (n ? TW.now + ' ' + esc(TW.sk[id].fx(n)) : '—') +
+            (n ? TW.now + ' ' + esc(TW.sk[id].fx(n)) : esc(TW.nowNone)) +
             (full ? '' : ' → <b>' + esc(TW.sk[id].fx(n + 1)) + '</b>') +
             '</small></span><span class="wsk-action">' +
             (full
@@ -51703,7 +51802,8 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
   }
   function storyChapters(p, selected) {
     const trace = root.NeonJourney.storyState(p),
-      chapter = selected === 'epilogue' ? '' : /^s(\d+)\./.exec(selected)?.[1] || '1';
+      chapter = selected === 'epilogue' ? '' : /^s(\d+)\./.exec(selected)?.[1] || '1',
+      current = trace.chapters.find(c => c.id === chapter);
     return (
       ST.chapters
         .map((name, i) => {
@@ -51716,36 +51816,48 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           return (
             '<span><button class="btn btn--ghost" data-story-chapter="' +
             (id || '') +
+            '" aria-label="' +
+            esc(
+              ST.chapterSelected(i + 1, name, c?.done || 0, c?.total || 0) +
+                (can ? '' : ' · ' + (c ? ST.chapterLocked : ST.pending)),
+            ) +
             '" aria-pressed="' +
             (chapter === String(i + 1)) +
             '"' +
             (!can || p.story.active ? ' disabled' : '') +
             '>' +
-            esc(i + 1 + ' · ' + name) +
+            (i + 1) +
             '<small>' +
-            esc(c && can ? c.done + ' / ' + c.total : c ? ST.chapterLocked : ST.pending) +
+            esc(c && can ? ST.chapterCount(c.done, c.total) : ST.chapterLockMark) +
             '</small></button></span>'
           );
         })
         .join('') +
-      // 후일담(R-359): 구간 칸의 마지막 '다음 항로'(임무 0개, 전투 없음). 5구간을 끝낸 뒤에만
+      // 후일담은 짧은 이름만, 임무 수는 없음. 5구간을 끝낸 뒤에만 여섯째 칸을 쓴다.
       (trace.epilogue
-        ? '<span><button class="btn btn--ghost" data-story-chapter="epilogue" aria-pressed="' +
+        ? '<span><button class="btn btn--ghost" data-story-chapter="epilogue" aria-label="' +
+          esc(ST.epilogue + ' · ' + ST.epilogueSub) +
+          '" aria-pressed="' +
           (selected === 'epilogue') +
           '"' +
           (p.story.active ? ' disabled' : '') +
           '>' +
-          esc(ST.epilogue) +
-          '<small>' +
           esc(ST.epilogueSub) +
-          '</small></button></span>'
-        : '')
+          '</button></span>'
+        : '') +
+      '<p class="story-chapter-selected">' +
+      esc(
+        current
+          ? ST.chapterSelected(chapter, ST.chapters[Number(chapter) - 1], current.done, current.total)
+          : ST.epilogue,
+      ) +
+      '</p>'
     );
   }
   // 후일담 본문(R-359): 동료 한마디 4줄 · 완주 보상 직접 입기. 다시 열어도 같은 글, 보상 없음
   function storyEpilogue(p, titleBusy = false, titleMessage = '', craft = 'striker') {
     return (
-      // 머리줄 없음: 위 구간 칸 '다음 항로'가 이미 제목(384×802 한 화면에 가깝게)
+      // 머리줄 없음: 구간 칸 아래 선택 이름 줄이 이미 제목이다.
       '<section class="ms-group story-epilogue" aria-label="' +
       esc(ST.epilogue) +
       '">' +
@@ -51844,13 +51956,13 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
                   '</dt><dd>' +
                   esc(ST.lockReason(q.reason, S.def(id).mode)) +
                   '</dd></div>') +
-              '<div><dt>' +
+              '<div class="story-instruction"><dt>' +
               ST.goalLabel +
               '</dt><dd>' +
               esc(ST.goalDetail(goal, S.def(id).mode, S.def(id).target)) +
               '</dd></div>' +
               (ST.firstAction[id]
-                ? '<div><dt>' +
+                ? '<div class="story-instruction"><dt>' +
                   ST.firstActionLabel +
                   '</dt><dd>' +
                   esc(q.variant === 'story-only' ? ST.hint(q.goal, {}) : ST.firstAction[id]) +
@@ -51945,15 +52057,9 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
             : '') +
           '</section></details>'
         : '') +
-      '<section class="ms-group"><h3 class="ms-head">' +
-      chapter +
-      ' · ' +
+      '<section class="ms-group" aria-label="' +
       esc(ST.chapters[Number(chapter) - 1]) +
-      '<small>' +
-      currentChapter.done +
-      ' / ' +
-      currentChapter.total +
-      '</small></h3><ul class="ms-list">' +
+      '"><ul class="ms-list">' +
       currentChapter.ids.map((id, i) => row(id, i + 1)).join('') +
       '</ul></section>' +
       (pol.kind !== 'intro' && !room.g && !room.b
@@ -52151,7 +52257,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
           '</button><button class="btn' +
           ((success && !replay) || nextLink || finished ? '' : ' btn--primary') +
           '" data-story-act="prepare">' +
-          (again ? ST.replayThis : ST.prepare) +
+          (again ? ST.replayButton : ST.prepare) +
           '<small>' +
           (again ? ST.replayThisSub : ST.prepareSub) +
           '</small></button>' +
@@ -58370,9 +58476,10 @@ function renderHome(w = wallet()) {
     returnMission =
       (upNext && !NeonStory.lock(snapStory.story, snapStory.unlockedModes, upNext) ? upNext : null) ||
       snapStory.story?.returnTo;
-  text('story-open', T.story.entry(returnMission ? T.story.number(returnMission) : ''));
+  text('story-open-label', T.story.entry(returnMission ? T.story.number(returnMission) : ''));
+  refreshStoryDot(snapStory);
   const storyFirst = NeonStory.onboarding(profile.snapshot());
-  text('start', storyFirst ? T.story.continueStory : T.ui.home.runway);
+  text('start', storyFirst ? T.story.runway : T.ui.home.runway);
   if (storyFirst) text('runway-hint', T.story.firstRouteHint);
   document.body.classList.toggle('is-story-first', storyFirst);
   if (homePrep && homePrep.signature !== prepSignature()) {
@@ -58388,7 +58495,7 @@ function renderHome(w = wallet()) {
     on = open ? NeonProgress.BUFFS.filter(id => lv[id] > 0) : [],
     // 새 지원 단계 점(R-159)
     buffDot = buffNew(p).length > 0,
-    hasNew = unseenModes().length > 0 || buffDot,
+    hasNew = !storyFirst && (unseenModes().length > 0 || buffDot),
     short = {},
     supportBudget = {
       b: w.blue,
@@ -58515,9 +58622,11 @@ function renderHome(w = wallet()) {
   text('super-switch-note', homePrep ? T.ui.home.superReady(homePrep.kind) : T.ui.home.superNeed);
   $('start').setAttribute(
     'aria-label',
-    (superOn && homePrep ? T.ui.home.superOn(homePrep.kind) : T.ui.launch.normal) +
-      ' · ' +
-      T.ui.home.runwayHint,
+    storyFirst
+      ? T.story.continueStory
+      : (superOn && homePrep ? T.ui.home.superOn(homePrep.kind) : T.ui.launch.normal) +
+          ' · ' +
+          T.ui.home.runwayHint,
   );
   drawHomeFrame();
 }
@@ -58699,6 +58808,7 @@ function resetRunway() {
   orb.style.transform = '';
   orb.classList.remove('is-dragging', 'is-armed', 'is-teaching');
   $('runway').classList.remove('is-ready');
+  $('runway-hint').classList.remove('is-emphasized');
   $('runway').style.removeProperty('--runway-progress');
   for (const step of $('runway').querySelectorAll('.runway-step')) step.style.removeProperty('--step-light');
   text(
@@ -58916,6 +59026,12 @@ function missionFresh(p = profile.snapshot()) {
     id => !prefs.journey.mission.includes(id),
   );
 }
+function refreshStoryDot(p = profile.snapshot()) {
+  const on = !!prefs.journey && NeonJourney.storyFresh(p, prefs.journey.story),
+    label = $('story-open-label').textContent + (on ? ' · ' + T.tips.dot : '');
+  if ($('story-dot').hidden === on) $('story-dot').hidden = !on;
+  if ($('story-open').getAttribute('aria-label') !== label) $('story-open').setAttribute('aria-label', label);
+}
 // 목표 · 열림 카드가 가리키는 화면
 function journeyGo(to, target = null) {
   if (to === 'crew') {
@@ -59111,9 +59227,16 @@ function showWelcome() {
     open = NeonJourney.opens(p);
   if (p.opened?.includes('ss')) open.push('ss');
   const tip = NeonTalk.welcomeTip(open, prefs.welcome.tip);
+  const nextMission = NeonJourney.storyNext(p),
+    next =
+      nextMission && !NeonStory.lock(p.story, p.unlockedModes, nextMission)
+        ? T.welcome.story(nextMission)
+        : worldOpen() && prefs.worldDay !== todayId()
+          ? T.welcome.daily
+          : '';
   prefs.welcome.tip = tip?.id || null;
   savePrefs();
-  $('welcome-body').innerHTML = V.welcome(homeTalk || (homeTalk = talkPick('intro')), tip);
+  $('welcome-body').innerHTML = V.welcome(homeTalk || (homeTalk = talkPick('intro')), tip, next);
   const face = $('welcome-body').querySelector('[data-intro-face]');
   if (face) face.src = document.querySelector('.title-art').src;
   $('welcome').hidden = false;
@@ -59661,6 +59784,11 @@ function openStory() {
   storyTitleMessage = '';
   renderStory();
   if (!$('story-dialog').open) $('story-dialog').showModal();
+  if (prefs.journey) {
+    prefs.journey.story = NeonJourney.storyNext(profile.snapshot());
+    savePrefs();
+    refreshStoryDot();
+  }
 }
 async function beginStory() {
   if (storyBusy || profile.blocked) return;
@@ -59676,6 +59804,21 @@ async function beginStory() {
 }
 function renderStoryResult() {
   if (!storyResult) return;
+  // 결과에 실제 인증 모드 열림을 보여 줄 때 그 MISSION 줄도 본 것으로 친다.
+  const mode = storyResult.last?.unlocked,
+    cert = NeonStory.def(storyResult.ctx.mission);
+  if (
+    storyResult.status === 'saved' &&
+    mode &&
+    cert?.kind === 'cert' &&
+    cert.target === mode &&
+    profile.isUnlocked(mode) &&
+    prefs.journey &&
+    !prefs.journey.mission.includes('mode.' + mode)
+  ) {
+    prefs.journey.mission.push('mode.' + mode);
+    savePrefs();
+  }
   $('story-result-panel').innerHTML = V.storyResult(
     storyResult,
     profile.snapshot(),
@@ -62911,6 +63054,7 @@ function renderDots() {
       T.journey.mission.title + (missionNew ? ' · ' + T.tips.dot : ''),
     );
   }
+  refreshStoryDot();
   // 알림함 종(R-313): 줄이 하나라도 생긴 뒤부터 · 점 = 받을 보상 또는 안 읽은 줄
   const ib = NeonProgress.inboxState(profile.snapshot());
   $('inbox-open').hidden = !ib.rows;
@@ -63743,7 +63887,13 @@ function bind() {
       if ($('settings-dialog').open && event.currentTarget.open) readBackupNotice();
     });
   $('pause-settings').onclick = settingsDialog;
-  $('load-open').onclick = () => openModeSheet();
+  $('load-open').onclick = () => {
+    if (!NeonStory.onboarding(profile.snapshot())) return openModeSheet();
+    resetRunway();
+    const hint = $('runway-hint');
+    void hint.offsetWidth;
+    hint.classList.add('is-emphasized');
+  };
   // 꾸미기 일괄 구매 확인(R-243): '사서 적용' = 거래 한 번 · 취소 = 미리보기 그대로
   $('cos-confirm-go').onclick = () => {
     $('cos-confirm').close();
