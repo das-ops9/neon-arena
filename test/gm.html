@@ -12562,12 +12562,12 @@ body[data-fx='low'] .st-prestige * {
   height: 30px;
 }
 .home-craft strong {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.04em;
   justify-self: start;
 }
 .home-craft i {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-style: normal;
   min-height: 12px;
 }
@@ -12608,11 +12608,11 @@ body[data-fx='low'] .st-prestige * {
   padding: 0;
   border: 0;
   background: none;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
+/* 미적용 요약은 읽는 정보라 흐림 대신 --muted 글자(대비 4.5:1 이상), 적용은 시안 */
 .flight-side .is-off {
   color: var(--muted);
-  opacity: 0.55;
   filter: grayscale(1);
 }
 .flight-side .lb-off {
@@ -12718,7 +12718,7 @@ body[data-fx='low'] .st-prestige * {
   min-height: 22px;
   padding: 4px 0 0;
   color: var(--muted);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 1.4;
   text-align: center;
   word-break: keep-all;
@@ -13800,7 +13800,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "b9dfee2";
+      globalThis.NEON_NS = "-test-gm"; globalThis.NEON_HEADERS = { "X-Neon-Gm": "1" }; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "f7e7f21";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
@@ -14183,7 +14183,7 @@ body[data-fx='low'] .home-orb.is-teaching {
           <!-- 지원 단계 ▾ 목록(R-159): 칸 아래 2 · 3열 위에 겹쳐 뜬다(app.js renderBuffMenu) -->
           <ul class="buff-tiers" id="buff-tiers" role="menu" aria-label="지원 단계" hidden></ul>
           <section class="load-col" aria-labelledby="col-crew">
-            <h3 id="col-crew">고양이 1 + Lv5</h3>
+            <h3 id="col-crew">동반 1 + Lv5 전부</h3>
             <div class="party-picks" id="party-picks" role="group" aria-labelledby="col-crew"></div>
           </section>
         </div>
@@ -24508,7 +24508,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       title: '출격 준비',
       close: '닫기',
       done: '완료',
-      cols: { mode: 'MODE', buff: '지원', crew: () => '고양이 1 + Lv' + B().cats.maxLevel },
+      cols: { mode: 'MODE', buff: '지원', crew: () => '동반 1 + Lv' + B().cats.maxLevel + ' 전부' },
       // 잠긴 지원 칸(R-219): 왜 못 켜는지 한 줄
       buffWhy: () =>
         buffs.group + josa(buffs.group, '은/는') + ' ' + modeName(B().buffs.from) + '부터 켤 수 있습니다',

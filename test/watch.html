@@ -10389,7 +10389,7 @@ fn rand(co: vec2<f32>, seed: f32) -> f32
       title: '출격 준비',
       close: '닫기',
       done: '완료',
-      cols: { mode: 'MODE', buff: '지원', crew: () => '고양이 1 + Lv' + B().cats.maxLevel },
+      cols: { mode: 'MODE', buff: '지원', crew: () => '동반 1 + Lv' + B().cats.maxLevel + ' 전부' },
       // 잠긴 지원 칸(R-219): 왜 못 켜는지 한 줄
       buffWhy: () =>
         buffs.group + josa(buffs.group, '은/는') + ' ' + modeName(B().buffs.from) + '부터 켤 수 있습니다',
