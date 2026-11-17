@@ -1534,7 +1534,7 @@ body[data-fx='low'] .title-start:disabled::after {
   padding: 0 6px;
   border-radius: 4px;
   background: var(--bg);
-  font-size: 0.625rem; /* 10px 표지(7단 아래) */
+  font-size: 0.6875rem; /* 11px 표지(7단 아래, 2026-11-15 열린 점검으로 10 → 11) */
   font-weight: var(--fw-4);
   line-height: 1;
   letter-spacing: 0.1em;
@@ -1602,6 +1602,10 @@ body[data-fx='low'] .title-start:disabled::after {
   justify-items: center;
   gap: 2px;
   --nb-w: 92px;
+}
+/* 배지 아래 '2회차' 같은 읽는 꼬리표는 11px(배지 안 글자는 badges.js 부품 그대로) */
+.rank-badge .tag-mini {
+  font-size: 0.6875rem;
 }
 
 /* 모드(R-032 · 보완 7 · R-053 · R-062): 출격 버프 스위치 칸(P-BUFF, 약 20%) | 모드 버튼(약 80%, 버튼 안에 버튼 금지).
@@ -1985,7 +1989,7 @@ body[data-fx='low'] .title-start:disabled::after {
 .craft-info-stack small {
   grid-column: 1 / -1;
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -2627,7 +2631,7 @@ p.cat-note {
 .talk-name .cat-rank {
   margin-right: 3px;
   padding: 0 5px;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 1.4;
 }
 /* 승진 색 = 그 고양이 색 */
@@ -3620,6 +3624,12 @@ body[data-gm] .menu-top {
   font-weight: var(--fw-3);
   letter-spacing: 0.14em;
   line-height: 1;
+}
+/* '최종전 시작'은 이름표가 아니라 누를 수 있다는 상태 글 — 자간을 빼고 칸 폭 안에서 가장 크게(9px, 10px은 칸 밖으로 넘침) */
+.hud-stage.is-point small {
+  font-size: 9px;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 .hud-stage b {
   margin: 0;
@@ -5152,6 +5162,7 @@ body[data-fx='low'] .late-count.is-pop {
   border-bottom: 1px solid var(--line);
 }
 .stack-list small {
+  font-size: 0.6875rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -7403,7 +7414,7 @@ body[data-fx='low'] .boss-warn.is-on {
   border-radius: 999px;
   background: var(--gold);
   color: var(--bg);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-style: normal;
   font-weight: var(--fw-4);
   line-height: 16px;
@@ -7634,7 +7645,7 @@ body[data-fx='low'] .boss-warn.is-on {
   border-color: color-mix(in srgb, var(--gold) 55%, transparent);
 }
 .talk--row.is-mile .mile-tag {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 
 /* ── 꾸미기 · 보급 캡슐(R-117, 계약 design/v5-stage14/stage14.css · 색은 tokens.css --cos-*) ──
@@ -7758,7 +7769,7 @@ body[data-fx='low'] .boss-warn.is-on {
   position: absolute;
   left: 0;
   top: 0;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: var(--fw-3);
   letter-spacing: 0.08em;
   color: var(--area-label);
@@ -7800,6 +7811,9 @@ body[data-fx='low'] .boss-warn.is-on {
   justify-items: center;
   gap: 6px;
   font-size: var(--fs-xs);
+}
+.cos-cat small {
+  font-size: var(--fs-2xs);
 }
 .cos-cat-face.cat-icon {
   width: 64px;
@@ -7998,6 +8012,7 @@ body[data-fx='low'] .boss-warn.is-on {
   color: var(--area-label);
 }
 .cos-row-label small {
+  font-size: 0.6875rem;
   margin-left: 4px;
   font-weight: var(--fw-1);
   color: var(--muted);
@@ -8323,7 +8338,7 @@ body[data-fx='low'] .boss-warn.is-on {
 .cos--card .cos-row:not(.cos-row--head) .cos-row-browse,
 .cos--craft .cos-row-label .cos-row-browse,
 .cos--cat .cos-row-label .cos-row-browse {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 /* 배경 칸(16c C3): 작은 칸 안 카드 그림 */
 .cos-tiles .cos-frame-mini {
@@ -8471,7 +8486,7 @@ body[data-fx='low'] .boss-warn.is-on {
   background: color-mix(in srgb, var(--cyan) 14%, transparent);
   color: var(--cyan) !important;
   font-style: normal;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0 !important;
   white-space: nowrap;
 }
@@ -9255,7 +9270,7 @@ body[data-fx='low'] .w-ops-news.is-roll span + span {
   text-decoration: line-through;
 }
 .shop-card.is-empty .lz-have {
-  opacity: 0.6;
+  color: var(--muted);
   text-decoration: line-through;
 }
 /* 홈(R-163): 위 → 아래 무대 · 탑재 줄 · 목표 · 순위. 384×802에서 스크롤 없이, 남는 높이는 고르게(space-evenly) */
@@ -10182,7 +10197,7 @@ body[data-fx='low'] .w-ops-news.is-roll span + span {
   font-size: var(--fs-2xs);
 }
 .hg-note {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 1.5;
   color: var(--muted);
 }
@@ -10325,8 +10340,13 @@ body[data-fx='low'] .w-ops-news.is-roll span + span {
 .crew-cat.is-party small {
   color: var(--cyan);
 }
-.crew-cat.is-sleep {
+/* 잠든 고양이: 그림만 흐리게, 이름 · 상태 글은 읽히게(대비 4.5 이상, 2026-11-15 열린 점검) */
+.crew-cat.is-sleep .cat-icon {
   opacity: 0.55;
+}
+.crew-cat.is-sleep,
+.crew-cat.is-sleep small {
+  color: var(--muted);
 }
 .crew-cat[aria-pressed='true'] {
   border-color: var(--cyan);
@@ -10375,7 +10395,7 @@ body[data-fx='low'] .w-ops-news.is-roll span + span {
 }
 .rung--lock {
   border-style: dashed;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 .crew-links {
   display: grid;
@@ -10620,7 +10640,7 @@ body[data-fx='low'] .w-ops-news.is-roll span + span {
   border-radius: var(--r-sm);
   background: var(--cyan-deep);
   color: var(--cyan);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.08em;
   vertical-align: 2px;
 }
@@ -12934,7 +12954,7 @@ body[data-fx='low'] .st-prestige * {
 }
 .title-pick {
   padding: 0;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   white-space: normal;
   min-width: 0;
 }
@@ -13070,7 +13090,7 @@ body[data-fx='low'] .st-prestige * {
   overflow-wrap: anywhere;
 }
 .mile-text small {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 .mile .mile-bar {
   width: 100%;
@@ -13158,7 +13178,7 @@ body[data-fx='low'] .st-prestige * {
 .talk-speaker .cat-rank {
   margin: 0;
   padding: 2px 4px;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   line-height: 1.15;
   white-space: nowrap;
 }
@@ -13178,7 +13198,7 @@ body[data-fx='low'] .st-prestige * {
     height: 23px;
   }
   .home-craft strong {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
   }
   .flight-deck {
     grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
@@ -13244,14 +13264,14 @@ body[data-fx='low'] .home-orb.is-teaching {
   font-size: 1rem;
 }
 .hg-stage .st-type {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 1.5;
 }
 .hg-stage .st-title {
   position: absolute;
   right: 13px;
   top: 13px;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   z-index: 2;
 }
 .hg-stage .st-art {
@@ -13274,7 +13294,7 @@ body[data-fx='low'] .home-orb.is-teaching {
   margin: 0;
   padding: 0 9px;
   min-height: 44px;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--ink-2);
 }
 .hg-stage > .hg-more[aria-expanded='true'] {
@@ -13320,7 +13340,7 @@ body[data-fx='low'] .home-orb.is-teaching {
   overflow: visible;
 }
 .hg .hg-sec-head h2 small {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
 }
 .hg .hg-sec-head:has(button) h2 {
   margin-right: auto;
@@ -13329,7 +13349,7 @@ body[data-fx='low'] .home-orb.is-teaching {
   margin: 0;
   min-height: 44px;
   padding: 0 1px;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
 }
 .hg .hg-cos-links {
   margin: 0;
@@ -13367,13 +13387,13 @@ body[data-fx='low'] .home-orb.is-teaching {
 .hg-primary .hg-paint > span {
   grid-column: 1/-1;
   grid-row: 2;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   line-height: 1.45;
 }
 .hg-primary .hg-paint small {
   grid-column: 2;
   grid-row: 1;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
 }
 .hg .hg-sec > .hg-cos {
   padding: 8px 10px 0;
@@ -13381,7 +13401,7 @@ body[data-fx='low'] .home-orb.is-teaching {
 }
 .hg .hg-sec > .hg-note {
   margin: 6px 10px 8px;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   text-align: left;
 }
 .hg .hg-sec > .hg-lock {
@@ -13400,9 +13420,6 @@ body[data-fx='low'] .home-orb.is-teaching {
     grid-template-columns: 20px minmax(0, 1fr) 9px;
     gap: 3px;
     padding-inline: 4px;
-  }
-  .hg .home-craft strong {
-    font-size: 0.5625rem;
   }
   .hg .home-craft svg {
     width: 20px;
@@ -13800,7 +13817,7 @@ body[data-fx='low'] .home-orb.is-teaching {
     </section>
     <!-- 저장소 이름 접미사(시험 경로)는 오프닝 판단이 쓰므로 여기서 먼저 정한다 -->
     <script>
-      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "f7e7f21";
+      globalThis.NEON_NS = "-test"; globalThis.NEON_API = "https://neon-arena-api-test.neonarena-play.workers.dev"; globalThis.NEON_BUILD = "727fc10";
     </script>
     <script>
       // 오프닝(R-058 · R-166): 앱을 열 때마다(새로고침 포함, 편집장 피드백) 인트로 화면 위 약 2초(시간표는 ui.css).
